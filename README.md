@@ -16,7 +16,7 @@ npm install subscriptions-transport-ws
 
 ```ts
 import { createClient } from 'graphql-subscriptions-ws';
-import { Network } from 'relay-runtime';
+import { Network, Observable } from 'relay-runtime';
 
 const subscriptionsClient = createClient({
   url: 'wss://some.url/graphql',
