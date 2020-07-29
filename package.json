@@ -1,0 +1,29 @@
+{
+  "name": "graphql-subscriptions-ws",
+  "version": "0.0.1",
+  "description": "A WebSocket client for GraphQL subscriptions",
+  "license": "MIT",
+  "homepage": "https://github.com/enisdenjo/graphql-subscriptions-ws#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enisdenjo/graphql-subscriptions-ws.git"
+  },
+  "main": "lib/index.js",
+  "browser": "lib/client.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "websocket-as-promised": "^1.0.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
+}
