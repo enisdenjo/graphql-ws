@@ -7,9 +7,9 @@ A client for GraphQL subscriptions over WebSocket. _Server implementation coming
 ## Getting started
 
 ```shell
-yarn add subscriptions-transport-ws
+yarn add graphql-subscriptions-ws
 # or
-npm install subscriptions-transport-ws
+npm install graphql-subscriptions-ws
 ```
 
 ### Relay
