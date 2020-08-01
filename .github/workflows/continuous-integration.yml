@@ -1,0 +1,51 @@
+name: Continuous integration
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v2.3.1
+      - uses: actions/setup-node@v2.1.1
+        with:
+          node-version: '12'
+      - uses: actions/cache@v1.1.2
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-cache-
+      - name: Install
+        run: yarn install --immutable
+      - name: Test
+        run: yarn test
+
+  type-check:
+    name: Type check
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v2.3.1
+      - uses: actions/setup-node@v2.1.1
+        with:
+          node-version: '12'
+      - uses: actions/cache@v1.1.2
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-cache-
+      - name: Install
+        run: yarn install --immutable
+      - name: Type check
+        run: yarn type-check
