@@ -33,7 +33,9 @@ export function createServer(
   function handleConnection(socket: WebSocket, _request: http.IncomingMessage) {
     if (
       socket.protocol === undefined ||
-      socket.protocol.indexOf(GRAPHQL_WS_PROTOCOL) === -1
+      socket.protocol !== GRAPHQL_WS_PROTOCOL ||
+      (Array.isArray(socket.protocol) &&
+        socket.protocol.indexOf(GRAPHQL_WS_PROTOCOL) === -1)
     ) {
       // 1002: Protocol error
       socket.close(1002);

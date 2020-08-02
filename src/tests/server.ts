@@ -77,7 +77,7 @@ afterAll((done) => {
 });
 
 it('should allow connections with valid protocols only', (done) => {
-  expect.assertions(3);
+  expect.assertions(4);
 
   let client = new WebSocket(url);
   client.onclose = (event) => {
@@ -89,11 +89,16 @@ it('should allow connections with valid protocols only', (done) => {
     expect(event.code).toBe(1002); // 1002: Protocol error
   };
 
+  client = new WebSocket(url, GRAPHQL_WS_PROTOCOL + 'gibberish');
+  client.onclose = (event) => {
+    expect(event.code).toBe(1002); // 1002: Protocol error
+  };
+
   client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
   const closeFn = jest.fn();
   client.onclose = closeFn;
   setTimeout(() => {
     expect(closeFn).not.toBeCalled();
     done();
-  }, 100);
+  }, 50);
 });
