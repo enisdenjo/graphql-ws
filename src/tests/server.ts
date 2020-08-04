@@ -115,3 +115,29 @@ it('should allow connections with valid protocols only', async (done) => {
     done();
   }, 50);
 });
+
+it('should gracefully go away when disposing', async (done) => {
+  expect.assertions(3);
+
+  const server = await getServer();
+
+  const errorFn = jest.fn();
+
+  const client1 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  client1.onerror = errorFn;
+  client1.onclose = (event) => {
+    expect(event.code).toBe(1001); // 1001: Going away
+  };
+
+  const client2 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  client2.onerror = errorFn;
+  client2.onclose = (event) => {
+    expect(event.code).toBe(1001); // 1001: Going away
+  };
+
+  await server.dispose();
+  setTimeout(() => {
+    expect(errorFn).not.toBeCalled();
+    done();
+  }, 50);
+});
