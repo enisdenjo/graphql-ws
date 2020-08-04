@@ -48,17 +48,20 @@ const schema = new GraphQLSchema({
   }),
 });
 
-const port = 8273;
-const path = '/graphql';
-const url = `ws://localhost:${port}${path}`;
+const port = 8273,
+  path = '/graphql',
+  url = `ws://localhost:${port}${path}`;
 
-let server: Disposable, httpServer: http.Server;
-beforeAll((done) => {
+let server: Disposable | undefined, httpServer: http.Server | undefined;
+async function getServer() {
+  if (server) {
+    return server;
+  }
   httpServer = http.createServer((_req, res) => {
     res.writeHead(404);
     res.end();
   });
-  server = createServer(
+  server = await createServer(
     {
       schema,
       subscribe,
@@ -68,16 +71,26 @@ beforeAll((done) => {
       path,
     },
   );
-  httpServer.listen(port, done);
-});
-afterAll((done) => {
-  server.dispose().then(() => {
-    httpServer.close(done);
-  });
+  return new Promise<Disposable>((resolve) =>
+    httpServer!.listen(port, () => resolve(server)),
+  );
+}
+afterEach((done) => {
+  if (server && httpServer) {
+    server.dispose().then(() => {
+      httpServer!.close(() => {
+        server = undefined;
+        httpServer = undefined;
+        done();
+      });
+    });
+  }
 });
 
-it('should allow connections with valid protocols only', (done) => {
+it('should allow connections with valid protocols only', async (done) => {
   expect.assertions(4);
+
+  await getServer();
 
   let client = new WebSocket(url);
   client.onclose = (event) => {
