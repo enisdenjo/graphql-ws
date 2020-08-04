@@ -102,13 +102,17 @@ export function createServer(
   }
 
   return {
-    dispose: () => {
-      server.removeListener('connection', handleConnection);
-      return new Promise((resolve, reject) => {
+    dispose: async () => {
+      for (const client of server.clients) {
         // 1001: Going away
-        server.clients.forEach((client) => client.close(1001));
-        server.close((err) => (err ? reject(err) : resolve()));
-      });
+        client.close(1001, 'Going away');
+      }
+
+      server.removeAllListeners();
+
+      await new Promise((resolve, reject) =>
+        server.close((err) => (err ? reject(err) : resolve())),
+      );
     },
   };
 }
