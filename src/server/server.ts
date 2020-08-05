@@ -21,10 +21,14 @@ interface Context {
   socket: WebSocket;
 }
 
+export interface Server extends Disposable {
+  server: WebSocket.Server;
+}
+
 export function createServer(
   _options: ServerOptions,
   websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
-): Disposable {
+): Server {
   const server =
     websocketOptionsOrServer instanceof WebSocket.Server
       ? websocketOptionsOrServer
@@ -119,6 +123,7 @@ export function createServer(
   }
 
   return {
+    server,
     dispose: async () => {
       for (const client of server.clients) {
         // 1001: Going away
