@@ -44,42 +44,59 @@ export function createServer(
 
     const ctx = { socket };
 
-    async function errorHandler(error: Error) {
-      await sendMessage(ctx, {
-        type: MessageType.ConnectionError,
-        payload: new GraphQLError(error.message),
-      });
-
-      // 1011: Internal error is an unexpected condition prevented the request from being fulfilled
-      ctx.socket.close(1011);
+    function errorOrCloseHandler(
+      errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
+    ) {
+      if (isErrorEvent(errorOrClose)) {
+        sendMessage(
+          ctx,
+          {
+            type: MessageType.ConnectionError,
+            payload: new GraphQLError(errorOrClose.message),
+          },
+          () => {
+            // 1011: Internal Error
+            ctx.socket.close(1011);
+          },
+        );
+      }
 
       // TODO-db-200702 close all active subscriptions
     }
 
-    socket.on('error', errorHandler);
-    // socket.on('close', closeHandler); // TODO-db-200702 implement handler
-    socket.on('message', makeOnMessage(ctx));
+    socket.onerror = errorOrCloseHandler;
+    socket.onclose = errorOrCloseHandler;
+    socket.onmessage = makeOnMessage(ctx);
   }
   server.on('connection', handleConnection);
 
   // Sends through a message only if the socket is open.
-  function sendMessage(ctx: Context, message: Message) {
+  function sendMessage(
+    ctx: Context,
+    message: Message,
+    callback?: (err?: Error) => void,
+  ) {
     return new Promise((resolve, reject) => {
       if (ctx.socket.readyState === WebSocket.OPEN) {
-        ctx.socket.send(JSON.stringify(message), (err) =>
-          err ? reject(err) : resolve(),
-        );
+        ctx.socket.send(JSON.stringify(message), (err) => {
+          if (callback) callback(err);
+          if (err) {
+            return reject(err);
+          }
+          return resolve();
+        });
       } else {
+        if (callback) callback();
         resolve();
       }
     });
   }
 
   function makeOnMessage(ctx: Context) {
-    return async function (data: WebSocket.Data) {
+    return async function (event: WebSocket.MessageEvent) {
       let message: Message;
       try {
-        message = JSON.parse(data as string);
+        message = JSON.parse(event.data as string);
         if (!isMessage(message)) {
           throw new Error('Invalid message');
         }
@@ -115,4 +132,14 @@ export function createServer(
       );
     },
   };
+}
+
+function isErrorEvent(obj: unknown): obj is WebSocket.ErrorEvent {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  if ('error' in obj && 'message' in obj && 'type' in obj) {
+    return true;
+  }
+  return false;
 }

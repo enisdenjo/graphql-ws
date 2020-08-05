@@ -15,6 +15,10 @@ Object.assign(global, {
   WebSocket: WebSocket, // for the client
 });
 
+/** Waits for the specified timeout and then resolves the promise. */
+const wait = (timeout: number) =>
+  new Promise((resolve) => setTimeout(resolve, timeout));
+
 const pubsub = new PubSub();
 
 const personType = new GraphQLObjectType({
@@ -117,7 +121,7 @@ it('should allow connections with valid protocols only', async (done) => {
 });
 
 it('should gracefully go away when disposing', async (done) => {
-  expect.assertions(3);
+  expect.assertions(5);
 
   const server = await getServer();
 
@@ -135,9 +139,14 @@ it('should gracefully go away when disposing', async (done) => {
     expect(event.code).toBe(1001); // 1001: Going away
   };
 
+  await wait(50); // allow the connection to "calm down"
+
   await server.dispose();
+
   setTimeout(() => {
-    expect(errorFn).not.toBeCalled();
+    expect(errorFn).toBeCalledTimes(0);
+    expect(client1.readyState).toBe(WebSocket.CLOSED);
+    expect(client2.readyState).toBe(WebSocket.CLOSED);
     done();
   }, 50);
 });
