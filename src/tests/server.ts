@@ -6,9 +6,12 @@ import {
   subscribe,
 } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
-import { Disposable } from '../types';
-import { createServer } from '../server';
+import { createServer, Server, ServerOptions } from '../server';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
+
+/**
+ * Test setup
+ */
 
 import WebSocket from 'ws';
 Object.assign(global, {
@@ -18,6 +21,10 @@ Object.assign(global, {
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
+
+/**
+ * GraphQL setup
+ */
 
 const pubsub = new PubSub();
 
@@ -52,49 +59,67 @@ const schema = new GraphQLSchema({
   }),
 });
 
-const port = 8273,
-  path = '/graphql',
-  url = `ws://localhost:${port}${path}`;
+/**
+ * Testing servers setup
+ */
 
-let server: Disposable | undefined, httpServer: http.Server | undefined;
-async function getServer() {
-  if (server) {
-    return server;
-  }
-  httpServer = http.createServer((_req, res) => {
-    res.writeHead(404);
-    res.end();
-  });
-  server = await createServer(
-    {
-      schema,
-      subscribe,
-    },
-    {
-      server: httpServer,
-      path,
-    },
-  );
-  return new Promise<Disposable>((resolve) =>
-    httpServer!.listen(port, () => resolve(server)),
-  );
-}
-afterEach((done) => {
-  if (server && httpServer) {
-    server.dispose().then(() => {
-      httpServer!.close(() => {
-        server = undefined;
-        httpServer = undefined;
-        done();
+const port = 8273,
+  path = '/testing-graphql',
+  url = `ws://localhost:${port}${path}`;
+const testingServers = {
+  gqlServer: null as Server | null,
+  httpServer: null as http.Server | null,
+};
+
+async function disposeExistingTestingServers() {
+  await testingServers.gqlServer?.dispose();
+  if (testingServers.httpServer) {
+    await new Promise((resolve, reject) => {
+      testingServers.httpServer!.close((err) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve();
       });
     });
   }
-});
+  testingServers.gqlServer = null;
+  testingServers.httpServer = null;
+}
+afterEach((done) => disposeExistingTestingServers().then(done));
+
+async function makeServer(options: Partial<ServerOptions> = {}) {
+  await disposeExistingTestingServers();
+  testingServers.httpServer = http.createServer((_req, res) => {
+    res.writeHead(404);
+    res.end();
+  });
+  testingServers.gqlServer = await createServer(
+    {
+      schema,
+      subscribe,
+      ...options,
+    },
+    {
+      server: testingServers.httpServer,
+      path,
+    },
+  );
+  return new Promise<Server>((resolve) =>
+    testingServers.httpServer!.listen(port, () =>
+      resolve(testingServers.gqlServer!),
+    ),
+  );
+}
+
+/**
+ * Tests
+ */
 
 it('should allow connections with valid protocols only', async (done) => {
   expect.assertions(4);
 
-  await getServer();
+  await makeServer();
 
   let client = new WebSocket(url);
   client.onclose = (event) => {
@@ -123,7 +148,7 @@ it('should allow connections with valid protocols only', async (done) => {
 it('should gracefully go away when disposing', async (done) => {
   expect.assertions(5);
 
-  const server = await getServer();
+  const server = await makeServer();
 
   const errorFn = jest.fn();
 
