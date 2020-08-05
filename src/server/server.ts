@@ -59,8 +59,9 @@ export function createServer(
             payload: new GraphQLError(errorOrClose.message),
           },
           () => {
+            // TODO-db-200805 leaking sensitive information by sending the error message too?
             // 1011: Internal Error
-            ctx.socket.close(1011);
+            ctx.socket.close(1011, errorOrClose.message);
           },
         );
       }
@@ -73,6 +74,12 @@ export function createServer(
     socket.onmessage = makeOnMessage(ctx);
   }
   webSocketServer.on('connection', handleConnection);
+  webSocketServer.on('error', (err) => {
+    for (const client of webSocketServer.clients) {
+      // report server errors by erroring out all clients with the same error
+      client.emit('error', err);
+    }
+  });
 
   // Sends through a message only if the socket is open.
   function sendMessage(

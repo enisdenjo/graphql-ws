@@ -175,3 +175,25 @@ it('should gracefully go away when disposing', async (done) => {
     done();
   }, 50);
 });
+
+it('should report server errors to clients by closing the connection', async (done) => {
+  expect.assertions(3);
+
+  const { webSocketServer } = await makeServer();
+
+  const emittedError = new Error("I'm a teapot");
+
+  const client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  client.onclose = (event) => {
+    // 1011: Internal Error
+    expect(event.code).toBe(1011);
+    expect(event.reason).toBe(emittedError.message);
+    expect(event.wasClean).toBeTruthy(); // because the server reported the error
+  };
+
+  await wait(50); // allow the connection to "calm down"
+
+  webSocketServer.emit('error', emittedError);
+
+  setTimeout(done, 50);
+});
