@@ -1,4 +1,5 @@
 import http from 'http';
+import WebSocket from 'ws';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -8,15 +9,6 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { createServer, Server, ServerOptions } from '../server';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
-
-/**
- * Test setup
- */
-
-import WebSocket from 'ws';
-Object.assign(global, {
-  WebSocket: WebSocket, // for the client
-});
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
