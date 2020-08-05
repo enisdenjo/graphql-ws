@@ -117,23 +117,29 @@ async function makeServer(options: Partial<ServerOptions> = {}) {
  */
 
 it('should allow connections with valid protocols only', async (done) => {
-  expect.assertions(4);
+  expect.assertions(10);
 
   await makeServer();
 
   let client = new WebSocket(url);
   client.onclose = (event) => {
-    expect(event.code).toBe(1002); // 1002: Protocol error
+    expect(event.code).toBe(1002);
+    expect(event.reason).toBe('Protocol Error');
+    expect(event.wasClean).toBeTruthy();
   };
 
   client = new WebSocket(url, ['graphql', 'json']);
   client.onclose = (event) => {
-    expect(event.code).toBe(1002); // 1002: Protocol error
+    expect(event.code).toBe(1002);
+    expect(event.reason).toBe('Protocol Error');
+    expect(event.wasClean).toBeTruthy();
   };
 
   client = new WebSocket(url, GRAPHQL_WS_PROTOCOL + 'gibberish');
   client.onclose = (event) => {
-    expect(event.code).toBe(1002); // 1002: Protocol error
+    expect(event.code).toBe(1002);
+    expect(event.reason).toBe('Protocol Error');
+    expect(event.wasClean).toBeTruthy();
   };
 
   client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
@@ -146,7 +152,7 @@ it('should allow connections with valid protocols only', async (done) => {
 });
 
 it('should gracefully go away when disposing', async (done) => {
-  expect.assertions(5);
+  expect.assertions(9);
 
   const server = await makeServer();
 
@@ -155,13 +161,17 @@ it('should gracefully go away when disposing', async (done) => {
   const client1 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
   client1.onerror = errorFn;
   client1.onclose = (event) => {
-    expect(event.code).toBe(1001); // 1001: Going away
+    expect(event.code).toBe(1001);
+    expect(event.reason).toBe('Going away');
+    expect(event.wasClean).toBeTruthy();
   };
 
   const client2 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
   client2.onerror = errorFn;
   client2.onclose = (event) => {
-    expect(event.code).toBe(1001); // 1001: Going away
+    expect(event.code).toBe(1001);
+    expect(event.reason).toBe('Going away');
+    expect(event.wasClean).toBeTruthy();
   };
 
   await wait(50); // allow the connection to "calm down"
@@ -169,7 +179,7 @@ it('should gracefully go away when disposing', async (done) => {
   await server.dispose();
 
   setTimeout(() => {
-    expect(errorFn).toBeCalledTimes(0);
+    expect(errorFn).not.toBeCalled();
     expect(client1.readyState).toBe(WebSocket.CLOSED);
     expect(client2.readyState).toBe(WebSocket.CLOSED);
     done();
@@ -185,8 +195,7 @@ it('should report server errors to clients by closing the connection', async (do
 
   const client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
   client.onclose = (event) => {
-    // 1011: Internal Error
-    expect(event.code).toBe(1011);
+    expect(event.code).toBe(1011); // 1011: Internal Error
     expect(event.reason).toBe(emittedError.message);
     expect(event.wasClean).toBeTruthy(); // because the server reported the error
   };

@@ -41,8 +41,8 @@ export function createServer(
       (Array.isArray(socket.protocol) &&
         socket.protocol.indexOf(GRAPHQL_WS_PROTOCOL) === -1)
     ) {
-      // 1002: Protocol error
-      socket.close(1002);
+      // 1002: Protocol Error
+      socket.close(1002, 'Protocol Error');
       return;
     }
 
