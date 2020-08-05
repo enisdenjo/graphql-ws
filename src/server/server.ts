@@ -22,14 +22,14 @@ interface Context {
 }
 
 export interface Server extends Disposable {
-  server: WebSocket.Server;
+  webSocketServer: WebSocket.Server;
 }
 
 export function createServer(
   _options: ServerOptions,
   websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
 ): Server {
-  const server =
+  const webSocketServer =
     websocketOptionsOrServer instanceof WebSocket.Server
       ? websocketOptionsOrServer
       : new WebSocket.Server(websocketOptionsOrServer);
@@ -72,7 +72,7 @@ export function createServer(
     socket.onclose = errorOrCloseHandler;
     socket.onmessage = makeOnMessage(ctx);
   }
-  server.on('connection', handleConnection);
+  webSocketServer.on('connection', handleConnection);
 
   // Sends through a message only if the socket is open.
   function sendMessage(
@@ -123,17 +123,17 @@ export function createServer(
   }
 
   return {
-    server,
+    webSocketServer,
     dispose: async () => {
-      for (const client of server.clients) {
+      for (const client of webSocketServer.clients) {
         // 1001: Going away
         client.close(1001, 'Going away');
       }
 
-      server.removeAllListeners();
+      webSocketServer.removeAllListeners();
 
       await new Promise((resolve, reject) =>
-        server.close((err) => (err ? reject(err) : resolve())),
+        webSocketServer.close((err) => (err ? reject(err) : resolve())),
       );
     },
   };
