@@ -1,124 +1,154 @@
-_Copied from the [subscriptions-transport-ws protocol specification](https://github.com/apollographql/subscriptions-transport-ws/blob/567fca89cb4578371877faee09e1630dcddff544/PROTOCOL.md)_
+# GraphQL subscriptions over WebSocket Protocol
 
-# GraphQL over WebSocket Protocol
+## Communication
 
-## Client-server communication
+The WebSocket sub-protocol for this specification is: `graphql-subscriptions-ws`
 
-Each message has a `type` field, which defined in the protocol of this package, as well as associated fields inside `payload` field, depending on the message type, and `id` field so the client can identify each response from the server.
+Messages are represented through the JSON structure and are stringified before being sent over the network. They are bi-directional, meaning both the server and the client conform to the specified message structure.
 
-Each WebSocket message is represented in JSON structure, and being stringified before sending it over the network.
+**All** messages contain the `type` field outlining the type or action this message describes. Depending on the type, the message can contain two more _optional_ fields:
 
-This is the structure of each message:
+- `id` used for uniquely identifying server responses and connecting them with the client requests
+- `payload` holding the extra "payload" information to go with the specific message type
+
+The server can close the socket (kick a client off) at any time. The close event received by the client is used to describe the fatal error.
+
+The client terminates the socket and/or the connection by sending a `1000: Normal Closure` close event to the server.
 
 ```typescript
-export interface OperationMessage {
-  payload?: any;
+import { ExecutionResult, GraphQLError } from 'graphql';
+
+interface Message {
   id?: string;
-  type: string;
+  type: MessageType;
+  payload?:
+    | Operation // Client -> Server
+    | ExecutionResult // Server -> Client
+    | GraphQLError; // Server -> Client
+}
+
+enum MessageType {
+  ConnectionInit = 'connection_init', // Client -> Server
+  ConnectionAck = 'connection_ack', // Server -> Client
+
+  Start = 'start', // Client -> Server
+  Data = 'data', // Server -> Client
+  Error = 'error', // Server -> Client
+  Complete = 'complete', // Server -> Client
+  Stop = 'stop', // Client -> Server
+}
+
+interface Operation {
+  operationName: string;
+  query: string;
+  variables: Record<string, unknown>;
 }
 ```
 
-### Client -> Server
+## Message types
 
-#### GQL_CONNECTION_INIT
+### `ConnectionInit`
 
-Client sends this message after plain websocket connection to start the communication with the server
+Direction: **Client -> Server**
 
-The server will response only with `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used) or `GQL_CONNECTION_ERROR` to this message.
+Indicates that the client wants to initialise the connection with the server within the socket. This connection is **not** the actual WebSocket connection (which we call "socket"), but is rather a frame within the exiting socket asking the server to allow future GraphQL operation requests.
 
-- `payload: Object` : optional parameters that the client specifies in `connectionParams`
+The client can specify additional `connectionParams` which are sent through the `payload` field in outgoing message.
 
-#### GQL_START
+The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will close the socket with the close event: `4408: Connection timeout`.
 
-Client sends this message to execute GraphQL operation
+```typescript
+interface ConnectionInitMessage {
+  type: 'connection_init';
+  payload?: Record<string, any>; // connectionParams
+}
+```
 
-- `id: string` : The id of the GraphQL operation to start
-- `payload: Object`:
-  - `query: string` : GraphQL operation as string or parsed GraphQL document node
-  - `variables?: Object` : Object with GraphQL variables
-  - `operationName?: string` : GraphQL operation name
+The server will respond by either:
 
-#### GQL_STOP
+- Sending a `ConnectionAck` message acknowledging that the connection has been successfully established. The server does not implement a `onConnect` callback or the implemented callback has returned `true` .
+- Closing the socket with a close event `4403: Forbidden` indicating that the connection request has been denied because of access control. The server has returned `false` in the `onConnect` callback.
+- Closing the socket with a close event `4400: <error-message>` indicating that the connection request has been denied because of an implementation specific error. The server has thrown an error in the `onConnect` callback, the thrown error's message is the `<error-message>` in the close event.
 
-Client sends this message in order to stop a running GraphQL operation execution (for example: unsubscribe)
+### `ConnectionAck`
 
-- `id: string` : operation id
+Direction: **Server -> Client**
 
-#### GQL_CONNECTION_TERMINATE
+Potential response to the `ConnectionInit` message from the client acknowledging a successful connection with the server.
 
-Client sends this message to terminate the connection.
+```typescript
+interface ConnectionAckMessage {
+  type: 'connection_ack';
+}
+```
 
-### Server -> Client
+The client is now **ready** to request GraphQL operations.
 
-#### GQL_CONNECTION_ERROR
+### `Start`
 
-The server may responses with this message to the `GQL_CONNECTION_INIT` from client, indicates the server rejected the connection.
+Direction: **Client -> Server**
 
-It server also respond with this message in case of a parsing errors of the message (which does not disconnect the client, just ignore the message).
+Requests an execution of the operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
 
-- `payload: Object`: the server side error
+```typescript
+interface StartMessage {
+  id: '<unique-operation-id>';
+  type: 'start';
+  payload: Operation;
+}
 
-#### GQL_CONNECTION_ACK
+interface Operation {
+  operationName: string;
+  query: string;
+  variables: Record<string, unknown>;
+}
+```
 
-The server may responses with this message to the `GQL_CONNECTION_INIT` from client, indicates the server accepted the connection.
+"Starting" an is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be closed immediately with a close event `4401: Unauthorized`.
 
-#### GQL_DATA
+### `Data`
 
-The server sends this message to transfter the GraphQL execution result from the server to the client, this message is a response for `GQL_START` message.
+Direction: **Server -> Client**
 
-For each GraphQL operation send with `GQL_START`, the server will respond with at least one `GQL_DATA` message.
+GraphQL execution result/data message requested through the `Start` message. It can be seen as a "response" to the `Start` message.
 
-- `id: string` : ID of the operation that was successfully set up
-- `payload: Object` :
-  - `data: any`: Execution result
-  - `errors?: Error[]` : Array of resolvers errors
+```typescript
+import { ExecutionResult } from 'graphql';
 
-#### GQL_ERROR
+interface DataMessage {
+  id: '<unique-operation-id>';
+  type: 'data';
+  payload: ExecutionResult;
+}
+```
 
-Server sends this message upon a failing operation, before the GraphQL execution, usually due to GraphQL validation errors (resolver errors are part of `GQL_DATA` message, and will be added as `errors` array)
+### `Error`
 
-- `payload: Error` : payload with the error attributed to the operation failing on the server
-- `id: string` : operation ID of the operation that failed on the server
+Direction: **Server -> Client**
 
-#### GQL_COMPLETE
+GraphQL execution error caused by the `Start` message happening before the actual execution, usually due to validation errors.
 
-Server sends this message to indicate that a GraphQL operation is done, and no more data will arrive for the specific operation.
+```typescript
+import { GraphQLError } from 'graphql';
 
-- `id: string` : operation ID of the operation that completed
+interface DataMessage {
+  id: '<unique-operation-id>';
+  type: 'error';
+  payload: GraphQLError;
+}
+```
 
-#### GQL_CONNECTION_KEEP_ALIVE
+### `Complete`
 
-Server message that should be sent right after each `GQL_CONNECTION_ACK` processed and then periodically to keep the client connection alive.
+Direction: **Server -> Client**
 
-The client starts to consider the keep alive message only upon the first received keep alive message from the server.
+Indicating that the GraphQL operation requested through the `Start` message has completed. No further `Data` will be sent through.
 
-### Messages Flow
+```typescript
+interface CompleteMessage {
+  id: '<unique-operation-id>';
+  type: 'complete';
+}
+```
 
-This is a demonstration of client-server communication, in order to get a better understanding of the protocol flow:
-
-#### Session Init Phase
-
-The phase initializes the connection between the client and server, and usually will also build the server-side `context` for the execution.
-
-- Client connected immediately, or stops and wait if using lazy mode (until first operation execution)
-- Client sends `GQL_CONNECTION_INIT` message to the server.
-- Server calls `onConnect` callback with the init arguments, waits for init to finish and returns it's return value with `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used), or `GQL_CONNECTION_ERROR` in case of `false` or thrown exception from `onConnect` callback.
-- Client gets `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used) and waits for the client's app to create subscriptions.
-
-#### Connected Phase
-
-This phase called per each operation the client request to execute:
-
-- App creates a subscription using `subscribe` or `query` client's API, and the `GQL_START` message sent to the server.
-- Server calls `onOperation` callback, and responds with `GQL_DATA` in case of zero errors, or `GQL_ERROR` if there is a problem with the operation (is might also return `GQL_ERROR` with `errors` array, in case of resolvers errors).
-- Client get `GQL_DATA` and handles it.
-- Server calls `onOperationDone` if the operation is a query or mutation (for subscriptions, this called when unsubscribing)
-- Server sends `GQL_COMPLETE` if the operation is a query or mutation (for subscriptions, this sent when unsubscribing)
-
-For subscriptions:
-
-- App triggers `PubSub`'s publication method, and the server publishes the event, passing it through the `subscribe` executor to create GraphQL execution result
-- Client receives `GQL_DATA` with the data, and handles it.
-- When client unsubscribe, the server triggers `onOperationDone` and sends `GQL_COMPLETE` message to the client.
-
-When client done with executing GraphQL, it should close the connection and terminate the session using `GQL_CONNECTION_TERMINATE` message.
+If the server has emitted an `Error` connected to the operation, the complete message will not be sent. The `Error` prevents the operation from execution so the complete message is superfluous.
