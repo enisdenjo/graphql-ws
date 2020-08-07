@@ -12,19 +12,70 @@ import { GRAPHQL_WS_PROTOCOL } from '../protocol';
 import { Message, MessageType, parseMessage } from '../message';
 
 export interface ServerOptions {
-  rootValue?: any;
-  schema?: GraphQLSchema;
-  subscribe?: typeof subscribe;
+  /**
+   * The GraphQL schema on which
+   * the opertaions will be executed
+   * and validated against.
+   */
+  schema: GraphQLSchema;
+  /**
+   * Is the `subscribe` function
+   * from GraphQL which is used to
+   * execute the subscription operation
+   * upon.
+   */
+  subscribe: typeof subscribe;
+  /**
+   * Is the connection callback called when the
+   * client requests the connection initialisation
+   * through the message `ConnectionInit`. The message
+   * payload (`connectionParams` on the client) is
+   * present in the `Context.connectionParams`.
+   *
+   * - Returning `true` from the callback will
+   * allow the client to connect.
+   *
+   * - Returning `false` from the callback will
+   * terminate the socket by dispatching the
+   * close event `4403: Forbidden`.
+   *
+   * - Throwing an error from the callback will
+   * terminate the socket by dispatching the
+   * close event `4400: <error-message>`, where
+   * the `<error-message>` is the message of the
+   * thrown `Error`.
+   */
+  onConnect?: (
+    ctx: Context,
+    request: http.IncomingMessage,
+  ) => Promise<boolean> | boolean;
+  /**
+   * The amount of time for which the
+   * server will wait for `ConnectionInit` message.
+   * Defaults to: **3 seconds**.
+   *
+   * If the wait timeout has passed and the client
+   * has not sent the `ConnectionInit` message,
+   * the server will terminate the socket by
+   * dispatching a close event `4408: Connection initialisation timeout`
+   */
+  connectionInitWaitTimeout?: number;
 }
 
 interface Context {
   socket: WebSocket;
+  connectionParams?: Record<string, unknown>;
 }
 
 export interface Server extends Disposable {
   webSocketServer: WebSocket.Server;
 }
 
+/**
+ * Creates a protocol complient WebSocket GraphQL
+ * subscription server. Read more about the protocol
+ * in the PROTOCOL.md documentation file.
+ */
 export function createServer(
   _options: ServerOptions,
   websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
