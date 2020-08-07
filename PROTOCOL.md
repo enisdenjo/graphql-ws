@@ -162,47 +162,48 @@ For the sake of clarity, the following examples demonstrate the communication pr
 <h3 id="successful-connection-initialisation">Successful connection initialisation</h3>
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
-4. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
-5. _Client_ has received the acknowledgement message and is now ready to request subscription operations
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
+1. _Client_ has received the acknowledgement message and is now ready to request subscription operations
 
 ### Forbidden connection initialisation
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
-4. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
-5. _Server_ terminates the socket by dispatching the close event `4403: Forbidden`
-6. _Client_ reports an error using the close event reason (which is `Forbidden`).
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
+1. _Server_ terminates the socket by dispatching the close event `4403: Forbidden`
+1. _Client_ reports an error using the close event reason (which is `Forbidden`)
 
 ### Erroneous connection initialisation
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
-4. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
-5. _Server_ terminates the socket by dispatching the close event `4400: I'm a teapot`
-6. _Client_ reports an error using the close event reason (which is `I'm a teapot`).
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
+1. _Server_ terminates the socket by dispatching the close event `4400: I'm a teapot`
+1. _Client_ reports an error using the close event reason (which is `I'm a teapot`)
 
 ### Connection initialisation timeout
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-3. _Client_ does not dispatch a `ConnectionInit` message
-4. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
-5. _Server_ waiting time has passed
-6. _Server_ terminates the socket by dispatching the close event `4408: Connection initialisation timeout`
-7. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`).
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ does not dispatch a `ConnectionInit` message
+1. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
+1. _Server_ waiting time has passed
+1. _Server_ terminates the socket by dispatching the close event `4408: Connection initialisation timeout`
+1. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`)
 
 ### Subscribe operation
 
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
-2. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
-3. _Server_ validates the request through the `onSubscribe` callback and accepts it
-4. _Server_ establishes a GraphQL subscription and listens for events in the source stream
-5. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
-6. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
-7. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
+1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
+1. _Server_ triggers the `onSubscribe` callback, if specified
+1. _Server_ validates the request and establishes a GraphQL subscription and listens for events in the source stream
+1. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
+1. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
+1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
+1. _Server_ triggers the `onComplete` callback, if specified
