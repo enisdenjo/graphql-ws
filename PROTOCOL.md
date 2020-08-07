@@ -1,5 +1,10 @@
 # GraphQL subscriptions over WebSocket Protocol
 
+## Nomenclature
+
+- **Socket** is the main WebSocket communication channel between the _server_ and the _client_
+- **Connection** is a connection **within the established socket** describing a "connection" through which the operation requests will be communicated
+
 ## Communication
 
 The WebSocket sub-protocol for this specification is: `graphql-subscriptions-ws`
