@@ -9,7 +9,7 @@ import WebSocket from 'ws';
 import { GraphQLSchema, subscribe } from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
-import { Message, MessageType, isMessage } from '../message';
+import { Message, MessageType, parseMessage } from '../message';
 
 export interface ServerOptions {
   rootValue?: any;
@@ -98,13 +98,9 @@ export function createServer(
     return async function (event: WebSocket.MessageEvent) {
       let message: Message;
       try {
-        message = JSON.parse(event.data as string);
+        message = parseMessage(event.data);
       } catch (err) {
         ctx.socket.close(4400, err.message);
-        return;
-      }
-      if (!isMessage(message)) {
-        ctx.socket.close(4422, 'Invalid message structure');
         return;
       }
 
