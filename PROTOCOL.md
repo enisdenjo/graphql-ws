@@ -200,7 +200,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
-2. _Client_ dispatches the `Start` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
+2. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
 3. _Server_ validates the request through the `onSubscribe` callback and accepts it
 4. _Server_ establishes a GraphQL subscription and listens for events in the source stream
 5. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
