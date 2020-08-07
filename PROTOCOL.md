@@ -11,9 +11,9 @@ Messages are represented through the JSON structure and are stringified before b
 - `id` used for uniquely identifying server responses and connecting them with the client requests
 - `payload` holding the extra "payload" information to go with the specific message type
 
-The server can close the socket (kick a client off) at any time. The close event received by the client is used to describe the fatal error.
+The server can terminate the socket (kick the client off) at any time. The close event dispatched by the server is used to describe the fatal error to the client.
 
-The client terminates the socket and/or the connection by sending a `1000: Normal Closure` close event to the server.
+The client terminates the socket and closes the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
 
 ```typescript
 import { ExecutionResult, GraphQLError } from 'graphql';
@@ -50,11 +50,11 @@ interface SubscribeOperation {
 
 Direction: **Client -> Server**
 
-Indicates that the client wants to initialise the connection with the server within the socket. This connection is **not** the actual WebSocket connection (which we call "socket"), but is rather a frame within the exiting socket asking the server to allow future GraphQL operation requests.
+Indicates that the client wants to establish a connection within the existing socket. This connection is **not** the actual WebSocket communication channel, but is rather a frame within it asking the server to allow future subscription operation requests.
 
-The client can specify additional `connectionParams` which are sent through the `payload` field in outgoing message.
+The client can specify additional `connectionParams` which are sent through the `payload` field in the outgoing message.
 
-The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will close the socket with the close event: `4408: Connection initialisation timeout`.
+The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will terminate the socket with the close event: `4408: Connection initialisation timeout`.
 
 ```typescript
 interface ConnectionInitMessage {
@@ -65,7 +65,7 @@ interface ConnectionInitMessage {
 
 The server will respond by either:
 
-- Sending a `ConnectionAck` message acknowledging that the connection has been successfully established. The server does not implement a `onConnect` callback or the implemented callback has returned `true` .
+- Dispatching a `ConnectionAck` message acknowledging that the connection has been successfully established. The server does not implement the `onConnect` callback or the implemented callback has returned `true`.
 - Closing the socket with a close event `4403: Forbidden` indicating that the connection request has been denied because of access control. The server has returned `false` in the `onConnect` callback.
 - Closing the socket with a close event `4400: <error-message>` indicating that the connection request has been denied because of an implementation specific error. The server has thrown an error in the `onConnect` callback, the thrown error's message is the `<error-message>` in the close event.
 
@@ -81,7 +81,7 @@ interface ConnectionAckMessage {
 }
 ```
 
-The client is now **ready** to request GraphQL operations.
+The client is now **ready** to request subscription operations.
 
 ### `Subscribe`
 
@@ -90,7 +90,7 @@ Direction: **Client -> Server**
 Requests a subscription operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
 
 ```typescript
-interface StartMessage {
+interface SubscribeMessage {
   id: '<unique-operation-id>';
   type: 'subscribe';
   payload: SubscribeOperation;
@@ -103,13 +103,13 @@ interface SubscribeOperation {
 }
 ```
 
-Subscribing an is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be closed immediately with a close event `4401: Unauthorized`.
+Subscribing an is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be terminated immediately with a close event `4401: Unauthorized`.
 
 ### `Next`
 
 Direction: **Server -> Client**
 
-GraphQL subscription execution result message. It can be seen as a data stream requested by the `Subscribe` message.
+GraphQL subscription execution result message. It can be seen as an event in the source stream requested by the `Subscribe` message.
 
 ```typescript
 import { ExecutionResult } from 'graphql';
@@ -125,7 +125,7 @@ interface DataMessage {
 
 Direction: **Server -> Client**
 
-GraphQL subscription execution error caused by the `Next` message happening before the actual execution, usually due to validation errors.
+Subscription execution error triggered by the `Next` message happening before the actual execution, usually due to validation errors.
 
 ```typescript
 import { GraphQLError } from 'graphql';
@@ -157,15 +157,15 @@ For the sake of clarity, the following examples demonstrate the communication pr
 <h3 id="successful-connection-initialisation">Successful connection initialisation</h3>
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket connection (which we call "socket")
+2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
-4. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client
-5. _Client_ has received the acknowledgement message and is now ready to request GraphQL operations
+4. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
+5. _Client_ has received the acknowledgement message and is now ready to request subscription operations
 
 ### Forbidden connection initialisation
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket connection (which we call "socket")
+2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 4. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
 5. _Server_ terminates the socket by dispatching the close event `4403: Forbidden`
@@ -174,7 +174,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 ### Erroneous connection initialisation
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket connection (which we call "socket")
+2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 3. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 4. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
 5. _Server_ terminates the socket by dispatching the close event `4400: I'm a teapot`
@@ -183,7 +183,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 ### Connection initialisation timeout
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
-2. _Server_ accepts the handshake and establishes a WebSocket connection (which we call "socket")
+2. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 3. _Client_ does not dispatch a `ConnectionInit` message
 4. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
 5. _Server_ waiting time has passed
