@@ -5,6 +5,12 @@
  */
 
 import { GraphQLError, ExecutionResult } from 'graphql';
+import {
+  isObject,
+  hasOwnProperty,
+  hasOwnObjectProperty,
+  hasOwnStringProperty,
+} from './utils';
 
 /** Types of messages allowed to be sent by the client/server over the WS protocol. */
 export enum MessageType {
@@ -17,60 +23,101 @@ export enum MessageType {
   Complete = 'complete', // Client -> Server
 }
 
-interface SubscribeOperation {
-  operationName: string;
-  query: string;
-  variables: Record<string, unknown>;
+export interface ConnectionInitMessage {
+  type: MessageType.ConnectionInit;
+  payload?: Record<string, unknown>; // connectionParams
 }
 
-export type MessagePayload =
-  | SubscribeOperation
-  | ExecutionResult
-  | GraphQLError;
-
-function isMessagePayload(val: unknown): val is MessagePayload {
-  if (typeof val !== 'object' || val == null) {
-    return false;
-  }
-  if (
-    // SubscribeOperation
-    ('operationName' in val && 'query' in val && 'variables' in val) ||
-    // ExecutionResult
-    'data' in val ||
-    'errors' in val ||
-    // GraphQLError
-    ('message' in val && Object.keys(val).length === 1)
-  ) {
-    return true;
-  }
-  return false;
+export interface ConnectionAckMessage {
+  type: MessageType.ConnectionAck;
 }
 
-export interface Message {
-  /**
-   * The message ID. Can be missing in cases when
-   * managing the subscription connection itself.
-   */
-  id?: string;
-  type: MessageType;
-  payload?: MessagePayload; // missing for connection messages
+export interface SubscribeMessage {
+  id: string;
+  type: MessageType.Subscribe;
+  payload: {
+    operationName: string;
+    query: string;
+    variables: Record<string, unknown>;
+  };
 }
+
+export interface NextMessage {
+  id: string;
+  type: MessageType.Next;
+  payload: ExecutionResult;
+}
+
+export interface ErrorMessage {
+  id: string;
+  type: MessageType.Error;
+  payload: GraphQLError;
+}
+
+export interface CompleteMessage {
+  id: string;
+  type: MessageType.Complete;
+}
+
+export type Message<
+  T extends MessageType = MessageType
+> = T extends MessageType.ConnectionAck
+  ? ConnectionAckMessage
+  : T extends MessageType.ConnectionInit
+  ? ConnectionInitMessage
+  : T extends MessageType.Subscribe
+  ? SubscribeMessage
+  : T extends MessageType.Next
+  ? NextMessage
+  : T extends MessageType.Error
+  ? ErrorMessage
+  : T extends MessageType.Complete
+  ? CompleteMessage
+  : never;
 
 export function isMessage(val: unknown): val is Message {
-  // value must be an object
-  if (typeof val !== 'object' || val == null) {
-    return false;
+  if (isObject(val)) {
+    // all messages must have the `type` prop
+    if (!hasOwnProperty(val, 'type')) {
+      return false;
+    }
+    // validate other properties depending on the `type`
+    switch (val.type) {
+      case MessageType.ConnectionInit:
+        // the connection init message can have optional object `connectionParams` in the payload
+        return !hasOwnProperty(val, 'payload') || isObject(val.payload);
+      case MessageType.ConnectionAck:
+        return true;
+      case MessageType.Subscribe:
+        return (
+          hasOwnStringProperty(val, 'id') &&
+          hasOwnObjectProperty(val, 'payload') &&
+          hasOwnStringProperty(val.payload, 'operationName') &&
+          hasOwnStringProperty(val.payload, 'query') &&
+          hasOwnObjectProperty(val.payload, 'variables')
+        );
+      case MessageType.Next:
+        return (
+          hasOwnStringProperty(val, 'id') &&
+          hasOwnObjectProperty(val, 'payload') &&
+          // ExecutionResult
+          (hasOwnObjectProperty(val.payload, 'data') ||
+            hasOwnObjectProperty(val.payload, 'errors'))
+        );
+      case MessageType.Error:
+        return (
+          hasOwnStringProperty(val, 'id') &&
+          hasOwnObjectProperty(val, 'payload') &&
+          // GraphQLError
+          hasOwnStringProperty(val.payload, 'message')
+        );
+      case MessageType.Complete:
+        return hasOwnStringProperty(val, 'id');
+      default:
+        return false;
+    }
   }
-  // type field must exist
-  if (!('type' in val)) {
-    return false;
-  }
-  // if the payload exists, validate it
-  if ('payload' in val) {
-    return isMessagePayload((val as any).payload);
-  }
-  // id does not have to exist, so we dont even check it
-  return true;
+  return false;
 }
 
 export function parseMessage(data: unknown): Message {

@@ -10,6 +10,7 @@ import { GraphQLSchema, subscribe } from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
 import { Message, MessageType, parseMessage } from '../message';
+import { isObject, hasOwnObjectProperty, hasOwnStringProperty } from '../utils';
 
 export interface ServerOptions {
   /**
@@ -124,9 +125,9 @@ export function createServer(
   });
 
   // Sends through a message only if the socket is open.
-  function sendMessage(
+  function sendMessage<T extends MessageType>(
     ctx: Context,
-    message: Message,
+    message: Message<T>,
     callback?: (err?: Error) => void,
   ) {
     return new Promise((resolve, reject) => {
@@ -157,10 +158,12 @@ export function createServer(
 
       switch (message.type) {
         case MessageType.ConnectionInit: {
-          await sendMessage(ctx, {
+          message as Message<MessageType.ConnectionInit>; // type inference
+          await sendMessage<MessageType.ConnectionAck>(ctx, {
             type: MessageType.ConnectionAck,
           });
         }
+        // TODO-db-200808 handle other message types
       }
     };
   }
@@ -183,11 +186,10 @@ export function createServer(
 }
 
 function isErrorEvent(obj: unknown): obj is WebSocket.ErrorEvent {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-  if ('error' in obj && 'message' in obj && 'type' in obj) {
-    return true;
-  }
-  return false;
+  return (
+    isObject(obj) &&
+    hasOwnObjectProperty(obj, 'error') &&
+    hasOwnStringProperty(obj, 'message') &&
+    hasOwnStringProperty(obj, 'type')
+  );
 }
