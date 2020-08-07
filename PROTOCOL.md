@@ -20,35 +20,6 @@ The server can terminate the socket (kick the client off) at any time. The close
 
 The client terminates the socket and closes the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
 
-```typescript
-import { ExecutionResult, GraphQLError } from 'graphql';
-
-interface Message {
-  id?: string;
-  type: MessageType;
-  payload?:
-    | SubscribeOperation // Client -> Server
-    | ExecutionResult // Server -> Client
-    | GraphQLError; // Server -> Client
-}
-
-enum MessageType {
-  ConnectionInit = 'connection_init', // Client -> Server
-  ConnectionAck = 'connection_ack', // Server -> Client
-
-  Subscribe = 'subscribe', // Client -> Server
-  Next = 'next', // Server -> Client
-  Error = 'error', // Server -> Client
-  Complete = 'complete', // Client -> Server
-}
-
-interface SubscribeOperation {
-  operationName: string;
-  query: string;
-  variables: Record<string, unknown>;
-}
-```
-
 ## Message types
 
 ### `ConnectionInit`
@@ -64,7 +35,7 @@ The server must receive the connection initialisation message within the allowed
 ```typescript
 interface ConnectionInitMessage {
   type: 'connection_init';
-  payload?: Record<string, any>; // connectionParams
+  payload?: Record<string, unknown>; // connectionParams
 }
 ```
 
