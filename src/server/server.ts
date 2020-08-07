@@ -6,26 +6,41 @@
 
 import http from 'http';
 import WebSocket from 'ws';
-import { GraphQLSchema, subscribe } from 'graphql';
+import {
+  GraphQLSchema,
+  ValidationRule,
+  SubscriptionArgs,
+  ExecutionResult,
+} from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
-import { Message, MessageType, parseMessage } from '../message';
+import {
+  Message,
+  MessageType,
+  parseMessage,
+  SubscribeMessage,
+  CompleteMessage,
+} from '../message';
 import { isObject, hasOwnObjectProperty, hasOwnStringProperty } from '../utils';
 
 export interface ServerOptions {
   /**
-   * The GraphQL schema on which
-   * the opertaions will be executed
-   * and validated against.
+   * The GraphQL schema on which the operations
+   * will be executed and validated against. If
+   * the schema is left undefined, one must be
+   * providedby in the resulting `SubscriptionArgs`
+   * from the `onSubscribe` callback.
    */
-  schema: GraphQLSchema;
+  schema?: GraphQLSchema;
   /**
    * Is the `subscribe` function
    * from GraphQL which is used to
    * execute the subscription operation
    * upon.
    */
-  subscribe: typeof subscribe;
+  subscribe: (
+    args: SubscriptionArgs,
+  ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
   /**
    * Is the connection callback called when the
    * client requests the connection initialisation
@@ -61,6 +76,38 @@ export interface ServerOptions {
    * dispatching a close event `4408: Connection initialisation timeout`
    */
   connectionInitWaitTimeout?: number;
+  /**
+   * Custom validation rules overriding all
+   * validation rules defined by the GraphQL spec.
+   */
+  validationRules?: readonly ValidationRule[];
+  /**
+   * Format the subscription execution results
+   * if the implementation requires an adjusted
+   * result.
+   */
+  formatExecutionResult?: (
+    ctx: Context,
+    result: ExecutionResult,
+  ) => Promise<ExecutionResult> | ExecutionResult;
+  /**
+   * The subscribe callback executed before
+   * the actual subscription operation. Useful
+   * for manipulating the subscription arguments
+   * before the calling the subscribe function.
+   */
+  onSubscribe?: (
+    ctx: Context,
+    message: SubscribeMessage,
+    args: SubscriptionArgs,
+  ) => Promise<SubscriptionArgs> | SubscriptionArgs;
+  /**
+   * The complete callback is executed after the
+   * subscription has been closed, the underlying
+   * source stream completed and resources been
+   * freed up.
+   */
+  onComplete?: (ctx: Context, message: CompleteMessage) => void;
 }
 
 interface Context {
