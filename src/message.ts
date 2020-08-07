@@ -10,33 +10,30 @@ import { GraphQLError, ExecutionResult } from 'graphql';
 export enum MessageType {
   ConnectionInit = 'connection_init', // Client -> Server
   ConnectionAck = 'connection_ack', // Server -> Client
-  ConnectionError = 'connection_error', // Server -> Client
 
-  // NOTE: The keep alive message type does not follow the standard due to connection optimizations
-  ConnectionKeepAlive = 'ka', // Server -> Client
-
-  ConnectionTerminate = 'connection_terminate', // Client -> Server
-  Start = 'start', // Client -> Server
-  Data = 'data', // Server -> Client
+  Subscribe = 'subscribe', // Client -> Server
+  Next = 'next', // Server -> Client
   Error = 'error', // Server -> Client
-  Complete = 'complete', // Server -> Client
-  Stop = 'stop', // Client -> Server
+  Complete = 'complete', // Client -> Server
 }
 
-export interface OperationPayload {
+interface SubscribeOperation {
   operationName: string;
   query: string;
   variables: Record<string, unknown>;
 }
 
-export type MessagePayload = OperationPayload | ExecutionResult | GraphQLError;
+export type MessagePayload =
+  | SubscribeOperation
+  | ExecutionResult
+  | GraphQLError;
 
 function isMessagePayload(val: unknown): val is MessagePayload {
   if (typeof val !== 'object' || val == null) {
     return false;
   }
   if (
-    // OperationPayload
+    // SubscribeOperation
     ('operationName' in val && 'query' in val && 'variables' in val) ||
     // ExecutionResult
     'data' in val ||
@@ -56,7 +53,7 @@ export interface Message {
    */
   id?: string;
   type: MessageType;
-  payload?: MessagePayload | null; // missing for connection messages
+  payload?: MessagePayload; // missing for connection messages
 }
 
 export function isMessage(val: unknown): val is Message {
@@ -76,7 +73,7 @@ export function isMessage(val: unknown): val is Message {
   return true;
 }
 
-export function mustParseMessage(data: unknown): Message {
+export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
   }

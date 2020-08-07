@@ -6,7 +6,7 @@
 
 import http from 'http';
 import WebSocket from 'ws';
-import { GraphQLSchema, subscribe, GraphQLError } from 'graphql';
+import { GraphQLSchema, subscribe } from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_WS_PROTOCOL } from '../protocol';
 import { Message, MessageType, isMessage } from '../message';
@@ -52,18 +52,9 @@ export function createServer(
       errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
     ) {
       if (isErrorEvent(errorOrClose)) {
-        sendMessage(
-          ctx,
-          {
-            type: MessageType.ConnectionError,
-            payload: new GraphQLError(errorOrClose.message),
-          },
-          () => {
-            // TODO-db-200805 leaking sensitive information by sending the error message too?
-            // 1011: Internal Error
-            ctx.socket.close(1011, errorOrClose.message);
-          },
-        );
+        // TODO-db-200805 leaking sensitive information by sending the error message too?
+        // 1011: Internal Error
+        ctx.socket.close(1011, errorOrClose.message);
       }
 
       // TODO-db-200702 close all active subscriptions
@@ -108,14 +99,12 @@ export function createServer(
       let message: Message;
       try {
         message = JSON.parse(event.data as string);
-        if (!isMessage(message)) {
-          throw new Error('Invalid message');
-        }
       } catch (err) {
-        await sendMessage(ctx, {
-          type: MessageType.ConnectionError,
-          payload: new GraphQLError(err.message),
-        });
+        ctx.socket.close(4400, err.message);
+        return;
+      }
+      if (!isMessage(message)) {
+        ctx.socket.close(4422, 'Invalid message structure');
         return;
       }
 
