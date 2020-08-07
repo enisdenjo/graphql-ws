@@ -98,13 +98,11 @@ Requests a subscription operation specified in the message `payload`. This messa
 interface SubscribeMessage {
   id: '<unique-operation-id>';
   type: 'subscribe';
-  payload: SubscribeOperation;
-}
-
-interface SubscribeOperation {
-  operationName: string;
-  query: string;
-  variables: Record<string, unknown>;
+  payload: {
+    operationName: string;
+    query: string;
+    variables: Record<string, unknown>;
+  };
 }
 ```
 
@@ -119,7 +117,7 @@ GraphQL subscription execution result message. It can be seen as an event in the
 ```typescript
 import { ExecutionResult } from 'graphql';
 
-interface DataMessage {
+interface NextMessage {
   id: '<unique-operation-id>';
   type: 'next';
   payload: ExecutionResult;
@@ -135,7 +133,7 @@ Subscription execution error triggered by the `Next` message happening before th
 ```typescript
 import { GraphQLError } from 'graphql';
 
-interface DataMessage {
+interface ErrorMessage {
   id: '<unique-operation-id>';
   type: 'error';
   payload: GraphQLError;
@@ -201,7 +199,7 @@ _The client and the server has already gone through [successful connection initi
 
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
-1. _Server_ triggers the `onSubscribe` callback, if specified
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `SubscriptionArgs` for the operation
 1. _Server_ validates the request and establishes a GraphQL subscription and listens for events in the source stream
 1. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
 1. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
