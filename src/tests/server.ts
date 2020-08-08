@@ -254,7 +254,7 @@ describe('onConnect', () => {
     await wait(10);
   });
 
-  it('should acknowledge connection if not implemented or returning true', async () => {
+  it('should acknowledge connection if not implemented or returning `true`', async () => {
     expect.assertions(2);
 
     function test() {
@@ -315,7 +315,7 @@ describe('onConnect', () => {
     await wait(10);
   });
 
-  it('should close the socket after the connection init wait timeout has passed without having received a `ConnectionInit` message', async () => {
+  it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
     expect.assertions(3);
 
     await makeServer({ connectionInitWaitTimeout: 10 });
@@ -330,7 +330,7 @@ describe('onConnect', () => {
     await wait(20);
   });
 
-  it('should not close the socket after the connection init wait timeout has passed but the callback is still resolving', async () => {
+  it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async () => {
     expect.assertions(2);
 
     await makeServer({
