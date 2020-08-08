@@ -61,6 +61,49 @@ export const network = Network.create(
 );
 ```
 
+#### With [Apollo](https://www.apollographql.com)
+
+```typescript
+import { print } from 'graphql';
+import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
+import { createClient, Config, Client } from './client';
+
+class WebSocketLink extends ApolloLink {
+  private client: Client;
+
+  constructor(config: Config) {
+    super();
+    this.client = createClient(config);
+  }
+
+  public request({
+    operationName,
+    query,
+    variables,
+  }: Operation): Observable<FetchResult> {
+    return new Observable((sink) => {
+      return this.client.subscribe(
+        { operationName, query: print(query), variables },
+        sink,
+      );
+    });
+  }
+}
+
+const link = new WebSocketLink({
+  url: 'wss://some.url/graphql',
+  connectionParams: () => {
+    const session = getSession();
+    if (!session) {
+      return null;
+    }
+    return {
+      Authorization: `Bearer ${session.token}`,
+    };
+  },
+});
+```
+
 ## Protocol
 
 Read more about it in the [PROTOCOL.md](PROTOCOL.md)
