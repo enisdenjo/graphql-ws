@@ -1,4 +1,4 @@
-# GraphQL subscriptions over WebSocket Protocol
+# GraphQL over WebSocket Protocol
 
 ## Nomenclature
 
@@ -7,9 +7,9 @@
 
 ## Communication
 
-The WebSocket sub-protocol for this specification is: `graphql-subscriptions-ws`
+The WebSocket sub-protocol for this specification is: `graphql-transport-ws`
 
-Messages are represented through the JSON structure and are stringified before being sent over the network. They are bi-directional, meaning both the server and the client conform to the specified message structure.
+Messages are represented through the JSON structure and are stringified before being sent over the network. They are bidirectional, meaning both the server and the client conform to the specified message structure.
 
 **All** messages contain the `type` field outlining the type or action this message describes. Depending on the type, the message can contain two more _optional_ fields:
 
@@ -63,7 +63,7 @@ The client is now **ready** to request subscription operations.
 
 Direction: **Client -> Server**
 
-Requests a subscription operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
+Requests a operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
 
 ```typescript
 interface SubscribeMessage {
@@ -77,13 +77,16 @@ interface SubscribeMessage {
 }
 ```
 
-Subscribing an is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be terminated immediately with a close event `4401: Unauthorized`.
+Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be terminated immediately with a close event `4401: Unauthorized`.
 
 ### `Next`
 
 Direction: **Server -> Client**
 
-GraphQL subscription execution result message. It can be seen as an event in the source stream requested by the `Subscribe` message.
+Operation execution result message.
+
+- If the operation is a `query` or `mutation`, the message can be seen as the final execution result. This message is followed by the `Complete` message indicating the completion of the operation.
+- If the operation is a `subscription`, the message can be seen as an event in the source stream requested by the `Subscribe` message.
 
 ```typescript
 import { ExecutionResult } from 'graphql';
@@ -99,7 +102,7 @@ interface NextMessage {
 
 Direction: **Server -> Client**
 
-Subscription execution error triggered by the `Next` message happening before the actual execution, usually due to validation errors.
+Operation execution error triggered by the `Next` message happening before the actual execution, usually due to validation errors.
 
 ```typescript
 import { GraphQLError } from 'graphql';
@@ -113,9 +116,11 @@ interface ErrorMessage {
 
 ### `Complete`
 
-Direction: **Client -> Server**
+Direction: **bidirectional**
 
-Indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original operation, should be sent through.
+- **Server -> Client** (for `query` and `mutation` operations only) sent after the `Next` message, indicating that operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, **no `Complete` message will be emitted**.
+
+- **Client -> Server** (for `subscription` operations only) indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original subscription, should be sent through.
 
 ```typescript
 interface CompleteMessage {
@@ -130,15 +135,15 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 <h3 id="successful-connection-initialisation">Successful connection initialisation</h3>
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 1. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
-1. _Client_ has received the acknowledgement message and is now ready to request subscription operations
+1. _Client_ has received the acknowledgement message and is now ready to request operation executions
 
 ### Forbidden connection initialisation
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 1. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
@@ -147,7 +152,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 ### Erroneous connection initialisation
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 1. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
@@ -156,7 +161,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 ### Connection initialisation timeout
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-subscriptions-ws`
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ does not dispatch a `ConnectionInit` message
 1. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
@@ -164,14 +169,26 @@ For the sake of clarity, the following examples demonstrate the communication pr
 1. _Server_ terminates the socket by dispatching the close event `4408: Connection initialisation timeout`
 1. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`)
 
+### Query/Mutation operation
+
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+
+1. _Client_ generates a unique ID for the following operation
+1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested `query`/`mutation` operation passed through the `payload` field
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
+1. _Server_ validates the request and executes the GraphQL operation
+1. _Server_ dispatches a `Next` message with the execution result matching the client's unique ID
+1. _Server_ dispatches the `Complete` message with the matching unique ID indicating that the execution has completed
+1. _Server_ triggers the `onComplete` callback, if specified
+
 ### Subscribe operation
 
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
-1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `SubscriptionArgs` for the operation
-1. _Server_ validates the request and establishes a GraphQL subscription and listens for events in the source stream
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
+1. _Server_ validates the request, establishes a GraphQL subscription and listens for events in the source stream
 1. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
 1. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
 1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
