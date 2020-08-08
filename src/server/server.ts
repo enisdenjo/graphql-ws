@@ -68,14 +68,13 @@ export interface ServerOptions {
    * the `<error-message>` is the message of the
    * thrown `Error`.
    */
-  onConnect?: (
-    ctx: Context,
-    request: http.IncomingMessage,
-  ) => Promise<boolean> | boolean;
+  onConnect?: (ctx: Context) => Promise<boolean> | boolean;
   /**
    * The amount of time for which the
    * server will wait for `ConnectionInit` message.
    * Defaults to: **3 seconds**.
+   *
+   * Set the value to `Infinity` to skip waiting.
    *
    * If the wait timeout has passed and the client
    * has not sent the `ConnectionInit` message,
@@ -116,9 +115,22 @@ export interface ServerOptions {
   onComplete?: (ctx: Context, message: CompleteMessage) => void;
 }
 
-interface Context {
-  socket: WebSocket;
-  connectionParams?: Record<string, unknown>;
+export interface Context {
+  readonly socket: WebSocket;
+  /**
+   * Indicates that the `ConnectionInit` message
+   * has been received by the server. If this is
+   * `true`, the client wont be kicked off after
+   * the wait timeout has passed.
+   */
+  connectionInitReceived: boolean;
+  /**
+   * Indicates that the connection was acknowledged
+   * by having dispatched the `ConnectionAck` message
+   * to the related client.
+   */
+  acknowledged: boolean;
+  connectionParams?: Readonly<Record<string, unknown>>;
 }
 
 export interface Server extends Disposable {
@@ -131,7 +143,10 @@ export interface Server extends Disposable {
  * in the PROTOCOL.md documentation file.
  */
 export function createServer(
-  _options: ServerOptions,
+  {
+    onConnect,
+    connectionInitWaitTimeout = 3 * 1000, // 3 seconds
+  }: ServerOptions,
   websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
 ): Server {
   const webSocketServer =
@@ -151,15 +166,34 @@ export function createServer(
       return;
     }
 
-    const ctx = { socket };
+    const ctxRef: { current: Context } = {
+      current: { socket, connectionInitReceived: false, acknowledged: false },
+    };
+
+    // kick the client off (close socket) if the connection has
+    // not been initialised after the specified wait timeout
+    const connectionInitWait =
+      connectionInitWaitTimeout !== Infinity &&
+      setTimeout(() => {
+        if (!ctxRef.current.connectionInitReceived) {
+          ctxRef.current.socket.close(
+            4408,
+            'Connection initialisation timeout',
+          );
+        }
+      }, connectionInitWaitTimeout);
 
     function errorOrCloseHandler(
       errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
     ) {
+      if (connectionInitWait) {
+        clearTimeout(connectionInitWait);
+      }
+
       if (isErrorEvent(errorOrClose)) {
         // TODO-db-200805 leaking sensitive information by sending the error message too?
         // 1011: Internal Error
-        ctx.socket.close(1011, errorOrClose.message);
+        ctxRef.current.socket.close(1011, errorOrClose.message);
       }
 
       // TODO-db-200702 close all active subscriptions
@@ -167,7 +201,7 @@ export function createServer(
 
     socket.onerror = errorOrCloseHandler;
     socket.onclose = errorOrCloseHandler;
-    socket.onmessage = makeOnMessage(ctx);
+    socket.onmessage = makeOnMessage(ctxRef.current);
   }
   webSocketServer.on('connection', handleConnection);
   webSocketServer.on('error', (err) => {
@@ -201,22 +235,36 @@ export function createServer(
 
   function makeOnMessage(ctx: Context) {
     return async function (event: WebSocket.MessageEvent) {
-      let message: Message;
       try {
-        message = parseMessage(event.data);
+        const message = parseMessage(event.data);
+        switch (message.type) {
+          case MessageType.ConnectionInit: {
+            message as Message<MessageType.ConnectionInit>;
+
+            ctx.connectionInitReceived = true;
+
+            if (isObject(message.payload)) {
+              ctx.connectionParams = message.payload;
+            }
+
+            if (onConnect) {
+              const permitted = await onConnect(ctx);
+              if (!permitted) {
+                return ctx.socket.close(4403, 'Forbidden');
+              }
+            }
+
+            await sendMessage<MessageType.ConnectionAck>(ctx, {
+              type: MessageType.ConnectionAck,
+            });
+
+            ctx.acknowledged = true;
+          }
+
+          // TODO-db-200808 handle other message types
+        }
       } catch (err) {
         ctx.socket.close(4400, err.message);
-        return;
-      }
-
-      switch (message.type) {
-        case MessageType.ConnectionInit: {
-          message as Message<MessageType.ConnectionInit>; // type inference
-          await sendMessage<MessageType.ConnectionAck>(ctx, {
-            type: MessageType.ConnectionAck,
-          });
-        }
-        // TODO-db-200808 handle other message types
       }
     };
   }
