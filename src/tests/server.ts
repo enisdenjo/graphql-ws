@@ -110,7 +110,7 @@ async function makeServer(options: Partial<ServerOptions> = {}) {
  * Tests
  */
 
-it('should allow connections with valid protocols only', async (done) => {
+it('should allow connections with valid protocols only', async () => {
   expect.assertions(10);
 
   await makeServer();
@@ -122,12 +122,16 @@ it('should allow connections with valid protocols only', async (done) => {
     expect(event.wasClean).toBeTruthy();
   };
 
+  await wait(5);
+
   client = new WebSocket(url, ['graphql', 'json']);
   client.onclose = (event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   };
+
+  await wait(5);
 
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   client.onclose = (event) => {
@@ -136,16 +140,18 @@ it('should allow connections with valid protocols only', async (done) => {
     expect(event.wasClean).toBeTruthy();
   };
 
+  await wait(5);
+
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   const closeFn = jest.fn();
   client.onclose = closeFn;
-  setTimeout(() => {
-    expect(closeFn).not.toBeCalled();
-    done();
-  }, 50);
+
+  await wait(10);
+
+  expect(closeFn).not.toBeCalled();
 });
 
-it('should gracefully go away when disposing', async (done) => {
+it('should gracefully go away when disposing', async () => {
   expect.assertions(9);
 
   const server = await makeServer();
@@ -168,19 +174,18 @@ it('should gracefully go away when disposing', async (done) => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  await wait(50); // allow the connection to "calm down"
+  await wait(10);
 
   await server.dispose();
 
-  setTimeout(() => {
-    expect(errorFn).not.toBeCalled();
-    expect(client1.readyState).toBe(WebSocket.CLOSED);
-    expect(client2.readyState).toBe(WebSocket.CLOSED);
-    done();
-  }, 50);
+  await wait(10);
+
+  expect(errorFn).not.toBeCalled();
+  expect(client1.readyState).toBe(WebSocket.CLOSED);
+  expect(client2.readyState).toBe(WebSocket.CLOSED);
 });
 
-it('should report server errors to clients by closing the connection', async (done) => {
+it('should report server errors to clients by closing the connection', async () => {
   expect.assertions(3);
 
   const { webSocketServer } = await makeServer();
@@ -194,9 +199,9 @@ it('should report server errors to clients by closing the connection', async (do
     expect(event.wasClean).toBeTruthy(); // because the server reported the error
   };
 
-  await wait(50); // allow the connection to "calm down"
+  await wait(10);
 
   webSocketServer.emit('error', emittedError);
 
-  setTimeout(done, 50);
+  await wait(10);
 });
