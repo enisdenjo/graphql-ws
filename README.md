@@ -14,7 +14,9 @@ yarn add @enisdenjo/graphql-transport-ws
 npm install @enisdenjo/graphql-transport-ws
 ```
 
-### Relay
+### Usage
+
+#### With [Relay](https://relay.dev)
 
 ```ts
 import { createClient } from '@enisdenjo/graphql-transport-ws';
