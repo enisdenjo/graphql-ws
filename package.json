@@ -1,12 +1,12 @@
 {
-  "name": "graphql-subscriptions-ws",
+  "name": "graphql-transport-ws",
   "version": "0.0.1",
   "description": "A WebSocket client for GraphQL subscriptions",
   "license": "MIT",
-  "homepage": "https://github.com/enisdenjo/graphql-subscriptions-ws#readme",
+  "homepage": "https://github.com/enisdenjo/graphql-transport-ws#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enisdenjo/graphql-subscriptions-ws.git"
+    "url": "git+https://github.com/enisdenjo/graphql-transport-ws.git"
   },
   "main": "lib/index.js",
   "browser": "lib/client.js",

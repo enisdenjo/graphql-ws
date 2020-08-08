@@ -2999,9 +2999,9 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"graphql-subscriptions-ws@workspace:.":
+"graphql-transport-ws@workspace:.":
   version: 0.0.0-use.local
-  resolution: "graphql-subscriptions-ws@workspace:."
+  resolution: "graphql-transport-ws@workspace:."
   dependencies:
     "@babel/core": ^7.11.0
     "@babel/plugin-proposal-class-properties": ^7.10.4
