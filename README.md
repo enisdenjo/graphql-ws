@@ -8,18 +8,16 @@ A client for GraphQL subscriptions over WebSocket. _Server implementation coming
 
 ### Install
 
-_This package is undergoing a name change._
-
 ```shell
-yarn add graphql-subscriptions-ws
+yarn add @enisdenjo/graphql-transport-ws
 # or
-npm install graphql-subscriptions-ws
+npm install @enisdenjo/graphql-transport-ws
 ```
 
 ### Relay
 
 ```ts
-import { createClient } from 'graphql-subscriptions-ws';
+import { createClient } from '@enisdenjo/graphql-transport-ws';
 import { Network, Observable } from 'relay-runtime';
 
 const subscriptionsClient = createClient({
