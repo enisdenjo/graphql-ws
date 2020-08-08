@@ -329,4 +329,30 @@ describe('onConnect', () => {
 
     await wait(20);
   });
+
+  it('should not close the socket after the connection init wait timeout has passed but the callback is still resolving', async () => {
+    expect.assertions(2);
+
+    await makeServer({
+      connectionInitWaitTimeout: 10,
+      onConnect: () =>
+        new Promise((resolve) => setTimeout(() => resolve(true), 20)),
+    });
+
+    const closeFn = jest.fn();
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onclose = closeFn;
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      expect(message.type).toBe(MessageType.ConnectionAck);
+    };
+    client.onopen = () => {
+      client.send(JSON.stringify({ type: MessageType.ConnectionInit }));
+    };
+
+    await wait(30);
+
+    expect(closeFn).not.toBeCalled();
+  });
 });
