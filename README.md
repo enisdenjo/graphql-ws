@@ -66,7 +66,7 @@ export const network = Network.create(
 ```typescript
 import { print } from 'graphql';
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
-import { createClient, Config, Client } from './client';
+import { createClient, Config, Client } from '@enisdenjo/graphql-transport-ws';
 
 class WebSocketLink extends ApolloLink {
   private client: Client;
