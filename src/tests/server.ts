@@ -4,11 +4,12 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLString,
+  execute,
   subscribe,
 } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { createServer, Server, ServerOptions } from '../server';
-import { GRAPHQL_WS_PROTOCOL } from '../protocol';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
@@ -89,6 +90,7 @@ async function makeServer(options: Partial<ServerOptions> = {}) {
   testingServers.gqlServer = await createServer(
     {
       schema,
+      execute,
       subscribe,
       ...options,
     },
@@ -127,14 +129,14 @@ it('should allow connections with valid protocols only', async (done) => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  client = new WebSocket(url, GRAPHQL_WS_PROTOCOL + 'gibberish');
+  client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   client.onclose = (event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   };
 
-  client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   const closeFn = jest.fn();
   client.onclose = closeFn;
   setTimeout(() => {
@@ -150,7 +152,7 @@ it('should gracefully go away when disposing', async (done) => {
 
   const errorFn = jest.fn();
 
-  const client1 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  const client1 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client1.onerror = errorFn;
   client1.onclose = (event) => {
     expect(event.code).toBe(1001);
@@ -158,7 +160,7 @@ it('should gracefully go away when disposing', async (done) => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  const client2 = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  const client2 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client2.onerror = errorFn;
   client2.onclose = (event) => {
     expect(event.code).toBe(1001);
@@ -185,7 +187,7 @@ it('should report server errors to clients by closing the connection', async (do
 
   const emittedError = new Error("I'm a teapot");
 
-  const client = new WebSocket(url, GRAPHQL_WS_PROTOCOL);
+  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client.onclose = (event) => {
     expect(event.code).toBe(1011); // 1011: Internal Error
     expect(event.reason).toBe(emittedError.message);

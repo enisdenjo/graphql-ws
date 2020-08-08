@@ -4,4 +4,4 @@
  *
  */
 
-export const GRAPHQL_WS_PROTOCOL = 'graphql-ws';
+export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';

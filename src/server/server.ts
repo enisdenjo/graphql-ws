@@ -9,11 +9,11 @@ import WebSocket from 'ws';
 import {
   GraphQLSchema,
   ValidationRule,
-  SubscriptionArgs,
   ExecutionResult,
+  ExecutionArgs,
 } from 'graphql';
 import { Disposable } from '../types';
-import { GRAPHQL_WS_PROTOCOL } from '../protocol';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import {
   Message,
   MessageType,
@@ -28,7 +28,7 @@ export interface ServerOptions {
    * The GraphQL schema on which the operations
    * will be executed and validated against. If
    * the schema is left undefined, one must be
-   * providedby in the resulting `SubscriptionArgs`
+   * provided by in the resulting `ExecutionArgs`
    * from the `onSubscribe` callback.
    */
   schema?: GraphQLSchema;
@@ -38,8 +38,15 @@ export interface ServerOptions {
    * execute the subscription operation
    * upon.
    */
+  execute: (args: ExecutionArgs) => Promise<ExecutionResult> | ExecutionResult;
+  /**
+   * Is the `subscribe` function
+   * from GraphQL which is used to
+   * execute the subscription operation
+   * upon.
+   */
   subscribe: (
-    args: SubscriptionArgs,
+    args: ExecutionArgs,
   ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
   /**
    * Is the connection callback called when the
@@ -82,7 +89,7 @@ export interface ServerOptions {
    */
   validationRules?: readonly ValidationRule[];
   /**
-   * Format the subscription execution results
+   * Format the operation execution results
    * if the implementation requires an adjusted
    * result.
    */
@@ -92,20 +99,19 @@ export interface ServerOptions {
   ) => Promise<ExecutionResult> | ExecutionResult;
   /**
    * The subscribe callback executed before
-   * the actual subscription operation. Useful
-   * for manipulating the subscription arguments
-   * before the calling the subscribe function.
+   * the actual operation execution. Useful
+   * for manipulating the execution arguments
+   * before the doing the operation.
    */
   onSubscribe?: (
     ctx: Context,
     message: SubscribeMessage,
-    args: SubscriptionArgs,
-  ) => Promise<SubscriptionArgs> | SubscriptionArgs;
+    args: ExecutionArgs,
+  ) => Promise<ExecutionArgs> | ExecutionArgs;
   /**
    * The complete callback is executed after the
-   * subscription has been closed, the underlying
-   * source stream completed and resources been
-   * freed up.
+   * operation has completed or the subscription
+   * has been closed.
    */
   onComplete?: (ctx: Context, message: CompleteMessage) => void;
 }
@@ -136,9 +142,9 @@ export function createServer(
   function handleConnection(socket: WebSocket, _request: http.IncomingMessage) {
     if (
       socket.protocol === undefined ||
-      socket.protocol !== GRAPHQL_WS_PROTOCOL ||
+      socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL ||
       (Array.isArray(socket.protocol) &&
-        socket.protocol.indexOf(GRAPHQL_WS_PROTOCOL) === -1)
+        socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1)
     ) {
       // 1002: Protocol Error
       socket.close(1002, 'Protocol Error');

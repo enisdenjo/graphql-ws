@@ -20,7 +20,7 @@ export enum MessageType {
   Subscribe = 'subscribe', // Client -> Server
   Next = 'next', // Server -> Client
   Error = 'error', // Server -> Client
-  Complete = 'complete', // Client -> Server
+  Complete = 'complete', // bidirectional
 }
 
 export interface ConnectionInitMessage {
