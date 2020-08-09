@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  repository_dispatch:
+    types: [release]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.actor == 'enisdenjo'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0 # necessary for correct CHANGELOGS
+      - name: Configure git user
+        run: |
+          git config --global user.name 'enisdenjo-bot'
+          git config --global user.email 'badurinadenis@gmail.com'
+      - name: Set up node
+        uses: actions/setup-node@v2.1.1
+        with:
+          node-version: '12'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install
+        run: yarn install --immutable
+      - name: Build
+        run: yarn build
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: yarn release
