@@ -13,6 +13,7 @@ import WebSocketAsPromised from 'websocket-as-promised';
  * [spec](https://graphql.github.io/graphql-spec/June2018/#sec-Response-Format)
  */
 export interface GraphQLResponseWithData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
   errors?: {
     message: string;
@@ -24,6 +25,7 @@ export interface GraphQLResponseWithData {
   path?: string[] | number[];
 }
 export interface GraphQLResponseWithoutData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
   errors: {
     message: string;
@@ -120,10 +122,12 @@ export interface StartPayload {
   // GraphQL operation as string or parsed GraphQL document node.
   query: string;
   // Object with GraphQL variables.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables: Record<string, any>;
 }
 
 /** The sink to communicate the subscription through. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Sink<T = any> {
   next(value: T): void;
   error(error: Error): void;
@@ -136,6 +140,7 @@ export interface Config {
   // URL of the GraphQL server to connect.
   url: string;
   // Optional parameters that the client specifies when establishing a connection with the server.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   connectionParams?: Record<string, any> | (() => Record<string, any>);
 }
 
@@ -220,7 +225,7 @@ export function createClient({ url, connectionParams }: Config): Client {
       connectionParams && typeof connectionParams === 'function'
         ? connectionParams()
         : connectionParams,
-      NO_REQUEST_ID
+      NO_REQUEST_ID,
     );
     if (ack.type !== MessageType.ConnectionAck) {
       await ws.close();
@@ -267,7 +272,7 @@ export function createClient({ url, connectionParams }: Config): Client {
               sink.error(err);
             } else {
               sink.error(
-                new Error('Unkown error received from the subscription server')
+                new Error('Unkown error received from the subscription server'),
               );
             }
             hasCompleted = true;
@@ -301,7 +306,7 @@ export function createClient({ url, connectionParams }: Config): Client {
   function responseListener(data: unknown) {
     if (!isMessage(data)) {
       return errorAllSinks(
-        new Error('Received an invalid message from the subscription server')
+        new Error('Received an invalid message from the subscription server'),
       );
     }
     messageForSinkWithRequestId(data.id, data);
@@ -313,7 +318,9 @@ export function createClient({ url, connectionParams }: Config): Client {
     const requestId = randomString();
     if (requestIdSink[requestId]) {
       sink.error(new Error(`Sink already registered for ID: ${requestId}`));
-      return () => {};
+      return () => {
+        /**/
+      };
     }
     requestIdSink[requestId] = sink;
 
@@ -335,7 +342,7 @@ export function createClient({ url, connectionParams }: Config): Client {
   function send<T extends MessageType>(
     type: T,
     payload?: StartPayload,
-    requestId?: string | typeof NO_REQUEST_ID
+    requestId?: string | typeof NO_REQUEST_ID,
   ) {
     if (requestId) {
       return ws.sendPacked({ id: requestId, type, payload });
@@ -346,7 +353,7 @@ export function createClient({ url, connectionParams }: Config): Client {
   async function request<T extends MessageType>(
     type: T,
     payload?: StartPayload,
-    requestId?: string | typeof NO_REQUEST_ID
+    requestId?: string | typeof NO_REQUEST_ID,
   ): Promise<Message> {
     return await ws.sendRequest({ type, payload }, { requestId });
   }
@@ -375,14 +382,14 @@ export function createClient({ url, connectionParams }: Config): Client {
  * checks for errors and returns a single error for all problematic cases.
  */
 function checkServerPayload(
-  payload: GraphQLResponse | null | undefined
+  payload: GraphQLResponse | null | undefined,
 ): Error | null {
   if (!payload) {
     return new Error('Received empty payload from the subscription server');
   }
   if (!isGraphQLResponse(payload)) {
     return new Error(
-      'Received invalid payload structure from the subscription server'
+      'Received invalid payload structure from the subscription server',
     );
   }
   if ('errors' in payload && payload.errors) {
