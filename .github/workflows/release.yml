@@ -16,10 +16,6 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0 # necessary for correct CHANGELOGS
-      - name: Configure git user
-        run: |
-          git config --global user.name 'enisdenjo-bot'
-          git config --global user.email 'badurinadenis@gmail.com'
       - name: Set up node
         uses: actions/setup-node@v2.1.1
         with:
