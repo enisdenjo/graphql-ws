@@ -25,6 +25,11 @@ jobs:
         run: yarn install --immutable
       - name: Build
         run: yarn build
+      - name: Upload lib artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: lib
+          path: lib
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
