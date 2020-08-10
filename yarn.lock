@@ -1236,6 +1236,7 @@ __metadata:
     "@semantic-release/changelog": ^5.0.1
     "@semantic-release/git": ^9.0.0
     "@types/jest": ^26.0.9
+    "@types/ws": ^7.2.6
     "@typescript-eslint/eslint-plugin": ^3.9.0
     "@typescript-eslint/parser": ^3.9.0
     babel-jest: ^26.3.0
@@ -1978,6 +1979,15 @@ __metadata:
   version: 1.0.1
   resolution: "@types/stack-utils@npm:1.0.1"
   checksum: 59738e4b71b233b438a6ecb9faaf577d6f02afec4ea093d5ad3c10e78cb7096ab32648a2c2017c6c2e6c6853498aa783643a2c6b859c4a75f6750e7b37ae8bae
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^7.2.6":
+  version: 7.2.6
+  resolution: "@types/ws@npm:7.2.6"
+  dependencies:
+    "@types/node": "*"
+  checksum: 2f7c358c4b2798f1885c3edecf4b09ecfa35933eff0c37bf8b99eab722032db5c1ab9e26899d13f035a8cf1d92a681578016c8837c5e6725892c24ee10f2f63f
   languageName: node
   linkType: hard
 
