@@ -20,6 +20,7 @@ import {
   parseMessage,
   SubscribeMessage,
   CompleteMessage,
+  stringifyMessage,
 } from '../message';
 import { isObject, hasOwnObjectProperty, hasOwnStringProperty } from '../utils';
 
@@ -219,13 +220,17 @@ export function createServer(
   ) {
     return new Promise((resolve, reject) => {
       if (ctx.socket.readyState === WebSocket.OPEN) {
-        ctx.socket.send(JSON.stringify(message), (err) => {
-          if (callback) callback(err);
-          if (err) {
-            return reject(err);
-          }
-          return resolve();
-        });
+        try {
+          ctx.socket.send(stringifyMessage<T>(message), (err) => {
+            if (callback) callback(err);
+            if (err) {
+              return reject(err);
+            }
+            return resolve();
+          });
+        } catch (err) {
+          reject(err);
+        }
       } else {
         if (callback) callback();
         resolve();

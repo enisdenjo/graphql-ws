@@ -133,3 +133,13 @@ export function parseMessage(data: unknown): Message {
   }
   throw new Error('Data is not a valid parsable message');
 }
+
+/** Helps stringifying a valid message ready to be sent through the socket. */
+export function stringifyMessage<T extends MessageType>(
+  msg: Message<T>,
+): string {
+  if (!isMessage(msg)) {
+    throw new Error('Cannot stringify invalid message');
+  }
+  return JSON.stringify(msg);
+}

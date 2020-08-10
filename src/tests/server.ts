@@ -10,7 +10,12 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { createServer, Server, ServerOptions } from '../server';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import { MessageType, parseMessage } from '../message';
+import {
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+  Message,
+} from '../message';
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
@@ -227,7 +232,11 @@ describe('onConnect', () => {
       expect(event.wasClean).toBeTruthy();
     };
     client.onopen = () => {
-      client.send(JSON.stringify({ type: MessageType.ConnectionInit }));
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
     };
 
     await wait(10);
@@ -251,7 +260,11 @@ describe('onConnect', () => {
       expect(event.wasClean).toBeTruthy();
     };
     client.onopen = () => {
-      client.send(JSON.stringify({ type: MessageType.ConnectionInit }));
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
     };
 
     await wait(10);
@@ -267,7 +280,11 @@ describe('onConnect', () => {
         expect(message.type).toBe(MessageType.ConnectionAck);
       };
       client.onopen = () => {
-        client.send(JSON.stringify({ type: MessageType.ConnectionInit }));
+        client.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
       };
     }
 
@@ -308,7 +325,7 @@ describe('onConnect', () => {
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
       client.send(
-        JSON.stringify({
+        stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
           payload: connectionParams,
         }),
@@ -351,7 +368,11 @@ describe('onConnect', () => {
       expect(message.type).toBe(MessageType.ConnectionAck);
     };
     client.onopen = () => {
-      client.send(JSON.stringify({ type: MessageType.ConnectionInit }));
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
     };
 
     await wait(30);
