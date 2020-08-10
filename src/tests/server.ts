@@ -69,6 +69,7 @@ async function disposeExistingTestingServers() {
   await testingServers.gqlServer?.dispose();
   if (testingServers.httpServer) {
     await new Promise((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       testingServers.httpServer!.close((err) => {
         if (err) {
           return reject(err);
@@ -101,7 +102,9 @@ async function makeServer(options: Partial<ServerOptions> = {}) {
     },
   );
   return new Promise<Server>((resolve) =>
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testingServers.httpServer!.listen(port, () =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       resolve(testingServers.gqlServer!),
     ),
   );

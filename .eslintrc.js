@@ -12,4 +12,8 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'prettier'],
+  rules: {
+    // unused vars will be handles by the TS compiler
+    '@typescript-eslint/no-unused-vars': 'off',
+  },
 };

@@ -4,27 +4,30 @@
  *
  */
 
-export function isObject(val: unknown): val is object {
+export function isObject(val: unknown): val is Record<PropertyKey, unknown> {
   return typeof val === 'object' && val !== null;
 }
 
-export function hasOwnProperty<O extends object, P extends PropertyKey>(
-  obj: O,
-  prop: P,
-): obj is O & Record<P, unknown> {
-  return obj.hasOwnProperty(prop);
+export function hasOwnProperty<
+  O extends Record<PropertyKey, unknown>,
+  P extends PropertyKey
+>(obj: O, prop: P): obj is O & Record<P, unknown> {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-export function hasOwnObjectProperty<O extends object, P extends PropertyKey>(
-  obj: O,
-  prop: P,
-): obj is O & Record<P, object> {
-  return obj.hasOwnProperty(prop) && isObject((obj as any)[prop]);
+export function hasOwnObjectProperty<
+  O extends Record<PropertyKey, unknown>,
+  P extends PropertyKey
+>(obj: O, prop: P): obj is O & Record<P, Record<PropertyKey, unknown>> {
+  return Object.prototype.hasOwnProperty.call(obj, prop) && isObject(obj[prop]);
 }
 
-export function hasOwnStringProperty<O extends object, P extends PropertyKey>(
-  obj: O,
-  prop: P,
-): obj is O & Record<P, string> {
-  return obj.hasOwnProperty(prop) && typeof (obj as any)[prop] === 'string';
+export function hasOwnStringProperty<
+  O extends Record<PropertyKey, unknown>,
+  P extends PropertyKey
+>(obj: O, prop: P): obj is O & Record<P, string> {
+  return (
+    Object.prototype.hasOwnProperty.call(obj, prop) &&
+    typeof obj[prop] === 'string'
+  );
 }
