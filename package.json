@@ -16,6 +16,9 @@
     "README.md",
     "LICENSE.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
