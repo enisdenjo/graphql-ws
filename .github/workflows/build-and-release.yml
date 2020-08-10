@@ -16,7 +16,6 @@ jobs:
         uses: actions/setup-node@v2.1.1
         with:
           node-version: '12'
-          registry-url: 'https://registry.npmjs.org'
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -49,7 +48,6 @@ jobs:
         uses: actions/setup-node@v2.1.1
         with:
           node-version: '12'
-          registry-url: 'https://registry.npmjs.org'
       - name: Cache
         uses: actions/cache@v2
         with:
