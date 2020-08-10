@@ -14,7 +14,8 @@
   "files": [
     "lib",
     "README.md",
-    "LICENSE.md"
+    "LICENSE.md",
+    "PROTOCOL.md"
   ],
   "publishConfig": {
     "access": "public"
