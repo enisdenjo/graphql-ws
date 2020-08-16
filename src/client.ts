@@ -14,7 +14,7 @@ import {
   parseMessage,
   stringifyMessage,
 } from './message';
-import { noop } from 'utils';
+import { noop } from './utils';
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
