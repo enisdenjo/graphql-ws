@@ -10,6 +10,7 @@ import {
   hasOwnProperty,
   hasOwnObjectProperty,
   hasOwnStringProperty,
+  hasOwnArrayProperty,
 } from './utils';
 
 /** Types of messages allowed to be sent by the client/server over the WS protocol. */
@@ -51,7 +52,7 @@ export interface NextMessage {
 export interface ErrorMessage {
   id: string;
   type: MessageType.Error;
-  payload: GraphQLError;
+  payload: GraphQLError[];
 }
 
 export interface CompleteMessage {
@@ -108,9 +109,9 @@ export function isMessage(val: unknown): val is Message {
       case MessageType.Error:
         return (
           hasOwnStringProperty(val, 'id') &&
-          hasOwnObjectProperty(val, 'payload') &&
           // GraphQLError
-          hasOwnStringProperty(val.payload, 'message')
+          hasOwnArrayProperty(val, 'payload') &&
+          val.payload.length > 0 // must be at least one error
         );
       case MessageType.Complete:
         return hasOwnStringProperty(val, 'id');
