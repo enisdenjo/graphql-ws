@@ -22,7 +22,12 @@ import {
   CompleteMessage,
   stringifyMessage,
 } from '../message';
-import { isObject, hasOwnObjectProperty, hasOwnStringProperty } from '../utils';
+import {
+  Optional,
+  isObject,
+  hasOwnObjectProperty,
+  hasOwnStringProperty,
+} from '../utils';
 
 export interface ServerOptions {
   /**
@@ -106,7 +111,7 @@ export interface ServerOptions {
   onSubscribe?: (
     ctx: Context,
     message: SubscribeMessage,
-    args: ExecutionArgs,
+    args: Optional<ExecutionArgs, 'schema'>,
   ) => Promise<ExecutionArgs> | ExecutionArgs;
   /**
    * The complete callback is executed after the

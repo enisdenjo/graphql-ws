@@ -4,6 +4,9 @@
  *
  */
 
+export type Optional<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>> &
+  Partial<Pick<T, K>>;
+
 export function isObject(val: unknown): val is Record<PropertyKey, unknown> {
   return typeof val === 'object' && val !== null;
 }
