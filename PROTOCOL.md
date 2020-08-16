@@ -77,7 +77,7 @@ interface SubscribeMessage {
 }
 ```
 
-Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged/established, the socket will be terminated immediately with a close event `4401: Unauthorized`.
+Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged, the socket will be terminated immediately with a close event `4401: Unauthorized`.
 
 ### `Next`
 
