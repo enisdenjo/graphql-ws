@@ -6,7 +6,7 @@
  *
  */
 
-import { Sink, UUID } from './types';
+import { Sink, UUID, Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
   MessageType,
@@ -17,26 +17,24 @@ import {
 import { noop } from 'utils';
 
 /** Configuration used for the `create` client function. */
-export interface Config {
+export interface ClientOptions {
   // URL of the GraphQL server to connect.
   url: string;
   // Optional parameters that the client specifies when establishing a connection with the server.
   connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
 }
 
-export interface Client {
+export interface Client extends Disposable {
   /**
    * Subscribes through the WebSocket following the config parameters. It
    * uses the `sink` to emit received data or errors. Returns a _cleanup_
    * function used for dropping the subscription and cleaning stuff up.
    */
   subscribe<T>(payload: SubscribeMessage['payload'], sink: Sink<T>): () => void;
-  /** Disposes of all active subscriptions, closes the WebSocket client and frees up memory. */
-  dispose(): Promise<void>;
 }
 
 /** Creates a disposable GQL subscriptions client. */
-export function createClient({ url, connectionParams }: Config): Client {
+export function createClient({ url, connectionParams }: ClientOptions): Client {
   // holds all currently subscribed sinks, will use this map
   // to dispatch messages to the correct destination
   const subscribedSink: Record<UUID, Sink> = {};
