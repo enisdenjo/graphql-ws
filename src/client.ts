@@ -30,7 +30,10 @@ export interface Client extends Disposable {
    * uses the `sink` to emit received data or errors. Returns a _cleanup_
    * function used for dropping the subscription and cleaning stuff up.
    */
-  subscribe<T>(payload: SubscribeMessage['payload'], sink: Sink<T>): () => void;
+  subscribe<T = unknown>(
+    payload: SubscribeMessage['payload'],
+    sink: Sink<T>,
+  ): () => void;
 }
 
 /** Creates a disposable GQL subscriptions client. */
