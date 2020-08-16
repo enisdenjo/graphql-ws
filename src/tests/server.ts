@@ -468,7 +468,7 @@ describe('Subscribe', () => {
     await wait(20);
   });
 
-  it('should execute the query and "error" out because of a validation errors', async () => {
+  it('should execute the query and "error" out because of validation errors', async () => {
     expect.assertions(8);
 
     await makeServer({
