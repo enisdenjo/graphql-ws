@@ -120,7 +120,7 @@ interface ErrorMessage {
 
 Direction: **bidirectional**
 
-- **Server -> Client** (for `query` and `mutation` operations only) sent after the `Next` message, indicating that operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, **no `Complete` message will be emitted**.
+- **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, **no `Complete` message will be emitted**.
 
 - **Client -> Server** (for `subscription` operations only) indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original subscription, should be sent through.
 
