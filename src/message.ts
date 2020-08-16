@@ -25,39 +25,39 @@ export enum MessageType {
 }
 
 export interface ConnectionInitMessage {
-  type: MessageType.ConnectionInit;
-  payload?: Record<string, unknown>; // connectionParams
+  readonly type: MessageType.ConnectionInit;
+  readonly payload?: Record<string, unknown>; // connectionParams
 }
 
 export interface ConnectionAckMessage {
-  type: MessageType.ConnectionAck;
+  readonly type: MessageType.ConnectionAck;
 }
 
 export interface SubscribeMessage {
-  id: string;
-  type: MessageType.Subscribe;
-  payload: {
-    operationName: string;
-    query: string | DocumentNode;
-    variables: Record<string, unknown>;
+  readonly id: string;
+  readonly type: MessageType.Subscribe;
+  readonly payload: {
+    readonly operationName: string;
+    readonly query: string | DocumentNode;
+    readonly variables: Record<string, unknown>;
   };
 }
 
 export interface NextMessage {
-  id: string;
-  type: MessageType.Next;
-  payload: ExecutionResult;
+  readonly id: string;
+  readonly type: MessageType.Next;
+  readonly payload: ExecutionResult;
 }
 
 export interface ErrorMessage {
-  id: string;
-  type: MessageType.Error;
-  payload: GraphQLError[];
+  readonly id: string;
+  readonly type: MessageType.Error;
+  readonly payload: readonly GraphQLError[];
 }
 
 export interface CompleteMessage {
-  id: string;
-  type: MessageType.Complete;
+  readonly id: string;
+  readonly type: MessageType.Complete;
 }
 
 export type Message<
