@@ -66,12 +66,14 @@ Direction: **Client -> Server**
 Requests a operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
 
 ```typescript
+import { DocumentNode } from 'graphql';
+
 interface SubscribeMessage {
   id: '<unique-operation-id>';
   type: 'subscribe';
   payload: {
     operationName: string;
-    query: string;
+    query: string | DocumentNode;
     variables: Record<string, unknown>;
   };
 }
