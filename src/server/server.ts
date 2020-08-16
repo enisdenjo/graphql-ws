@@ -11,6 +11,9 @@ import {
   ValidationRule,
   ExecutionResult,
   ExecutionArgs,
+  parse,
+  validate,
+  getOperationAST,
 } from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
@@ -150,8 +153,14 @@ export interface Server extends Disposable {
  */
 export function createServer(
   {
+    schema,
+    execute,
     onConnect,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
+    validationRules,
+    formatExecutionResult,
+    onSubscribe,
+    onComplete,
   }: ServerOptions,
   websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
 ): Server {
@@ -274,8 +283,81 @@ export function createServer(
               return ctx.socket.close(4401, 'Unauthorized');
             }
 
-            // TODO-db-200816 implement subscribe
+            const operation = message.payload;
 
+            let execArgsMaybeSchema: Optional<ExecutionArgs, 'schema'> = {
+              schema,
+              operationName: operation.operationName,
+              document:
+                typeof operation.query === 'string'
+                  ? parse(operation.query)
+                  : operation.query,
+              variableValues: operation.variables,
+            };
+            if (onSubscribe) {
+              execArgsMaybeSchema = await onSubscribe(
+                ctx,
+                message,
+                execArgsMaybeSchema,
+              );
+            }
+            if (!execArgsMaybeSchema.schema) {
+              // not providing a schema is a fatal server error
+              return webSocketServer.emit(
+                'error',
+                new Error('The GraphQL schema is not provided'),
+              );
+            }
+
+            // the execution arguments should be complete now
+            const execArgs = execArgsMaybeSchema as ExecutionArgs;
+
+            // validate
+            const validationErrors = validate(
+              execArgs.schema,
+              execArgs.document,
+              validationRules,
+            );
+            if (validationErrors.length > 0) {
+              return await sendMessage<MessageType.Error>(ctx, {
+                id: message.id,
+                type: MessageType.Error,
+                payload: validationErrors,
+              });
+            }
+
+            // execute
+            const operationAST = getOperationAST(
+              execArgs.document,
+              execArgs.operationName,
+            );
+            if (!operationAST) {
+              throw new Error('Unable to get operation AST');
+            }
+            if (operationAST.operation === 'subscription') {
+              // TODO-db-200808 implement subscription operation
+            } else {
+              // operationAST.operation === 'query' || 'mutation'
+
+              let result = await execute(execArgs);
+              if (formatExecutionResult) {
+                result = await formatExecutionResult(ctx, result);
+              }
+              await sendMessage<MessageType.Next>(ctx, {
+                id: message.id,
+                type: MessageType.Next,
+                payload: result,
+              });
+
+              const completeMessage: CompleteMessage = {
+                id: message.id,
+                type: MessageType.Complete,
+              };
+              await sendMessage<MessageType.Complete>(ctx, completeMessage);
+              if (onComplete) {
+                onComplete(ctx, completeMessage);
+              }
+            }
             break;
           }
 
