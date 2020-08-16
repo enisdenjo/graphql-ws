@@ -46,13 +46,10 @@ const schema = new GraphQLSchema({
   subscription: new GraphQLObjectType({
     name: 'Subscription',
     fields: {
-      person: {
+      becameHappy: {
         type: personType,
-        args: {
-          id: { type: GraphQLString },
-        },
         subscribe: () => {
-          return pubsub.asyncIterator('person');
+          return pubsub.asyncIterator('becameHappy');
         },
       },
     },
@@ -693,5 +690,67 @@ describe('Subscribe', () => {
 
     // socket shouldnt close or error because of GraphQL errors
     expect(closeOrErrorFn).not.toBeCalled();
+  });
+
+  it('should execute the subscription and "next" the published payload', async () => {
+    expect.assertions(1);
+
+    await makeServer({
+      schema,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck: {
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'BecomingHappy',
+                query: `subscription BecomingHappy {
+                  becameHappy {
+                    name
+                  }
+                }`,
+                variables: {},
+              },
+            }),
+            () =>
+              setTimeout(
+                () =>
+                  pubsub.publish('becameHappy', {
+                    becameHappy: {
+                      name: 'john',
+                    },
+                  }),
+                0,
+              ),
+          );
+          break;
+        }
+        case MessageType.Next:
+          expect(message).toEqual({
+            id: '1',
+            type: MessageType.Next,
+            payload: { data: { becameHappy: { name: 'john' } } },
+          });
+          break;
+        default:
+          fail(`Not supposed to receive a message of type ${message.type}`);
+      }
+    };
+
+    await wait(20);
   });
 });

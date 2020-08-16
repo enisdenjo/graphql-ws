@@ -14,6 +14,8 @@ import {
   parse,
   validate,
   getOperationAST,
+  subscribe,
+  GraphQLError,
 } from 'graphql';
 import { Disposable } from '../types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
@@ -28,8 +30,10 @@ import {
 import {
   Optional,
   isObject,
+  isAsyncIterable,
   hasOwnObjectProperty,
   hasOwnStringProperty,
+  noop,
 } from '../utils';
 
 export interface ServerOptions {
@@ -140,6 +144,12 @@ export interface Context {
    */
   acknowledged: boolean;
   connectionParams?: Readonly<Record<string, unknown>>;
+  /**
+   * Holds the active subscriptions for this context.
+   * Subscriptions are for `subscription` operations **only**,
+   * other operations (`query`/`mutation`) are resolved immediately.
+   */
+  subscriptions: Record<string, AsyncIterator<unknown>>;
 }
 
 export interface Server extends Disposable {
@@ -182,7 +192,12 @@ export function createServer(
     }
 
     const ctxRef: { current: Context } = {
-      current: { socket, connectionInitReceived: false, acknowledged: false },
+      current: {
+        socket,
+        connectionInitReceived: false,
+        acknowledged: false,
+        subscriptions: {},
+      },
     };
 
     // kick the client off (close socket) if the connection has
@@ -211,7 +226,11 @@ export function createServer(
         ctxRef.current.socket.close(1011, errorOrClose.message);
       }
 
-      // TODO-db-200702 close all active subscriptions
+      Object.entries(ctxRef.current.subscriptions).forEach(
+        ([, subscription]) => {
+          (subscription.return || noop)();
+        },
+      );
     }
 
     socket.onerror = errorOrCloseHandler;
@@ -335,7 +354,65 @@ export function createServer(
               throw new Error('Unable to get operation AST');
             }
             if (operationAST.operation === 'subscription') {
-              // TODO-db-200808 implement subscription operation
+              const subscriptionOrResult = await subscribe(execArgs);
+              if (isAsyncIterable(subscriptionOrResult)) {
+                ctx.subscriptions[message.id] = subscriptionOrResult;
+
+                try {
+                  for await (let result of subscriptionOrResult) {
+                    if (formatExecutionResult) {
+                      result = await formatExecutionResult(ctx, result);
+                    }
+                    await sendMessage<MessageType.Next>(ctx, {
+                      id: message.id,
+                      type: MessageType.Next,
+                      payload: result,
+                    });
+                  }
+
+                  const completeMessage: CompleteMessage = {
+                    id: message.id,
+                    type: MessageType.Complete,
+                  };
+                  await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                  if (onComplete) {
+                    onComplete(ctx, completeMessage);
+                  }
+                } catch (err) {
+                  await sendMessage<MessageType.Error>(ctx, {
+                    id: message.id,
+                    type: MessageType.Error,
+                    payload: [
+                      new GraphQLError(
+                        err instanceof Error
+                          ? err.message
+                          : new Error(err).message,
+                      ),
+                    ],
+                  });
+                } finally {
+                  delete ctx.subscriptions[message.id];
+                }
+              } else {
+                let result = subscriptionOrResult;
+                if (formatExecutionResult) {
+                  result = await formatExecutionResult(ctx, result);
+                }
+                await sendMessage<MessageType.Next>(ctx, {
+                  id: message.id,
+                  type: MessageType.Next,
+                  payload: result,
+                });
+
+                const completeMessage: CompleteMessage = {
+                  id: message.id,
+                  type: MessageType.Complete,
+                };
+                await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                if (onComplete) {
+                  onComplete(ctx, completeMessage);
+                }
+              }
             } else {
               // operationAST.operation === 'query' || 'mutation'
 
@@ -360,8 +437,16 @@ export function createServer(
             }
             break;
           }
-
-          // TODO-db-200808 handle other message types
+          case MessageType.Complete: {
+            if (ctx.subscriptions[message.id]) {
+              await (ctx.subscriptions[message.id].return ?? noop)();
+            }
+            break;
+          }
+          default:
+            throw new Error(
+              `Unexpected message of type ${message.type} received`,
+            );
         }
       } catch (err) {
         ctx.socket.close(4400, err.message);

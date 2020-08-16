@@ -15,6 +15,12 @@ export function isArray(val: unknown): val is unknown[] {
   return typeof val === 'object' && val !== null && Array.isArray(val);
 }
 
+export function isAsyncIterable<T = unknown>(
+  val: unknown,
+): val is AsyncIterableIterator<T> {
+  return typeof Object(val)[Symbol.asyncIterator] === 'function';
+}
+
 export function hasOwnProperty<
   O extends Record<PropertyKey, unknown>,
   P extends PropertyKey
@@ -44,4 +50,8 @@ export function hasOwnStringProperty<
     Object.prototype.hasOwnProperty.call(obj, prop) &&
     typeof obj[prop] === 'string'
   );
+}
+
+export function noop(): void {
+  /**/
 }
