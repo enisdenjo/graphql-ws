@@ -40,10 +40,10 @@ export interface Client extends Disposable {
 export function createClient({ url, connectionParams }: ClientOptions): Client {
   // holds all currently subscribed sinks, will use this map
   // to dispatch messages to the correct destination
-  const subscribedSink: Record<UUID, Sink> = {};
+  const subscribedSinks: Record<UUID, Sink> = {};
 
   function errorAllSinks(err: Error) {
-    Object.entries(subscribedSink).forEach(([, sink]) => sink.error(err));
+    Object.entries(subscribedSinks).forEach(([, sink]) => sink.error(err));
   }
 
   // Lazily creates a socket and establishes a connection described in the protocol.
@@ -153,11 +153,11 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
   return {
     subscribe: (_payload, sink) => {
       const uuid = generateUUID();
-      if (subscribedSink[uuid]) {
+      if (subscribedSinks[uuid]) {
         sink.error(new Error(`Sink already registered for UUID: ${uuid}`));
         return noop;
       }
-      subscribedSink[uuid] = sink;
+      subscribedSinks[uuid] = sink;
 
       // TODO-db-200816 implement subscribing
 
@@ -167,11 +167,11 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
     },
     dispose: async () => {
       // complete all sinks
-      Object.entries(subscribedSink).forEach(([, sink]) => sink.complete());
+      Object.entries(subscribedSinks).forEach(([, sink]) => sink.complete());
 
       // delete all sinks
-      Object.keys(subscribedSink).forEach((uuid) => {
-        delete subscribedSink[uuid];
+      Object.keys(subscribedSinks).forEach((uuid) => {
+        delete subscribedSinks[uuid];
       });
 
       // if there is an active socket, close it with a normal closure
