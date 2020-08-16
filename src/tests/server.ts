@@ -411,6 +411,52 @@ describe('Subscribe', () => {
     await wait(20);
   });
 
+  it('should close the socket on request if schema is left undefined', async () => {
+    expect.assertions(3);
+
+    await makeServer({
+      schema: undefined,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onclose = (event) => {
+      expect(event.code).toBe(1011);
+      expect(event.reason).toBe('The GraphQL schema is not provided');
+      expect(event.wasClean).toBeTruthy();
+    };
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck:
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'TestString',
+                query: `query TestString {
+                  testString
+                }`,
+                variables: {},
+              },
+            }),
+          );
+          break;
+        default:
+          fail(`Not supposed to receive a message of type ${message.type}`);
+      }
+    };
+
+    await wait(10);
+  });
+
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
     expect.assertions(3);
 
