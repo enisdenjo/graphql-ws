@@ -127,11 +127,11 @@ export function parseMessage(data: unknown): Message {
   if (typeof data === 'string') {
     const message = JSON.parse(data);
     if (!isMessage(message)) {
-      throw new Error('Data is an object but not a valid message');
+      throw new Error('Invalid message');
     }
     return message;
   }
-  throw new Error('Data is not a valid parsable message');
+  throw new Error('Message not parsable');
 }
 
 /** Helps stringifying a valid message ready to be sent through the socket. */
