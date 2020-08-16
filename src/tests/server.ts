@@ -6,6 +6,7 @@ import {
   GraphQLString,
   execute,
   subscribe,
+  parse,
 } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { createServer, Server, ServerOptions } from '../server';
@@ -410,7 +411,7 @@ describe('Subscribe', () => {
     await wait(20);
   });
 
-  it('should execute the query, "next" the result and then "complete"', async () => {
+  it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
     expect.assertions(3);
 
     await makeServer({
@@ -440,6 +441,64 @@ describe('Subscribe', () => {
                 query: `query TestString {
                   testString
                 }`,
+                variables: {},
+              },
+            }),
+          );
+          break;
+        case MessageType.Next:
+          expect(message).toEqual({
+            id: '1',
+            type: MessageType.Next,
+            payload: { data: { testString: 'value' } },
+          });
+          receivedNext = true;
+          break;
+        case MessageType.Complete:
+          expect(receivedNext).toBeTruthy();
+          expect(message).toEqual({
+            id: '1',
+            type: MessageType.Complete,
+          });
+          break;
+        default:
+          fail(`Not supposed to receive a message of type ${message.type}`);
+      }
+    };
+
+    await wait(20);
+  });
+
+  it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
+    expect.assertions(3);
+
+    await makeServer({
+      schema,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    let receivedNext = false;
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck:
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'TestString',
+                query: parse(`query TestString {
+                  testString
+                }`),
                 variables: {},
               },
             }),
