@@ -262,6 +262,16 @@ export function createServer(
             });
 
             ctx.acknowledged = true;
+            break;
+          }
+          case MessageType.Subscribe: {
+            if (!ctx.acknowledged) {
+              return ctx.socket.close(4401, 'Unauthorized');
+            }
+
+            // TODO-db-200816 implement subscribe
+
+            break;
           }
 
           // TODO-db-200808 handle other message types

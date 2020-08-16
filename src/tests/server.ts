@@ -380,3 +380,33 @@ describe('onConnect', () => {
     expect(closeFn).not.toBeCalled();
   });
 });
+
+describe('Subscribe', () => {
+  it('should close the socket on request if connection is not acknowledged', async () => {
+    expect.assertions(3);
+
+    await makeServer();
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onclose = (event) => {
+      expect(event.code).toBe(4401);
+      expect(event.reason).toBe('Unauthorized');
+      expect(event.wasClean).toBeTruthy();
+    };
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'NoAck',
+            query: `subscription NoAck {}`,
+            variables: {},
+          },
+        }),
+      );
+    };
+
+    await wait(20);
+  });
+});
