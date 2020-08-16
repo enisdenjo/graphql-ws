@@ -244,8 +244,6 @@ export function createServer(
         const message = parseMessage(event.data);
         switch (message.type) {
           case MessageType.ConnectionInit: {
-            message as Message<MessageType.ConnectionInit>;
-
             ctx.connectionInitReceived = true;
 
             if (isObject(message.payload)) {
