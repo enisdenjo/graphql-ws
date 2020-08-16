@@ -469,13 +469,16 @@ describe('Subscribe', () => {
   });
 
   it('should execute the query and "error" out because of a validation errors', async () => {
-    expect.assertions(7);
+    expect.assertions(8);
 
     await makeServer({
       schema,
     });
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    const closeOrErrorFn = jest.fn();
+    client.onerror = closeOrErrorFn;
+    client.onclose = closeOrErrorFn;
     client.onopen = () => {
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
@@ -483,7 +486,6 @@ describe('Subscribe', () => {
         }),
       );
     };
-
     client.onmessage = ({ data }) => {
       const message = parseMessage(data);
       switch (message.type) {
@@ -526,5 +528,8 @@ describe('Subscribe', () => {
     };
 
     await wait(20);
+
+    // socket shouldnt close or error because of GraphQL errors
+    expect(closeOrErrorFn).not.toBeCalled();
   });
 });
