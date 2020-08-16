@@ -4,7 +4,7 @@
  *
  */
 
-import { GraphQLError, ExecutionResult } from 'graphql';
+import { GraphQLError, ExecutionResult, DocumentNode } from 'graphql';
 import {
   isObject,
   hasOwnProperty,
@@ -37,7 +37,7 @@ export interface SubscribeMessage {
   type: MessageType.Subscribe;
   payload: {
     operationName: string;
-    query: string;
+    query: string | DocumentNode;
     variables: Record<string, unknown>;
   };
 }
@@ -93,7 +93,8 @@ export function isMessage(val: unknown): val is Message {
           hasOwnStringProperty(val, 'id') &&
           hasOwnObjectProperty(val, 'payload') &&
           hasOwnStringProperty(val.payload, 'operationName') &&
-          hasOwnStringProperty(val.payload, 'query') &&
+          (hasOwnStringProperty(val.payload, 'query') || // string query
+            hasOwnObjectProperty(val.payload, 'query')) && // document node query
           hasOwnObjectProperty(val.payload, 'variables')
         );
       case MessageType.Next:
