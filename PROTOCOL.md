@@ -104,7 +104,7 @@ interface NextMessage {
 
 Direction: **Server -> Client**
 
-Operation execution error triggered by the `Next` message happening before the actual execution, usually due to validation errors.
+Operation execution error(s) triggered by the `Next` message happening before the actual execution, usually due to validation errors.
 
 ```typescript
 import { GraphQLError } from 'graphql';
@@ -112,7 +112,7 @@ import { GraphQLError } from 'graphql';
 interface ErrorMessage {
   id: '<unique-operation-id>';
   type: 'error';
-  payload: GraphQLError;
+  payload: GraphQLError[];
 }
 ```
 
