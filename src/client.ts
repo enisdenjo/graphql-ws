@@ -1,6 +1,6 @@
 /**
  *
- * GraphQL subscriptions over the WebSocket Protocol
+ * GraphQL over WebSocket Protocol
  *
  * Check out the `PROTOCOL.md` document for the transport specification.
  *
