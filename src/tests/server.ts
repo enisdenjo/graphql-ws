@@ -467,4 +467,64 @@ describe('Subscribe', () => {
 
     await wait(20);
   });
+
+  it('should execute the query and "error" out because of a validation errors', async () => {
+    expect.assertions(7);
+
+    await makeServer({
+      schema,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck:
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'TestNoField',
+                query: `query TestNoField {
+                  testNumber
+                  testBoolean
+                }`,
+                variables: {},
+              },
+            }),
+          );
+          break;
+        case MessageType.Error:
+          expect(message.id).toBe('1');
+          expect(message.payload).toBeInstanceOf(Array);
+          expect(message.payload.length).toBe(2);
+
+          // testNumber
+          expect(message.payload[0].message).toBe(
+            'Cannot query field "testNumber" on type "Query".',
+          );
+          expect(message.payload[0].locations).toBeInstanceOf(Array);
+
+          // testBoolean
+          expect(message.payload[1].message).toBe(
+            'Cannot query field "testBoolean" on type "Query".',
+          );
+          expect(message.payload[1].locations).toBeInstanceOf(Array);
+          break;
+        default:
+          fail(`Not supposed to receive a message of type ${message.type}`);
+      }
+    };
+
+    await wait(20);
+  });
 });
