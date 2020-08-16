@@ -129,6 +129,12 @@ interface CompleteMessage {
 }
 ```
 
+### Invalid message
+
+Direction: **bidirectional**
+
+Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket termination with a close event `4400: <error-message>`. The `<error-message>` can be vagouly descriptive on why the received message is invalid.
+
 ## Examples
 
 For the sake of clarity, the following examples demonstrate the communication protocol.
