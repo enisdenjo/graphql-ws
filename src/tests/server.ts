@@ -457,6 +457,63 @@ describe('Subscribe', () => {
     await wait(10);
   });
 
+  it('should pick up the schema from `onSubscribe`', async () => {
+    expect.assertions(2);
+
+    await makeServer({
+      schema: undefined,
+      onSubscribe: (_ctx, _message, args) => {
+        return {
+          ...args,
+          schema,
+        };
+      },
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    const closeOrErrorFn = jest.fn();
+    client.onerror = closeOrErrorFn;
+    client.onclose = closeOrErrorFn;
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck:
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'TestString',
+                query: `query TestString {
+                  testString
+                }`,
+                variables: {},
+              },
+            }),
+          );
+          break;
+        case MessageType.Next:
+          expect(message).toEqual({
+            id: '1',
+            type: MessageType.Next,
+            payload: { data: { testString: 'value' } },
+          });
+          break;
+      }
+    };
+
+    await wait(20);
+
+    expect(closeOrErrorFn).not.toBeCalled();
+  });
+
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
     expect.assertions(3);
 
