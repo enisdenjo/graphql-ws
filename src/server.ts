@@ -17,8 +17,8 @@ import {
   subscribe,
   GraphQLError,
 } from 'graphql';
-import { Disposable } from '../types';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
+import { Disposable } from './types';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
   Message,
   MessageType,
@@ -26,7 +26,7 @@ import {
   SubscribeMessage,
   CompleteMessage,
   stringifyMessage,
-} from '../message';
+} from './message';
 import {
   Optional,
   isObject,
@@ -34,7 +34,7 @@ import {
   hasOwnObjectProperty,
   hasOwnStringProperty,
   noop,
-} from '../utils';
+} from './utils';
 
 export interface ServerOptions {
   /**
