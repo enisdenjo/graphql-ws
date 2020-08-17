@@ -83,9 +83,10 @@ export interface ServerOptions {
    */
   onConnect?: (ctx: Context) => Promise<boolean> | boolean;
   /**
+   * @default 3 * 1000 (3 seconds)
+   *
    * The amount of time for which the
    * server will wait for `ConnectionInit` message.
-   * Defaults to: **3 seconds**.
    *
    * Set the value to `Infinity` to skip waiting.
    *
@@ -143,6 +144,7 @@ export interface Context {
    * to the related client.
    */
   acknowledged: boolean;
+  /** The parameters passed during the connection initialisation. */
   connectionParams?: Readonly<Record<string, unknown>>;
   /**
    * Holds the active subscriptions for this context.
@@ -156,13 +158,20 @@ export interface Server extends Disposable {
   webSocketServer: WebSocket.Server;
 }
 
+// for documentation gen only
+type WebSocketServerOptions = WebSocket.ServerOptions;
+type WebSocketServer = WebSocket.Server;
+
 /**
  * Creates a protocol complient WebSocket GraphQL
  * subscription server. Read more about the protocol
  * in the PROTOCOL.md documentation file.
  */
 export function createServer(
-  {
+  options: ServerOptions,
+  websocketOptionsOrServer: WebSocketServerOptions | WebSocketServer,
+): Server {
+  const {
     schema,
     execute,
     onConnect,
@@ -171,9 +180,7 @@ export function createServer(
     formatExecutionResult,
     onSubscribe,
     onComplete,
-  }: ServerOptions,
-  websocketOptionsOrServer: WebSocket.ServerOptions | WebSocket.Server,
-): Server {
+  } = options;
   const webSocketServer =
     websocketOptionsOrServer instanceof WebSocket.Server
       ? websocketOptionsOrServer

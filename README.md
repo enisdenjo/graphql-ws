@@ -1,8 +1,6 @@
 # graphql-transport-ws
 
-**Work in progress!**
-
-A client for GraphQL subscriptions over WebSocket. _Server implementation coming soon!_
+> A coherent, zero-dependency, lazy, simple and easy to use server and client implementation of the [GraphQL over WebSocket Protocol](PROTODCOL.md).
 
 ## Getting started
 
@@ -14,9 +12,9 @@ yarn add @enisdenjo/graphql-transport-ws
 npm install @enisdenjo/graphql-transport-ws
 ```
 
-### Usage
+### Examples
 
-#### With [Relay](https://relay.dev)
+#### Client usage with [Relay](https://relay.dev)
 
 ```ts
 import { createClient } from '@enisdenjo/graphql-transport-ws';
@@ -61,7 +59,7 @@ export const network = Network.create(
 );
 ```
 
-#### With [Apollo](https://www.apollographql.com)
+#### Client usage with [Apollo](https://www.apollographql.com)
 
 ```typescript
 import { print } from 'graphql';
@@ -82,7 +80,7 @@ class WebSocketLink extends ApolloLink {
     variables,
   }: Operation): Observable<FetchResult> {
     return new Observable((sink) => {
-      return this.client.subscribe(
+      return this.client.subscribe<FetchResult>(
         { operationName, query: print(query), variables },
         sink,
       );
@@ -104,11 +102,15 @@ const link = new WebSocketLink({
 });
 ```
 
+## Documentation
+
+[TypeDoc](https://typedoc.org) generated documentation is located in the [docs folder](docs/).
+
 ## Protocol
 
-Read more about it in the [PROTOCOL.md](PROTOCOL.md)
+Read about the exact transport protocol used by the library in the [PROTOCOL.md](PROTOCOL.md) document.
 
 ## Want to help?
 
-Want to file a bug, contribute some code, or improve documentation? Excellent! Read up on our
-guidelines for [contributing](CONTRIBUTING.md).
+File a bug, contribute with code, or improve documentation? Welcome 👋!
+Read up on our guidelines for [contributing](CONTRIBUTING.md).

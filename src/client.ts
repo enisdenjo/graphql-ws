@@ -18,9 +18,9 @@ import { noop } from './utils';
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
-  // URL of the GraphQL server to connect.
+  /** URL of the GraphQL server to connect. */
   url: string;
-  // Optional parameters that the client specifies when establishing a connection with the server.
+  /** Optional parameters that the client specifies when establishing a connection with the server. */
   connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
 }
 
@@ -37,7 +37,9 @@ export interface Client extends Disposable {
 }
 
 /** Creates a disposable GQL subscriptions client. */
-export function createClient({ url, connectionParams }: ClientOptions): Client {
+export function createClient(options: ClientOptions): Client {
+  const { url, connectionParams } = options;
+
   // holds all currently subscribed sinks, will use this map
   // to dispatch messages to the correct destination
   const subscribedSinks: Record<UUID, Sink> = {};
@@ -275,7 +277,7 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
 }
 
 /** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */
-export function generateUUID(): UUID {
+function generateUUID(): UUID {
   if (!window.crypto) {
     // fallback to Math.random when crypto is not available
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (
