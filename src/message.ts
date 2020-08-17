@@ -86,7 +86,11 @@ export function isMessage(val: unknown): val is Message {
     switch (val.type) {
       case MessageType.ConnectionInit:
         // the connection init message can have optional object `connectionParams` in the payload
-        return !hasOwnProperty(val, 'payload') || isObject(val.payload);
+        return (
+          !hasOwnProperty(val, 'payload') ||
+          val.payload === undefined ||
+          isObject(val.payload)
+        );
       case MessageType.ConnectionAck:
         return true;
       case MessageType.Subscribe:
