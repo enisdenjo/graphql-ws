@@ -54,7 +54,10 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
     connected = false,
     connecting = false;
   async function connect(): Promise<void> {
-    // wait for connected if connecting
+    if (connected) {
+      return;
+    }
+
     if (connecting) {
       let waitedTimes = 0;
       while (!connected) {
