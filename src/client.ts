@@ -45,12 +45,15 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
   function errorAllSinks(err: Error) {
     Object.entries(subscribedSinks).forEach(([, sink]) => sink.error(err));
   }
+  function completeAllSinks() {
+    Object.entries(subscribedSinks).forEach(([, sink]) => sink.complete());
+  }
 
-  // Lazily creates a socket and establishes a connection described in the protocol.
-  let activeSocket: WebSocket | null = null,
+  // Lazily uses the socket singleton to establishes a connection described by the protocol.
+  let socket: WebSocket | null = null,
     connected = false,
     connecting = false;
-  async function getConnectedSocket() {
+  async function connect(): Promise<void> {
     // wait for connected if connecting
     if (connecting) {
       let waitedTimes = 0;
@@ -64,35 +67,51 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
       }
 
       // connected === true
-      if (!activeSocket) {
-        throw new Error('Connected on nothing');
-      }
-      return activeSocket;
+      return;
     }
 
     connected = false;
     connecting = true;
-    return new Promise<WebSocket>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let done = false; // used to avoid resolving/rejecting the promise multiple times
-      activeSocket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-      activeSocket.onclose = ({ code, reason }) => {
+      socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+
+      /**
+       * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
+       *
+       * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
+       * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
+       * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
+       * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
+       */
+
+      socket.onclose = ({ code, reason }) => {
         const err = new Error(
           `Socket closed with event ${code}` + !reason ? '' : `: ${reason}`,
         );
-        errorAllSinks(err);
+
+        if (code === 1000 || code === 1001) {
+          // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
+          completeAllSinks();
+        } else {
+          // all other close events are considered erroneous
+          errorAllSinks(err);
+        }
+
         if (!done) {
           done = true;
           connecting = false;
-          activeSocket = null;
-          reject(err);
+          connected = false; // the connection is lost
+          socket = null;
+          reject(err); // we reject here bacause the close is not supposed to be called during the connect phase
         }
       };
-      activeSocket.onopen = () => {
+      socket.onopen = () => {
         try {
-          if (!activeSocket) {
+          if (!socket) {
             throw new Error('Opened a socket on nothing');
           }
-          activeSocket.send(
+          socket.send(
             stringifyMessage<MessageType.ConnectionInit>({
               type: MessageType.ConnectionInit,
               payload:
@@ -106,19 +125,18 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
           if (!done) {
             done = true;
             connecting = false;
-            if (activeSocket) {
-              activeSocket.close();
-              activeSocket = null;
+            if (socket) {
+              socket.close();
+              socket = null;
             }
             reject(err);
           }
         }
       };
 
-      // the idea is to redefine the `onmessage` handler once this promise resolves
-      activeSocket.onmessage = ({ data }) => {
+      function handleMessage({ data }: MessageEvent) {
         try {
-          if (!activeSocket) {
+          if (!socket) {
             throw new Error('Received a message on nothing');
           }
 
@@ -132,42 +150,111 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
             done = true;
             connecting = false;
             connected = true; // only now is the connection ready
-            resolve(activeSocket);
+            resolve();
           }
         } catch (err) {
           errorAllSinks(err);
           if (!done) {
             done = true;
             connecting = false;
-            if (activeSocket) {
-              activeSocket.close();
-              activeSocket = null;
+            if (socket) {
+              socket.close();
+              socket = null;
             }
             reject(err);
           }
+        } finally {
+          if (socket) {
+            // this listener is not necessary anymore
+            socket.removeEventListener('message', handleMessage);
+          }
         }
-      };
+      }
+      socket.addEventListener('message', handleMessage);
     });
   }
 
   return {
-    subscribe: (_payload, sink) => {
+    subscribe: (payload, sink) => {
       const uuid = generateUUID();
       if (subscribedSinks[uuid]) {
-        sink.error(new Error(`Sink already registered for UUID: ${uuid}`));
+        sink.error(new Error(`Sink with ID ${uuid} already registered`));
         return noop;
       }
       subscribedSinks[uuid] = sink;
 
-      // TODO-db-200816 implement subscribing
+      function handleMessage({ data }: MessageEvent) {
+        const message = parseMessage(data);
+        switch (message.type) {
+          case MessageType.Next: {
+            if (message.id === uuid) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              sink.next(message.payload as any);
+            }
+            break;
+          }
+          case MessageType.Error: {
+            if (message.id === uuid) {
+              sink.error(message.payload);
+            }
+            break;
+          }
+          case MessageType.Complete: {
+            if (message.id === uuid) {
+              sink.complete();
+            }
+            break;
+          }
+        }
+      }
+
+      (async () => {
+        try {
+          await connect();
+          if (!socket) {
+            throw new Error('Socket connected but empty');
+          }
+
+          socket.addEventListener('message', handleMessage);
+          socket.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: uuid,
+              type: MessageType.Subscribe,
+              payload,
+            }),
+          );
+        } catch (err) {
+          sink.error(err);
+        }
+      })();
 
       return () => {
-        // TODO-db-200816 implement completing
+        if (socket) {
+          socket.send(
+            stringifyMessage<MessageType.Complete>({
+              id: uuid,
+              type: MessageType.Complete,
+            }),
+          );
+
+          socket.removeEventListener('message', handleMessage);
+
+          // equal to 1 because this sink is the last one.
+          // the deletion from the map happens afterwards
+          if (Object.entries(subscribedSinks).length === 1) {
+            socket.close(1000, 'Normal Closure');
+            socket = null;
+          }
+        }
+
+        sink.complete();
+        delete subscribedSinks[uuid];
       };
     },
     dispose: async () => {
       // complete all sinks
-      Object.entries(subscribedSinks).forEach(([, sink]) => sink.complete());
+      // TODO-db-200817 complete or error? the sinks should be completed BEFORE the client gets disposed
+      completeAllSinks();
 
       // delete all sinks
       Object.keys(subscribedSinks).forEach((uuid) => {
@@ -175,9 +262,10 @@ export function createClient({ url, connectionParams }: ClientOptions): Client {
       });
 
       // if there is an active socket, close it with a normal closure
-      if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
-        activeSocket.close(1000, 'Normal Closure');
-        activeSocket = null;
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        // TODO-db-200817 decide if `1001: Going Away` should be used instead
+        socket.close(1000, 'Normal Closure');
+        socket = null;
       }
     },
   };
