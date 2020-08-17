@@ -26,7 +26,7 @@
 
 • **connectionInitWaitTimeout**? : *undefined | number*
 
-*Defined in [server.ts:99](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L99)*
+*Defined in [server.ts:99](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L99)*
 
 **`default`** 3 * 1000 (3 seconds)
 
@@ -46,7 +46,7 @@ ___
 
 • **execute**: *function*
 
-*Defined in [server.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L55)*
+*Defined in [server.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L55)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -69,7 +69,7 @@ ___
 
 • **formatExecutionResult**? : *undefined | function*
 
-*Defined in [server.ts:110](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L110)*
+*Defined in [server.ts:110](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L110)*
 
 Format the operation execution results
 if the implementation requires an adjusted
@@ -81,7 +81,7 @@ ___
 
 • **onComplete**? : *undefined | function*
 
-*Defined in [server.ts:130](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L130)*
+*Defined in [server.ts:130](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L130)*
 
 The complete callback is executed after the
 operation has completed or the subscription
@@ -93,7 +93,7 @@ ___
 
 • **onConnect**? : *undefined | function*
 
-*Defined in [server.ts:85](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L85)*
+*Defined in [server.ts:85](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L85)*
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -120,7 +120,7 @@ ___
 
 • **onSubscribe**? : *undefined | function*
 
-*Defined in [server.ts:120](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L120)*
+*Defined in [server.ts:120](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L120)*
 
 The subscribe callback executed before
 the actual operation execution. Useful
@@ -133,7 +133,7 @@ ___
 
 • **schema**? : *GraphQLSchema*
 
-*Defined in [server.ts:48](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L48)*
+*Defined in [server.ts:48](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L48)*
 
 The GraphQL schema on which the operations
 will be executed and validated against. If
@@ -147,7 +147,7 @@ ___
 
 • **subscribe**: *function*
 
-*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L62)*
+*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L62)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -170,7 +170,7 @@ ___
 
 • **validationRules**? : *keyof ValidationRule[]*
 
-*Defined in [server.ts:104](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L104)*
+*Defined in [server.ts:104](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L104)*
 
 Custom validation rules overriding all
 validation rules defined by the GraphQL spec.

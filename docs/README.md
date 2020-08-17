@@ -7,7 +7,6 @@
 ### Modules
 
 * ["client"](modules/_client_.md)
-* ["index"](modules/_index_.md)
 * ["message"](modules/_message_.md)
 * ["protocol"](modules/_protocol_.md)
 * ["server"](modules/_server_.md)

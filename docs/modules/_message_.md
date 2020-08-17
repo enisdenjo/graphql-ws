@@ -28,4 +28,4 @@
 
 Ƭ **Message**: *T extends ConnectionAck ? ConnectionAckMessage : T extends ConnectionInit ? ConnectionInitMessage : T extends Subscribe ? SubscribeMessage : T extends Next ? NextMessage : T extends Error ? ErrorMessage : T extends Complete ? CompleteMessage : never*
 
-*Defined in [message.ts:65](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/message.ts#L65)*
+*Defined in [message.ts:65](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/message.ts#L65)*

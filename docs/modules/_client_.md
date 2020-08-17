@@ -19,7 +19,7 @@
 
 ▸ **createClient**(`options`: [ClientOptions](../interfaces/_client_.clientoptions.md)): *[Client](../interfaces/_client_.client.md)*
 
-*Defined in [client.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/client.ts#L38)*
+*Defined in [client.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/client.ts#L37)*
 
 Creates a disposable GQL subscriptions client.
 

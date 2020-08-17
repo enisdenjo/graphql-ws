@@ -18,4 +18,4 @@
 
 • **type**: *[ConnectionAck](../enums/_message_.messagetype.md#connectionack)*
 
-*Defined in [message.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/message.ts#L33)*
+*Defined in [message.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/message.ts#L33)*

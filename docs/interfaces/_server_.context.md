@@ -22,7 +22,7 @@
 
 • **acknowledged**: *boolean*
 
-*Defined in [server.ts:147](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L147)*
+*Defined in [server.ts:147](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L147)*
 
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
@@ -34,7 +34,7 @@ ___
 
 • **connectionInitReceived**: *boolean*
 
-*Defined in [server.ts:141](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L141)*
+*Defined in [server.ts:141](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L141)*
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -47,7 +47,7 @@ ___
 
 • **connectionParams**? : *Readonly‹Record‹string, unknown››*
 
-*Defined in [server.ts:149](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L149)*
+*Defined in [server.ts:149](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L149)*
 
 The parameters passed during the connection initialisation.
 
@@ -57,7 +57,7 @@ ___
 
 • **socket**: *WebSocket*
 
-*Defined in [server.ts:134](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L134)*
+*Defined in [server.ts:134](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L134)*
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 • **subscriptions**: *Record‹[UUID](../modules/_types_d_.md#uuid), AsyncIterator‹unknown››*
 
-*Defined in [server.ts:155](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L155)*
+*Defined in [server.ts:155](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L155)*
 
 Holds the active subscriptions for this context.
 Subscriptions are for `subscription` operations **only**,

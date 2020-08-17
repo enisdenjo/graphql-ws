@@ -5,5 +5,5 @@ module.exports = {
   plugin: 'typedoc-plugin-markdown',
   excludeExternals: true,
   excludeNotExported: true,
-  exclude: ['**/utils.ts', '**/tests/**/*'],
+  exclude: ['**/index.ts', '**/utils.ts', '**/tests/**/*'],
 };

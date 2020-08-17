@@ -20,7 +20,7 @@
 
 ▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions | WebSocketServer): *[Server](../interfaces/_server_.server.md)*
 
-*Defined in [server.ts:171](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L171)*
+*Defined in [server.ts:171](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L171)*
 
 Creates a protocol complient WebSocket GraphQL
 subscription server. Read more about the protocol
