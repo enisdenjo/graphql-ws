@@ -1,117 +1,31 @@
-import http from 'http';
 import WebSocket from 'ws';
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
-  execute,
-  subscribe,
-  parse,
-} from 'graphql';
-import { PubSub } from 'graphql-subscriptions';
-import { createServer, Server, ServerOptions } from '../server';
+import { parse } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import {
-  MessageType,
-  parseMessage,
-  stringifyMessage,
-  Message,
-} from '../message';
+import { MessageType, parseMessage, stringifyMessage } from '../message';
+import { startServer, url, schema, pubsub } from './fixtures/simple';
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-/**
- * GraphQL setup
- */
-
-const pubsub = new PubSub();
-
-const personType = new GraphQLObjectType({
-  name: 'Person',
-  fields: {
-    id: { type: GraphQLString },
-    name: { type: GraphQLString },
-  },
-});
-
-const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      testString: { type: GraphQLString, resolve: () => 'value' },
+let dispose: () => Promise<void> | undefined;
+async function makeServer(...args: Parameters<typeof startServer>) {
+  let server;
+  [server, dispose] = await startServer(...args);
+  return [
+    server,
+    async () => {
+      await dispose();
+      dispose = undefined;
     },
-  }),
-  subscription: new GraphQLObjectType({
-    name: 'Subscription',
-    fields: {
-      becameHappy: {
-        type: personType,
-        subscribe: () => {
-          return pubsub.asyncIterator('becameHappy');
-        },
-      },
-    },
-  }),
-});
-
-/**
- * Testing servers setup
- */
-
-const port = 8273,
-  path = '/testing-graphql',
-  url = `ws://localhost:${port}${path}`;
-const testingServers = {
-  gqlServer: null as Server | null,
-  httpServer: null as http.Server | null,
-};
-
-async function disposeExistingTestingServers() {
-  await testingServers.gqlServer?.dispose();
-  if (testingServers.httpServer) {
-    await new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      testingServers.httpServer!.close((err) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve();
-      });
-    });
+  ];
+}
+afterEach(async () => {
+  if (dispose) {
+    await dispose();
+    dispose = undefined;
   }
-  testingServers.gqlServer = null;
-  testingServers.httpServer = null;
-}
-afterEach((done) => disposeExistingTestingServers().then(done));
-
-async function makeServer(options: Partial<ServerOptions> = {}) {
-  await disposeExistingTestingServers();
-  testingServers.httpServer = http.createServer((_req, res) => {
-    res.writeHead(404);
-    res.end();
-  });
-  testingServers.gqlServer = await createServer(
-    {
-      schema,
-      execute,
-      subscribe,
-      ...options,
-    },
-    {
-      server: testingServers.httpServer,
-      path,
-    },
-  );
-  return new Promise<Server>((resolve) =>
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    testingServers.httpServer!.listen(port, () =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      resolve(testingServers.gqlServer!),
-    ),
-  );
-}
+});
 
 /**
  * Tests
@@ -161,7 +75,7 @@ it('should allow connections with valid protocols only', async () => {
 it('should gracefully go away when disposing', async () => {
   expect.assertions(9);
 
-  const server = await makeServer();
+  const [, dispose] = await makeServer();
 
   const errorFn = jest.fn();
 
@@ -183,7 +97,7 @@ it('should gracefully go away when disposing', async () => {
 
   await wait(10);
 
-  await server.dispose();
+  await dispose();
 
   await wait(10);
 
@@ -195,7 +109,7 @@ it('should gracefully go away when disposing', async () => {
 it('should report server errors to clients by closing the connection', async () => {
   expect.assertions(3);
 
-  const { webSocketServer } = await makeServer();
+  const [{ webSocketServer }] = await makeServer();
 
   const emittedError = new Error("I'm a teapot");
 
@@ -287,10 +201,10 @@ describe('onConnect', () => {
     }
 
     // no implementation
-    const server = await makeServer();
+    const [, dispose] = await makeServer();
     test();
     await wait(10);
-    await server.dispose();
+    await dispose();
 
     // returns true
     await makeServer({
@@ -439,7 +353,7 @@ describe('Subscribe', () => {
               payload: {
                 operationName: 'TestString',
                 query: `query TestString {
-                  testString
+                  getValue
                 }`,
                 variables: {},
               },
@@ -489,7 +403,7 @@ describe('Subscribe', () => {
               payload: {
                 operationName: 'TestString',
                 query: `query TestString {
-                  testString
+                  getValue
                 }`,
                 variables: {},
               },
@@ -500,7 +414,7 @@ describe('Subscribe', () => {
           expect(message).toEqual({
             id: '1',
             type: MessageType.Next,
-            payload: { data: { testString: 'value' } },
+            payload: { data: { getValue: 'value' } },
           });
           break;
       }
@@ -539,7 +453,7 @@ describe('Subscribe', () => {
               payload: {
                 operationName: 'TestString',
                 query: `query TestString {
-                  testString
+                  getValue
                 }`,
                 variables: {},
               },
@@ -550,7 +464,7 @@ describe('Subscribe', () => {
           expect(message).toEqual({
             id: '1',
             type: MessageType.Next,
-            payload: { data: { testString: 'value' } },
+            payload: { data: { getValue: 'value' } },
           });
           receivedNext = true;
           break;
@@ -597,7 +511,7 @@ describe('Subscribe', () => {
               payload: {
                 operationName: 'TestString',
                 query: parse(`query TestString {
-                  testString
+                  getValue
                 }`),
                 variables: {},
               },
@@ -608,7 +522,7 @@ describe('Subscribe', () => {
           expect(message).toEqual({
             id: '1',
             type: MessageType.Next,
-            payload: { data: { testString: 'value' } },
+            payload: { data: { getValue: 'value' } },
           });
           receivedNext = true;
           break;
