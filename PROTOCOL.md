@@ -1,124 +1,203 @@
-_Copied from the [subscriptions-transport-ws protocol specification](https://github.com/apollographql/subscriptions-transport-ws/blob/567fca89cb4578371877faee09e1630dcddff544/PROTOCOL.md)_
-
 # GraphQL over WebSocket Protocol
 
-## Client-server communication
+## Nomenclature
 
-Each message has a `type` field, which defined in the protocol of this package, as well as associated fields inside `payload` field, depending on the message type, and `id` field so the client can identify each response from the server.
+- **Socket** is the main WebSocket communication channel between the _server_ and the _client_
+- **Connection** is a connection **within the established socket** describing a "connection" through which the operation requests will be communicated
 
-Each WebSocket message is represented in JSON structure, and being stringified before sending it over the network.
+## Communication
 
-This is the structure of each message:
+The WebSocket sub-protocol for this specification is: `graphql-transport-ws`
+
+Messages are represented through the JSON structure and are stringified before being sent over the network. They are bidirectional, meaning both the server and the client conform to the specified message structure.
+
+**All** messages contain the `type` field outlining the type or action this message describes. Depending on the type, the message can contain two more _optional_ fields:
+
+- `id` used for uniquely identifying server responses and connecting them with the client requests
+- `payload` holding the extra "payload" information to go with the specific message type
+
+The server can terminate the socket (kick the client off) at any time. The close event dispatched by the server is used to describe the fatal error to the client.
+
+The client terminates the socket and closes the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
+
+## Message types
+
+### `ConnectionInit`
+
+Direction: **Client -> Server**
+
+Indicates that the client wants to establish a connection within the existing socket. This connection is **not** the actual WebSocket communication channel, but is rather a frame within it asking the server to allow future subscription operation requests.
+
+The client can specify additional `connectionParams` which are sent through the `payload` field in the outgoing message.
+
+The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will terminate the socket with the close event: `4408: Connection initialisation timeout`.
 
 ```typescript
-export interface OperationMessage {
-  payload?: any;
-  id?: string;
-  type: string;
+interface ConnectionInitMessage {
+  type: 'connection_init';
+  payload?: Record<string, unknown>; // connectionParams
 }
 ```
 
-### Client -> Server
+The server will respond by either:
 
-#### GQL_CONNECTION_INIT
+- Dispatching a `ConnectionAck` message acknowledging that the connection has been successfully established. The server does not implement the `onConnect` callback or the implemented callback has returned `true`.
+- Closing the socket with a close event `4403: Forbidden` indicating that the connection request has been denied because of access control. The server has returned `false` in the `onConnect` callback.
+- Closing the socket with a close event `4400: <error-message>` indicating that the connection request has been denied because of an implementation specific error. The server has thrown an error in the `onConnect` callback, the thrown error's message is the `<error-message>` in the close event.
 
-Client sends this message after plain websocket connection to start the communication with the server
+### `ConnectionAck`
 
-The server will response only with `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used) or `GQL_CONNECTION_ERROR` to this message.
+Direction: **Server -> Client**
 
-- `payload: Object` : optional parameters that the client specifies in `connectionParams`
+Potential response to the `ConnectionInit` message from the client acknowledging a successful connection with the server.
 
-#### GQL_START
+```typescript
+interface ConnectionAckMessage {
+  type: 'connection_ack';
+}
+```
 
-Client sends this message to execute GraphQL operation
+The client is now **ready** to request subscription operations.
 
-- `id: string` : The id of the GraphQL operation to start
-- `payload: Object`:
-  - `query: string` : GraphQL operation as string or parsed GraphQL document node
-  - `variables?: Object` : Object with GraphQL variables
-  - `operationName?: string` : GraphQL operation name
+### `Subscribe`
 
-#### GQL_STOP
+Direction: **Client -> Server**
 
-Client sends this message in order to stop a running GraphQL operation execution (for example: unsubscribe)
+Requests a operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
 
-- `id: string` : operation id
+```typescript
+import { DocumentNode } from 'graphql';
 
-#### GQL_CONNECTION_TERMINATE
+interface SubscribeMessage {
+  id: '<unique-operation-id>';
+  type: 'subscribe';
+  payload: {
+    operationName: string;
+    query: string | DocumentNode;
+    variables: Record<string, unknown>;
+  };
+}
+```
 
-Client sends this message to terminate the connection.
+Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged, the socket will be terminated immediately with a close event `4401: Unauthorized`.
 
-### Server -> Client
+### `Next`
 
-#### GQL_CONNECTION_ERROR
+Direction: **Server -> Client**
 
-The server may responses with this message to the `GQL_CONNECTION_INIT` from client, indicates the server rejected the connection.
+Operation execution result message.
 
-It server also respond with this message in case of a parsing errors of the message (which does not disconnect the client, just ignore the message).
+- If the operation is a `query` or `mutation`, the message can be seen as the final execution result. This message is followed by the `Complete` message indicating the completion of the operation.
+- If the operation is a `subscription`, the message can be seen as an event in the source stream requested by the `Subscribe` message.
 
-- `payload: Object`: the server side error
+```typescript
+import { ExecutionResult } from 'graphql';
 
-#### GQL_CONNECTION_ACK
+interface NextMessage {
+  id: '<unique-operation-id>';
+  type: 'next';
+  payload: ExecutionResult;
+}
+```
 
-The server may responses with this message to the `GQL_CONNECTION_INIT` from client, indicates the server accepted the connection.
+### `Error`
 
-#### GQL_DATA
+Direction: **Server -> Client**
 
-The server sends this message to transfter the GraphQL execution result from the server to the client, this message is a response for `GQL_START` message.
+Operation execution error(s) triggered by the `Next` message happening before the actual execution, usually due to validation errors.
 
-For each GraphQL operation send with `GQL_START`, the server will respond with at least one `GQL_DATA` message.
+```typescript
+import { GraphQLError } from 'graphql';
 
-- `id: string` : ID of the operation that was successfully set up
-- `payload: Object` :
-  - `data: any`: Execution result
-  - `errors?: Error[]` : Array of resolvers errors
+interface ErrorMessage {
+  id: '<unique-operation-id>';
+  type: 'error';
+  payload: GraphQLError[];
+}
+```
 
-#### GQL_ERROR
+### `Complete`
 
-Server sends this message upon a failing operation, before the GraphQL execution, usually due to GraphQL validation errors (resolver errors are part of `GQL_DATA` message, and will be added as `errors` array)
+Direction: **bidirectional**
 
-- `payload: Error` : payload with the error attributed to the operation failing on the server
-- `id: string` : operation ID of the operation that failed on the server
+- **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, **no `Complete` message will be emitted**.
 
-#### GQL_COMPLETE
+- **Client -> Server** (for `subscription` operations only) indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original subscription, should be sent through.
 
-Server sends this message to indicate that a GraphQL operation is done, and no more data will arrive for the specific operation.
+```typescript
+interface CompleteMessage {
+  id: '<unique-operation-id>';
+  type: 'complete';
+}
+```
 
-- `id: string` : operation ID of the operation that completed
+### Invalid message
 
-#### GQL_CONNECTION_KEEP_ALIVE
+Direction: **bidirectional**
 
-Server message that should be sent right after each `GQL_CONNECTION_ACK` processed and then periodically to keep the client connection alive.
+Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket termination with a close event `4400: <error-message>`. The `<error-message>` can be vagouly descriptive on why the received message is invalid.
 
-The client starts to consider the keep alive message only upon the first received keep alive message from the server.
+## Examples
 
-### Messages Flow
+For the sake of clarity, the following examples demonstrate the communication protocol.
 
-This is a demonstration of client-server communication, in order to get a better understanding of the protocol flow:
+<h3 id="successful-connection-initialisation">Successful connection initialisation</h3>
 
-#### Session Init Phase
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
+1. _Client_ has received the acknowledgement message and is now ready to request operation executions
 
-The phase initializes the connection between the client and server, and usually will also build the server-side `context` for the execution.
+### Forbidden connection initialisation
 
-- Client connected immediately, or stops and wait if using lazy mode (until first operation execution)
-- Client sends `GQL_CONNECTION_INIT` message to the server.
-- Server calls `onConnect` callback with the init arguments, waits for init to finish and returns it's return value with `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used), or `GQL_CONNECTION_ERROR` in case of `false` or thrown exception from `onConnect` callback.
-- Client gets `GQL_CONNECTION_ACK` + `GQL_CONNECTION_KEEP_ALIVE` (if used) and waits for the client's app to create subscriptions.
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
+1. _Server_ terminates the socket by dispatching the close event `4403: Forbidden`
+1. _Client_ reports an error using the close event reason (which is `Forbidden`)
 
-#### Connected Phase
+### Erroneous connection initialisation
 
-This phase called per each operation the client request to execute:
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
+1. _Server_ terminates the socket by dispatching the close event `4400: I'm a teapot`
+1. _Client_ reports an error using the close event reason (which is `I'm a teapot`)
 
-- App creates a subscription using `subscribe` or `query` client's API, and the `GQL_START` message sent to the server.
-- Server calls `onOperation` callback, and responds with `GQL_DATA` in case of zero errors, or `GQL_ERROR` if there is a problem with the operation (is might also return `GQL_ERROR` with `errors` array, in case of resolvers errors).
-- Client get `GQL_DATA` and handles it.
-- Server calls `onOperationDone` if the operation is a query or mutation (for subscriptions, this called when unsubscribing)
-- Server sends `GQL_COMPLETE` if the operation is a query or mutation (for subscriptions, this sent when unsubscribing)
+### Connection initialisation timeout
 
-For subscriptions:
+1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
+1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ does not dispatch a `ConnectionInit` message
+1. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
+1. _Server_ waiting time has passed
+1. _Server_ terminates the socket by dispatching the close event `4408: Connection initialisation timeout`
+1. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`)
 
-- App triggers `PubSub`'s publication method, and the server publishes the event, passing it through the `subscribe` executor to create GraphQL execution result
-- Client receives `GQL_DATA` with the data, and handles it.
-- When client unsubscribe, the server triggers `onOperationDone` and sends `GQL_COMPLETE` message to the client.
+### Query/Mutation operation
 
-When client done with executing GraphQL, it should close the connection and terminate the session using `GQL_CONNECTION_TERMINATE` message.
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+
+1. _Client_ generates a unique ID for the following operation
+1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested `query`/`mutation` operation passed through the `payload` field
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
+1. _Server_ validates the request and executes the GraphQL operation
+1. _Server_ dispatches a `Next` message with the execution result matching the client's unique ID
+1. _Server_ dispatches the `Complete` message with the matching unique ID indicating that the execution has completed
+1. _Server_ triggers the `onComplete` callback, if specified
+
+### Subscribe operation
+
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+
+1. _Client_ generates a unique ID for the following operation
+1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
+1. _Server_ validates the request, establishes a GraphQL subscription and listens for events in the source stream
+1. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
+1. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
+1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
+1. _Server_ triggers the `onComplete` callback, if specified
