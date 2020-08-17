@@ -1249,7 +1249,6 @@ __metadata:
     prettier: ^2.0.5
     semantic-release: ^17.1.1
     typescript: ^3.9.7
-    websocket-as-promised: ^1.0.1
     ws: ^7.3.1
   peerDependencies:
     graphql: ">=15.0.0"
@@ -2928,13 +2927,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chnl@npm:^1.0.0":
-  version: 1.2.0
-  resolution: "chnl@npm:1.2.0"
-  checksum: febad1c0418e65448d41e54f8692e601a2eb0ce0f87eea317704be55757b9c01dede0ef2c59d9e4af9ed36d330069b6f551ad89af473008b9d472b0e4e9e310a
-  languageName: node
-  linkType: hard
-
 "chownr@npm:^1.1.1, chownr@npm:^1.1.2, chownr@npm:^1.1.4":
   version: 1.1.4
   resolution: "chownr@npm:1.1.4"
@@ -3884,7 +3876,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-abstract@npm:^1.17.0-next.0, es-abstract@npm:^1.17.0-next.1, es-abstract@npm:^1.17.5":
+"es-abstract@npm:^1.17.0-next.1, es-abstract@npm:^1.17.5":
   version: 1.17.6
   resolution: "es-abstract@npm:1.17.6"
   dependencies:
@@ -8414,13 +8406,6 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"promise-controller@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "promise-controller@npm:1.0.0"
-  checksum: 3170e82c1a7affa3814ab820817d38dd742d80999fabdb6a3e76c78b83bb98dc82e4f8ac526e8a5d7707a866421997a68b9aa98459e2b430fe471e8b0f6f57be
-  languageName: node
-  linkType: hard
-
 "promise-inflight@npm:^1.0.1, promise-inflight@npm:~1.0.1":
   version: 1.0.1
   resolution: "promise-inflight@npm:1.0.1"
@@ -8435,17 +8420,6 @@ fsevents@^2.1.2:
     err-code: ^1.0.0
     retry: ^0.10.0
   checksum: a2ed89ee42c0e0c6ba4f15d312b3eeb3a24993a7ef7af537b9abdd685702900bed89df64b7d77197fbfae0911c76d1098604c0c1e3be5375f5c515b54aab1cb3
-  languageName: node
-  linkType: hard
-
-"promise.prototype.finally@npm:^3.1.1":
-  version: 3.1.2
-  resolution: "promise.prototype.finally@npm:3.1.2"
-  dependencies:
-    define-properties: ^1.1.3
-    es-abstract: ^1.17.0-next.0
-    function-bind: ^1.1.1
-  checksum: bad87121f91056f363df22cc7abb03901c073d0b6d593931a75be96a591bbcdd15b651122ef65221b36cc6dbb0c6cd2f37d8120d917464c642b858dfa5ea18e5
   languageName: node
   linkType: hard
 
@@ -10675,17 +10649,6 @@ typescript@^3.9.7:
   version: 6.1.0
   resolution: "webidl-conversions@npm:6.1.0"
   checksum: 0ded175044ec0a06f41014b9ffc36a67eb22bff53b9cb43fa1e9d05eaded43a100d993a8179d3a9f0f820ff1e5b812107a97c8643b600a6ab5bef1e11fcae66b
-  languageName: node
-  linkType: hard
-
-"websocket-as-promised@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "websocket-as-promised@npm:1.0.1"
-  dependencies:
-    chnl: ^1.0.0
-    promise-controller: ^1.0.0
-    promise.prototype.finally: ^3.1.1
-  checksum: 57f46af82281652d0cf2d7d52dfe99c346fa2bbd302aa00267ee717490e46c4c87f3757a94930988f65dc0ceabed08245b171ee51a3f164efaeba50c5e6db380
   languageName: node
   linkType: hard
 
