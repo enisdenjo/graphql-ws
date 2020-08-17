@@ -23,7 +23,7 @@
   "scripts": {
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest -i",
     "build": "tsc -b",
     "release": "semantic-release"
   },
