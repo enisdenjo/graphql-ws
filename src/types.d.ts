@@ -4,6 +4,8 @@
  *
  */
 
+import { GraphQLError } from 'graphql';
+
 /**
  * UUID v4 string type alias generated through the
  * `generateUUID` function from the client.
@@ -16,6 +18,6 @@ export interface Disposable {
 
 export interface Sink<T = unknown> {
   next(value: T): void;
-  error(error: Error): void;
+  error(error: Error | readonly GraphQLError[]): void;
   complete(): void;
 }
