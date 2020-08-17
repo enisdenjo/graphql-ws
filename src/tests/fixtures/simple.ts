@@ -12,6 +12,14 @@ import { createServer, ServerOptions, Server } from '../../server';
 
 export const pubsub = new PubSub();
 
+const personType = new GraphQLObjectType({
+  name: 'Person',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
 export const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -26,15 +34,15 @@ export const schema = new GraphQLSchema({
     name: 'Subscription',
     fields: {
       becameHappy: {
-        type: new GraphQLObjectType({
-          name: 'Person',
-          fields: {
-            id: { type: new GraphQLNonNull(GraphQLString) },
-            name: { type: new GraphQLNonNull(GraphQLString) },
-          },
-        }),
+        type: personType,
         subscribe: () => {
           return pubsub.asyncIterator('becameHappy');
+        },
+      },
+      boughtBananas: {
+        type: personType,
+        subscribe: () => {
+          return pubsub.asyncIterator('boughtBananas');
         },
       },
     },
