@@ -36,11 +36,13 @@ export interface ConnectionAckMessage {
 export interface SubscribeMessage {
   readonly id: string;
   readonly type: MessageType.Subscribe;
-  readonly payload: {
-    readonly operationName: string;
-    readonly query: string | DocumentNode;
-    readonly variables: Record<string, unknown>;
-  };
+  readonly payload: SubscribePayload;
+}
+
+export interface SubscribePayload {
+  readonly operationName: string;
+  readonly query: string | DocumentNode;
+  readonly variables: Record<string, unknown>;
 }
 
 export interface NextMessage {
@@ -76,6 +78,7 @@ export type Message<
   ? CompleteMessage
   : never;
 
+/** @ignore */
 export function isMessage(val: unknown): val is Message {
   if (isObject(val)) {
     // all messages must have the `type` prop
@@ -126,6 +129,7 @@ export function isMessage(val: unknown): val is Message {
   return false;
 }
 
+/** @ignore */
 export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
@@ -140,7 +144,10 @@ export function parseMessage(data: unknown): Message {
   throw new Error('Message not parsable');
 }
 
-/** Helps stringifying a valid message ready to be sent through the socket. */
+/**
+ * @ignore
+ * Helps stringifying a valid message ready to be sent through the socket.
+ */
 export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
 ): string {

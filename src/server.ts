@@ -35,6 +35,7 @@ import {
   hasOwnStringProperty,
   noop,
 } from './utils';
+import { UUID } from './types';
 
 export interface ServerOptions {
   /**
@@ -151,7 +152,7 @@ export interface Context {
    * Subscriptions are for `subscription` operations **only**,
    * other operations (`query`/`mutation`) are resolved immediately.
    */
-  subscriptions: Record<string, AsyncIterator<unknown>>;
+  subscriptions: Record<UUID, AsyncIterator<unknown>>;
 }
 
 export interface Server extends Disposable {

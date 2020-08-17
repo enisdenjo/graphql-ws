@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* Disposable
+* [Disposable](_types_d_.disposable.md)
 
   ↳ **Server**
 
@@ -21,9 +21,11 @@
 
 • **dispose**: *function*
 
-*Inherited from [Client](_client_.client.md).[dispose](_client_.client.md#dispose)*
+*Inherited from [Disposable](_types_d_.disposable.md).[dispose](_types_d_.disposable.md#dispose)*
 
-*Defined in [types.d.ts:16](https://github.com/enisdenjo/graphql-transport-ws/blob/eb9f7f0/src/types.d.ts#L16)*
+*Defined in [types.d.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/types.d.ts#L17)*
+
+Dispose of the instance and clear up resources.
 
 #### Type declaration:
 
@@ -35,4 +37,4 @@ ___
 
 • **webSocketServer**: *Server*
 
-*Defined in [server.ts:158](https://github.com/enisdenjo/graphql-transport-ws/blob/eb9f7f0/src/server.ts#L158)*
+*Defined in [server.ts:159](https://github.com/enisdenjo/graphql-transport-ws/blob/eca7681/src/server.ts#L159)*

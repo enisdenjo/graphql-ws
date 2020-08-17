@@ -10,9 +10,9 @@ import { Sink, UUID, Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
   MessageType,
-  SubscribeMessage,
   parseMessage,
   stringifyMessage,
+  SubscribePayload,
 } from './message';
 import { noop } from './utils';
 
@@ -30,10 +30,7 @@ export interface Client extends Disposable {
    * uses the `sink` to emit received data or errors. Returns a _cleanup_
    * function used for dropping the subscription and cleaning stuff up.
    */
-  subscribe<T = unknown>(
-    payload: SubscribeMessage['payload'],
-    sink: Sink<T>,
-  ): () => void;
+  subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
 /** Creates a disposable GQL subscriptions client. */

@@ -21,7 +21,7 @@
     "access": "public"
   },
   "scripts": {
-    "gendocs": "typedoc --plugin typedoc-plugin-markdown --excludeNotExported --excludeExternals --readme none --out docs 'src/client.ts,src/server.ts'",
+    "gendocs": "typedoc --options typedoc.js src/",
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
     "test": "jest -i",

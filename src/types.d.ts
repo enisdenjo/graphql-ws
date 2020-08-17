@@ -13,11 +13,18 @@ import { GraphQLError } from 'graphql';
 export type UUID = string;
 
 export interface Disposable {
+  /** Dispose of the instance and clear up resources. */
   dispose: () => Promise<void>;
 }
 
+/**
+ * A representation of any set of values over any amount of time.
+ */
 export interface Sink<T = unknown> {
+  /** Next value arriving. */
   next(value: T): void;
+  /** An error that has occured. Calling this function "closes" the sink. */
   error(error: Error | readonly GraphQLError[]): void;
+  /** The sink has completed. This function "closes" the sink. */
   complete(): void;
 }
