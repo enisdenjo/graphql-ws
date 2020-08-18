@@ -12,9 +12,6 @@
     [
       "@semantic-release/git",
       {
-        "assets": [
-          "lib"
-        ],
         "message": "chore(release): 🎉 ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
