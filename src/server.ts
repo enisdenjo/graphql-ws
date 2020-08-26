@@ -198,10 +198,9 @@ export function createServer(
     onSubscribe,
     onComplete,
   } = options;
-  const webSocketServer =
-    websocketOptionsOrServer instanceof WebSocket.Server
-      ? websocketOptionsOrServer
-      : new WebSocket.Server(websocketOptionsOrServer);
+  const webSocketServer = isWebSocketServer(websocketOptionsOrServer)
+    ? websocketOptionsOrServer
+    : new WebSocket.Server(websocketOptionsOrServer);
 
   function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
     if (
@@ -510,4 +509,8 @@ function isErrorEvent(obj: unknown): obj is WebSocket.ErrorEvent {
     hasOwnStringProperty(obj, 'message') &&
     hasOwnStringProperty(obj, 'type')
   );
+}
+
+function isWebSocketServer(obj: unknown): obj is WebSocketServer {
+  return isObject(obj) && typeof obj.on === 'function';
 }
