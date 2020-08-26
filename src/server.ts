@@ -4,8 +4,8 @@
  *
  */
 
-import http from 'http';
-import WebSocket from 'ws';
+import * as http from 'http';
+import * as WebSocket from 'ws';
 import {
   GraphQLSchema,
   ValidationRule,
