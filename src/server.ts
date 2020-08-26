@@ -133,6 +133,11 @@ export interface ServerOptions {
 export interface Context {
   readonly socket: WebSocket;
   /**
+   * The initial HTTP request before the actual
+   * socket and connection is established.
+   */
+  readonly request: http.IncomingMessage;
+  /**
    * Indicates that the `ConnectionInit` message
    * has been received by the server. If this is
    * `true`, the client wont be kicked off after
@@ -187,7 +192,7 @@ export function createServer(
       ? websocketOptionsOrServer
       : new WebSocket.Server(websocketOptionsOrServer);
 
-  function handleConnection(socket: WebSocket, _request: http.IncomingMessage) {
+  function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
     if (
       socket.protocol === undefined ||
       socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL ||
@@ -202,6 +207,7 @@ export function createServer(
     const ctxRef: { current: Context } = {
       current: {
         socket,
+        request,
         connectionInitReceived: false,
         acknowledged: false,
         subscriptions: {},
