@@ -70,6 +70,8 @@ it('should allow connections with valid protocols only', async () => {
   await wait(10);
 
   expect(closeFn).not.toBeCalled();
+
+  await wait(5);
 });
 
 it('should gracefully go away when disposing', async () => {
@@ -374,10 +376,12 @@ describe('Subscribe', () => {
     await makeServer({
       schema: undefined,
       onSubscribe: (_ctx, _message, args) => {
-        return {
-          ...args,
-          schema,
-        };
+        return [
+          {
+            ...args,
+            schema,
+          },
+        ];
       },
     });
 
