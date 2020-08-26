@@ -37,6 +37,11 @@ import {
 } from './utils';
 import { UUID } from './types';
 
+export type ExecutionResultFormatter = (
+  ctx: Context,
+  result: ExecutionResult,
+) => Promise<ExecutionResult> | ExecutionResult;
+
 export interface ServerOptions {
   /**
    * The GraphQL schema on which the operations
@@ -105,23 +110,26 @@ export interface ServerOptions {
   /**
    * Format the operation execution results
    * if the implementation requires an adjusted
-   * result.
+   * result. This formatter is run BEFORE the
+   * `onConnect` scoped formatter.
    */
-  formatExecutionResult?: (
-    ctx: Context,
-    result: ExecutionResult,
-  ) => Promise<ExecutionResult> | ExecutionResult;
+  formatExecutionResult?: ExecutionResultFormatter;
   /**
    * The subscribe callback executed before
    * the actual operation execution. Useful
    * for manipulating the execution arguments
-   * before the doing the operation.
+   * before the doing the operation. As a second
+   * item in the array, you can pass in a scoped
+   * execution result formatter. This formatter
+   * is run AFTER the root `formatExecutionResult`.
    */
   onSubscribe?: (
     ctx: Context,
     message: SubscribeMessage,
     args: Optional<ExecutionArgs, 'schema'>,
-  ) => Promise<ExecutionArgs> | ExecutionArgs;
+  ) =>
+    | Promise<[ExecutionArgs, ExecutionResultFormatter?]>
+    | [ExecutionArgs, ExecutionResultFormatter?];
   /**
    * The complete callback is executed after the
    * operation has completed or the subscription
@@ -330,12 +338,14 @@ export function createServer(
                   : operation.query,
               variableValues: operation.variables,
             };
+
+            let executionResultFormatter: ExecutionResultFormatter | undefined;
+
             if (onSubscribe) {
-              execArgsMaybeSchema = await onSubscribe(
-                ctx,
-                message,
+              [
                 execArgsMaybeSchema,
-              );
+                executionResultFormatter,
+              ] = await onSubscribe(ctx, message, execArgsMaybeSchema);
             }
             if (!execArgsMaybeSchema.schema) {
               // not providing a schema is a fatal server error
@@ -377,8 +387,13 @@ export function createServer(
 
                 try {
                   for await (let result of subscriptionOrResult) {
+                    // use the root formater first
                     if (formatExecutionResult) {
                       result = await formatExecutionResult(ctx, result);
+                    }
+                    // use the subscription specific formatter
+                    if (executionResultFormatter) {
+                      result = await executionResultFormatter(ctx, result);
                     }
                     await sendMessage<MessageType.Next>(ctx, {
                       id: message.id,
