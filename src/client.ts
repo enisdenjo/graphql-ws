@@ -232,19 +232,23 @@ export function createClient(options: ClientOptions): Client {
 
       return () => {
         if (socket) {
-          socket.send(
-            stringifyMessage<MessageType.Complete>({
-              id: uuid,
-              type: MessageType.Complete,
-            }),
-          );
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(
+              stringifyMessage<MessageType.Complete>({
+                id: uuid,
+                type: MessageType.Complete,
+              }),
+            );
+          }
 
           socket.removeEventListener('message', handleMessage);
 
           // equal to 1 because this sink is the last one.
           // the deletion from the map happens afterwards
           if (Object.entries(subscribedSinks).length === 1) {
-            socket.close(1000, 'Normal Closure');
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.close(1000, 'Normal Closure');
+            }
             socket = null;
           }
         }
