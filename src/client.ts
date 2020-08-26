@@ -245,6 +245,8 @@ export function createClient(options: ClientOptions): Client {
           // equal to 1 because this sink is the last one.
           // the deletion from the map happens afterwards
           if (Object.entries(subscribedSinks).length === 1) {
+            connected = false;
+            connecting = false;
             if (socket.readyState === WebSocket.OPEN) {
               socket.close(1000, 'Normal Closure');
             }
@@ -268,6 +270,8 @@ export function createClient(options: ClientOptions): Client {
 
       // if there is an active socket, close it with a normal closure
       if (socket && socket.readyState === WebSocket.OPEN) {
+        connected = false;
+        connecting = false;
         // TODO-db-200817 decide if `1001: Going Away` should be used instead
         socket.close(1000, 'Normal Closure');
         socket = null;
