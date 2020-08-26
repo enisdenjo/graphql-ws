@@ -8,17 +8,19 @@ import { startServer, url, schema, pubsub } from './fixtures/simple';
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-let dispose: () => Promise<void> | undefined;
+let dispose: (() => Promise<void>) | undefined;
 async function makeServer(...args: Parameters<typeof startServer>) {
   let server;
   [server, dispose] = await startServer(...args);
   return [
     server,
     async () => {
-      await dispose();
-      dispose = undefined;
+      if (dispose) {
+        await dispose();
+        dispose = undefined;
+      }
     },
-  ];
+  ] as [typeof server, typeof dispose];
 }
 afterEach(async () => {
   if (dispose) {
