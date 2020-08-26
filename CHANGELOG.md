@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.0.1...v1.0.2) (2020-08-26)
+
+
+### Bug Fixes
+
+* correctly detect WebSocket server ([eab29dc](https://github.com/enisdenjo/graphql-transport-ws/commit/eab29dcae3d031a117de37dee09770833e9573cf))
+
 ## [1.0.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.0.0...v1.0.1) (2020-08-26)
 
 
