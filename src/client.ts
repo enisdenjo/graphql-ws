@@ -41,7 +41,7 @@ export function createClient(options: ClientOptions): Client {
   // to dispatch messages to the correct destination
   const subscribedSinks: Record<UUID, Sink> = {};
 
-  function errorAllSinks(err: Error) {
+  function errorAllSinks(err: Error | CloseEvent) {
     Object.entries(subscribedSinks).forEach(([, sink]) => sink.error(err));
   }
   function completeAllSinks() {
@@ -87,17 +87,16 @@ export function createClient(options: ClientOptions): Client {
        * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
        */
 
-      socket.onclose = ({ code, reason }) => {
-        const err = new Error(
-          `Socket closed with event ${code}` + !reason ? '' : `: ${reason}`,
-        );
+      socket.onclose = (closeEvent) => {
+        // NOTE: reading the `CloseEvent.reason` either trows or empties the whole error message
+        // (if trying to pass the reason in the `Error` message). let the user handle the close event
 
-        if (code === 1000 || code === 1001) {
+        if (closeEvent.code === 1000 || closeEvent.code === 1001) {
           // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
           completeAllSinks();
         } else {
           // all other close events are considered erroneous
-          errorAllSinks(err);
+          errorAllSinks(closeEvent);
         }
 
         if (!done) {
@@ -105,7 +104,7 @@ export function createClient(options: ClientOptions): Client {
           connecting = false;
           connected = false; // the connection is lost
           socket = null;
-          reject(err); // we reject here bacause the close is not supposed to be called during the connect phase
+          reject(closeEvent); // we reject here bacause the close is not supposed to be called during the connect phase
         }
       };
       socket.onopen = () => {

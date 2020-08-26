@@ -24,7 +24,7 @@ export interface Sink<T = unknown> {
   /** Next value arriving. */
   next(value: T): void;
   /** An error that has occured. Calling this function "closes" the sink. */
-  error(error: Error | readonly GraphQLError[]): void;
+  error(error: Error | CloseEvent | readonly GraphQLError[]): void;
   /** The sink has completed. This function "closes" the sink. */
   complete(): void;
 }
