@@ -131,6 +131,9 @@ export interface ServerOptions {
 }
 
 export interface Context {
+  /**
+   * The actual WebSocket connection between the server and the client.
+   */
   readonly socket: WebSocket;
   /**
    * The initial HTTP request before the actual
