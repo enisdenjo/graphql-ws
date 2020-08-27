@@ -251,9 +251,15 @@ export function createClient(options: ClientOptions): Client {
       }
       subscribedSinks[uuid] = sink;
 
-      let messageListener: Disposable | undefined;
+      let messageListener: Disposable | undefined,
+        completed = false;
       prepare()
         .then(() => {
+          // the sink might have completed before the socket became ready
+          if (completed) {
+            return;
+          }
+
           messageListener = socky.registerMessageListener(({ data }) => {
             const message = parseMessage(data);
             switch (message.type) {
@@ -290,16 +296,18 @@ export function createClient(options: ClientOptions): Client {
         .catch(sink.error);
 
       return () => {
-        if (messageListener) {
-          messageListener.dispose();
-        }
+        completed = true;
 
-        socky.send(
-          stringifyMessage<MessageType.Complete>({
-            id: uuid,
-            type: MessageType.Complete,
-          }),
-        );
+        if (messageListener) {
+          // having a message listener indicates that socky became ready
+          messageListener.dispose();
+          socky.send(
+            stringifyMessage<MessageType.Complete>({
+              id: uuid,
+              type: MessageType.Complete,
+            }),
+          );
+        }
 
         sink.complete();
         delete subscribedSinks[uuid];
