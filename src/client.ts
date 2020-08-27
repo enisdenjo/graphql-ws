@@ -35,7 +35,7 @@ export interface Client extends Disposable {
 
 /** The nifty internal socket state manager: Socky 🧦. */
 function createSocky() {
-  let socket: WebSocket | null;
+  let socket: WebSocket | undefined;
   let state = {
     connecting: false,
     connected: false,
@@ -43,7 +43,7 @@ function createSocky() {
   };
 
   return {
-    async shouldConnect(): Promise<boolean> {
+    async beginConnecting(): Promise<boolean> {
       if (state.connecting) {
         let waitedTimes = 0;
         while (state.connecting) {
@@ -54,7 +54,6 @@ function createSocky() {
           }
           waitedTimes++;
         }
-        // state.connecting === false
       }
 
       if (state.disconnecting) {
@@ -67,26 +66,25 @@ function createSocky() {
           }
           waitedTimes++;
         }
-        // state.disconnecting === false
       }
 
-      // the state could've changed while waitinf for `connecting` or `disconnecting`, if it did - wait more...
+      // the state could've changed while waiting for `connecting` or
+      // `disconnecting`, if it did - start connecting again
       if (state.connecting || state.disconnecting) {
-        return await this.shouldConnect();
+        return await this.beginConnecting();
       }
 
-      return !state.connected;
-    },
-    connecting() {
+      // the socket could've connected in the meantime
+      if (state.connected) {
+        return false;
+      }
+
       state = { connecting: true, connected: false, disconnecting: false };
+      return true;
     },
     connected(connectedSocket: WebSocket) {
       socket = connectedSocket;
       state = { connected: true, connecting: false, disconnecting: false };
-    },
-    disconnected() {
-      state = { connected: false, connecting: false, disconnecting: false };
-      socket = null;
     },
     registerMessageListener(
       listener: (event: MessageEvent) => void,
@@ -112,7 +110,7 @@ function createSocky() {
       // TODO-db-200827 decide if accessing missing socket during send is illegal
       if (!socket) {
         throw new Error(
-          'Illegal socket access while sending a message. Has Socky been prepared?',
+          'Illegal socket access while sending a message. Preparation skipped?',
         );
       }
 
@@ -121,7 +119,6 @@ function createSocky() {
       }
     },
     dispose() {
-      // start dispose/close/disconnect only if its not alredy being performed
       if (!state.disconnecting) {
         state = { disconnecting: true, connected: false, connecting: false };
 
@@ -153,9 +150,7 @@ export function createClient(options: ClientOptions): Client {
 
   const socky = createSocky();
   async function prepare(): Promise<void> {
-    if (await socky.shouldConnect()) {
-      socky.connecting();
-
+    if (await socky.beginConnecting()) {
       return new Promise((resolve, reject) => {
         let done = false;
         const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
@@ -170,8 +165,6 @@ export function createClient(options: ClientOptions): Client {
          */
 
         socket.onclose = (closeEvent) => {
-          socky.disconnected(); // just calling `onclose` means immediate disconnection
-
           if (closeEvent.code === 1000 || closeEvent.code === 1001) {
             // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
             completeAllSinks();
@@ -184,6 +177,7 @@ export function createClient(options: ClientOptions): Client {
             errorAllSinks(closeEvent);
           }
 
+          socky.dispose();
           if (!done) {
             done = true;
             reject(closeEvent);
@@ -219,10 +213,9 @@ export function createClient(options: ClientOptions): Client {
               resolve();
             }
           } catch (err) {
-            socket.close();
-            socky.disconnected();
-
             errorAllSinks(err);
+
+            socky.dispose();
             if (!done) {
               done = true;
               reject(err);
@@ -245,11 +238,11 @@ export function createClient(options: ClientOptions): Client {
       subscribedSinks[uuid] = sink;
 
       let messageListener: Disposable | undefined,
-        completed = false;
+        disposed = false;
       prepare()
         .then(() => {
-          // the sink might have completed before the socket became ready
-          if (completed) {
+          // the sink might have been disposed before the socket became ready
+          if (disposed) {
             return;
           }
 
@@ -289,7 +282,7 @@ export function createClient(options: ClientOptions): Client {
         .catch(sink.error);
 
       return () => {
-        completed = true;
+        disposed = true;
 
         // having a message listener indicates that prepare has resolved
         if (messageListener) {
@@ -306,7 +299,7 @@ export function createClient(options: ClientOptions): Client {
         delete subscribedSinks[uuid];
 
         if (Object.entries(subscribedSinks).length === 0) {
-          // dispose of socky :(
+          // dispose of socky if no subscribers are left
           socky.dispose();
         }
       };
@@ -319,7 +312,7 @@ export function createClient(options: ClientOptions): Client {
         delete subscribedSinks[uuid];
       });
 
-      // bye bye socky :(
+      // bye bye 👋
       socky.dispose();
     },
   };
