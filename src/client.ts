@@ -37,7 +37,7 @@ export interface Client extends Disposable {
 function createSocky() {
   type Socket = WebSocket | null;
   let socket: Socket = null;
-  const state = {
+  let state = {
     connecting: false,
     connected: false,
     disconnecting: false,
@@ -79,21 +79,15 @@ function createSocky() {
       return !state.connected;
     },
     connecting() {
-      state.connecting = true;
-      state.connected = false;
-      state.disconnecting = false;
+      state = { connecting: true, connected: false, disconnecting: false };
     },
     connected(connectedSocket: Socket) {
       socket = connectedSocket;
-      state.connecting = false;
-      state.connected = true;
-      state.disconnecting = false;
+      state = { connected: true, connecting: false, disconnecting: false };
     },
     disconnected() {
+      state = { connected: false, connecting: false, disconnecting: false };
       socket = null;
-      state.connecting = false;
-      state.connected = false;
-      state.disconnecting = false;
     },
     registerMessageListener(
       listener: (event: MessageEvent) => void,
@@ -130,16 +124,14 @@ function createSocky() {
     dispose() {
       // start dispose/close/disconnect only if its not alredy being performed
       if (!state.disconnecting) {
-        state.disconnecting = true;
+        state = { disconnecting: true, connected: false, connecting: false };
 
         if (socket && socket.readyState === WebSocket.OPEN) {
           socket.close(1000, 'Normal Closure');
         }
 
-        state.connecting = false;
-        state.connected = false;
-        state.disconnecting = false;
         socket = null;
+        state = { disconnecting: false, connected: false, connecting: false };
       }
     },
   };
