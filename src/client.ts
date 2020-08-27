@@ -44,17 +44,6 @@ function createSocky() {
   };
 
   return {
-    get socket() {
-      if (!socket) {
-        throw new Error(
-          'Illegal socket access, it is not ready yet. Have you prepared it?',
-        );
-      }
-      return socket;
-    },
-    get state() {
-      return state;
-    },
     async shouldConnect(): Promise<boolean> {
       if (state.connecting) {
         let waitedTimes = 0;
@@ -109,7 +98,13 @@ function createSocky() {
     registerMessageListener(
       listener: (event: MessageEvent) => void,
     ): Disposable {
-      this.socket.addEventListener('message', listener);
+      if (!socket) {
+        throw new Error(
+          'Illegal socket access while registering a message listener. Has Socky been prepared?',
+        );
+      }
+
+      socket.addEventListener('message', listener);
       return {
         dispose: () => {
           // we use the internal socket here because the connection
@@ -121,8 +116,15 @@ function createSocky() {
       };
     },
     send(data: string) {
-      if (this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(data);
+      // TODO-db-200827 decide if accessing missing socket during send is illegal
+      if (!socket) {
+        throw new Error(
+          'Illegal socket access while sending a message. Has Socky been prepared?',
+        );
+      }
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(data);
       }
     },
     dispose() {
@@ -298,8 +300,8 @@ export function createClient(options: ClientOptions): Client {
       return () => {
         completed = true;
 
+        // having a message listener indicates that prepare has resolved
         if (messageListener) {
-          // having a message listener indicates that socky became ready
           messageListener.dispose();
           socky.send(
             stringifyMessage<MessageType.Complete>({
