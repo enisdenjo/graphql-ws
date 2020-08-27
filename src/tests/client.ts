@@ -143,7 +143,7 @@ describe('subscription operation', () => {
         complete: completeFnForHappy,
       },
     );
-    await wait(5);
+    await wait(10);
 
     const nextFnForBananas = jest.fn();
     const completeFnForBananas = jest.fn();
@@ -165,7 +165,7 @@ describe('subscription operation', () => {
         complete: completeFnForBananas,
       },
     );
-    await wait(5);
+    await wait(10);
 
     pubsub.publish('becameHappy', {
       becameHappy: {

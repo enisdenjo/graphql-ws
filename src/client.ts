@@ -33,6 +33,116 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
+/** The nifty internal socket state manager: Socky 🧦. */
+function createSocky() {
+  type Socket = WebSocket | null;
+  let socket: Socket = null;
+  const state = {
+    connecting: false,
+    connected: false,
+    disconnecting: false,
+  };
+
+  return {
+    get socket() {
+      if (!socket) {
+        throw new Error(
+          'Illegal socket access, it is not ready yet. Have you prepared it?',
+        );
+      }
+      return socket;
+    },
+    get state() {
+      return state;
+    },
+    async shouldConnect(): Promise<boolean> {
+      if (state.connecting) {
+        let waitedTimes = 0;
+        while (state.connecting) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          // 100ms * 50 = 5sec
+          if (waitedTimes >= 50) {
+            throw new Error('Waited 10 seconds but socket never connected');
+          }
+          waitedTimes++;
+        }
+        // state.connecting === false
+      }
+
+      if (state.disconnecting) {
+        let waitedTimes = 0;
+        while (state.disconnecting) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          // 100ms * 50 = 5sec
+          if (waitedTimes >= 50) {
+            throw new Error('Waited 10 seconds but socket never disconnected');
+          }
+          waitedTimes++;
+        }
+        // state.disconnecting === false
+      }
+
+      // the state could've changed while waitinf for `connecting` or `disconnecting`, if it did - wait more...
+      if (state.connecting || state.disconnecting) {
+        return await this.shouldConnect();
+      }
+
+      return !state.connected;
+    },
+    connecting() {
+      state.connecting = true;
+      state.connected = false;
+      state.disconnecting = false;
+    },
+    connected(connectedSocket: Socket) {
+      socket = connectedSocket;
+      state.connecting = false;
+      state.connected = true;
+      state.disconnecting = false;
+    },
+    disconnected() {
+      socket = null;
+      state.connecting = false;
+      state.connected = false;
+      state.disconnecting = false;
+    },
+    registerMessageListener(
+      listener: (event: MessageEvent) => void,
+    ): Disposable {
+      this.socket.addEventListener('message', listener);
+      return {
+        dispose: () => {
+          // we use the internal socket here because the connection
+          // might have been lost before the deregistration is requested
+          if (socket) {
+            socket.removeEventListener('message', listener);
+          }
+        },
+      };
+    },
+    send(data: string) {
+      if (this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(data);
+      }
+    },
+    dispose() {
+      // start dispose/close/disconnect only if its not alredy being performed
+      if (!state.disconnecting) {
+        state.disconnecting = true;
+
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.close(1000, 'Normal Closure');
+        }
+
+        state.connecting = false;
+        state.connected = false;
+        state.disconnecting = false;
+        socket = null;
+      }
+    },
+  };
+}
+
 /** Creates a disposable GQL subscriptions client. */
 export function createClient(options: ClientOptions): Client {
   const { url, connectionParams } = options;
@@ -48,70 +158,47 @@ export function createClient(options: ClientOptions): Client {
     Object.entries(subscribedSinks).forEach(([, sink]) => sink.complete());
   }
 
-  // Lazily uses the socket singleton to establishes a connection described by the protocol.
-  let socket: WebSocket | null = null,
-    connected = false,
-    connecting = false;
-  async function connect(): Promise<void> {
-    if (connected) {
-      return;
-    }
+  const socky = createSocky();
+  async function prepare(): Promise<void> {
+    if (await socky.shouldConnect()) {
+      socky.connecting();
 
-    if (connecting) {
-      let waitedTimes = 0;
-      while (!connected) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        // 100ms * 50 = 5sec
-        if (waitedTimes >= 50) {
-          throw new Error('Waited 10 seconds but socket never connected');
-        }
-        waitedTimes++;
-      }
+      return new Promise((resolve, reject) => {
+        let done = false;
+        const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
-      // connected === true
-      return;
-    }
+        /**
+         * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
+         *
+         * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
+         * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
+         * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
+         * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
+         */
 
-    connected = false;
-    connecting = true;
-    return new Promise((resolve, reject) => {
-      let done = false;
-      socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+        socket.onclose = (closeEvent) => {
+          socky.disconnected(); // just calling `onclose` means immediate disconnection
 
-      /**
-       * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
-       *
-       * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
-       * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
-       * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
-       * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
-       */
+          if (closeEvent.code === 1000 || closeEvent.code === 1001) {
+            // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
+            completeAllSinks();
+          } else {
+            // all other close events are considered erroneous
 
-      socket.onclose = (closeEvent) => {
-        // NOTE: reading the `CloseEvent.reason` either trows or empties the whole error message
-        // (if trying to pass the reason in the `Error` message). let the user handle the close event
-
-        if (closeEvent.code === 1000 || closeEvent.code === 1001) {
-          // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
-          completeAllSinks();
-        } else {
-          // all other close events are considered erroneous
-          errorAllSinks(closeEvent);
-        }
-
-        if (!done) {
-          done = true;
-          connecting = false;
-          connected = false;
-          socket = null;
-          reject(closeEvent);
-        }
-      };
-      socket.onopen = () => {
-        try {
-          if (!socket) {
-            throw new Error('Opened a socket on nothing');
+            // reading the `CloseEvent.reason` can either throw or empty the whole error message
+            // (if trying to pass the reason in the `Error` message). having this in mind,
+            // simply let the user handle the close event...
+            errorAllSinks(closeEvent);
           }
+
+          if (!done) {
+            done = true;
+            reject(closeEvent);
+          }
+        };
+
+        socket.onopen = () => {
+          // as soon as the socket opens, send the connection initalisation request
           socket.send(
             stringifyMessage<MessageType.ConnectionInit>({
               type: MessageType.ConnectionInit,
@@ -121,57 +208,38 @@ export function createClient(options: ClientOptions): Client {
                   : connectionParams,
             }),
           );
-        } catch (err) {
-          errorAllSinks(err);
-          if (!done) {
-            done = true;
-            connecting = false;
-            if (socket) {
-              socket.close();
-              socket = null;
+        };
+
+        socket.addEventListener('message', handleMessage);
+        function handleMessage({ data }: MessageEvent) {
+          try {
+            const message = parseMessage(data);
+            if (message.type !== MessageType.ConnectionAck) {
+              throw new Error(
+                `First message cannot be of type ${message.type}`,
+              );
             }
-            reject(err);
-          }
-        }
-      };
 
-      socket.addEventListener('message', handleMessage);
-      function handleMessage({ data }: MessageEvent) {
-        try {
-          if (!socket) {
-            throw new Error('Received a message on nothing');
-          }
-
-          const message = parseMessage(data);
-          if (message.type !== MessageType.ConnectionAck) {
-            throw new Error(`First message cannot be of type ${message.type}`);
-          }
-
-          // message.type === MessageType.ConnectionAck
-          if (!done) {
-            done = true;
-            connecting = false;
-            connected = true; // only now is the connection ready
-            resolve();
-          }
-        } catch (err) {
-          errorAllSinks(err);
-          if (!done) {
-            done = true;
-            connecting = false;
-            if (socket) {
-              socket.close();
-              socket = null;
+            socky.connected(socket);
+            if (!done) {
+              done = true;
+              resolve();
             }
-            reject(err);
-          }
-        } finally {
-          if (socket) {
+          } catch (err) {
+            socket.close();
+            socky.disconnected();
+
+            errorAllSinks(err);
+            if (!done) {
+              done = true;
+              reject(err);
+            }
+          } finally {
             socket.removeEventListener('message', handleMessage);
           }
         }
-      }
-    });
+      });
+    }
   }
 
   return {
@@ -183,78 +251,63 @@ export function createClient(options: ClientOptions): Client {
       }
       subscribedSinks[uuid] = sink;
 
-      function handleMessage({ data }: MessageEvent) {
-        const message = parseMessage(data);
-        switch (message.type) {
-          case MessageType.Next: {
-            if (message.id === uuid) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              sink.next(message.payload as any);
+      let messageListener: Disposable | undefined;
+      prepare()
+        .then(() => {
+          messageListener = socky.registerMessageListener(({ data }) => {
+            const message = parseMessage(data);
+            switch (message.type) {
+              case MessageType.Next: {
+                if (message.id === uuid) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  sink.next(message.payload as any);
+                }
+                break;
+              }
+              case MessageType.Error: {
+                if (message.id === uuid) {
+                  sink.error(message.payload);
+                }
+                break;
+              }
+              case MessageType.Complete: {
+                if (message.id === uuid) {
+                  sink.complete();
+                }
+                break;
+              }
             }
-            break;
-          }
-          case MessageType.Error: {
-            if (message.id === uuid) {
-              sink.error(message.payload);
-            }
-            break;
-          }
-          case MessageType.Complete: {
-            if (message.id === uuid) {
-              sink.complete();
-            }
-            break;
-          }
-        }
-      }
+          });
 
-      (async () => {
-        try {
-          await connect();
-          if (!socket) {
-            throw new Error('Socket connected but empty');
-          }
-
-          socket.addEventListener('message', handleMessage);
-          socket.send(
+          socky.send(
             stringifyMessage<MessageType.Subscribe>({
               id: uuid,
               type: MessageType.Subscribe,
               payload,
             }),
           );
-        } catch (err) {
-          sink.error(err);
-        }
-      })();
+        })
+        .catch(sink.error);
 
       return () => {
-        if (socket) {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(
-              stringifyMessage<MessageType.Complete>({
-                id: uuid,
-                type: MessageType.Complete,
-              }),
-            );
-          }
-
-          socket.removeEventListener('message', handleMessage);
-
-          // equal to 1 because this sink is the last one.
-          // the deletion from the map happens afterwards
-          if (Object.entries(subscribedSinks).length === 1) {
-            connected = false;
-            connecting = false;
-            if (socket.readyState === WebSocket.OPEN) {
-              socket.close(1000, 'Normal Closure');
-            }
-            socket = null;
-          }
+        if (messageListener) {
+          messageListener.dispose();
         }
+
+        socky.send(
+          stringifyMessage<MessageType.Complete>({
+            id: uuid,
+            type: MessageType.Complete,
+          }),
+        );
 
         sink.complete();
         delete subscribedSinks[uuid];
+
+        if (Object.entries(subscribedSinks).length === 0) {
+          // dispose of socky :(
+          socky.dispose();
+        }
       };
     },
     dispose: async () => {
@@ -265,14 +318,8 @@ export function createClient(options: ClientOptions): Client {
         delete subscribedSinks[uuid];
       });
 
-      // if there is an active socket, close it with a normal closure
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        connected = false;
-        connecting = false;
-        // TODO-db-200817 decide if `1001: Going Away` should be used instead
-        socket.close(1000, 'Normal Closure');
-        socket = null;
-      }
+      // bye bye socky :(
+      socky.dispose();
     },
   };
 }
