@@ -35,8 +35,7 @@ export interface Client extends Disposable {
 
 /** The nifty internal socket state manager: Socky 🧦. */
 function createSocky() {
-  type Socket = WebSocket | null;
-  let socket: Socket = null;
+  let socket: WebSocket | null;
   let state = {
     connecting: false,
     connected: false,
@@ -81,7 +80,7 @@ function createSocky() {
     connecting() {
       state = { connecting: true, connected: false, disconnecting: false };
     },
-    connected(connectedSocket: Socket) {
+    connected(connectedSocket: WebSocket) {
       socket = connectedSocket;
       state = { connected: true, connecting: false, disconnecting: false };
     },
