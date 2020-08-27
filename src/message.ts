@@ -134,14 +134,14 @@ export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
   }
-  if (typeof data === 'string') {
-    const message = JSON.parse(data);
-    if (!isMessage(message)) {
-      throw new Error('Invalid message');
-    }
-    return message;
+  if (typeof data !== 'string') {
+    throw new Error('Message not parsable');
   }
-  throw new Error('Message not parsable');
+  const message = JSON.parse(data);
+  if (!isMessage(message)) {
+    throw new Error('Invalid message');
+  }
+  return message;
 }
 
 /**

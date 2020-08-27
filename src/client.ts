@@ -75,7 +75,7 @@ export function createClient(options: ClientOptions): Client {
     connected = false;
     connecting = true;
     return new Promise((resolve, reject) => {
-      let done = false; // used to avoid resolving/rejecting the promise multiple times
+      let done = false;
       socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
       /**
@@ -102,9 +102,9 @@ export function createClient(options: ClientOptions): Client {
         if (!done) {
           done = true;
           connecting = false;
-          connected = false; // the connection is lost
+          connected = false;
           socket = null;
-          reject(closeEvent); // we reject here bacause the close is not supposed to be called during the connect phase
+          reject(closeEvent);
         }
       };
       socket.onopen = () => {
@@ -135,6 +135,7 @@ export function createClient(options: ClientOptions): Client {
         }
       };
 
+      socket.addEventListener('message', handleMessage);
       function handleMessage({ data }: MessageEvent) {
         try {
           if (!socket) {
@@ -166,12 +167,10 @@ export function createClient(options: ClientOptions): Client {
           }
         } finally {
           if (socket) {
-            // this listener is not necessary anymore
             socket.removeEventListener('message', handleMessage);
           }
         }
       }
-      socket.addEventListener('message', handleMessage);
     });
   }
 
@@ -259,11 +258,9 @@ export function createClient(options: ClientOptions): Client {
       };
     },
     dispose: async () => {
-      // complete all sinks
       // TODO-db-200817 complete or error? the sinks should be completed BEFORE the client gets disposed
       completeAllSinks();
 
-      // delete all sinks
       Object.keys(subscribedSinks).forEach((uuid) => {
         delete subscribedSinks[uuid];
       });

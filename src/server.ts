@@ -339,13 +339,13 @@ export function createServer(
               variableValues: operation.variables,
             };
 
-            let executionResultFormatter: ExecutionResultFormatter | undefined;
-
+            let onSubscribeFormatter: ExecutionResultFormatter | undefined;
             if (onSubscribe) {
-              [
+              [execArgsMaybeSchema, onSubscribeFormatter] = await onSubscribe(
+                ctx,
+                message,
                 execArgsMaybeSchema,
-                executionResultFormatter,
-              ] = await onSubscribe(ctx, message, execArgsMaybeSchema);
+              );
             }
             if (!execArgsMaybeSchema.schema) {
               // not providing a schema is a fatal server error
@@ -391,9 +391,9 @@ export function createServer(
                     if (formatExecutionResult) {
                       result = await formatExecutionResult(ctx, result);
                     }
-                    // use the subscription specific formatter
-                    if (executionResultFormatter) {
-                      result = await executionResultFormatter(ctx, result);
+                    // then use the subscription specific formatter
+                    if (onSubscribeFormatter) {
+                      result = await onSubscribeFormatter(ctx, result);
                     }
                     await sendMessage<MessageType.Next>(ctx, {
                       id: message.id,
@@ -431,9 +431,9 @@ export function createServer(
                 if (formatExecutionResult) {
                   result = await formatExecutionResult(ctx, result);
                 }
-                // use the subscription specific formatter
-                if (executionResultFormatter) {
-                  result = await executionResultFormatter(ctx, result);
+                // then use the subscription specific formatter
+                if (onSubscribeFormatter) {
+                  result = await onSubscribeFormatter(ctx, result);
                 }
                 await sendMessage<MessageType.Next>(ctx, {
                   id: message.id,
@@ -458,9 +458,9 @@ export function createServer(
               if (formatExecutionResult) {
                 result = await formatExecutionResult(ctx, result);
               }
-              // use the subscription specific formatter
-              if (executionResultFormatter) {
-                result = await executionResultFormatter(ctx, result);
+              // then use the subscription specific formatter
+              if (onSubscribeFormatter) {
+                result = await onSubscribeFormatter(ctx, result);
               }
               await sendMessage<MessageType.Next>(ctx, {
                 id: message.id,
