@@ -426,8 +426,13 @@ export function createServer(
                 }
               } else {
                 let result = subscriptionOrResult;
+                // use the root formater first
                 if (formatExecutionResult) {
                   result = await formatExecutionResult(ctx, result);
+                }
+                // use the subscription specific formatter
+                if (executionResultFormatter) {
+                  result = await executionResultFormatter(ctx, result);
                 }
                 await sendMessage<MessageType.Next>(ctx, {
                   id: message.id,
@@ -448,8 +453,13 @@ export function createServer(
               // operationAST.operation === 'query' || 'mutation'
 
               let result = await execute(execArgs);
+              // use the root formater first
               if (formatExecutionResult) {
                 result = await formatExecutionResult(ctx, result);
+              }
+              // use the subscription specific formatter
+              if (executionResultFormatter) {
+                result = await executionResultFormatter(ctx, result);
               }
               await sendMessage<MessageType.Next>(ctx, {
                 id: message.id,
