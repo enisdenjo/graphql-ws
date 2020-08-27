@@ -228,3 +228,70 @@ describe('subscription operation', () => {
     expect(completeFnForBananas).toBeCalled();
   });
 });
+
+it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async () => {
+  const client = createClient({ url });
+
+  const nextFnForHappy = jest.fn();
+  const completeFnForHappy = jest.fn();
+  let disposeOfHappy: () => void;
+  setTimeout(() => {
+    disposeOfHappy = client.subscribe(
+      {
+        operationName: 'BecomingHappy',
+        query: `subscription BecomingHappy {
+          becameHappy {
+            name
+          }
+        }`,
+        variables: {},
+      },
+      {
+        next: nextFnForHappy,
+        error: () => {
+          fail(`Unexpected error call`);
+        },
+        complete: completeFnForHappy,
+      },
+    );
+  });
+
+  const nextFnForBananas = jest.fn();
+  const completeFnForBananas = jest.fn();
+  setTimeout(async () => {
+    disposeOfHappy();
+
+    client.subscribe(
+      {
+        operationName: 'BoughtBananas',
+        query: `subscription BoughtBananas {
+          boughtBananas {
+            name
+          }
+        }`,
+        variables: {},
+      },
+      {
+        next: nextFnForBananas,
+        error: () => {
+          fail(`Unexpected error call`);
+        },
+        complete: completeFnForBananas,
+      },
+    );
+
+    await wait(10);
+
+    pubsub.publish('boughtBananas', {
+      boughtBananas: {
+        name: 'john',
+      },
+    });
+  });
+
+  await wait(25);
+
+  expect(nextFnForHappy).not.toBeCalled();
+  expect(completeFnForHappy).toBeCalled();
+  expect(nextFnForBananas).toBeCalled();
+});
