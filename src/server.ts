@@ -94,7 +94,7 @@ export interface ServerOptions {
    * The amount of time for which the
    * server will wait for `ConnectionInit` message.
    *
-   * Set the value to `Infinity` to skip waiting.
+   * Set the value to `Infinity`, '', 0, null or undefined to skip waiting.
    *
    * If the wait timeout has passed and the client
    * has not sent the `ConnectionInit` message,
@@ -227,6 +227,7 @@ export function createServer(
     // kick the client off (close socket) if the connection has
     // not been initialised after the specified wait timeout
     const connectionInitWait =
+      connectionInitWaitTimeout && // even 0 disables it
       connectionInitWaitTimeout !== Infinity &&
       setTimeout(() => {
         if (!ctxRef.current.connectionInitReceived) {
