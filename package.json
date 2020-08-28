@@ -2,6 +2,23 @@
   "name": "@enisdenjo/graphql-transport-ws",
   "version": "1.1.1",
   "description": "A WebSocket client for GraphQL subscriptions",
+  "keywords": [
+    "graphql",
+    "subscriptions",
+    "graphql-subscriptions",
+    "graphql-transport-ws",
+    "transport-ws",
+    "transport",
+    "ws",
+    "websocket",
+    "websocket-client",
+    "websocket-server",
+    "real-time",
+    "relay",
+    "relay-modern",
+    "apollo",
+    "protocol"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/enisdenjo/graphql-transport-ws#readme",
   "repository": {
