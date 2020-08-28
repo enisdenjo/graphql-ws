@@ -17,15 +17,15 @@ npm install @enisdenjo/graphql-transport-ws
 #### Client usage with [Relay](https://relay.dev)
 
 ```ts
-import { createClient } from '@enisdenjo/graphql-transport-ws';
 import { Network, Observable } from 'relay-runtime';
+import { createClient } from '@enisdenjo/graphql-transport-ws';
 
 const subscriptionsClient = createClient({
   url: 'wss://some.url/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
-      return null;
+      return {};
     }
     return {
       Authorization: `Bearer ${session.token}`,
@@ -52,7 +52,27 @@ export const network = Network.create(
           query: operation.text,
           variables,
         },
-        sink,
+        {
+          ...sink,
+          error: (err) => {
+            if (err instanceof Error) {
+              sink.error(err);
+            } else if (err instanceof CloseEvent) {
+              sink.error(
+                new Error(
+                  `Socket closed with event ${err.code}` + err.reason
+                    ? `: ${err.reason}` // reason will be available on clean closes
+                    : '',
+                ),
+              );
+            } else {
+              // GraphQLError[]
+              sink.error(
+                new Error(err.map(({ message }) => message).join(', ')),
+              );
+            }
+          },
+        },
       );
     });
   },
@@ -62,7 +82,6 @@ export const network = Network.create(
 #### Client usage with [Apollo](https://www.apollographql.com)
 
 ```typescript
-import { print } from 'graphql';
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
 import { createClient, Config, Client } from '@enisdenjo/graphql-transport-ws';
 
@@ -74,16 +93,27 @@ class WebSocketLink extends ApolloLink {
     this.client = createClient(config);
   }
 
-  public request({
-    operationName,
-    query,
-    variables,
-  }: Operation): Observable<FetchResult> {
+  public request(operation: Operation): Observable<FetchResult> {
     return new Observable((sink) => {
-      return this.client.subscribe<FetchResult>(
-        { operationName, query: print(query), variables },
-        sink,
-      );
+      return this.client.subscribe<FetchResult>(operation, {
+        ...sink,
+        error: (err) => {
+          if (err instanceof Error) {
+            sink.error(err);
+          } else if (err instanceof CloseEvent) {
+            sink.error(
+              new Error(
+                `Socket closed with event ${err.code}` + err.reason
+                  ? `: ${err.reason}` // reason will be available on clean closes
+                  : '',
+              ),
+            );
+          } else {
+            // GraphQLError[]
+            sink.error(new Error(err.map(({ message }) => message).join(', ')));
+          }
+        },
+      });
     });
   }
 }
@@ -93,7 +123,7 @@ const link = new WebSocketLink({
   connectionParams: () => {
     const session = getSession();
     if (!session) {
-      return null;
+      return {};
     }
     return {
       Authorization: `Bearer ${session.token}`,
