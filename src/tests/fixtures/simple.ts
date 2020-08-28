@@ -80,12 +80,12 @@ export async function startServer(
     server,
     () =>
       new Promise((resolve, reject) => {
-        server
-          .dispose()
-          .catch(reject)
-          .then(() => {
+        const disposing = server.dispose();
+        if (disposing instanceof Promise) {
+          disposing.catch(reject).then(() => {
             httpServer.close((err) => (err ? reject(err) : resolve()));
           });
+        }
       }),
   ];
 }

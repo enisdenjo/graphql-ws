@@ -14,7 +14,7 @@ export type UUID = string;
 
 export interface Disposable {
   /** Dispose of the instance and clear up resources. */
-  dispose: () => Promise<void>;
+  dispose: () => void | Promise<void>;
 }
 
 /**
