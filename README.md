@@ -1,4 +1,4 @@
-# graphql-transport-ws
+# GraphQL 🧩 WebSocket
 
 > 🔗 A coherent, zero-dependency, lazy, simple and easy to use server and client implementation of the [GraphQL over WebSocket Protocol](PROTOCOL.md).
 
