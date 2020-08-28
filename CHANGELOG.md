@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.1.0...v1.1.1) (2020-08-28)
+
+
+### Bug Fixes
+
+* add the sink to the subscribed map AFTER emitting a subscribe message ([814f46c](https://github.com/enisdenjo/graphql-transport-ws/commit/814f46c119792aaa240d0fcdb318dccdd1cc0e87))
+* notify only relevant sinks about errors or completions ([62155ba](https://github.com/enisdenjo/graphql-transport-ws/commit/62155ba0b79516141633b86765921b2401fcc2ed))
+
 # [1.1.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.0.2...v1.1.0) (2020-08-28)
 
 
