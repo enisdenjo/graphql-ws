@@ -166,14 +166,12 @@ export function createClient(options: ClientOptions): Client {
               sink.complete(),
             );
           } else {
-            // all other close events are considered erroneous for all sinks
-
             // reading the `CloseEvent.reason` can either throw or empty the whole error message
             // (if trying to pass the reason in the `Error` message). having this in mind,
             // simply let the user handle the close event...
-            Object.entries(pendingSinks).forEach(([, sink]) =>
-              sink.error(closeEvent),
-            );
+
+            // only the subscribed sinks should be errored out because
+            // the pending ones are probably waiting on a new socket
             Object.entries(subscribedSinks).forEach(([, sink]) =>
               sink.error(closeEvent),
             );
@@ -216,10 +214,12 @@ export function createClient(options: ClientOptions): Client {
           } catch (err) {
             socky.dispose();
 
+            // only pending sinks can error out here because opening a
+            // socket and receiving a connection ack message means
+            // all subscribed ones are disposed (or on a different socket)
+            // and we are now creating a fresh connection
             Object.entries(pendingSinks).forEach(([, sink]) => sink.error(err));
-            Object.entries(subscribedSinks).forEach(([, sink]) =>
-              sink.error(err),
-            );
+
             if (!done) {
               done = true;
               reject(err);
