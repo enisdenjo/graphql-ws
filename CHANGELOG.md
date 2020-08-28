@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.0.2...v1.1.0) (2020-08-28)
+
+
+### Bug Fixes
+
+* **server:** allow skipping init message wait with zero values ([a7419df](https://github.com/enisdenjo/graphql-transport-ws/commit/a7419df077acb018418016c7a06716fb3c054ddb))
+* **server:** use subscription specific formatter for queries and mutations too ([5672a04](https://github.com/enisdenjo/graphql-transport-ws/commit/5672a045332ea835e6ff7ce862c7c2a46729363b))
+
+
+### Features
+
+* **client:** introduce Socky 🧦 - the nifty internal socket state manager ([#8](https://github.com/enisdenjo/graphql-transport-ws/issues/8)) ([a4bee6f](https://github.com/enisdenjo/graphql-transport-ws/commit/a4bee6fb8c1bd56637363a76f6ab0c3b64f55931))
+
 ## [1.0.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.0.1...v1.0.2) (2020-08-26)
 
 
