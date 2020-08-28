@@ -252,7 +252,6 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          subscribedSinks[uuid] = sink;
           messageListener = socky.registerMessageListener(({ data }) => {
             const message = parseMessage(data);
             switch (message.type) {
@@ -285,6 +284,9 @@ export function createClient(options: ClientOptions): Client {
               payload,
             }),
           );
+
+          // the sink is now subscribed
+          subscribedSinks[uuid] = sink;
         })
         .catch(sink.error);
 
