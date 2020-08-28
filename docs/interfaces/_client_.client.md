@@ -4,7 +4,7 @@
 
 ## Hierarchy
 
-* [Disposable](_types_d_.disposable.md)
+* [Disposable](_types_.disposable.md)
 
   ↳ **Client**
 
@@ -24,23 +24,23 @@
 
 • **dispose**: *function*
 
-*Inherited from [Disposable](_types_d_.disposable.md).[dispose](_types_d_.disposable.md#dispose)*
+*Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.d.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/types.d.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
 #### Type declaration:
 
-▸ (): *Promise‹void›*
+▸ (): *void | Promise‹void›*
 
 ## Methods
 
 ###  subscribe
 
-▸ **subscribe**‹**T**›(`payload`: [SubscribePayload](_message_.subscribepayload.md), `sink`: [Sink](_types_d_.sink.md)‹T›): *function*
+▸ **subscribe**‹**T**›(`payload`: [SubscribePayload](_message_.subscribepayload.md), `sink`: [Sink](_types_.sink.md)‹T›): *function*
 
-*Defined in [client.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/client.ts#L33)*
+*Defined in [client.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/client.ts#L33)*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -55,7 +55,7 @@ function used for dropping the subscription and cleaning stuff up.
 Name | Type |
 ------ | ------ |
 `payload` | [SubscribePayload](_message_.subscribepayload.md) |
-`sink` | [Sink](_types_d_.sink.md)‹T› |
+`sink` | [Sink](_types_.sink.md)‹T› |
 
 **Returns:** *function*
 

@@ -10,4 +10,4 @@
 * ["message"](modules/_message_.md)
 * ["protocol"](modules/_protocol_.md)
 * ["server"](modules/_server_.md)
-* ["types.d"](modules/_types_d_.md)
+* ["types"](modules/_types_.md)

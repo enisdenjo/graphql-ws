@@ -26,14 +26,14 @@
 
 • **connectionInitWaitTimeout**? : *undefined | number*
 
-*Defined in [server.ts:99](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L99)*
+*Defined in [server.ts:104](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L104)*
 
 **`default`** 3 * 1000 (3 seconds)
 
 The amount of time for which the
 server will wait for `ConnectionInit` message.
 
-Set the value to `Infinity` to skip waiting.
+Set the value to `Infinity`, '', 0, null or undefined to skip waiting.
 
 If the wait timeout has passed and the client
 has not sent the `ConnectionInit` message,
@@ -46,7 +46,7 @@ ___
 
 • **execute**: *function*
 
-*Defined in [server.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L55)*
+*Defined in [server.ts:60](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L60)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -67,13 +67,14 @@ ___
 
 ### `Optional` formatExecutionResult
 
-• **formatExecutionResult**? : *undefined | function*
+• **formatExecutionResult**? : *[ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)*
 
-*Defined in [server.ts:110](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L110)*
+*Defined in [server.ts:116](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L116)*
 
 Format the operation execution results
 if the implementation requires an adjusted
-result.
+result. This formatter is run BEFORE the
+`onConnect` scoped formatter.
 
 ___
 
@@ -81,7 +82,7 @@ ___
 
 • **onComplete**? : *undefined | function*
 
-*Defined in [server.ts:130](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L130)*
+*Defined in [server.ts:138](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L138)*
 
 The complete callback is executed after the
 operation has completed or the subscription
@@ -93,7 +94,7 @@ ___
 
 • **onConnect**? : *undefined | function*
 
-*Defined in [server.ts:85](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L85)*
+*Defined in [server.ts:90](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L90)*
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -120,12 +121,15 @@ ___
 
 • **onSubscribe**? : *undefined | function*
 
-*Defined in [server.ts:120](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L120)*
+*Defined in [server.ts:126](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L126)*
 
 The subscribe callback executed before
 the actual operation execution. Useful
 for manipulating the execution arguments
-before the doing the operation.
+before the doing the operation. As a second
+item in the array, you can pass in a scoped
+execution result formatter. This formatter
+is run AFTER the root `formatExecutionResult`.
 
 ___
 
@@ -133,7 +137,7 @@ ___
 
 • **schema**? : *GraphQLSchema*
 
-*Defined in [server.ts:48](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L48)*
+*Defined in [server.ts:53](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L53)*
 
 The GraphQL schema on which the operations
 will be executed and validated against. If
@@ -147,7 +151,7 @@ ___
 
 • **subscribe**: *function*
 
-*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L62)*
+*Defined in [server.ts:67](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L67)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -170,7 +174,7 @@ ___
 
 • **validationRules**? : *keyof ValidationRule[]*
 
-*Defined in [server.ts:104](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L104)*
+*Defined in [server.ts:109](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L109)*
 
 Custom validation rules overriding all
 validation rules defined by the GraphQL spec.

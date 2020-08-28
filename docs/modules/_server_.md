@@ -10,9 +10,32 @@
 * [Server](../interfaces/_server_.server.md)
 * [ServerOptions](../interfaces/_server_.serveroptions.md)
 
+### Type aliases
+
+* [ExecutionResultFormatter](_server_.md#executionresultformatter)
+
 ### Functions
 
 * [createServer](_server_.md#createserver)
+
+## Type aliases
+
+###  ExecutionResultFormatter
+
+Ƭ **ExecutionResultFormatter**: *function*
+
+*Defined in [server.ts:40](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L40)*
+
+#### Type declaration:
+
+▸ (`ctx`: [Context](../interfaces/_server_.context.md), `result`: ExecutionResult): *Promise‹ExecutionResult› | ExecutionResult*
+
+**Parameters:**
+
+Name | Type |
+------ | ------ |
+`ctx` | [Context](../interfaces/_server_.context.md) |
+`result` | ExecutionResult |
 
 ## Functions
 
@@ -20,7 +43,7 @@
 
 ▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions | WebSocketServer): *[Server](../interfaces/_server_.server.md)*
 
-*Defined in [server.ts:171](https://github.com/enisdenjo/graphql-transport-ws/blob/923625c/src/server.ts#L171)*
+*Defined in [server.ts:187](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/server.ts#L187)*
 
 Creates a protocol complient WebSocket GraphQL
 subscription server. Read more about the protocol
