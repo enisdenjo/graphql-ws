@@ -1,7 +1,7 @@
 {
   "name": "@enisdenjo/graphql-transport-ws",
   "version": "1.1.1",
-  "description": "A WebSocket client for GraphQL subscriptions",
+  "description": "🔗 A coherent, zero-dependency, lazy, simple and easy to use server and client implementation for GraphQL over WebSocket.",
   "keywords": [
     "graphql",
     "subscriptions",
