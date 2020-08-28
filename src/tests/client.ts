@@ -261,6 +261,8 @@ it('should dispatch and receive messages even if one subscriber disposes while a
   setTimeout(async () => {
     disposeOfHappy();
 
+    await wait(5);
+
     client.subscribe(
       {
         operationName: 'BoughtBananas',
