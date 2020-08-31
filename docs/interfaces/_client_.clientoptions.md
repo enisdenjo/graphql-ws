@@ -21,7 +21,7 @@ Configuration used for the `create` client function.
 
 • **connectionParams**? : *Record‹string, unknown› | function*
 
-*Defined in [client.ts:24](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/client.ts#L24)*
+*Defined in [client.ts:24](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/client.ts#L24)*
 
 Optional parameters that the client specifies when establishing a connection with the server.
 
@@ -31,6 +31,6 @@ ___
 
 • **url**: *string*
 
-*Defined in [client.ts:22](https://github.com/enisdenjo/graphql-transport-ws/blob/bce17d7/src/client.ts#L22)*
+*Defined in [client.ts:22](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/client.ts#L22)*
 
 URL of the GraphQL server to connect.

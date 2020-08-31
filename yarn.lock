@@ -1246,7 +1246,7 @@ __metadata:
     jest: ^26.4.2
     prettier: ^2.1.1
     semantic-release: ^17.1.1
-    typedoc: ^0.18.0
+    typedoc: ^0.19.0
     typedoc-plugin-markdown: ^2.4.2
     typescript: ^4.0.2
     ws: ^7.3.1
@@ -6859,7 +6859,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.4":
+"lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.4":
   version: 4.17.20
   resolution: "lodash@npm:4.17.20"
   checksum: c62101d2500c383b5f174a7e9e6fe8098149ddd6e9ccfa85f36d4789446195f5c4afd3cfba433026bcaf3da271256566b04a2bf2618e5a39f6e67f8c12030cb6
@@ -6912,7 +6912,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"lunr@npm:^2.3.8":
+"lunr@npm:^2.3.9":
   version: 2.3.9
   resolution: "lunr@npm:2.3.9"
   checksum: a2b66320c2f6632322b91c43621eed9e623c0f1b81e7c2d74c238884a02229698baa4478bd238e9b32d7abf0db5ae9233b311c28e1edbcc481774e1ce83bec6f
@@ -10326,12 +10326,12 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"typedoc-default-themes@npm:^0.10.2":
-  version: 0.10.2
-  resolution: "typedoc-default-themes@npm:0.10.2"
+"typedoc-default-themes@npm:^0.11.1":
+  version: 0.11.1
+  resolution: "typedoc-default-themes@npm:0.11.1"
   dependencies:
-    lunr: ^2.3.8
-  checksum: 8766471937395067504b3f21edd8c9f89e6901c2912aff0b4371a5dfceea31e4a1f9d08282c2998d0bc0a70e3d6943b3043ebe90e6b11dfdaf52c4a05e32d980
+    lunr: ^2.3.9
+  checksum: a83a1984d64c3d64e60d29e0fb9e82bcd25d80a2d1949e3788eda9dbd6473d55bc8bb9c34a590725d7910ab86bce5e9a41a85480122ad6d65492b431a75f7458
   languageName: node
   linkType: hard
 
@@ -10347,25 +10347,25 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.18.0":
-  version: 0.18.0
-  resolution: "typedoc@npm:0.18.0"
+"typedoc@npm:^0.19.0":
+  version: 0.19.0
+  resolution: "typedoc@npm:0.19.0"
   dependencies:
     fs-extra: ^9.0.1
     handlebars: ^4.7.6
     highlight.js: ^10.0.0
-    lodash: ^4.17.15
-    lunr: ^2.3.8
+    lodash: ^4.17.20
+    lunr: ^2.3.9
     marked: ^1.1.1
     minimatch: ^3.0.0
     progress: ^2.0.3
     shelljs: ^0.8.4
-    typedoc-default-themes: ^0.10.2
+    typedoc-default-themes: ^0.11.1
   peerDependencies:
-    typescript: ">=3.8.3"
+    typescript: ">=4.0.2"
   bin:
     typedoc: bin/typedoc
-  checksum: 74abaec6601e823c29805cb0edf709329cf6ffe8189be50eab5b939bff502de535f1dc0be60f425000cf8d9246cdec65c5cde898b240a97bcb10461f37430393
+  checksum: a0e704959e6578a1caeee459cc8b304ee7c08a066445a4b2ef3eb8a149c143ae03581a9b431a786957c32bd983b32fa0657ef67f8cf1df86645377cd6418c828
   languageName: node
   linkType: hard
 
