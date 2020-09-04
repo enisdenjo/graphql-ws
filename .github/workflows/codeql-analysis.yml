@@ -8,6 +8,8 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - master
+  schedule:
+    - cron: '0 23 * * 0'
 
 jobs:
   analyze:
