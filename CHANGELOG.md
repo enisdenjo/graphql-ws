@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.1.1...v1.2.0) (2020-09-04)
+
+
+### Features
+
+* Package rename `@enisdenjo/graphql-transport-ws` 👉 `graphql-transport-ws`. ([494f676](https://github.com/enisdenjo/graphql-transport-ws/commit/494f6766279325769e81f52ce7b4b442c85f9476))
+
 ## [1.1.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.1.0...v1.1.1) (2020-08-28)
 
 
