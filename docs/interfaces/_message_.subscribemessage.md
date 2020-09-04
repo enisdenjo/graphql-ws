@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [SubscribeMessage](_message_.subscribemessage.md)
+[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [SubscribeMessage](_message_.subscribemessage.md)
 
 # Interface: SubscribeMessage
 
@@ -20,7 +20,7 @@
 
 • **id**: *string*
 
-*Defined in [message.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L37)*
+*Defined in [message.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L37)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • **payload**: *[SubscribePayload](_message_.subscribepayload.md)*
 
-*Defined in [message.ts:39](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L39)*
+*Defined in [message.ts:39](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L39)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • **type**: *[Subscribe](../enums/_message_.messagetype.md#subscribe)*
 
-*Defined in [message.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L38)*
+*Defined in [message.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L38)*

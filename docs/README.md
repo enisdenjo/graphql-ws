@@ -1,6 +1,6 @@
-[@enisdenjo/graphql-transport-ws](README.md)
+[graphql-transport-ws](README.md)
 
-# @enisdenjo/graphql-transport-ws
+# graphql-transport-ws
 
 ## Index
 

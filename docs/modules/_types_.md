@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["types"](_types_.md)
+[graphql-transport-ws](../README.md) › ["types"](_types_.md)
 
 # Module: "types"
 
@@ -19,7 +19,7 @@
 
 Ƭ **UUID**: *string*
 
-*Defined in [types.ts:13](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/types.ts#L13)*
+*Defined in [types.ts:13](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/types.ts#L13)*
 
 UUID v4 string type alias generated through the
 `generateUUID` function from the client.

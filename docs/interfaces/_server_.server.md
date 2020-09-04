@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["server"](../modules/_server_.md) › [Server](_server_.server.md)
+[graphql-transport-ws](../README.md) › ["server"](../modules/_server_.md) › [Server](_server_.server.md)
 
 # Interface: Server
 
@@ -23,7 +23,7 @@
 
 *Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/types.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
@@ -37,4 +37,4 @@ ___
 
 • **webSocketServer**: *Server*
 
-*Defined in [server.ts:175](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/server.ts#L175)*
+*Defined in [server.ts:175](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/server.ts#L175)*

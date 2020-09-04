@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ErrorMessage](_message_.errormessage.md)
+[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ErrorMessage](_message_.errormessage.md)
 
 # Interface: ErrorMessage
 
@@ -20,7 +20,7 @@
 
 • **id**: *string*
 
-*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L55)*
+*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L55)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • **payload**: *readonly GraphQLError[]*
 
-*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L57)*
+*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L57)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • **type**: *[Error](../enums/_message_.messagetype.md#error)*
 
-*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L56)*
+*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L56)*

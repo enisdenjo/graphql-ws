@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ConnectionInitMessage](_message_.connectioninitmessage.md)
+[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ConnectionInitMessage](_message_.connectioninitmessage.md)
 
 # Interface: ConnectionInitMessage
 
@@ -19,7 +19,7 @@
 
 • **payload**? : *Record‹string, unknown›*
 
-*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L29)*
+*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L29)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 • **type**: *[ConnectionInit](../enums/_message_.messagetype.md#connectioninit)*
 
-*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L28)*
+*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L28)*

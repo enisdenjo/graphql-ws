@@ -1220,41 +1220,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@enisdenjo/graphql-transport-ws@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@enisdenjo/graphql-transport-ws@workspace:."
-  dependencies:
-    "@babel/core": ^7.11.4
-    "@babel/plugin-proposal-class-properties": ^7.10.4
-    "@babel/plugin-proposal-nullish-coalescing-operator": ^7.10.4
-    "@babel/plugin-proposal-object-rest-spread": ^7.11.0
-    "@babel/plugin-proposal-optional-chaining": ^7.11.0
-    "@babel/preset-env": ^7.11.0
-    "@babel/preset-typescript": ^7.10.4
-    "@semantic-release/changelog": ^5.0.1
-    "@semantic-release/git": ^9.0.0
-    "@types/jest": ^26.0.10
-    "@types/ws": ^7.2.6
-    "@typescript-eslint/eslint-plugin": ^3.10.1
-    "@typescript-eslint/parser": ^3.10.1
-    babel-jest: ^26.3.0
-    eslint: ^7.7.0
-    eslint-config-prettier: ^6.11.0
-    eslint-plugin-prettier: ^3.1.4
-    graphql: ^15.3.0
-    graphql-subscriptions: ^1.1.0
-    jest: ^26.4.2
-    prettier: ^2.1.1
-    semantic-release: ^17.1.1
-    typedoc: ^0.19.0
-    typedoc-plugin-markdown: ^2.4.2
-    typescript: ^4.0.2
-    ws: ^7.3.1
-  peerDependencies:
-    graphql: ">=15.0.0"
-  languageName: unknown
-  linkType: soft
-
 "@iarna/cli@npm:^1.2.0":
   version: 1.2.0
   resolution: "@iarna/cli@npm:1.2.0"
@@ -4816,6 +4781,41 @@ fsevents@^2.1.2:
   checksum: 3e10eebf446ebc3f4a2ec9c5798495234cbb446ad4b37e292c0419249366795168c3dc46fa981dd46f11da7c470cab4dc4e3b7ee98831ccd57e71d3d0d9567b8
   languageName: node
   linkType: hard
+
+"graphql-transport-ws@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "graphql-transport-ws@workspace:."
+  dependencies:
+    "@babel/core": ^7.11.4
+    "@babel/plugin-proposal-class-properties": ^7.10.4
+    "@babel/plugin-proposal-nullish-coalescing-operator": ^7.10.4
+    "@babel/plugin-proposal-object-rest-spread": ^7.11.0
+    "@babel/plugin-proposal-optional-chaining": ^7.11.0
+    "@babel/preset-env": ^7.11.0
+    "@babel/preset-typescript": ^7.10.4
+    "@semantic-release/changelog": ^5.0.1
+    "@semantic-release/git": ^9.0.0
+    "@types/jest": ^26.0.10
+    "@types/ws": ^7.2.6
+    "@typescript-eslint/eslint-plugin": ^3.10.1
+    "@typescript-eslint/parser": ^3.10.1
+    babel-jest: ^26.3.0
+    eslint: ^7.7.0
+    eslint-config-prettier: ^6.11.0
+    eslint-plugin-prettier: ^3.1.4
+    graphql: ^15.3.0
+    graphql-subscriptions: ^1.1.0
+    jest: ^26.4.2
+    prettier: ^2.1.1
+    semantic-release: ^17.1.1
+    typedoc: ^0.19.0
+    typedoc-plugin-markdown: ^2.4.2
+    typescript: ^4.0.2
+    ws: ^7.3.1
+  peerDependencies:
+    graphql: ">=15.0.0"
+  languageName: unknown
+  linkType: soft
 
 "graphql@npm:^15.3.0":
   version: 15.3.0

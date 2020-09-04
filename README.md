@@ -7,9 +7,9 @@
 ### Install
 
 ```shell
-yarn add @enisdenjo/graphql-transport-ws
+yarn add graphql-transport-ws
 # or
-npm install @enisdenjo/graphql-transport-ws
+npm install graphql-transport-ws
 ```
 
 ### Examples
@@ -18,7 +18,7 @@ npm install @enisdenjo/graphql-transport-ws
 
 ```ts
 import { Network, Observable } from 'relay-runtime';
-import { createClient } from '@enisdenjo/graphql-transport-ws';
+import { createClient } from 'graphql-transport-ws';
 
 const subscriptionsClient = createClient({
   url: 'wss://some.url/graphql',
@@ -83,7 +83,7 @@ export const network = Network.create(
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
-import { createClient, Config, Client } from '@enisdenjo/graphql-transport-ws';
+import { createClient, Config, Client } from 'graphql-transport-ws';
 
 class WebSocketLink extends ApolloLink {
   private client: Client;

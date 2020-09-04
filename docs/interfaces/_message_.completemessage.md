@@ -1,4 +1,4 @@
-[@enisdenjo/graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [CompleteMessage](_message_.completemessage.md)
+[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [CompleteMessage](_message_.completemessage.md)
 
 # Interface: CompleteMessage
 
@@ -19,7 +19,7 @@
 
 • **id**: *string*
 
-*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L61)*
+*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L61)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 • **type**: *[Complete](../enums/_message_.messagetype.md#complete)*
 
-*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/9a98ec4/src/message.ts#L62)*
+*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/message.ts#L62)*
