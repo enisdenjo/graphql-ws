@@ -45,6 +45,12 @@ export interface ClientOptions {
   url: string;
   /** Optional parameters that the client specifies when establishing a connection with the server. */
   connectionParams?: ConnectionParams;
+  /**
+   * Should the connection be established immediately and persisted
+   * or after the first listener subscribed.
+   * @default true
+   */
+  lazy?: boolean;
 }
 
 export interface Client extends Disposable {
@@ -58,7 +64,7 @@ export interface Client extends Disposable {
 
 /** The internal socket manager. */
 function createSocket(options: ClientOptions) {
-  const { url, connectionParams } = options;
+  const { url, connectionParams, lazy = true } = options;
 
   let state = {
     connecting: false,
@@ -206,6 +212,10 @@ function createSocket(options: ClientOptions) {
     }
   }
 
+  if (!lazy) {
+    up();
+  }
+
   return {
     subscribe<E extends Event>(
       event: E,
@@ -213,7 +223,7 @@ function createSocket(options: ClientOptions) {
     ): Disposable {
       subscribers.add(event, listener);
 
-      if (event === 'message') {
+      if (lazy && event === 'message') {
         up();
       }
 
@@ -225,9 +235,11 @@ function createSocket(options: ClientOptions) {
       return {
         dispose: () => {
           subscribers.remove(event, listener);
-
-          // stop when last message unsubscribe
-          if (event === 'message' && subscribers.state.message.length === 0) {
+          if (
+            lazy &&
+            event === 'message' &&
+            subscribers.state.message.length === 0
+          ) {
             down();
           }
         },
