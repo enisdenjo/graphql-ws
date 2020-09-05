@@ -14,14 +14,37 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from './message';
-import { noop } from './utils';
+
+export type EventConnecting = 'connecting';
+export type EventConnect = 'connect';
+export type EventDisconnected = 'disconnected';
+export type EventMessage = 'message';
+export type Event =
+  | EventConnecting
+  | EventConnect
+  | EventDisconnected
+  | EventMessage;
+
+export type EventListener<E extends Event> = E extends EventConnecting
+  ? () => void
+  : E extends EventConnect
+  ? (socket: WebSocket) => void
+  : E extends EventDisconnected
+  ? (event: CloseEvent) => void
+  : E extends EventMessage
+  ? (event: MessageEvent) => void
+  : null;
+
+type ConnectionParams =
+  | Record<string, unknown>
+  | (() => Record<string, unknown>);
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
   /** URL of the GraphQL server to connect. */
   url: string;
   /** Optional parameters that the client specifies when establishing a connection with the server. */
-  connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
+  connectionParams?: ConnectionParams;
 }
 
 export interface Client extends Disposable {
@@ -33,303 +56,269 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** The nifty internal socket state manager: Socky 🧦. */
-function createSocky() {
-  let socket: WebSocket | undefined;
+/** The internal socket manager. */
+function createSocket(options: ClientOptions) {
+  const { url, connectionParams } = options;
+
   let state = {
     connecting: false,
-    connected: false,
+    connectedSocket: null as WebSocket | null,
     disconnecting: false,
   };
 
+  const subscribers = (() => {
+    const state: { [event in Event]: EventListener<event>[] } = {
+      connecting: [],
+      connect: [],
+      disconnected: [],
+      message: [],
+    };
+
+    return {
+      state,
+      add<E extends Event>(event: E, listener: EventListener<E>) {
+        (state[event] as EventListener<E>[]).push(listener);
+      },
+      remove<E extends Event>(event: E, listener: EventListener<E>) {
+        const ev = state[event] as EventListener<E>[];
+        ev.splice(ev.indexOf(listener), 1);
+      },
+      publish<E extends Event>(
+        event: E,
+        ...args: Parameters<EventListener<E>>
+      ) {
+        (state[event] as EventListener<E>[]).forEach((listener) => {
+          // @ts-expect-error: The args do actually fit
+          listener(...args);
+        });
+      },
+    };
+  })();
+
+  async function up(): Promise<void> {
+    if (state.connecting) {
+      let waitedTimes = 0;
+      while (state.connecting) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        // 100ms * 50 = 5sec
+        if (waitedTimes >= 50) {
+          throw new Error('Waited 10 seconds but socket never connected');
+        }
+        waitedTimes++;
+      }
+    }
+
+    if (state.disconnecting) {
+      let waitedTimes = 0;
+      while (state.disconnecting) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        // 100ms * 50 = 5sec
+        if (waitedTimes >= 50) {
+          throw new Error('Waited 10 seconds but socket never disconnected');
+        }
+        waitedTimes++;
+      }
+    }
+
+    // the state could've changed while waiting for `connecting` or
+    // `disconnecting`, if it did - start connecting again
+    if (state.connecting || state.disconnecting) {
+      return await up();
+    }
+
+    // the socket could've connected in the meantime
+    if (state.connectedSocket) {
+      return;
+    }
+
+    state = { ...state, connecting: true };
+    subscribers.publish('connecting');
+    const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+
+    /**
+     * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
+     *
+     * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
+     * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
+     * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
+     * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
+     */
+
+    socket.onclose = (closeEvent) => {
+      state = {
+        ...state,
+        connectedSocket: null,
+        disconnecting: false,
+      };
+      subscribers.publish('disconnected', closeEvent);
+    };
+
+    socket.onopen = () => {
+      // as soon as the socket opens, send the connection initalisation request
+      socket.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+          payload:
+            typeof connectionParams === 'function'
+              ? connectionParams()
+              : connectionParams,
+        }),
+      );
+    };
+
+    let acknowledged = false;
+    socket.onmessage = (event) => {
+      try {
+        if (!acknowledged) {
+          const message = parseMessage(event.data);
+          if (message.type !== MessageType.ConnectionAck) {
+            throw new Error(`First message cannot be of type ${message.type}`);
+          }
+          acknowledged = true;
+          state = {
+            ...state,
+            connectedSocket: socket,
+            connecting: false,
+          };
+          subscribers.publish('connect', socket);
+        } else {
+          subscribers.publish('message', event);
+        }
+      } catch (err) {
+        socket.close(4400, err);
+      }
+    };
+  }
+
+  function down() {
+    if (!state.disconnecting) {
+      state = { ...state, disconnecting: true };
+      if (state.connectedSocket) {
+        state.connectedSocket.close(1000, 'Normal Closure');
+        state.connectedSocket = null;
+        // the close event listener will update the state
+      } else {
+        state = {
+          ...state,
+          disconnecting: false,
+        };
+      }
+    }
+  }
+
   return {
-    async beginConnecting(): Promise<boolean> {
-      if (state.connecting) {
-        let waitedTimes = 0;
-        while (state.connecting) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          // 100ms * 50 = 5sec
-          if (waitedTimes >= 50) {
-            throw new Error('Waited 10 seconds but socket never connected');
-          }
-          waitedTimes++;
-        }
-      }
-
-      if (state.disconnecting) {
-        let waitedTimes = 0;
-        while (state.disconnecting) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          // 100ms * 50 = 5sec
-          if (waitedTimes >= 50) {
-            throw new Error('Waited 10 seconds but socket never disconnected');
-          }
-          waitedTimes++;
-        }
-      }
-
-      // the state could've changed while waiting for `connecting` or
-      // `disconnecting`, if it did - start connecting again
-      if (state.connecting || state.disconnecting) {
-        return await this.beginConnecting();
-      }
-
-      // the socket could've connected in the meantime
-      if (state.connected) {
-        return false;
-      }
-
-      state = { ...state, connecting: true };
-      return true;
-    },
-    connected(connectedSocket: WebSocket) {
-      socket = connectedSocket;
-      state = { ...state, connected: true, connecting: false };
-    },
-    registerMessageListener(
-      listener: (event: MessageEvent) => void,
+    subscribe<E extends Event>(
+      event: E,
+      listener: EventListener<E>,
     ): Disposable {
-      if (!socket) {
-        throw new Error(
-          'Illegal socket access while registering a message listener. Has Socky been prepared?',
-        );
+      subscribers.add(event, listener);
+
+      if (event === 'message') {
+        up();
       }
 
-      socket.addEventListener('message', listener);
+      // notify fresh connect listeners immediately
+      if (event === 'connect' && state.connectedSocket) {
+        (listener as EventListener<EventConnect>)(state.connectedSocket);
+      }
+
       return {
         dispose: () => {
-          // we use the internal socket here because the connection
-          // might have been lost before the deregistration is requested
-          if (socket) {
-            socket.removeEventListener('message', listener);
+          subscribers.remove(event, listener);
+
+          // stop when last message unsubscribe
+          if (event === 'message' && subscribers.state.message.length === 0) {
+            down();
           }
         },
       };
     },
     send(data: string) {
-      // TODO-db-200827 decide if accessing missing socket during send is illegal
-      if (!socket) {
-        throw new Error(
-          'Illegal socket access while sending a message. Preparation skipped?',
-        );
-      }
-
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(data);
+      if (state.connectedSocket) {
+        state.connectedSocket.send(data);
       }
     },
-    dispose() {
-      if (!state.disconnecting) {
-        state = { ...state, disconnecting: true };
-
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.close(1000, 'Normal Closure');
-        }
-        socket = undefined;
-
-        state = { ...state, disconnecting: false, connected: false };
-      }
+    disconnect() {
+      down();
     },
   };
 }
 
 /** Creates a disposable GQL subscriptions client. */
 export function createClient(options: ClientOptions): Client {
-  const { url, connectionParams } = options;
+  const socket = createSocket(options);
+  return {
+    subscribe(payload, sink) {
+      const uuid = generateUUID();
 
-  const pendingSinks: Record<UUID, Sink> = {};
-  const subscribedSinks: Record<UUID, Sink> = {};
-
-  const socky = createSocky();
-  async function prepare(): Promise<void> {
-    if (await socky.beginConnecting()) {
-      return new Promise((resolve, reject) => {
-        let done = false;
-        const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-
-        /**
-         * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
-         *
-         * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
-         * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
-         * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
-         * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
-         */
-
-        socket.onclose = (closeEvent) => {
-          socky.dispose();
-
-          if (closeEvent.code === 1000 || closeEvent.code === 1001) {
-            // close event `1000: Normal Closure` is ok and so is `1001: Going Away` (maybe the server is restarting)
-            // complete only subscribed sinks because pending ones want a new connection
-            Object.entries(subscribedSinks).forEach(([, sink]) =>
-              sink.complete(),
-            );
-          } else {
-            // reading the `CloseEvent.reason` can either throw or empty the whole error message
-            // (if trying to pass the reason in the `Error` message). having this in mind,
-            // simply let the user handle the close event...
-
-            // only the subscribed sinks should be errored out because
-            // the pending ones are probably waiting on a new socket
-            Object.entries(subscribedSinks).forEach(([, sink]) =>
-              sink.error(closeEvent),
-            );
+      const msgSub = socket.subscribe('message', ({ data }) => {
+        const message = parseMessage(data);
+        switch (message.type) {
+          case MessageType.Next: {
+            if (message.id === uuid) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              sink.next(message.payload as any);
+            }
+            break;
           }
-
-          if (!done) {
-            done = true;
-            reject(closeEvent);
+          case MessageType.Error: {
+            if (message.id === uuid) {
+              sink.error(message.payload);
+            }
+            break;
           }
-        };
-
-        socket.onopen = () => {
-          // as soon as the socket opens, send the connection initalisation request
-          socket.send(
-            stringifyMessage<MessageType.ConnectionInit>({
-              type: MessageType.ConnectionInit,
-              payload:
-                typeof connectionParams === 'function'
-                  ? connectionParams()
-                  : connectionParams,
-            }),
-          );
-        };
-
-        socket.addEventListener('message', handleMessage);
-        function handleMessage({ data }: MessageEvent) {
-          try {
-            const message = parseMessage(data);
-            if (message.type !== MessageType.ConnectionAck) {
-              throw new Error(
-                `First message cannot be of type ${message.type}`,
-              );
+          case MessageType.Complete: {
+            if (message.id === uuid) {
+              sink.complete();
             }
-
-            socky.connected(socket);
-            if (!done) {
-              done = true;
-              resolve();
-            }
-          } catch (err) {
-            socky.dispose();
-
-            // only pending sinks can error out here because opening a
-            // socket and receiving a connection ack message means
-            // all subscribed ones are disposed (or on a different socket)
-            // and we are now creating a fresh connection
-            Object.entries(pendingSinks).forEach(([, sink]) => sink.error(err));
-
-            if (!done) {
-              done = true;
-              reject(err);
-            }
-          } finally {
-            socket.removeEventListener('message', handleMessage);
+            break;
           }
         }
       });
-    }
-  }
 
-  return {
-    subscribe: (payload, sink) => {
-      const uuid = generateUUID();
-      if (pendingSinks[uuid] || subscribedSinks[uuid]) {
-        sink.error(new Error(`Sink with ID ${uuid} already registered`));
-        return noop;
-      }
-      pendingSinks[uuid] = sink;
+      let connected = false;
+      const connSub = socket.subscribe('connect', () => {
+        connected = true;
+        socket.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: uuid,
+            type: MessageType.Subscribe,
+            payload,
+          }),
+        );
+      });
 
-      let messageListener: Disposable | undefined,
-        disposed = false;
-      prepare()
-        .then(() => {
-          delete pendingSinks[uuid];
-
-          // the sink might have been disposed before the socket became ready
-          if (disposed) {
-            return;
-          }
-
-          messageListener = socky.registerMessageListener(({ data }) => {
-            const message = parseMessage(data);
-            switch (message.type) {
-              case MessageType.Next: {
-                if (message.id === uuid) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  sink.next(message.payload as any);
-                }
-                break;
-              }
-              case MessageType.Error: {
-                if (message.id === uuid) {
-                  sink.error(message.payload);
-                }
-                break;
-              }
-              case MessageType.Complete: {
-                if (message.id === uuid) {
-                  sink.complete();
-                }
-                break;
-              }
-            }
-          });
-
-          socky.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: uuid,
-              type: MessageType.Subscribe,
-              payload,
-            }),
-          );
-
-          // the sink is now subscribed
-          subscribedSinks[uuid] = sink;
-        })
-        .catch(sink.error);
+      const disconnSub = socket.subscribe('disconnected', (event) => {
+        if (!connected) {
+          // might be that the disconnecting socket disconnected before this
+          // one connected, in this case there is a new one coming for this sink
+          return;
+        }
+        if (event.code === 1000 || event.code === 1001) {
+          sink.complete();
+        } else {
+          sink.error(event);
+        }
+      });
 
       return () => {
-        disposed = true;
-
-        // having a message listener indicates that prepare has resolved
-        if (messageListener) {
-          messageListener.dispose();
-          socky.send(
-            stringifyMessage<MessageType.Complete>({
-              id: uuid,
-              type: MessageType.Complete,
-            }),
-          );
-        }
-
         sink.complete();
-        delete pendingSinks[uuid];
-        delete subscribedSinks[uuid];
 
-        if (Object.entries(subscribedSinks).length === 0) {
-          // dispose of socky if no subscribers are left
-          socky.dispose();
-        }
+        socket.send(
+          stringifyMessage<MessageType.Complete>({
+            id: uuid,
+            type: MessageType.Complete,
+          }),
+        );
+
+        disconnSub.dispose();
+        connSub.dispose();
+        msgSub.dispose();
       };
     },
-    dispose: async () => {
-      // TODO-db-200817 complete or error? the sinks should be completed BEFORE the client gets disposed
-      Object.entries(pendingSinks).forEach(([, sink]) => sink.complete());
-      Object.keys(pendingSinks).forEach((uuid) => {
-        delete pendingSinks[uuid];
-      });
-      Object.entries(subscribedSinks).forEach(([, sink]) => {
-        sink.complete();
-      });
-      Object.keys(subscribedSinks).forEach((uuid) => {
-        delete subscribedSinks[uuid];
-      });
-
-      // bye bye 👋
-      socky.dispose();
-    },
+    // the disconnect event will complete all subscribed sockets
+    // TODO-db-200905 what happens if the sink didnt connect but it disconnected? (no taredown will be called)
+    dispose: () => socket.disconnect(),
   };
 }
 
