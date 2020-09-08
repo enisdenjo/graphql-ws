@@ -14,37 +14,16 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from './message';
+import { hasOwnProperty, isObject } from './utils';
 
-export type EventConnecting = 'connecting';
-export type EventConnect = 'connect';
-export type EventDisconnected = 'disconnected';
-export type EventMessage = 'message';
-export type Event =
-  | EventConnecting
-  | EventConnect
-  | EventDisconnected
-  | EventMessage;
-
-export type EventListener<E extends Event> = E extends EventConnecting
-  ? () => void
-  : E extends EventConnect
-  ? (socket: WebSocket) => void
-  : E extends EventDisconnected
-  ? (event: CloseEvent) => void
-  : E extends EventMessage
-  ? (event: MessageEvent) => void
-  : null;
-
-type ConnectionParams =
-  | Record<string, unknown>
-  | (() => Record<string, unknown>);
+type CancellerRef = { current: (() => void) | null };
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
   /** URL of the GraphQL server to connect. */
   url: string;
   /** Optional parameters that the client specifies when establishing a connection with the server. */
-  connectionParams?: ConnectionParams;
+  connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
   /**
    * Should the connection be established immediately and persisted
    * or after the first listener subscribed.
@@ -62,208 +41,232 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** The internal socket manager. */
-function createSocket(options: ClientOptions) {
+/** Creates a disposable GQL subscriptions client. */
+export function createClient(options: ClientOptions): Client {
   const { url, connectionParams, lazy = true } = options;
 
   let state = {
-    connecting: false,
-    connectedSocket: null as WebSocket | null,
-    disconnecting: false,
+    socket: null as WebSocket | null,
+    acknowledged: false,
+    locks: 0,
   };
+  async function connect(
+    cancellerRef: CancellerRef,
+  ): Promise<[socket: WebSocket, throwOrCancel: () => Promise<void>]> {
+    if (state.socket) {
+      switch (state.socket.readyState) {
+        case WebSocket.OPEN: {
+          // if the socket is not acknowledged, wait a bit and reavaluate
+          // TODO-db-200908 can you guarantee finite recursive calls?
+          if (!state.acknowledged) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return connect(cancellerRef);
+          }
 
-  const subscribers = (() => {
-    const state: { [event in Event]: EventListener<event>[] } = {
-      connecting: [],
-      connect: [],
-      disconnected: [],
-      message: [],
-    };
+          return [
+            state.socket,
+            () =>
+              new Promise((resolve, reject) => {
+                if (!state.socket) {
+                  return reject(new Error('Socket closed unexpectedly'));
+                }
+                if (state.socket.readyState === WebSocket.CLOSED) {
+                  return reject(new Error('Socket has already been closed'));
+                }
 
-    return {
-      state,
-      add<E extends Event>(event: E, listener: EventListener<E>) {
-        (state[event] as EventListener<E>[]).push(listener);
-      },
-      remove<E extends Event>(event: E, listener: EventListener<E>) {
-        const ev = state[event] as EventListener<E>[];
-        ev.splice(ev.indexOf(listener), 1);
-      },
-      publish<E extends Event>(
-        event: E,
-        ...args: Parameters<EventListener<E>>
-      ) {
-        (state[event] as EventListener<E>[]).forEach((listener) => {
-          // @ts-expect-error: The args do actually fit
-          listener(...args);
-        });
-      },
-    };
-  })();
+                state.locks++;
 
-  async function up(): Promise<void> {
-    if (state.connecting) {
-      let waitedTimes = 0;
-      while (state.connecting) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        // 100ms * 50 = 5sec
-        if (waitedTimes >= 50) {
-          throw new Error('Waited 10 seconds but socket never connected');
+                state.socket.addEventListener('close', listener);
+                function listener(event: CloseEvent) {
+                  state.locks--;
+                  state.socket?.removeEventListener('close', listener);
+                  return reject(event);
+                }
+
+                cancellerRef.current = () => {
+                  state.locks--;
+                  if (!state.locks) {
+                    state.socket?.close(1000, 'Normal Closure');
+                  }
+                  state.socket?.removeEventListener('close', listener);
+                  return resolve();
+                };
+              }),
+          ];
         }
-        waitedTimes++;
+        case WebSocket.CONNECTING: {
+          let waitedTimes = 0;
+          while (
+            state.socket && // the socket can be deleted in the meantime
+            state.socket.readyState === WebSocket.CONNECTING
+          ) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            // 100ms * 50 = 5sec
+            if (waitedTimes >= 50) {
+              throw new Error(
+                'Waited 5 seconds but socket finished connecting',
+              );
+            }
+            waitedTimes++;
+          }
+          return connect(cancellerRef); // reavaluate
+        }
+        case WebSocket.CLOSED:
+          break; // just continue, we'll make a new one
+        case WebSocket.CLOSING: {
+          let waitedTimes = 0;
+          while (
+            state.socket && // the socket can be deleted in the meantime
+            state.socket.readyState === WebSocket.CLOSING
+          ) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            // 100ms * 50 = 5sec
+            if (waitedTimes >= 50) {
+              throw new Error('Waited 5 seconds but socket closed');
+            }
+            waitedTimes++;
+          }
+          break; // let it close and then make a new one
+        }
+        default:
+          throw new Error(`Impossible ready state ${state.socket.readyState}`);
       }
     }
 
-    if (state.disconnecting) {
-      let waitedTimes = 0;
-      while (state.disconnecting) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        // 100ms * 50 = 5sec
-        if (waitedTimes >= 50) {
-          throw new Error('Waited 10 seconds but socket never disconnected');
-        }
-        waitedTimes++;
-      }
-    }
-
-    // the state could've changed while waiting for `connecting` or
-    // `disconnecting`, if it did - start connecting again
-    if (state.connecting || state.disconnecting) {
-      return await up();
-    }
-
-    // the socket could've connected in the meantime
-    if (state.connectedSocket) {
-      return;
-    }
-
-    state = { ...state, connecting: true };
-    subscribers.publish('connecting');
+    // establish connection and assign to singleton
     const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    state = { ...state, acknowledged: false, socket };
 
-    /**
-     * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
-     *
-     * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
-     * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
-     * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
-     * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
-     */
+    await new Promise((resolve, reject) => {
+      let settled = false,
+        cancelled = false;
+      setTimeout(() => {
+        if (!settled) {
+          socket.close(
+            3408,
+            'Waited 5 seconds but socket connect never settled',
+          );
+          // onclose should reject and settled = true
+        }
+      }, 5 * 1000);
+      cancellerRef.current = () => (cancelled = true);
 
-    socket.onclose = (closeEvent) => {
-      state = {
-        ...state,
-        connectedSocket: null,
-        disconnecting: false,
+      /**
+       * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
+       *
+       * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
+       * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
+       * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
+       * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
+       */
+
+      socket.onclose = (event) => {
+        socket.onclose = null;
+        if (settled) {
+          return;
+        }
+
+        state = { ...state, acknowledged: false, socket: null };
+        settled = true;
+        reject(event);
       };
-      subscribers.publish('disconnected', closeEvent);
-    };
 
-    socket.onopen = () => {
-      // as soon as the socket opens, send the connection initalisation request
-      socket.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-          payload:
-            typeof connectionParams === 'function'
-              ? connectionParams()
-              : connectionParams,
-        }),
-      );
-    };
+      socket.onmessage = (event: MessageEvent) => {
+        socket.onmessage = null;
+        if (settled) {
+          return;
+        }
+        if (cancelled) {
+          socket.close(3499, 'Client cancelled the socket before connecting');
+          return;
+        }
 
-    let acknowledged = false;
-    socket.onmessage = (event) => {
-      try {
-        if (!acknowledged) {
+        try {
           const message = parseMessage(event.data);
           if (message.type !== MessageType.ConnectionAck) {
             throw new Error(`First message cannot be of type ${message.type}`);
           }
-          acknowledged = true;
-          state = {
-            ...state,
-            connectedSocket: socket,
-            connecting: false,
-          };
-          subscribers.publish('connect', socket);
-        } else {
-          subscribers.publish('message', event);
+
+          state = { ...state, acknowledged: true, socket };
+          settled = true;
+          resolve();
+        } catch (err) {
+          socket.close(4400, err);
+          // the onclose should reject and settle
         }
-      } catch (err) {
-        socket.close(4400, err);
-      }
-    };
-  }
-
-  function down() {
-    if (!state.disconnecting) {
-      state = { ...state, disconnecting: true };
-      if (state.connectedSocket) {
-        state.connectedSocket.close(1000, 'Normal Closure');
-        state.connectedSocket = null;
-        // the close event listener will update the state
-      } else {
-        state = {
-          ...state,
-          disconnecting: false,
-        };
-      }
-    }
-  }
-
-  if (!lazy) {
-    up();
-  }
-
-  return {
-    subscribe<E extends Event>(
-      event: E,
-      listener: EventListener<E>,
-    ): Disposable {
-      subscribers.add(event, listener);
-
-      if (lazy && event === 'message') {
-        up();
-      }
-
-      // notify fresh connect listeners immediately
-      if (event === 'connect' && state.connectedSocket) {
-        (listener as EventListener<EventConnect>)(state.connectedSocket);
-      }
-
-      return {
-        dispose: () => {
-          subscribers.remove(event, listener);
-          if (
-            lazy &&
-            event === 'message' &&
-            subscribers.state.message.length === 0
-          ) {
-            down();
-          }
-        },
       };
-    },
-    send(data: string) {
-      if (state.connectedSocket) {
-        state.connectedSocket.send(data);
-      }
-    },
-    disconnect() {
-      down();
-    },
-  };
-}
 
-/** Creates a disposable GQL subscriptions client. */
-export function createClient(options: ClientOptions): Client {
-  const socket = createSocket(options);
+      // as soon as the socket opens, send the connection initalisation request
+      socket.onopen = () => {
+        socket.onopen = null;
+        if (cancelled) {
+          socket.close(3499, 'Client cancelled the socket before connecting');
+          return;
+        }
+
+        socket.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+            payload:
+              typeof connectionParams === 'function'
+                ? connectionParams()
+                : connectionParams,
+          }),
+        );
+      };
+    });
+
+    return [
+      socket,
+      () =>
+        new Promise((resolve, reject) => {
+          if (socket.readyState === WebSocket.CLOSED) {
+            return reject(new Error('Socket has already been closed'));
+          }
+
+          state.locks++;
+
+          socket.addEventListener('close', listener);
+          function listener(event: CloseEvent) {
+            state.locks--;
+            socket.removeEventListener('close', listener);
+            return reject(event);
+          }
+
+          cancellerRef.current = () => {
+            state.locks--;
+            if (!state.locks) {
+              socket.close(1000, 'Normal Closure');
+            }
+            socket.removeEventListener('close', listener);
+            return resolve();
+          };
+        }),
+    ];
+  }
+
+  // in non-lazy mode always hold one connection lock to persist the socket
+  if (!lazy) {
+    (async () => {
+      try {
+        const [, throwOrCancel] = await connect({ current: null });
+        await throwOrCancel(); // either the canceller will be called or the socket closed
+      } catch (errOrCloseEvent) {
+        // normal closure is disposal, shouldnt throw
+        if (isCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000) {
+          return;
+        }
+
+        throw errOrCloseEvent;
+      }
+    })();
+  }
+
   return {
     subscribe(payload, sink) {
       const uuid = generateUUID();
 
-      const msgSub = socket.subscribe('message', ({ data }) => {
+      const messageHandler = ({ data }: MessageEvent) => {
         const message = parseMessage(data);
         switch (message.type) {
           case MessageType.Next: {
@@ -286,52 +289,74 @@ export function createClient(options: ClientOptions): Client {
             break;
           }
         }
-      });
+      };
 
-      let connected = false;
-      const connSub = socket.subscribe('connect', () => {
-        connected = true;
-        socket.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: uuid,
-            type: MessageType.Subscribe,
-            payload,
-          }),
-        );
-      });
+      const cancellerRef: CancellerRef = { current: null };
+      (async () => {
+        try {
+          const [socket, throwOrCancel] = await connect(cancellerRef);
+          socket.addEventListener('message', messageHandler);
 
-      const disconnSub = socket.subscribe('disconnected', (event) => {
-        if (!connected) {
-          // might be that the disconnecting socket disconnected before this
-          // one connected, in this case there is a new one coming for this sink
-          return;
+          socket.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: uuid,
+              type: MessageType.Subscribe,
+              payload,
+            }),
+          );
+
+          // either the canceller will be called and the promise resolved
+          // or the socket closed and the promise rejected
+          await throwOrCancel();
+
+          // TODO-db-200909 wont be removed on throw, but should it? the socket is closed on throw
+          socket.removeEventListener('message', messageHandler);
+
+          // send complete message to server
+          socket.send(
+            stringifyMessage<MessageType.Complete>({
+              id: uuid,
+              type: MessageType.Complete,
+            }),
+          );
+        } catch (errOrCloseEvent) {
+          // throw non `CloseEvent`s immediately, something else is wrong
+          if (!isCloseEvent(errOrCloseEvent)) {
+            throw errOrCloseEvent;
+          }
+
+          // normal closure is disposal, shouldnt try again
+          if (errOrCloseEvent.code === 1000) {
+            return;
+          }
+
+          // user cancelled early, shouldnt try again
+          if (errOrCloseEvent.code === 3499) {
+            return;
+          }
+
+          throw errOrCloseEvent;
         }
-        if (event.code === 1000 || event.code === 1001) {
-          sink.complete();
-        } else {
-          sink.error(event);
-        }
-      });
+      })()
+        .catch(sink.error)
+        .then(sink.complete); // only catch, resolves on cancel or normal closure
 
       return () => {
-        sink.complete();
-
-        socket.send(
-          stringifyMessage<MessageType.Complete>({
-            id: uuid,
-            type: MessageType.Complete,
-          }),
-        );
-
-        disconnSub.dispose();
-        connSub.dispose();
-        msgSub.dispose();
+        if (cancellerRef.current) {
+          cancellerRef.current();
+        }
       };
     },
-    // the disconnect event will complete all subscribed sockets
-    // TODO-db-200905 what happens if the sink didnt connect but it disconnected? (no taredown will be called)
-    dispose: () => socket.disconnect(),
+    dispose() {
+      if (state.socket) {
+        state.socket.close(1000, 'Normal Closure');
+      }
+    },
   };
+}
+
+function isCloseEvent(val: unknown): val is CloseEvent {
+  return isObject(val) && hasOwnProperty(val, 'code');
 }
 
 /** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */
