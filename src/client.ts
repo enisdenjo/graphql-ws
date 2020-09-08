@@ -242,7 +242,7 @@ export function createClient(options: ClientOptions): Client {
 
     return [
       socket,
-      () =>
+      (cleanup) =>
         new Promise((resolve, reject) => {
           if (socket.readyState === WebSocket.CLOSED) {
             return reject(new Error('Socket has already been closed'));
@@ -258,6 +258,9 @@ export function createClient(options: ClientOptions): Client {
           }
 
           cancellerRef.current = () => {
+            if (cleanup) {
+              cleanup();
+            }
             state.locks--;
             if (!state.locks) {
               socket.close(1000, 'Normal Closure');
