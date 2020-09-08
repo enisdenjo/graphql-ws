@@ -68,7 +68,12 @@ export function createClient(options: ClientOptions): Client {
   };
   async function connect(
     cancellerRef: CancellerRef,
-  ): Promise<[socket: WebSocket, throwOrCancel: () => Promise<void>]> {
+  ): Promise<
+    [
+      socket: WebSocket,
+      throwOnCloseOrCancel: (cleanup?: () => void) => Promise<void>,
+    ]
+  > {
     if (state.socket) {
       switch (state.socket.readyState) {
         case WebSocket.OPEN: {
@@ -81,7 +86,7 @@ export function createClient(options: ClientOptions): Client {
 
           return [
             state.socket,
-            () =>
+            (cleanup) =>
               new Promise((resolve, reject) => {
                 if (!state.socket) {
                   return reject(new Error('Socket closed unexpectedly'));
@@ -100,6 +105,9 @@ export function createClient(options: ClientOptions): Client {
                 }
 
                 cancellerRef.current = () => {
+                  if (cleanup) {
+                    cleanup();
+                  }
                   state.locks--;
                   if (!state.locks) {
                     state.socket?.close(1000, 'Normal Closure');
@@ -142,7 +150,7 @@ export function createClient(options: ClientOptions): Client {
             }
             waitedTimes++;
           }
-          break; // let it close and then make a new one
+          return connect(cancellerRef); // reavaluate
         }
         default:
           throw new Error(`Impossible ready state ${state.socket.readyState}`);
@@ -178,20 +186,17 @@ export function createClient(options: ClientOptions): Client {
 
       socket.onclose = (event) => {
         socket.onclose = null;
-        if (settled) {
-          return;
-        }
 
+        // we always want to update the state, just not reject a settled promise
         state = { ...state, acknowledged: false, socket: null };
-        settled = true;
-        reject(event);
+        if (!settled) {
+          settled = true;
+          reject(event);
+        }
       };
 
       socket.onmessage = (event: MessageEvent) => {
         socket.onmessage = null;
-        if (settled) {
-          return;
-        }
         if (cancelled) {
           socket.close(3499, 'Client cancelled the socket before connecting');
           return;
@@ -204,8 +209,11 @@ export function createClient(options: ClientOptions): Client {
           }
 
           state = { ...state, acknowledged: true, socket };
-          settled = true;
-          resolve();
+
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
         } catch (err) {
           socket.close(4400, err);
           // the onclose should reject and settle
@@ -268,9 +276,9 @@ export function createClient(options: ClientOptions): Client {
       let retries = 0;
       for (;;) {
         try {
-          const [, throwOrCancel] = await connect({ current: null });
+          const [, throwOnCloseOrCancel] = await connect({ current: null });
           retries = 0; // reset retry counter on successful connect
-          await throwOrCancel(); // either the canceller will be called or the socket closed
+          await throwOnCloseOrCancel(); // either the canceller will be called or the socket closed
           break; // break the loop on cancel
         } catch (errOrCloseEvent) {
           // throw non `CloseEvent`s immediately, something else is wrong
@@ -331,7 +339,7 @@ export function createClient(options: ClientOptions): Client {
         let retries = 0;
         for (;;) {
           try {
-            const [socket, throwOrCancel] = await connect(cancellerRef);
+            const [socket, throwOnCloseOrCancel] = await connect(cancellerRef);
             retries = 0; // reset retry counter on successful connect
             socket.addEventListener('message', messageHandler);
 
@@ -345,18 +353,18 @@ export function createClient(options: ClientOptions): Client {
 
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
-            await throwOrCancel();
+            await throwOnCloseOrCancel(() => {
+              // send complete message to server on cancel
+              socket.send(
+                stringifyMessage<MessageType.Complete>({
+                  id: uuid,
+                  type: MessageType.Complete,
+                }),
+              );
+            });
 
             // TODO-db-200909 wont be removed on throw, but should it? the socket is closed on throw
             socket.removeEventListener('message', messageHandler);
-
-            // send complete message to server
-            socket.send(
-              stringifyMessage<MessageType.Complete>({
-                id: uuid,
-                type: MessageType.Complete,
-              }),
-            );
 
             // and break the loop
             break;
