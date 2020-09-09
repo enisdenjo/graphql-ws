@@ -16,6 +16,19 @@ import {
 } from './message';
 import { isObject } from './utils';
 
+export type EventConnecting = 'connecting';
+export type EventConnected = 'connected'; // connected = socket opened + acknowledged
+export type EventClosed = 'closed';
+export type Event = EventConnecting | EventConnected | EventClosed;
+
+export type EventListener<E extends Event> = E extends EventConnecting
+  ? () => void
+  : E extends EventConnected
+  ? (socket: WebSocket) => void
+  : E extends EventClosed
+  ? (event: CloseEvent) => void
+  : never;
+
 type CancellerRef = { current: (() => void) | null };
 
 /** Configuration used for the `create` client function. */
@@ -44,6 +57,10 @@ export interface ClientOptions {
 
 export interface Client extends Disposable {
   /**
+   * Listens on the client which dispatches events about the socket state.
+   */
+  on<E extends Event>(event: E, listener: EventListener<E>): () => void;
+  /**
    * Subscribes through the WebSocket following the config parameters. It
    * uses the `sink` to emit received data or errors. Returns a _cleanup_
    * function used for dropping the subscription and cleaning stuff up.
@@ -60,6 +77,30 @@ export function createClient(options: ClientOptions): Client {
     retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
   } = options;
+
+  const emitter = (() => {
+    const listeners: { [event in Event]: EventListener<event>[] } = {
+      connecting: [],
+      connected: [],
+      closed: [],
+    };
+
+    return {
+      on<E extends Event>(event: E, listener: EventListener<E>) {
+        const l = listeners[event] as EventListener<E>[];
+        l.push(listener);
+        return () => {
+          l.splice(l.indexOf(listener), 1);
+        };
+      },
+      emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
+        (listeners[event] as EventListener<E>[]).forEach((listener) => {
+          // @ts-expect-error: The args do actually fit
+          listener(...args);
+        });
+      },
+    };
+  })();
 
   let state = {
     socket: null as WebSocket | null,
@@ -163,6 +204,7 @@ export function createClient(options: ClientOptions): Client {
     // establish connection and assign to singleton
     const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     state = { ...state, acknowledged: false, socket };
+    emitter.emit('connecting');
 
     await new Promise((resolve, reject) => {
       let settled = false,
@@ -192,6 +234,7 @@ export function createClient(options: ClientOptions): Client {
 
         // we always want to update the state, just not reject a settled promise
         state = { ...state, acknowledged: false, socket: null };
+        emitter.emit('closed', event);
 
         if (!settled) {
           settled = true;
@@ -213,6 +256,7 @@ export function createClient(options: ClientOptions): Client {
           }
 
           state = { ...state, acknowledged: true, socket };
+          emitter.emit('connected', socket); // connected = socket opened + acknowledged
 
           if (!settled) {
             settled = true;
@@ -297,9 +341,9 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // retries expired, throw
+          // retries expired, close for good
           if (state.retries >= retryAttempts) {
-            throw errOrCloseEvent;
+            return;
           }
 
           // otherwize wait a bit and retry
@@ -311,6 +355,7 @@ export function createClient(options: ClientOptions): Client {
   }
 
   return {
+    on: emitter.on,
     subscribe(payload, sink) {
       const uuid = generateUUID();
 
