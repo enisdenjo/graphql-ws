@@ -4,6 +4,7 @@
 
 import WebSocket from 'ws';
 import { url, startServer, pubsub } from './fixtures/simple';
+import { Server } from '../server';
 import { createClient } from '../client';
 
 /** Waits for the specified timeout and then resolves the promise. */
@@ -14,11 +15,11 @@ Object.assign(global, {
   WebSocket: WebSocket,
 });
 
-let dispose: (() => Promise<void>) | undefined;
-beforeAll(async () => {
-  [, dispose] = await startServer();
+let server: Server, dispose: (() => Promise<void>) | undefined;
+beforeEach(async () => {
+  [server, dispose] = await startServer();
 });
-afterAll(async () => {
+afterEach(async () => {
   if (dispose) {
     await dispose();
   }
