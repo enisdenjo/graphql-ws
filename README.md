@@ -1,4 +1,5 @@
 <div align="center">
+  <br />
 
   <h3>🚡 GraphQL transport over WebSocket</h3>
   <h6>Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client</h6>
