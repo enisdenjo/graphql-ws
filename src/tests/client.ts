@@ -417,3 +417,53 @@ describe('lazy', () => {
     expect(server.webSocketServer.clients.size).toBe(0);
   });
 });
+
+describe('reconnecting', () => {
+  it('should not reconnect if retry attempts is zero', async () => {
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      retryTimeout: 10, // fake timeout
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(1);
+
+    server.webSocketServer.clients.forEach((client) => {
+      client.close();
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(0);
+
+    await wait(20);
+    expect(server.webSocketServer.clients.size).toBe(0); // never reconnected
+  });
+
+  it('should reconnect silently after socket closes', async () => {
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 1,
+      retryTimeout: 10,
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(1);
+
+    server.webSocketServer.clients.forEach((client) => {
+      client.close();
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(0);
+
+    await wait(20);
+    expect(server.webSocketServer.clients.size).toBe(1);
+  });
+
+  it.todo(
+    'should attempt reconnecting silently a few times before closing for good',
+  );
+});
