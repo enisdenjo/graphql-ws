@@ -1,6 +1,9 @@
-# GraphQL transport over WebSocket
-
-> 🚡 Zero-dependency, lazy, [GraphQL over WebSocket Protocol](PROTOCOL.md) compliant, simple and coherent server and client
+<h3 align="center">🚡 GraphQL transport over WebSocket</h3>
+<h6 align="center">Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client</h6>
+<br />
+![Continuous integration](https://github.com/enisdenjo/graphql-transport-ws/workflows/Continuous%20integration/badge.svg) [![graphql-transport-ws](https://img.shields.io/npm/v/graphql-transport-ws.svg?label=graphql-transport-ws&logo=npm&style=flat-square)](https://www.npmjs.com/package/graphql-transport-ws)
+<br />
+<br />
 
 ## Getting started
 
