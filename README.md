@@ -5,6 +5,7 @@
 
 [![Continuous integration](https://github.com/enisdenjo/graphql-transport-ws/workflows/Continuous%20integration/badge.svg)](https://github.com/enisdenjo/graphql-transport-ws/actions?query=workflow%3A%22Continuous+integration%22) [![graphql-transport-ws](https://img.shields.io/npm/v/graphql-transport-ws.svg?label=graphql-transport-ws&logo=npm&style=flat-square)](https://www.npmjs.com/package/graphql-transport-ws)
 
+  <br />
 </div>
 
 ## Getting started
