@@ -413,7 +413,7 @@ describe('lazy', () => {
 
     // everyone unsubscribed
     disposeClient2();
-    await wait(5);
+    await wait(10);
     expect(server.webSocketServer.clients.size).toBe(0);
   });
 });
