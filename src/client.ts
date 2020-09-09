@@ -31,12 +31,12 @@ export interface ClientOptions {
    */
   lazy?: boolean;
   /**
-   * How many times should the client try to reconnect on socket closure before it errors out?
+   * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    * @default 3
    */
   retryAttempts?: number;
   /**
-   * How long should the client wait until attempting to retry connecting.
+   * How long should the client wait until attempting to retry.
    * @default 3 * 1000 (3 seconds)
    */
   retryTimeout?: number;
@@ -65,13 +65,14 @@ export function createClient(options: ClientOptions): Client {
     socket: null as WebSocket | null,
     acknowledged: false,
     locks: 0,
+    retries: 0,
   };
   async function connect(
     cancellerRef: CancellerRef,
   ): Promise<
     [
       socket: WebSocket,
-      throwOnCloseOrCancel: (cleanup?: () => void) => Promise<void>,
+      throwOnCloseOrCancel: (cancelCleanup?: () => void) => Promise<void>,
     ]
   > {
     if (state.socket) {
@@ -86,7 +87,7 @@ export function createClient(options: ClientOptions): Client {
 
           return [
             state.socket,
-            (cleanup) =>
+            (cancelCleanup) =>
               new Promise((resolve, reject) => {
                 if (!state.socket) {
                   return reject(new Error('Socket closed unexpectedly'));
@@ -105,8 +106,8 @@ export function createClient(options: ClientOptions): Client {
                 }
 
                 cancellerRef.current = () => {
-                  if (cleanup) {
-                    cleanup();
+                  if (cancelCleanup) {
+                    cancelCleanup();
                   }
                   state.locks--;
                   if (!state.locks) {
@@ -128,7 +129,7 @@ export function createClient(options: ClientOptions): Client {
             // 100ms * 50 = 5sec
             if (waitedTimes >= 50) {
               throw new Error(
-                'Waited 5 seconds but socket finished connecting',
+                'Waited 5 seconds but socket never finished connecting',
               );
             }
             waitedTimes++;
@@ -146,7 +147,9 @@ export function createClient(options: ClientOptions): Client {
             await new Promise((resolve) => setTimeout(resolve, 100));
             // 100ms * 50 = 5sec
             if (waitedTimes >= 50) {
-              throw new Error('Waited 5 seconds but socket closed');
+              throw new Error(
+                'Waited 5 seconds but socket never finished closing',
+              );
             }
             waitedTimes++;
           }
@@ -242,7 +245,7 @@ export function createClient(options: ClientOptions): Client {
 
     return [
       socket,
-      (cleanup) =>
+      (cancelCleanup) =>
         new Promise((resolve, reject) => {
           if (socket.readyState === WebSocket.CLOSED) {
             return reject(new Error('Socket has already been closed'));
@@ -258,8 +261,8 @@ export function createClient(options: ClientOptions): Client {
           }
 
           cancellerRef.current = () => {
-            if (cleanup) {
-              cleanup();
+            if (cancelCleanup) {
+              cancelCleanup();
             }
             state.locks--;
             if (!state.locks) {
@@ -276,11 +279,10 @@ export function createClient(options: ClientOptions): Client {
   if (!lazy) {
     (async () => {
       // will break or throw eventually
-      let retries = 0;
       for (;;) {
         try {
           const [, throwOnCloseOrCancel] = await connect({ current: null });
-          retries = 0; // reset retry counter on successful connect
+          state.retries = 0; // reset retry counter on successful connect
           await throwOnCloseOrCancel(); // either the canceller will be called or the socket closed
           break; // break the loop on cancel
         } catch (errOrCloseEvent) {
@@ -295,13 +297,13 @@ export function createClient(options: ClientOptions): Client {
           }
 
           // retries expired, throw
-          if (retries >= retryAttempts) {
+          if (state.retries >= retryAttempts) {
             throw errOrCloseEvent;
           }
 
           // wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
-          retries++;
+          state.retries++;
         }
       }
     })();
@@ -339,11 +341,10 @@ export function createClient(options: ClientOptions): Client {
       const cancellerRef: CancellerRef = { current: null };
       (async () => {
         // will break or throw eventually
-        let retries = 0;
         for (;;) {
           try {
             const [socket, throwOnCloseOrCancel] = await connect(cancellerRef);
-            retries = 0; // reset retry counter on successful connect
+            state.retries = 0; // reset retry counter on successful connect
             socket.addEventListener('message', messageHandler);
 
             socket.send(
@@ -388,13 +389,13 @@ export function createClient(options: ClientOptions): Client {
             }
 
             // retries expired, throw
-            if (retries >= retryAttempts) {
+            if (state.retries >= retryAttempts) {
               throw errOrCloseEvent;
             }
 
             // wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
-            retries++;
+            state.retries++;
           }
         }
       })()
