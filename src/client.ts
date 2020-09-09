@@ -192,6 +192,7 @@ export function createClient(options: ClientOptions): Client {
 
         // we always want to update the state, just not reject a settled promise
         state = { ...state, acknowledged: false, socket: null };
+
         if (!settled) {
           settled = true;
           reject(event);
@@ -275,25 +276,25 @@ export function createClient(options: ClientOptions): Client {
     ];
   }
 
-  // in non-lazy mode always hold one connection lock to persist the socket
+  // in non-lazy (hot?) mode always hold one connection lock to persist the socket
   if (!lazy) {
     (async () => {
-      // will break or throw eventually
       for (;;) {
         try {
           const [, throwOnCloseOrCancel] = await connect({ current: null });
           state.retries = 0; // reset retry counter on successful connect
-          await throwOnCloseOrCancel(); // either the canceller will be called or the socket closed
-          break; // break the loop on cancel
+          await throwOnCloseOrCancel();
+          // cancelled, shouldnt try again
+          return;
         } catch (errOrCloseEvent) {
           // throw non `CloseEvent`s immediately, something else is wrong
           if (!isCloseEvent(errOrCloseEvent)) {
-            throw errOrCloseEvent;
+            throw errOrCloseEvent; // TODO-db-200909 promise is uncaught, will appear in console
           }
 
           // normal closure is disposal, shouldnt try again
           if (errOrCloseEvent.code === 1000) {
-            break;
+            return;
           }
 
           // retries expired, throw
@@ -301,7 +302,7 @@ export function createClient(options: ClientOptions): Client {
             throw errOrCloseEvent;
           }
 
-          // wait a bit and retry
+          // otherwize wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
           state.retries++;
         }
@@ -321,26 +322,25 @@ export function createClient(options: ClientOptions): Client {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               sink.next(message.payload as any);
             }
-            break;
+            return;
           }
           case MessageType.Error: {
             if (message.id === uuid) {
               sink.error(message.payload);
             }
-            break;
+            return;
           }
           case MessageType.Complete: {
             if (message.id === uuid) {
               sink.complete();
             }
-            break;
+            return;
           }
         }
       };
 
       const cancellerRef: CancellerRef = { current: null };
       (async () => {
-        // will break or throw eventually
         for (;;) {
           try {
             const [socket, throwOnCloseOrCancel] = await connect(cancellerRef);
@@ -370,8 +370,8 @@ export function createClient(options: ClientOptions): Client {
             // TODO-db-200909 wont be removed on throw, but should it? the socket is closed on throw
             socket.removeEventListener('message', messageHandler);
 
-            // and break the loop
-            break;
+            // cancelled, shouldnt try again
+            return;
           } catch (errOrCloseEvent) {
             // throw non `CloseEvent`s immediately, something else is wrong
             if (!isCloseEvent(errOrCloseEvent)) {
@@ -380,12 +380,12 @@ export function createClient(options: ClientOptions): Client {
 
             // normal closure is disposal, shouldnt try again
             if (errOrCloseEvent.code === 1000) {
-              break;
+              return;
             }
 
             // user cancelled early, shouldnt try again
             if (errOrCloseEvent.code === 3499) {
-              break;
+              return;
             }
 
             // retries expired, throw
@@ -400,7 +400,7 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete); // only catch, resolves on cancel or normal closure
+        .then(sink.complete); // resolves on cancel or normal closure
 
       return () => {
         if (cancellerRef.current) {
@@ -417,7 +417,7 @@ export function createClient(options: ClientOptions): Client {
 }
 
 function isCloseEvent(val: unknown): val is CloseEvent {
-  return isObject(val) && 'code' in val;
+  return isObject(val) && 'code' in val && 'reason' in val && 'wasClean' in val;
 }
 
 /** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */
