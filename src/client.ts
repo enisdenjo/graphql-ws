@@ -32,7 +32,7 @@ export interface ClientOptions {
   lazy?: boolean;
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
-   * @default 3
+   * @default 5
    */
   retryAttempts?: number;
   /**
@@ -57,7 +57,7 @@ export function createClient(options: ClientOptions): Client {
     url,
     connectionParams,
     lazy = true,
-    retryAttempts = 3,
+    retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
   } = options;
 
