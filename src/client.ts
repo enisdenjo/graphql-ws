@@ -203,7 +203,12 @@ export function createClient(options: ClientOptions): Client {
 
     // establish connection and assign to singleton
     const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    state = { ...state, acknowledged: false, socket };
+    state = {
+      ...state,
+      acknowledged: false,
+      socket,
+      retries: state.retries + 1,
+    };
     emitter.emit('connecting');
 
     await new Promise((resolve, reject) => {
@@ -255,7 +260,7 @@ export function createClient(options: ClientOptions): Client {
             throw new Error(`First message cannot be of type ${message.type}`);
           }
 
-          state = { ...state, acknowledged: true, socket };
+          state = { ...state, acknowledged: true, socket, retries: 0 };
           emitter.emit('connected', socket); // connected = socket opened + acknowledged
 
           if (!settled) {
@@ -326,7 +331,6 @@ export function createClient(options: ClientOptions): Client {
       for (;;) {
         try {
           const [, throwOnCloseOrCancel] = await connect({ current: null });
-          state.retries = 0; // reset retry counter on successful connect
           await throwOnCloseOrCancel();
           // cancelled, shouldnt try again
           return;
@@ -346,9 +350,8 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // otherwize wait a bit and retry
+          // otherwize, wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
-          state.retries++;
         }
       }
     })();
@@ -389,7 +392,6 @@ export function createClient(options: ClientOptions): Client {
         for (;;) {
           try {
             const [socket, throwOnCloseOrCancel] = await connect(cancellerRef);
-            state.retries = 0; // reset retry counter on successful connect
             socket.addEventListener('message', messageHandler);
 
             socket.send(
@@ -438,9 +440,8 @@ export function createClient(options: ClientOptions): Client {
               throw errOrCloseEvent;
             }
 
-            // wait a bit and retry
+            // otherwize, wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
-            state.retries++;
           }
         }
       })()
