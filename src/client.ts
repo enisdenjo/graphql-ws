@@ -51,7 +51,7 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** Creates a disposable GQL subscriptions client. */
+/** Creates a disposable GraphQL subscriptions client. */
 export function createClient(options: ClientOptions): Client {
   const {
     url,

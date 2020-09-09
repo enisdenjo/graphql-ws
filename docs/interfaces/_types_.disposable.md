@@ -22,7 +22,7 @@
 
 • **dispose**: *function*
 
-*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/cf71465/src/types.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
