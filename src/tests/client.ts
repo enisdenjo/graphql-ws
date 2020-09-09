@@ -6,6 +6,7 @@ import WebSocket from 'ws';
 import { url, startServer, pubsub } from './fixtures/simple';
 import { Server } from '../server';
 import { createClient } from '../client';
+import { noop } from '../utils';
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>
@@ -298,5 +299,121 @@ describe('"concurrency"', () => {
     expect(nextFnForHappy).not.toBeCalled();
     expect(completeFnForHappy).toBeCalled();
     expect(nextFnForBananas).toBeCalled();
+  });
+});
+
+describe('lazy', () => {
+  it('should connect immediately when mode is disabled', async () => {
+    createClient({
+      url,
+      lazy: false,
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(1);
+    server.webSocketServer.clients.forEach((client) => {
+      expect(client.readyState).toBe(WebSocket.OPEN);
+    });
+  });
+
+  it('should close socket when disposing while mode is disabled', async () => {
+    const client = createClient({
+      url,
+      lazy: false,
+    });
+    await wait(5);
+
+    client.dispose();
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(0);
+  });
+
+  it('should connect on first subscribe when mode is enabled', async () => {
+    const client = createClient({
+      url,
+      lazy: true, // default
+    });
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(0);
+
+    client.subscribe(
+      {
+        operationName: 'BoughtBananas',
+        query: `subscription BoughtBananas {
+          boughtBananas {
+            name
+          }
+        }`,
+        variables: {},
+      },
+      {
+        next: noop,
+        error: noop,
+        complete: noop,
+      },
+    );
+    await wait(5);
+
+    expect(server.webSocketServer.clients.size).toBe(1);
+    server.webSocketServer.clients.forEach((client) => {
+      expect(client.readyState).toBe(WebSocket.OPEN);
+    });
+  });
+
+  it('should disconnect on last unsubscribe when mode is enabled', async () => {
+    const client = createClient({
+      url,
+      lazy: true, // default
+    });
+    await wait(5);
+
+    const disposeClient1 = client.subscribe(
+      {
+        operationName: 'BoughtBananas',
+        query: `subscription BoughtBananas {
+          boughtBananas {
+            name
+          }
+        }`,
+        variables: {},
+      },
+      {
+        next: noop,
+        error: noop,
+        complete: noop,
+      },
+    );
+    await wait(5);
+
+    const disposeClient2 = client.subscribe(
+      {
+        operationName: 'BecomingHappy',
+        query: `subscription BecomingHappy {
+          becameHappy {
+            name
+          }
+        }`,
+        variables: {},
+      },
+      {
+        next: noop,
+        error: noop,
+        complete: noop,
+      },
+    );
+    await wait(5);
+
+    disposeClient1();
+    await wait(5);
+
+    // still connected
+    expect(server.webSocketServer.clients.size).toBe(1);
+
+    // everyone unsubscribed
+    disposeClient2();
+    await wait(5);
+    expect(server.webSocketServer.clients.size).toBe(0);
   });
 });
