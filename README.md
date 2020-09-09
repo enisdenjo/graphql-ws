@@ -1,6 +1,6 @@
-# GraphQL 🧩 WebSocket
+# GraphQL transport over WebSocket
 
-> 🔗 A coherent, zero-dependency, lazy, simple and easy to use server and client implementation of the [GraphQL over WebSocket Protocol](PROTOCOL.md).
+> 🚡 Zero-dependency, lazy, [GraphQL over WebSocket Protocol](PROTOCOL.md) compliant, simple and coherent server and client
 
 ## Getting started
 
@@ -138,7 +138,7 @@ const link = new WebSocketLink({
 
 ## Protocol
 
-Read about the exact transport protocol used by the library in the [PROTOCOL.md](PROTOCOL.md) document.
+Read about the exact transport protocol used by the library in the [Protocol document](PROTOCOL.md).
 
 ## Want to help?
 
