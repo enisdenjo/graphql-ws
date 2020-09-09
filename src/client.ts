@@ -14,7 +14,7 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from './message';
-import { hasOwnProperty, isObject } from './utils';
+import { isObject } from './utils';
 
 type CancellerRef = { current: (() => void) | null };
 
@@ -417,7 +417,7 @@ export function createClient(options: ClientOptions): Client {
 }
 
 function isCloseEvent(val: unknown): val is CloseEvent {
-  return isObject(val) && hasOwnProperty(val, 'code');
+  return isObject(val) && 'code' in val;
 }
 
 /** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */
