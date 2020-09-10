@@ -60,12 +60,12 @@ describe('subscription operation', () => {
     const dispose = client.subscribe(
       {
         operationName: 'BecomingHappy',
-        query: `subscription BecomingHappy {
-          becameHappy {
+        query: `subscription BecomingHappy($secret: String!) {
+          becameHappy(secret: $secret) {
             name
           }
         }`,
-        variables: {},
+        variables: { secret: 'drink water' },
       },
       {
         next: nextFn,
@@ -128,12 +128,12 @@ describe('subscription operation', () => {
     const disposeHappy = client.subscribe(
       {
         operationName: 'BecomingHappy',
-        query: `subscription BecomingHappy {
-          becameHappy {
+        query: `subscription BecomingHappy($secret: String!) {
+          becameHappy(secret: $secret) {
             name
           }
         }`,
-        variables: {},
+        variables: { secret: 'live life' },
       },
       {
         next: nextFnForHappy,
@@ -238,12 +238,12 @@ describe('"concurrency"', () => {
       disposeOfHappy = client.subscribe(
         {
           operationName: 'BecomingHappy',
-          query: `subscription BecomingHappy {
-            becameHappy {
+          query: `subscription BecomingHappy($secret: String!) {
+            becameHappy(secret: $secret) {
               name
             }
           }`,
-          variables: {},
+          variables: { secret: 'there is no secret' },
         },
         {
           next: nextFnForHappy,
