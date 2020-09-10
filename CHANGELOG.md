@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.3.0...v1.4.0) (2020-09-10)
+
+
+### Bug Fixes
+
+* **client:** Only `query` is required in the subscribe payload ([e892530](https://github.com/enisdenjo/graphql-transport-ws/commit/e892530b37108a210976e416b2f5eb3004be7ad3))
+
+
+### Features
+
+* **server:** Pass roots for operation fields as an option ([dcb5ed4](https://github.com/enisdenjo/graphql-transport-ws/commit/dcb5ed4dcc3c4569b104b2cbe9979161fad2ff0a))
+
 # [1.3.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.2.0...v1.3.0) (2020-09-10)
 
 
