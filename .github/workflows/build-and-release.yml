@@ -45,8 +45,10 @@ jobs:
     steps:
       - name: Mask tokens
         run: |
-          echo "::add-mask::${{ github.event.inputs.ghToken }}"
-          echo "::add-mask::${{ github.event.inputs.npmToken }}"
+          gh_token = "${{ github.event.inputs.ghToken }}"
+          echo "::add-mask::$gh_token"
+          npm_token = "${{ github.event.inputs.npmToken }}"
+          echo "::add-mask::$npm_token"
       - name: Checkout
         uses: actions/checkout@v2
         with:
