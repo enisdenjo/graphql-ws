@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { execute, parse, buildSchema } from 'graphql';
+import { parse, buildSchema } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pubsub } from './fixtures/simple';
