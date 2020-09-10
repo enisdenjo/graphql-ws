@@ -11,24 +11,169 @@
 
 ## Getting started
 
-### Install
+#### Install
 
 ```shell
-yarn add graphql-transport-ws
-# or
-npm install graphql-transport-ws
+$ yarn add graphql-transport-ws
 ```
 
-### Examples
+#### Create a GraphQL schema
 
-#### Client usage with [Relay](https://relay.dev)
+```ts
+import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+
+// Construct a schema, using GraphQL schema language
+const schema = buildSchema(`
+  type Query {
+    hello: String
+  }
+  type Subscription {
+    greetings: String
+  }
+`);
+
+// The roots provide operation resolver functions for each API endpoint
+const roots = {
+  query: {
+    hello: () => 'Hello World!',
+  },
+  subscription: {
+    greetings: async function* sayHiIn5Languages() {
+      for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
+        yield { greetings: hi };
+      }
+    },
+  },
+};
+```
+
+#### Start the server
+
+```ts
+import http from 'http';
+import { execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+
+const server = http.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+createServer(
+  {
+    schema, // from the previous step
+    roots, // from the previous step
+    execute,
+    subscribe,
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+
+server.listen(80);
+```
+
+#### Use the client
+
+```ts
+import { createClient } from '../client';
+
+const client = createClient({
+  url: 'ws://welcomer.com/graphql',
+});
+
+// query
+(async () => {
+  const result = await new Promise((resolve, reject) => {
+    let result;
+    client.subscribe(
+      {
+        query: '{ hello }',
+      },
+      {
+        next: (data) => (result = data),
+        error: reject,
+        complete: () => resolve(result),
+      },
+    );
+  });
+
+  expect(result).toEqual({ hello: 'Hello World!' });
+})();
+
+// subscription
+(async () => {
+  const onNext = () => {
+    /**/
+  };
+
+  await new Promise((resolve, reject) => {
+    client.subscribe(
+      {
+        query: 'subscription { greetings }',
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: () => resolve(),
+      },
+    );
+  });
+
+  expect(onNext).toBeCalledTimes(5); // we say "Hi" in 5 languages
+})();
+```
+
+## Recepies
+
+<details>
+<summary>Promisify query execution</summary>
+
+```ts
+import { createClient, SubscribePayload } from '../index';
+
+const client = createClient({
+  url: 'wss://hey.there/graphql',
+});
+
+async function execute<T>(payload: SubscribePayload) {
+  return new Promise((resolve, reject) => {
+    let result: T;
+    client.subscribe<T>(payload, {
+      next: (data) => (result = data),
+      error: reject,
+      complete: () => resolve(result),
+    });
+  });
+}
+
+// use
+(async () => {
+  try {
+    const result = await execute({
+      query: '{ hello }',
+    });
+    // complete
+    // next = result = { data: { hello: 'Hello World!' } }
+  } catch (err) {
+    // error
+  }
+})();
+```
+
+</details>
+
+<details>
+<summary>Client usage with [Relay](https://relay.dev)</summary>
 
 ```ts
 import { Network, Observable } from 'relay-runtime';
 import { createClient } from 'graphql-transport-ws';
 
 const subscriptionsClient = createClient({
-  url: 'wss://some.url/graphql',
+  url: 'wss://i.need/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -86,7 +231,10 @@ export const network = Network.create(
 );
 ```
 
-#### Client usage with [Apollo](https://www.apollographql.com)
+</details>
+
+<details>
+<summary>Client usage with [Apollo](https://www.apollographql.com)</summary>
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
@@ -126,7 +274,7 @@ class WebSocketLink extends ApolloLink {
 }
 
 const link = new WebSocketLink({
-  url: 'wss://some.url/graphql',
+  url: 'wss://where.is/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -139,15 +287,16 @@ const link = new WebSocketLink({
 });
 ```
 
-## Documentation
+</details>
 
-[TypeDoc](https://typedoc.org) generated documentation is located in the [docs folder](docs/).
+## [Documentation](docs/)
 
-## Protocol
+Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
 
-Read about the exact transport protocol used by the library in the [Protocol document](PROTOCOL.md).
+## [How does it work?](PROTOCOL.md)
 
-## Want to help?
+Read about the exact transport intricacies used by the library in the [GraphQL over WebSocket Protocol document](PROTOCOL.md).
 
-File a bug, contribute with code, or improve documentation? Welcome 👋!
-Read up on our guidelines for [contributing](CONTRIBUTING.md).
+## [Want to help?](CONTRIBUTING.md)
+
+File a bug, contribute with code, or improve documentation? Read up on our guidelines for [contributing](CONTRIBUTING.md) and `yarn test --watch` away!.
