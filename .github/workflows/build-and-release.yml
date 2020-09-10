@@ -43,23 +43,18 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     # needs: [build] TESTING...
-    env:
-      INJECTED_ENV_VAR: ${{secrets[github.event.inputs.ghToken]}}
     steps:
       - name: Mask tokens
         run: |
           echo "🕶"
-          echo "::add-mask::$INPUT_GH_TOKEN"
-          echo "::add-mask::$INPUT_NPM_TOKEN"
+          echo "::stop-commands::pause-logging"
+          echo "::add-mask::${{ github.event.inputs.ghToken }}"
+          echo "::add-mask::${{ github.event.inputs.npmToken }}"
+          echo "::pause-logging::"
       - name: Test token mask
         run: |
-          echo "$INJECTED_ENV_VAR"
           echo "${{ github.event.inputs.ghToken }}"
           echo "${{ github.event.inputs.npmToken }}"
-          echo "$INPUT_GH_TOKEN"
-          echo "$INPUT_GHTOKEN"
-          echo "$INPUT_NPM_TOKEN"
-          echo "$INPUT_NPMTOKEN"
       # TESTING...
       # - name: Checkout
       #   uses: actions/checkout@v2
