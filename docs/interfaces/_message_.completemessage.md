@@ -19,7 +19,7 @@
 
 • **id**: *string*
 
-*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/message.ts#L61)*
+*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/message.ts#L61)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 • **type**: *[Complete](../enums/_message_.messagetype.md#complete)*
 
-*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/message.ts#L62)*
+*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/message.ts#L62)*

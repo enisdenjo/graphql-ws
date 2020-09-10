@@ -16,6 +16,6 @@ protocol
 
 • **GRAPHQL_TRANSPORT_WS_PROTOCOL**: *"graphql-transport-ws"* = "graphql-transport-ws"
 
-*Defined in [protocol.ts:8](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/protocol.ts#L8)*
+*Defined in [protocol.ts:8](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/protocol.ts#L8)*
 
 The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
