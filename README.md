@@ -299,4 +299,4 @@ Read about the exact transport intricacies used by the library in the [GraphQL o
 
 ## [Want to help?](CONTRIBUTING.md)
 
-File a bug, contribute with code, or improve documentation? Read up on our guidelines for [contributing](CONTRIBUTING.md) and `yarn test --watch` away!.
+File a bug, contribute with code, or improve documentation? Read up on our guidelines for [contributing](CONTRIBUTING.md) and drive development with `yarn test --watch` away!
