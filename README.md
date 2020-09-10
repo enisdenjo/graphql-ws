@@ -169,7 +169,12 @@ async function execute<T>(payload: SubscribePayload) {
 <summary>Client usage with <a href="https://relay.dev">Relay</a></summary>
 
 ```ts
-import { Network, Observable } from 'relay-runtime';
+import {
+  Network,
+  Observable,
+  RequestParameters,
+  Variables,
+} from 'relay-runtime';
 import { createClient } from 'graphql-transport-ws';
 
 const subscriptionsClient = createClient({
@@ -185,50 +190,42 @@ const subscriptionsClient = createClient({
   },
 });
 
-export const network = Network.create(
-  // fetch
-  (operation, variables, cacheConfig) => {
-    return Observable.create((sink) => {
-      fetchQuery(operation, variables, cacheConfig, sink);
-    });
-  },
-  // subscribe
-  (operation, variables) => {
-    return Observable.create((sink) => {
-      if (!operation.text) {
-        return sink.error(new Error('Operation text cannot be empty'));
-      }
-      return subscriptionsClient.subscribe(
-        {
-          operationName: operation.name,
-          query: operation.text,
-          variables,
+// yes, both fetch AND subscribe handled in one implementation
+function fetchOrSubscribe(operation: RequestParameters, variables: Variables) {
+  return Observable.create((sink) => {
+    if (!operation.text) {
+      return sink.error(new Error('Operation text cannot be empty'));
+    }
+    return subscriptionsClient.subscribe(
+      {
+        operationName: operation.name,
+        query: operation.text,
+        variables,
+      },
+      {
+        ...sink,
+        error: (err) => {
+          if (err instanceof Error) {
+            sink.error(err);
+          } else if (err instanceof CloseEvent) {
+            sink.error(
+              new Error(
+                `Socket closed with event ${err.code}` + err.reason
+                  ? `: ${err.reason}` // reason will be available on clean closes
+                  : '',
+              ),
+            );
+          } else {
+            // GraphQLError[]
+            sink.error(new Error(err.map(({ message }) => message).join(', ')));
+          }
         },
-        {
-          ...sink,
-          error: (err) => {
-            if (err instanceof Error) {
-              sink.error(err);
-            } else if (err instanceof CloseEvent) {
-              sink.error(
-                new Error(
-                  `Socket closed with event ${err.code}` + err.reason
-                    ? `: ${err.reason}` // reason will be available on clean closes
-                    : '',
-                ),
-              );
-            } else {
-              // GraphQLError[]
-              sink.error(
-                new Error(err.map(({ message }) => message).join(', ')),
-              );
-            }
-          },
-        },
-      );
-    });
-  },
-);
+      },
+    );
+  });
+}
+
+export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 ```
 
 </details>
