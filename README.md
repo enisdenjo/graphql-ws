@@ -78,7 +78,7 @@ server.listen(80);
 #### Use the client
 
 ```ts
-import { createClient } from '../client';
+import { createClient } from 'graphql-transport-ws';
 
 const client = createClient({
   url: 'ws://welcomer.com/graphql',
