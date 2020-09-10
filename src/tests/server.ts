@@ -674,3 +674,87 @@ describe('Subscribe', () => {
     await wait(20);
   });
 });
+
+describe('keepAlive', () => {
+  it('should dispatch pings after the timeout has passed', async () => {
+    await makeServer({
+      keepAlive: 50,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    await wait(10);
+
+    const onPingFn = jest.fn();
+    client.once('ping', onPingFn);
+    await wait(50);
+
+    expect(onPingFn).toBeCalled();
+  });
+
+  it('should not dispatch pings if disabled with nullish timeout', async () => {
+    await makeServer({
+      keepAlive: 0,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    await wait(10);
+
+    const onPingFn = jest.fn();
+    client.once('ping', onPingFn);
+    await wait(50);
+
+    expect(onPingFn).not.toBeCalled();
+  });
+
+  it('should terminate the socket if no pong is sent in response to a ping', async () => {
+    expect.assertions(4);
+
+    await makeServer({
+      keepAlive: 50,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    await wait(10);
+
+    // disable pong
+    client.pong = () => {
+      /**/
+    };
+    client.onclose = (event) => {
+      // termination is not graceful or clean
+      expect(event.code).toBe(1006);
+      expect(event.wasClean).toBeFalsy();
+    };
+
+    const onPingFn = jest.fn();
+    client.once('ping', onPingFn);
+    await wait(50);
+
+    expect(onPingFn).toBeCalled(); // ping is received
+
+    await wait(50 + 10); // wait for the timeout to pass and termination to settle
+
+    expect(client.readyState).toBe(WebSocket.CLOSED);
+  });
+});

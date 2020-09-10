@@ -136,6 +136,15 @@ export interface ServerOptions {
    * has been closed.
    */
   onComplete?: (ctx: Context, message: CompleteMessage) => void;
+  /**
+   * The timout between dispatched keep-alive messages. Internally the lib
+   * uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
+   * the clients and the server is operating and to prevent the link from being broken due to idling.
+   * Set to nullish value to disable.
+   *
+   * @default 12 * 1000 (12 seconds)
+   */
+  keepAlive?: number;
 }
 
 export interface Context {
@@ -197,6 +206,7 @@ export function createServer(
     formatExecutionResult,
     onSubscribe,
     onComplete,
+    keepAlive = 12 * 1000, // 12 seconds
   } = options;
   const webSocketServer = isWebSocketServer(websocketOptionsOrServer)
     ? websocketOptionsOrServer
@@ -238,11 +248,44 @@ export function createServer(
         }
       }, connectionInitWaitTimeout);
 
+    // keep alive through ping-pong messages
+    // read more about the websocket heartbeat here: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets
+    let pongWait: NodeJS.Timeout | null;
+    const pingInterval =
+      keepAlive && // even 0 disables it
+      keepAlive !== Infinity &&
+      setInterval(() => {
+        // ping pong on open sockets only
+        if (socket.readyState === WebSocket.OPEN) {
+          // terminate the connection after pong wait has passed because the client is idle
+          pongWait = setTimeout(() => {
+            socket.terminate();
+          }, keepAlive);
+
+          // listen for client's pong and stop socket termination
+          socket.once('pong', () => {
+            if (pongWait) {
+              clearTimeout(pongWait);
+              pongWait = null;
+            }
+          });
+
+          // issue a ping to the client
+          socket.ping();
+        }
+      }, keepAlive);
+
     function errorOrCloseHandler(
       errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
     ) {
       if (connectionInitWait) {
         clearTimeout(connectionInitWait);
+      }
+      if (pongWait) {
+        clearTimeout(pongWait);
+      }
+      if (pingInterval) {
+        clearInterval(pingInterval);
       }
 
       if (isErrorEvent(errorOrClose)) {

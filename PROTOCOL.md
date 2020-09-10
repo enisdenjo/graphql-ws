@@ -20,6 +20,14 @@ The server can terminate the socket (kick the client off) at any time. The close
 
 The client terminates the socket and closes the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
 
+## Keep-Alive
+
+The server will occasionally check if the client is still "alive", available and listening. In order to perform this check, implementation leverages the standardized [Pings and Pongs: The Heartbeat of WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets).
+
+Keep-Alive interval and the "pong wait" timeout can be tuned by using the accompanying configuration parameter on the server.
+
+Ping and Pong feature is a mandatory requirement by [The WebSocket Protocol](https://tools.ietf.org/html/rfc6455#section-5.5.2). All clients that don't support it are **not** RFC6455 compliant and will simply have their socket terminated after the pong wait has passed.
+
 ## Message types
 
 ### `ConnectionInit`
