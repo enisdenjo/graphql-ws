@@ -108,9 +108,11 @@ export function createClient(options: ClientOptions): Client {
         });
       },
       reset() {
-        Object.entries(listeners).forEach(([, eventListeners]) => {
-          eventListeners = [];
-        });
+        (Object.keys(listeners) as (keyof typeof listeners)[]).forEach(
+          (event) => {
+            listeners[event] = [];
+          },
+        );
       },
     };
   })();
