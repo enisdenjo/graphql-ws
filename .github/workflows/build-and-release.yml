@@ -1,6 +1,14 @@
 name: Build and release
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      ghToken:
+        description: 'GitHub Personal Access Token'
+        required: true
+      npmToken:
+        description: 'NPM Access Token'
+        required: true
 
 jobs:
   build:
@@ -9,9 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          fetch-depth: 0 # necessary for correct CHANGELOGS
       - name: Set up node
         uses: actions/setup-node@v2.1.1
         with:
@@ -36,13 +41,16 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
     needs: [build]
     steps:
+      - name: Mask tokens
+        run: |
+          echo "::add-mask::${{ github.event.inputs.ghToken }}"
+          echo "::add-mask::${{ github.event.inputs.npmToken }}"
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.event.inputs.ghToken }}
           fetch-depth: 0 # necessary for correct CHANGELOGS
       - name: Set up node
         uses: actions/setup-node@v2.1.1
@@ -64,6 +72,6 @@ jobs:
           path: lib
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.event.inputs.ghToken }}
+          NPM_TOKEN: ${{ github.event.inputs.npmToken }}
         run: yarn release
