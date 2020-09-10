@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { parse } from 'graphql';
+import { execute, parse, buildSchema } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pubsub } from './fixtures/simple';
@@ -756,4 +756,98 @@ describe('keepAlive', () => {
 
     expect(client.readyState).toBe(WebSocket.CLOSED);
   });
+});
+
+it('should use the provided roots as resolvers', async () => {
+  const schema = buildSchema(`
+    type Query {
+      hello: String
+    }
+    type Subscription {
+      count: Int
+    }
+  `);
+
+  const roots = {
+    query: {
+      hello: () => 'Hello World!',
+    },
+    subscription: {
+      count: async function* () {
+        for (const num of [1, 2, 3]) {
+          yield num;
+        }
+      },
+    },
+  };
+
+  await makeServer({
+    schema,
+    roots,
+  });
+
+  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client.onopen = () => {
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+  };
+  await wait(10);
+
+  await new Promise((resolve, reject) => {
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `{ hello }`,
+        },
+      }),
+    );
+    client.on('message', function onMessage(data) {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.Next:
+          expect(message.type).toBe(MessageType.Next);
+          expect(message.payload).toEqual({ data: { hello: 'Hello World!' } });
+          break;
+        case MessageType.Error:
+          client.off('message', onMessage);
+          return reject();
+        case MessageType.Complete:
+          client.off('message', onMessage);
+          return resolve();
+      }
+    });
+  });
+
+  const nextFn = jest.fn();
+  await new Promise((resolve, reject) => {
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '2',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `subscription { count }`,
+        },
+      }),
+    );
+    client.on('message', function onMessage(data) {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.Next:
+          nextFn();
+          break;
+        case MessageType.Error:
+          client.off('message', onMessage);
+          return reject(message.payload);
+        case MessageType.Complete:
+          client.off('message', onMessage);
+          return resolve();
+      }
+    });
+  });
+  expect(nextFn).toBeCalledTimes(3);
 });

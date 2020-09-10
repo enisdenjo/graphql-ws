@@ -7,6 +7,7 @@
 import * as http from 'http';
 import * as WebSocket from 'ws';
 import {
+  OperationTypeNode,
   GraphQLSchema,
   ValidationRule,
   ExecutionResult,
@@ -51,6 +52,16 @@ export interface ServerOptions {
    * from the `onSubscribe` callback.
    */
   schema?: GraphQLSchema;
+  /**
+   * The GraphQL root fields or resolvers to go
+   * alongside the schema. Learn more about them
+   * here: https://graphql.org/learn/execution/#root-fields-resolvers.
+   * Related operation root value will be injected to the
+   * `ExecutionArgs` BEFORE the `onSubscribe` callback.
+   */
+  roots?: {
+    [operation in OperationTypeNode]?: Record<string, unknown>;
+  };
   /**
    * Is the `subscribe` function
    * from GraphQL which is used to
@@ -199,6 +210,7 @@ export function createServer(
 ): Server {
   const {
     schema,
+    roots,
     execute,
     onConnect,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
@@ -371,16 +383,29 @@ export function createServer(
             }
 
             const operation = message.payload;
+            const document =
+              typeof operation.query === 'string'
+                ? parse(operation.query)
+                : operation.query;
+            const operationAST = getOperationAST(
+              document,
+              operation.operationName,
+            );
+            if (!operationAST) {
+              throw new Error('Unable to get operation AST');
+            }
 
             let execArgsMaybeSchema: Optional<ExecutionArgs, 'schema'> = {
               schema,
               operationName: operation.operationName,
-              document:
-                typeof operation.query === 'string'
-                  ? parse(operation.query)
-                  : operation.query,
+              document,
               variableValues: operation.variables,
             };
+
+            // if roots are provided, inject the coresponding operation root
+            if (roots) {
+              execArgsMaybeSchema.rootValue = roots[operationAST.operation];
+            }
 
             let onSubscribeFormatter: ExecutionResultFormatter | undefined;
             if (onSubscribe) {
@@ -415,14 +440,7 @@ export function createServer(
               });
             }
 
-            // execute
-            const operationAST = getOperationAST(
-              execArgs.document,
-              execArgs.operationName,
-            );
-            if (!operationAST) {
-              throw new Error('Unable to get operation AST');
-            }
+            // perform
             if (operationAST.operation === 'subscription') {
               const subscriptionOrResult = await subscribe(execArgs);
               if (isAsyncIterable(subscriptionOrResult)) {
