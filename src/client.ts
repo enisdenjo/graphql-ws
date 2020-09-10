@@ -99,6 +99,11 @@ export function createClient(options: ClientOptions): Client {
           listener(...args);
         });
       },
+      reset() {
+        Object.entries(listeners).forEach(([, eventListeners]) => {
+          eventListeners = [];
+        });
+      },
     };
   })();
 
@@ -458,6 +463,7 @@ export function createClient(options: ClientOptions): Client {
       if (state.socket) {
         state.socket.close(1000, 'Normal Closure');
       }
+      emitter.reset();
     },
   };
 }
