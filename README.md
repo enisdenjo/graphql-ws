@@ -2,7 +2,7 @@
   <br />
 
   <h3>🚡 GraphQL transport over WebSocket</h3>
-  <h6>Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client</h6>
+  <h6>Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client.</h6>
 
 [![Continuous integration](https://github.com/enisdenjo/graphql-transport-ws/workflows/Continuous%20integration/badge.svg)](https://github.com/enisdenjo/graphql-transport-ws/actions?query=workflow%3A%22Continuous+integration%22) [![graphql-transport-ws](https://img.shields.io/npm/v/graphql-transport-ws.svg?label=graphql-transport-ws&logo=npm)](https://www.npmjs.com/package/graphql-transport-ws)
 
@@ -166,7 +166,7 @@ async function execute<T>(payload: SubscribePayload) {
 </details>
 
 <details>
-<summary>Client usage with [Relay](https://relay.dev)</summary>
+<summary>Client usage with <a href="https://relay.dev">Relay</a></summary>
 
 ```ts
 import { Network, Observable } from 'relay-runtime';
@@ -234,7 +234,7 @@ export const network = Network.create(
 </details>
 
 <details>
-<summary>Client usage with [Apollo](https://www.apollographql.com)</summary>
+<summary>Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
