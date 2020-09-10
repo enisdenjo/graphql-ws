@@ -42,17 +42,18 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [build]
+    env:
+      GH_TOKEN: ${{ github.event.inputs.ghToken }}
+      NPM_TOKEN: ${{ github.event.inputs.npmToken }}
     steps:
       - name: Mask tokens
         run: |
-          gh_token = "${{ github.event.inputs.ghToken }}"
-          echo "::add-mask::$gh_token"
-          npm_token = "${{ github.event.inputs.npmToken }}"
-          echo "::add-mask::$npm_token"
+          echo "::add-mask::$GH_TOKEN"
+          echo "::add-mask::$NPM_TOKEN"
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ github.event.inputs.ghToken }}
+          token: ${{ env.GH_TOKEN }}
           fetch-depth: 0 # necessary for correct CHANGELOGS
       - name: Set up node
         uses: actions/setup-node@v2.1.1
@@ -73,7 +74,4 @@ jobs:
           name: lib
           path: lib
       - name: Release
-        env:
-          GH_TOKEN: ${{ github.event.inputs.ghToken }}
-          NPM_TOKEN: ${{ github.event.inputs.npmToken }}
         run: yarn release
