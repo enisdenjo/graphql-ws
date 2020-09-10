@@ -126,7 +126,7 @@ export function createClient(options: ClientOptions): Client {
   ): Promise<
     [
       socket: WebSocket,
-      throwOnCloseOrCancel: (cancelCleanup?: () => void) => Promise<void>,
+      throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
     ]
   > {
     if (state.socket) {
@@ -141,7 +141,7 @@ export function createClient(options: ClientOptions): Client {
 
           return [
             state.socket,
-            (cancelCleanup) =>
+            (cleanup) =>
               new Promise((resolve, reject) => {
                 if (!state.socket) {
                   return reject(new Error('Socket closed unexpectedly'));
@@ -160,8 +160,8 @@ export function createClient(options: ClientOptions): Client {
                 }
 
                 cancellerRef.current = () => {
-                  if (cancelCleanup) {
-                    cancelCleanup();
+                  if (cleanup) {
+                    cleanup();
                   }
                   state.locks--;
                   if (!state.locks) {
@@ -308,7 +308,7 @@ export function createClient(options: ClientOptions): Client {
 
     return [
       socket,
-      (cancelCleanup) =>
+      (cleanup) =>
         new Promise((resolve, reject) => {
           if (socket.readyState === WebSocket.CLOSED) {
             return reject(new Error('Socket has already been closed'));
@@ -324,8 +324,8 @@ export function createClient(options: ClientOptions): Client {
           }
 
           cancellerRef.current = () => {
-            if (cancelCleanup) {
-              cancelCleanup();
+            if (cleanup) {
+              cleanup();
             }
             state.locks--;
             if (!state.locks) {
@@ -343,8 +343,10 @@ export function createClient(options: ClientOptions): Client {
     (async () => {
       for (;;) {
         try {
-          const [, throwOnCloseOrCancel] = await connect({ current: null });
-          await throwOnCloseOrCancel();
+          const [, throwOnCloseOrWaitForCancel] = await connect({
+            current: null,
+          });
+          await throwOnCloseOrWaitForCancel();
           // cancelled, shouldnt try again
           return;
         } catch (errOrCloseEvent) {
@@ -404,7 +406,9 @@ export function createClient(options: ClientOptions): Client {
       (async () => {
         for (;;) {
           try {
-            const [socket, throwOnCloseOrCancel] = await connect(cancellerRef);
+            const [socket, throwOnCloseOrWaitForCancel] = await connect(
+              cancellerRef,
+            );
             socket.addEventListener('message', messageHandler);
 
             socket.send(
@@ -417,7 +421,7 @@ export function createClient(options: ClientOptions): Client {
 
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
-            await throwOnCloseOrCancel(() => {
+            await throwOnCloseOrWaitForCancel(() => {
               // send complete message to server on cancel
               socket.send(
                 stringifyMessage<MessageType.Complete>({
