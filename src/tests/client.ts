@@ -5,7 +5,7 @@
 import WebSocket from 'ws';
 import { url, startServer, pubsub } from './fixtures/simple';
 import { Server } from '../server';
-import { createClient } from '../client';
+import { createClient, EventListener } from '../client';
 import { noop } from '../utils';
 
 /** Waits for the specified timeout and then resolves the promise. */
@@ -466,4 +466,54 @@ describe('reconnecting', () => {
   it.todo(
     'should attempt reconnecting silently a few times before closing for good',
   );
+});
+
+describe('events', () => {
+  it('should emit to relevant listeners with expected arguments', async () => {
+    const connectingFn = jest.fn(noop as EventListener<'connecting'>);
+    const connectedFn = jest.fn(noop as EventListener<'connected'>);
+    const closedFn = jest.fn(noop as EventListener<'closed'>);
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      on: {
+        connecting: connectingFn,
+        connected: connectedFn,
+        closed: closedFn,
+      },
+    });
+    client.on('connecting', connectingFn);
+    client.on('connected', connectedFn);
+    client.on('closed', closedFn);
+    await wait(10);
+
+    expect(connectingFn).toBeCalledTimes(1); // only once because `client.on` missed the initial connecting event
+    expect(connectingFn.mock.calls[0].length).toBe(0);
+
+    expect(connectedFn).toBeCalledTimes(2); // initial and registered listener
+    connectedFn.mock.calls.forEach((cal) => {
+      expect(cal[0]).toBeInstanceOf(WebSocket);
+    });
+
+    expect(closedFn).not.toBeCalled();
+
+    server.webSocketServer.clients.forEach((client) => {
+      client.close();
+    });
+    await wait(5);
+
+    // retrying is disabled
+    expect(connectingFn).toBeCalledTimes(1);
+    expect(connectedFn).toBeCalledTimes(2);
+
+    expect(closedFn).toBeCalledTimes(2); // initial and registered listener
+    closedFn.mock.calls.forEach((cal) => {
+      // CloseEvent
+      expect(cal[0]).toHaveProperty('code');
+      expect(cal[0]).toHaveProperty('reason');
+      expect(cal[0]).toHaveProperty('wasClean');
+    });
+  });
 });
