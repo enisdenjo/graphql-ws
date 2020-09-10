@@ -53,6 +53,15 @@ export interface ClientOptions {
    * @default 3 * 1000 (3 seconds)
    */
   retryTimeout?: number;
+  /**
+   * Register listeners before initialising the client. This way
+   * you can ensure to catch all client relevant emitted events.
+   * The listeners passed in here will **never** unregister,
+   * not even after disposing the client, and will **always** be
+   * the first ones to get the emitted event before other future
+   * registered listeners.
+   */
+  on?: Partial<{ [event in Event]: EventListener<event> }>;
 }
 
 export interface Client extends Disposable {
@@ -76,6 +85,7 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
+    on,
   } = options;
 
   const emitter = (() => {
@@ -94,8 +104,12 @@ export function createClient(options: ClientOptions): Client {
         };
       },
       emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
+        if (on && on[event]) {
+          // @ts-expect-error: The listener will be set and args should fit
+          on[event](...args);
+        }
         (listeners[event] as EventListener<E>[]).forEach((listener) => {
-          // @ts-expect-error: The args do actually fit
+          // @ts-expect-error: The args should fit
           listener(...args);
         });
       },
