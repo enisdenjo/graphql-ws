@@ -56,10 +56,8 @@ export interface ClientOptions {
   /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
-   * The listeners passed in here will **never** unregister,
-   * not even after disposing the client, and will **always** be
-   * the first ones to get the emitted event before other future
-   * registered listeners.
+   * The listeners passed in will **always** be the first ones
+   * to get the emitted event before other registered listeners.
    */
   on?: Partial<{ [event in Event]: EventListener<event> }>;
 }
@@ -90,9 +88,9 @@ export function createClient(options: ClientOptions): Client {
 
   const emitter = (() => {
     const listeners: { [event in Event]: EventListener<event>[] } = {
-      connecting: [],
-      connected: [],
-      closed: [],
+      connecting: on?.connecting ? [on.connecting] : [],
+      connected: on?.connected ? [on.connected] : [],
+      closed: on?.closed ? [on.closed] : [],
     };
 
     return {
@@ -104,10 +102,6 @@ export function createClient(options: ClientOptions): Client {
         };
       },
       emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
-        if (on && on[event]) {
-          // @ts-expect-error: The listener will be set and args should fit
-          on[event](...args);
-        }
         (listeners[event] as EventListener<E>[]).forEach((listener) => {
           // @ts-expect-error: The args should fit
           listener(...args);
