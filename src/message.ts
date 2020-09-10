@@ -40,9 +40,9 @@ export interface SubscribeMessage {
 }
 
 export interface SubscribePayload {
-  readonly operationName: string;
+  readonly operationName?: string | null;
   readonly query: string | DocumentNode;
-  readonly variables: Record<string, unknown>;
+  readonly variables?: Record<string, unknown> | null;
 }
 
 export interface NextMessage {
@@ -100,10 +100,12 @@ export function isMessage(val: unknown): val is Message {
         return (
           hasOwnStringProperty(val, 'id') &&
           hasOwnObjectProperty(val, 'payload') &&
-          hasOwnStringProperty(val.payload, 'operationName') &&
+          (!hasOwnProperty(val.payload, 'operationName') ||
+            hasOwnStringProperty(val.payload, 'operationName')) &&
           (hasOwnStringProperty(val.payload, 'query') || // string query
             hasOwnObjectProperty(val.payload, 'query')) && // document node query
-          hasOwnObjectProperty(val.payload, 'variables')
+          (!hasOwnProperty(val.payload, 'variables') ||
+            hasOwnObjectProperty(val.payload, 'variables'))
         );
       case MessageType.Next:
         return (

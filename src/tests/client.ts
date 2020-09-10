@@ -33,11 +33,9 @@ describe('query operation', () => {
 
     client.subscribe(
       {
-        operationName: 'ValueGetter',
-        query: `query ValueGetter {
+        query: `query {
           getValue
         }`,
-        variables: {},
       },
       {
         next: (result) => {
@@ -151,13 +149,11 @@ describe('subscription operation', () => {
     const completeFnForBananas = jest.fn();
     const disposeBananas = client.subscribe(
       {
-        operationName: 'BoughtBananas',
-        query: `subscription BoughtBananas {
+        query: `subscription {
           boughtBananas {
             name
           }
         }`,
-        variables: {},
       },
       {
         next: nextFnForBananas,
@@ -268,13 +264,11 @@ describe('"concurrency"', () => {
 
       client.subscribe(
         {
-          operationName: 'BoughtBananas',
-          query: `subscription BoughtBananas {
+          query: `subscription {
             boughtBananas {
               name
             }
           }`,
-          variables: {},
         },
         {
           next: nextFnForBananas,
@@ -340,13 +334,11 @@ describe('lazy', () => {
 
     client.subscribe(
       {
-        operationName: 'BoughtBananas',
-        query: `subscription BoughtBananas {
+        query: `subscription {
           boughtBananas {
             name
           }
         }`,
-        variables: {},
       },
       {
         next: noop,
@@ -377,7 +369,6 @@ describe('lazy', () => {
             name
           }
         }`,
-        variables: {},
       },
       {
         next: noop,

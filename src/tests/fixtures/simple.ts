@@ -35,6 +35,11 @@ export const schema = new GraphQLSchema({
     fields: {
       becameHappy: {
         type: personType,
+        args: {
+          secret: {
+            type: new GraphQLNonNull(GraphQLString),
+          },
+        },
         subscribe: () => {
           return pubsub.asyncIterator('becameHappy');
         },
