@@ -639,11 +639,10 @@ describe('Subscribe', () => {
               payload: {
                 operationName: 'BecomingHappy',
                 query: `subscription BecomingHappy {
-                  becameHappy {
+                  becameHappy(secret: "smile more") {
                     name
                   }
                 }`,
-                variables: {},
               },
             }),
             () =>
