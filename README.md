@@ -32,7 +32,7 @@ const schema = buildSchema(`
   }
 `);
 
-// The roots provide operation resolver functions for each API endpoint
+// The roots provide resolvers for each GraphQL operation
 const roots = {
   query: {
     hello: () => 'Hello World!',
@@ -117,7 +117,7 @@ const client = createClient({
       {
         next: onNext,
         error: reject,
-        complete: () => resolve(),
+        complete: resolve,
       },
     );
   });
@@ -126,7 +126,7 @@ const client = createClient({
 })();
 ```
 
-## Recepies
+## Recipes
 
 <details>
 <summary>Promisify query execution</summary>
@@ -173,7 +173,7 @@ import { Network, Observable } from 'relay-runtime';
 import { createClient } from 'graphql-transport-ws';
 
 const subscriptionsClient = createClient({
-  url: 'wss://i.need/graphql',
+  url: 'wss://i.love/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
