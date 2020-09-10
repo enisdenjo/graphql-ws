@@ -16,6 +16,7 @@
 
 ### Methods
 
+* [on](_client_.client.md#on)
 * [subscribe](_client_.client.md#subscribe)
 
 ## Properties
@@ -26,7 +27,7 @@
 
 *Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/types.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
@@ -36,11 +37,36 @@ Dispose of the instance and clear up resources.
 
 ## Methods
 
+###  on
+
+▸ **on**‹**E**›(`event`: E, `listener`: [EventListener](../modules/_client_.md#eventlistener)‹E›): *function*
+
+*Defined in [client.ts:69](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L69)*
+
+Listens on the client which dispatches events about the socket state.
+
+**Type parameters:**
+
+▪ **E**: *[Event](../modules/_client_.md#event)*
+
+**Parameters:**
+
+Name | Type |
+------ | ------ |
+`event` | E |
+`listener` | [EventListener](../modules/_client_.md#eventlistener)‹E› |
+
+**Returns:** *function*
+
+▸ (): *void*
+
+___
+
 ###  subscribe
 
 ▸ **subscribe**‹**T**›(`payload`: [SubscribePayload](_message_.subscribepayload.md), `sink`: [Sink](_types_.sink.md)‹T›): *function*
 
-*Defined in [client.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L51)*
+*Defined in [client.ts:75](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L75)*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_

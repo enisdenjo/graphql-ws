@@ -14,6 +14,7 @@ Configuration used for the `create` client function.
 
 * [connectionParams](_client_.clientoptions.md#optional-connectionparams)
 * [lazy](_client_.clientoptions.md#optional-lazy)
+* [on](_client_.clientoptions.md#optional-on)
 * [retryAttempts](_client_.clientoptions.md#optional-retryattempts)
 * [retryTimeout](_client_.clientoptions.md#optional-retrytimeout)
 * [url](_client_.clientoptions.md#url)
@@ -24,7 +25,7 @@ Configuration used for the `create` client function.
 
 • **connectionParams**? : *Record‹string, unknown› | function*
 
-*Defined in [client.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L26)*
+*Defined in [client.ts:39](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L39)*
 
 Optional parameters that the client specifies when establishing a connection with the server.
 
@@ -34,7 +35,7 @@ ___
 
 • **lazy**? : *undefined | false | true*
 
-*Defined in [client.ts:32](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L32)*
+*Defined in [client.ts:45](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L45)*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -43,11 +44,24 @@ or after the first listener subscribed.
 
 ___
 
+### `Optional` on
+
+• **on**? : *Partial‹object›*
+
+*Defined in [client.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L62)*
+
+Register listeners before initialising the client. This way
+you can ensure to catch all client relevant emitted events.
+The listeners passed in will **always** be the first ones
+to get the emitted event before other registered listeners.
+
+___
+
 ### `Optional` retryAttempts
 
 • **retryAttempts**? : *undefined | number*
 
-*Defined in [client.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L37)*
+*Defined in [client.ts:50](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L50)*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -59,7 +73,7 @@ ___
 
 • **retryTimeout**? : *undefined | number*
 
-*Defined in [client.ts:42](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L42)*
+*Defined in [client.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L55)*
 
 How long should the client wait until attempting to retry.
 
@@ -71,6 +85,6 @@ ___
 
 • **url**: *string*
 
-*Defined in [client.ts:24](https://github.com/enisdenjo/graphql-transport-ws/blob/1c0bdce/src/client.ts#L24)*
+*Defined in [client.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/d45c8df/src/client.ts#L37)*
 
 URL of the GraphQL server to connect.
