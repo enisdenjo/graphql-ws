@@ -1,3 +1,13 @@
+# [1.3.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.2.0...v1.3.0) (2020-09-10)
+
+
+### Features
+
+* WebSocket Ping and Pong as keep-alive ([#11](https://github.com/enisdenjo/graphql-transport-ws/issues/11)) ([16ae316](https://github.com/enisdenjo/graphql-transport-ws/commit/16ae316b35a90d45f379336ec3ed5bedf3f2e28e))
+* **client:** Emit events for `connecting`, `connected` and `closed` ([627775b](https://github.com/enisdenjo/graphql-transport-ws/commit/627775b8e1aca8f359607020ff2c3bcc37b50787))
+* **client:** Implement silent-reconnects ([c6f7872](https://github.com/enisdenjo/graphql-transport-ws/commit/c6f7872126300befcc47e8e46e82342c2924f453)), closes [#7](https://github.com/enisdenjo/graphql-transport-ws/issues/7)
+* **client:** Lazy option can be changed ([fb0ec14](https://github.com/enisdenjo/graphql-transport-ws/commit/fb0ec1478e5219eb75e6bf2a1c2fd2a3a9cbb90d))
+
 # [1.2.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.1.1...v1.2.0) (2020-09-04)
 
 
