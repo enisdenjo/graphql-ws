@@ -255,21 +255,24 @@ export function createServer(
       keepAlive && // even 0 disables it
       keepAlive !== Infinity &&
       setInterval(() => {
-        // terminate the connection after pong wait has passed because the client is idle
-        pongWait = setTimeout(() => {
-          socket.terminate();
-        }, keepAlive);
+        // ping pong on open sockets only
+        if (socket.readyState === WebSocket.OPEN) {
+          // terminate the connection after pong wait has passed because the client is idle
+          pongWait = setTimeout(() => {
+            socket.terminate();
+          }, keepAlive);
 
-        // listen for client's pong and stop socket termination
-        socket.once('pong', () => {
-          if (pongWait) {
-            clearTimeout(pongWait);
-            pongWait = null;
-          }
-        });
+          // listen for client's pong and stop socket termination
+          socket.once('pong', () => {
+            if (pongWait) {
+              clearTimeout(pongWait);
+              pongWait = null;
+            }
+          });
 
-        // issue a ping to the client
-        socket.ping();
+          // issue a ping to the client
+          socket.ping();
+        }
       }, keepAlive);
 
     function errorOrCloseHandler(
