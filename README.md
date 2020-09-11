@@ -72,7 +72,7 @@ createServer(
   },
 );
 
-server.listen(80);
+server.listen(443);
 ```
 
 #### Use the client
