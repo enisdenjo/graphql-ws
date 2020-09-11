@@ -227,18 +227,13 @@ export function createClient(options: ClientOptions): Client {
     emitter.emit('connecting');
 
     await new Promise((resolve, reject) => {
-      let settled = false,
-        cancelled = false;
-      setTimeout(() => {
-        if (!settled) {
-          socket.close(
-            3408,
-            'Waited 5 seconds but socket connect never settled',
-          );
-          // onclose should reject and settled = true
-        }
-      }, 5 * 1000);
+      let cancelled = false,
+        resolved = false;
       cancellerRef.current = () => (cancelled = true);
+
+      const tooLong = setTimeout(() => {
+        socket.close(3408, 'Waited 5 seconds but socket connect never settled');
+      }, 5 * 1000);
 
       /**
        * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
@@ -251,14 +246,11 @@ export function createClient(options: ClientOptions): Client {
 
       socket.onclose = (event) => {
         socket.onclose = null;
-
-        // we always want to update the state, just not reject a settled promise
+        clearTimeout(tooLong);
         state = { ...state, acknowledged: false, socket: null };
         emitter.emit('closed', event);
-
-        if (!settled) {
-          settled = true;
-          reject(event);
+        if (!resolved) {
+          return reject(event);
         }
       };
 
@@ -275,16 +267,13 @@ export function createClient(options: ClientOptions): Client {
             throw new Error(`First message cannot be of type ${message.type}`);
           }
 
+          clearTimeout(tooLong);
           state = { ...state, acknowledged: true, socket, retries: 0 };
           emitter.emit('connected', socket); // connected = socket opened + acknowledged
-
-          if (!settled) {
-            settled = true;
-            resolve();
-          }
+          resolved = true;
+          return resolve();
         } catch (err) {
           socket.close(4400, err);
-          // the onclose should reject and settle
         }
       };
 
