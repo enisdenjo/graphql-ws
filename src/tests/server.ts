@@ -672,6 +672,83 @@ describe('Subscribe', () => {
 
     await wait(20);
   });
+
+  it('should stop dispatching messages after completing a subscription', async () => {
+    await makeServer({
+      schema,
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    const onMessageFn = jest.fn(({ data }) => {
+      const message = parseMessage(data);
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: '1',
+            type: MessageType.Subscribe,
+            payload: {
+              query: `subscription {
+              boughtBananas {
+                name
+              }
+            }`,
+            },
+          }),
+        );
+      }
+      return message;
+    });
+    client.onmessage = onMessageFn;
+    await wait(10);
+
+    pubsub.publish('boughtBananas', {
+      boughtBananas: {
+        name: 'john',
+      },
+    });
+    await wait(10);
+
+    expect(onMessageFn.mock.results[1].value).toEqual({
+      id: '1',
+      type: MessageType.Next,
+      payload: { data: { boughtBananas: { name: 'john' } } },
+    });
+
+    // complete
+    client.send(
+      stringifyMessage<MessageType.Complete>({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+    await wait(10);
+
+    // confirm complete
+    expect(onMessageFn).toHaveLastReturnedWith({
+      id: '1',
+      type: MessageType.Complete,
+    });
+
+    pubsub.publish('boughtBananas', new Error('Something weird happened!'));
+    await wait(10);
+
+    pubsub.publish('boughtBananas', {
+      boughtBananas: {
+        name: 'john',
+      },
+    });
+    await wait(10);
+
+    expect(onMessageFn).toBeCalledTimes(3); // ack, next, complete
+  });
 });
 
 describe('keepAlive', () => {

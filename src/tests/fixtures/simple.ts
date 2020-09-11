@@ -40,12 +40,24 @@ export const schema = new GraphQLSchema({
             type: new GraphQLNonNull(GraphQLString),
           },
         },
+        resolve: (source) => {
+          if (source instanceof Error) {
+            throw source;
+          }
+          return source.becameHappy;
+        },
         subscribe: () => {
           return pubsub.asyncIterator('becameHappy');
         },
       },
       boughtBananas: {
         type: personType,
+        resolve: (source) => {
+          if (source instanceof Error) {
+            throw source;
+          }
+          return source.boughtBananas;
+        },
         subscribe: () => {
           return pubsub.asyncIterator('boughtBananas');
         },
