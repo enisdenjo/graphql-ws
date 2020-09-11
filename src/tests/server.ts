@@ -45,7 +45,7 @@ it('should allow connections with valid protocols only', async () => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  await wait(5);
+  await wait(10);
 
   client = new WebSocket(url, ['graphql', 'json']);
   client.onclose = (event) => {
@@ -54,7 +54,7 @@ it('should allow connections with valid protocols only', async () => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  await wait(5);
+  await wait(10);
 
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   client.onclose = (event) => {
@@ -63,7 +63,7 @@ it('should allow connections with valid protocols only', async () => {
     expect(event.wasClean).toBeTruthy();
   };
 
-  await wait(5);
+  await wait(10);
 
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   const closeFn = jest.fn();
@@ -73,7 +73,7 @@ it('should allow connections with valid protocols only', async () => {
 
   expect(closeFn).not.toBeCalled();
 
-  await wait(5);
+  await wait(10);
 });
 
 it('should gracefully go away when disposing', async () => {

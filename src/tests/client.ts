@@ -76,7 +76,7 @@ describe('subscription operation', () => {
       },
     );
 
-    await wait(5);
+    await wait(10);
 
     pubsub.publish('becameHappy', {
       becameHappy: {
@@ -90,7 +90,7 @@ describe('subscription operation', () => {
       },
     });
 
-    await wait(5);
+    await wait(10);
 
     expect(nextFn).toHaveBeenNthCalledWith(1, {
       data: { becameHappy: { name: 'john' } },
@@ -114,7 +114,7 @@ describe('subscription operation', () => {
       },
     });
 
-    await wait(5);
+    await wait(10);
 
     expect(nextFn).toBeCalledTimes(2);
     expect(completeFn).toBeCalled();
@@ -177,7 +177,7 @@ describe('subscription operation', () => {
       },
     });
 
-    await wait(5);
+    await wait(10);
 
     expect(nextFnForHappy).toBeCalledTimes(1);
     expect(nextFnForHappy).toBeCalledWith({
@@ -203,7 +203,7 @@ describe('subscription operation', () => {
       },
     });
 
-    await wait(5);
+    await wait(10);
 
     expect(nextFnForHappy).toHaveBeenCalledTimes(1);
     expect(completeFnForHappy).toBeCalled();
@@ -220,7 +220,7 @@ describe('subscription operation', () => {
       },
     });
 
-    await wait(5);
+    await wait(10);
 
     expect(nextFnForBananas).toHaveBeenCalledTimes(2);
     expect(completeFnForBananas).toBeCalled();
@@ -260,7 +260,7 @@ describe('"concurrency"', () => {
     setTimeout(async () => {
       disposeOfHappy();
 
-      await wait(5);
+      await wait(10);
 
       client.subscribe(
         {
@@ -302,7 +302,7 @@ describe('lazy', () => {
       url,
       lazy: false,
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(1);
     server.webSocketServer.clients.forEach((client) => {
@@ -315,10 +315,10 @@ describe('lazy', () => {
       url,
       lazy: false,
     });
-    await wait(5);
+    await wait(10);
 
     client.dispose();
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(0);
   });
@@ -328,7 +328,7 @@ describe('lazy', () => {
       url,
       lazy: true, // default
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(0);
 
@@ -346,7 +346,7 @@ describe('lazy', () => {
         complete: noop,
       },
     );
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(1);
     server.webSocketServer.clients.forEach((client) => {
@@ -359,7 +359,7 @@ describe('lazy', () => {
       url,
       lazy: true, // default
     });
-    await wait(5);
+    await wait(10);
 
     const disposeClient1 = client.subscribe(
       {
@@ -376,7 +376,7 @@ describe('lazy', () => {
         complete: noop,
       },
     );
-    await wait(5);
+    await wait(10);
 
     const disposeClient2 = client.subscribe(
       {
@@ -394,10 +394,10 @@ describe('lazy', () => {
         complete: noop,
       },
     );
-    await wait(5);
+    await wait(10);
 
     disposeClient1();
-    await wait(5);
+    await wait(10);
 
     // still connected
     expect(server.webSocketServer.clients.size).toBe(1);
@@ -417,14 +417,14 @@ describe('reconnecting', () => {
       retryAttempts: 0,
       retryTimeout: 10, // fake timeout
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(1);
 
     server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(0);
 
@@ -439,14 +439,14 @@ describe('reconnecting', () => {
       retryAttempts: 1,
       retryTimeout: 10,
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(1);
 
     server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
-    await wait(5);
+    await wait(10);
 
     expect(server.webSocketServer.clients.size).toBe(0);
 
