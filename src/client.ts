@@ -370,8 +370,8 @@ export function createClient(options: ClientOptions): Client {
   function memoParseMessage(data: unknown) {
     if (data !== lastData) {
       lastMessage = parseMessage(data);
+      lastData = data;
     }
-    lastData = data;
     return lastMessage;
   }
 
