@@ -80,9 +80,9 @@ interface SubscribeMessage {
   id: '<unique-operation-id>';
   type: 'subscribe';
   payload: {
-    operationName: string;
+    operationName?: string | null;
     query: string | DocumentNode;
-    variables: Record<string, unknown>;
+    variables?: Record<string, unknown> | null;
   };
 }
 ```
