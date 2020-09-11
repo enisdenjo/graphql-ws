@@ -493,7 +493,7 @@ describe('events', () => {
     server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
-    await wait(5);
+    await wait(10);
 
     // retrying is disabled
     expect(connectingFn).toBeCalledTimes(1);
