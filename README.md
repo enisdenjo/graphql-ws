@@ -81,7 +81,7 @@ server.listen(443);
 import { createClient } from 'graphql-transport-ws';
 
 const client = createClient({
-  url: 'ws://welcomer.com/graphql',
+  url: 'wss://welcomer.com/graphql',
 });
 
 // query
