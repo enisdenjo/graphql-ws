@@ -9,6 +9,7 @@
 import { Sink, UUID, Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
+  Message,
   MessageType,
   parseMessage,
   stringifyMessage,
@@ -363,13 +364,24 @@ export function createClient(options: ClientOptions): Client {
     })();
   }
 
+  // to avoid parsing the same message in each
+  // subscriber, we memo one on the last received data
+  let lastData: unknown, lastMessage: Message;
+  function memoParseMessage(data: unknown) {
+    if (data !== lastData) {
+      lastMessage = parseMessage(data);
+    }
+    lastData = data;
+    return lastMessage;
+  }
+
   return {
     on: emitter.on,
     subscribe(payload, sink) {
       const uuid = generateUUID();
 
       const messageHandler = ({ data }: MessageEvent) => {
-        const message = parseMessage(data);
+        const message = memoParseMessage(data);
         switch (message.type) {
           case MessageType.Next: {
             if (message.id === uuid) {
