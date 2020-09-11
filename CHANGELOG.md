@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.0...v1.4.1) (2020-09-11)
+
+
+### Performance Improvements
+
+* **client:** Memoize message parsing for each subscriber ([2a7ba46](https://github.com/enisdenjo/graphql-transport-ws/commit/2a7ba4642c0ea1a3294b8b3ea3440957ec7fcb7b))
+
 # [1.4.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.3.0...v1.4.0) (2020-09-10)
 
 
