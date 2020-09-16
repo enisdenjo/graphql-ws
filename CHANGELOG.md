@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.1...v1.4.2) (2020-09-16)
+
+
+### Bug Fixes
+
+* **server:** Receiving more than one `ConnectionInit` message closes the socket immediately ([757c6e9](https://github.com/enisdenjo/graphql-transport-ws/commit/757c6e966ffa1756cca2687b0275d7d7eff2ce87))
+
 ## [1.4.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.0...v1.4.1) (2020-09-11)
 
 
