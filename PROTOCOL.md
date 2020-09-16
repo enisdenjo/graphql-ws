@@ -40,6 +40,8 @@ The client can specify additional `connectionParams` which are sent through the 
 
 The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will terminate the socket with the close event: `4408: Connection initialisation timeout`.
 
+If the server receives more than one `ConnectionInit` message at any given time, the server will terminate the socket with the close event `4429: Too many initialisation requests`.
+
 ```typescript
 interface ConnectionInitMessage {
   type: 'connection_init';

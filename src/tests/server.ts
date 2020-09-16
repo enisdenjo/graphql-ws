@@ -295,6 +295,76 @@ describe('Connect', () => {
 
     expect(closeFn).not.toBeCalled();
   });
+
+  it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async () => {
+    expect.assertions(3);
+
+    await makeServer({
+      connectionInitWaitTimeout: 10,
+      onConnect: () =>
+        new Promise((resolve) => setTimeout(() => resolve(true), 50)),
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onclose = (event) => {
+      expect(event.code).toBe(4429);
+      expect(event.reason).toBe('Too many initialisation requests');
+      expect(event.wasClean).toBeTruthy();
+    };
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      // issue an additional one a bit later
+      setTimeout(() => {
+        client.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
+      }, 10);
+    };
+
+    await wait(30);
+  });
+
+  it('should close the socket if more than one `ConnectionInit` message is received at any given time', async () => {
+    expect.assertions(4);
+
+    await makeServer();
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onclose = (event) => {
+      expect(event.code).toBe(4429);
+      expect(event.reason).toBe('Too many initialisation requests');
+      expect(event.wasClean).toBeTruthy();
+    };
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      expect(message.type).toBe(MessageType.ConnectionAck);
+    };
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    await wait(10);
+
+    // random connection init message even after acknowledgement
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await wait(10);
+  });
 });
 
 describe('Subscribe', () => {

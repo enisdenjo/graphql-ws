@@ -357,6 +357,9 @@ export function createServer(
         const message = parseMessage(event.data);
         switch (message.type) {
           case MessageType.ConnectionInit: {
+            if (ctx.connectionInitReceived) {
+              return ctx.socket.close(4429, 'Too many initialisation requests');
+            }
             ctx.connectionInitReceived = true;
 
             if (isObject(message.payload)) {
