@@ -143,7 +143,7 @@ interface CompleteMessage {
 
 Direction: **bidirectional**
 
-Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket termination with a close event `4400: <error-message>`. The `<error-message>` can be vagouly descriptive on why the received message is invalid.
+Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket termination with a close event `4400: <error-message>`. The `<error-message>` can be vaguely descriptive on why the received message is invalid.
 
 ## Examples
 
