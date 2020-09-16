@@ -27,7 +27,7 @@
 
 *Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/types.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
@@ -41,7 +41,7 @@ Dispose of the instance and clear up resources.
 
 ▸ **on**‹**E**›(`event`: E, `listener`: [EventListener](../modules/_client_.md#eventlistener)‹E›): *function*
 
-*Defined in [client.ts:69](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/client.ts#L69)*
+*Defined in [client.ts:70](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L70)*
 
 Listens on the client which dispatches events about the socket state.
 
@@ -66,7 +66,7 @@ ___
 
 ▸ **subscribe**‹**T**›(`payload`: [SubscribePayload](_message_.subscribepayload.md), `sink`: [Sink](_types_.sink.md)‹T›): *function*
 
-*Defined in [client.ts:75](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/client.ts#L75)*
+*Defined in [client.ts:76](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L76)*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_

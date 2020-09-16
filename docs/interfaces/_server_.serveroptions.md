@@ -28,7 +28,7 @@
 
 • **connectionInitWaitTimeout**? : *undefined | number*
 
-*Defined in [server.ts:115](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L115)*
+*Defined in [server.ts:115](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L115)*
 
 **`default`** 3 * 1000 (3 seconds)
 
@@ -48,7 +48,7 @@ ___
 
 • **execute**: *function*
 
-*Defined in [server.ts:71](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L71)*
+*Defined in [server.ts:71](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L71)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -71,7 +71,7 @@ ___
 
 • **formatExecutionResult**? : *[ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)*
 
-*Defined in [server.ts:127](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L127)*
+*Defined in [server.ts:127](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L127)*
 
 Format the operation execution results
 if the implementation requires an adjusted
@@ -84,7 +84,7 @@ ___
 
 • **keepAlive**? : *undefined | number*
 
-*Defined in [server.ts:158](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L158)*
+*Defined in [server.ts:158](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L158)*
 
 The timout between dispatched keep-alive messages. Internally the lib
 uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
@@ -99,7 +99,7 @@ ___
 
 • **onComplete**? : *undefined | function*
 
-*Defined in [server.ts:149](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L149)*
+*Defined in [server.ts:149](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L149)*
 
 The complete callback is executed after the
 operation has completed or the subscription
@@ -111,7 +111,7 @@ ___
 
 • **onConnect**? : *undefined | function*
 
-*Defined in [server.ts:101](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L101)*
+*Defined in [server.ts:101](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L101)*
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -138,7 +138,7 @@ ___
 
 • **onSubscribe**? : *undefined | function*
 
-*Defined in [server.ts:137](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L137)*
+*Defined in [server.ts:137](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L137)*
 
 The subscribe callback executed before
 the actual operation execution. Useful
@@ -154,7 +154,7 @@ ___
 
 • **roots**? : *undefined | object*
 
-*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L62)*
+*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L62)*
 
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
@@ -168,7 +168,7 @@ ___
 
 • **schema**? : *GraphQLSchema*
 
-*Defined in [server.ts:54](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L54)*
+*Defined in [server.ts:54](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L54)*
 
 The GraphQL schema on which the operations
 will be executed and validated against. If
@@ -182,7 +182,7 @@ ___
 
 • **subscribe**: *function*
 
-*Defined in [server.ts:78](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L78)*
+*Defined in [server.ts:78](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L78)*
 
 Is the `subscribe` function
 from GraphQL which is used to
@@ -205,7 +205,7 @@ ___
 
 • **validationRules**? : *readonly ValidationRule[]*
 
-*Defined in [server.ts:120](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L120)*
+*Defined in [server.ts:120](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L120)*
 
 Custom validation rules overriding all
 validation rules defined by the GraphQL spec.

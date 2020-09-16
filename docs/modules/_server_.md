@@ -24,7 +24,7 @@
 
 Ƭ **ExecutionResultFormatter**: *function*
 
-*Defined in [server.ts:41](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L41)*
+*Defined in [server.ts:41](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L41)*
 
 #### Type declaration:
 
@@ -43,7 +43,7 @@ Name | Type |
 
 ▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions | WebSocketServer): *[Server](../interfaces/_server_.server.md)*
 
-*Defined in [server.ts:207](https://github.com/enisdenjo/graphql-transport-ws/blob/bb59cf9/src/server.ts#L207)*
+*Defined in [server.ts:207](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L207)*
 
 Creates a protocol complient WebSocket GraphQL
 subscription server. Read more about the protocol
