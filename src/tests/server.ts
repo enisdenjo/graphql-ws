@@ -131,7 +131,7 @@ it('should report server errors to clients by closing the connection', async () 
   await wait(10);
 });
 
-describe('onConnect', () => {
+describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     expect.assertions(3);
 
@@ -751,7 +751,7 @@ describe('Subscribe', () => {
   });
 });
 
-describe('keepAlive', () => {
+describe('Keep-Alive', () => {
   it('should dispatch pings after the timeout has passed', async () => {
     await makeServer({
       keepAlive: 50,
