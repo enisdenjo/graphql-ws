@@ -138,7 +138,7 @@ const client = createClient({
 <summary>Client usage with Promise</summary>
 
 ```ts
-import { createClient, SubscribePayload } from '../index';
+import { createClient, SubscribePayload } from 'graphql-transport-ws';
 
 const client = createClient({
   url: 'wss://hey.there/graphql',
