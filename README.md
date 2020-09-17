@@ -295,6 +295,41 @@ const link = new WebSocketLink({
 
 </details>
 
+<details>
+<summary>Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
+
+```typescript
+import http from 'http';
+import express from 'express';
+import { graphqlHTTP } from 'express-graphql';
+import { createServer } from 'graphql-transport-ws';
+import { execute, subscribe } from 'graphql';
+import { schema } from 'my-graphql-schema';
+
+// create express and middleware
+const app = express();
+app.use('/graphql', graphqlHTTP({ schema }));
+
+// create a http server using express
+const server = http.createServer(app);
+
+server.listen(PORT, () => {
+  createServer(
+    {
+      schema,
+      execute,
+      subscribe,
+    },
+    {
+      server,
+      path: '/graphql', // you can use the same path too, just use the `ws` schema
+    },
+  );
+});
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
