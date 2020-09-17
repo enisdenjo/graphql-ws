@@ -20,7 +20,7 @@ $ yarn add graphql-transport-ws
 #### Create a GraphQL schema
 
 ```ts
-import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
