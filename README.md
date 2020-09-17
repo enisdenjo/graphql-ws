@@ -135,7 +135,7 @@ const client = createClient({
 ## Recipes
 
 <details>
-<summary>Promisify query execution</summary>
+<summary>Client usage with Promise</summary>
 
 ```ts
 import { createClient, SubscribePayload } from '../index';
