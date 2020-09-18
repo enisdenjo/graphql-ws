@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { parse, buildSchema } from 'graphql';
+import { parse, buildSchema, execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pubsub } from './fixtures/simple';
@@ -997,4 +997,76 @@ it('should use the provided roots as resolvers', async () => {
     });
   });
   expect(nextFn).toBeCalledTimes(3);
+});
+
+it('should pass in the context value from the config', async () => {
+  const context = {};
+
+  const executeFn = jest.fn((args) => execute(args));
+  const subscribeFn = jest.fn((args) => subscribe(args));
+
+  await makeServer({
+    context,
+    execute: executeFn,
+    subscribe: subscribeFn,
+  });
+
+  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  await new Promise((resolve) => {
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      if (message.type === MessageType.ConnectionAck) {
+        resolve();
+      }
+    };
+  });
+
+  await new Promise((resolve) => {
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `{ getValue }`,
+        },
+      }),
+    );
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      if (message.type === MessageType.Next && message.id === '1') {
+        resolve();
+      }
+    };
+  });
+
+  expect(executeFn).toBeCalled();
+  expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
+
+  await new Promise((resolve) => {
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '2',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `subscription { greetings }`,
+        },
+      }),
+    );
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      if (message.type === MessageType.Complete && message.id === '2') {
+        resolve();
+      }
+    };
+  });
+
+  expect(subscribeFn).toBeCalled();
+  expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
 });

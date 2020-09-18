@@ -53,6 +53,14 @@ export interface ServerOptions {
    */
   schema?: GraphQLSchema;
   /**
+   * A value which is provided to every resolver and holds
+   * important contextual information like the currently
+   * logged in user, or access to a database.
+   * Related operation context value will be injected to the
+   * `ExecutionArgs` BEFORE the `onSubscribe` callback.
+   */
+  context?: SubscriptionArgs['contextValue'];
+  /**
    * The GraphQL root fields or resolvers to go
    * alongside the schema. Learn more about them
    * here: https://graphql.org/learn/execution/#root-fields-resolvers.
@@ -213,6 +221,7 @@ export function createServer(
 ): Server {
   const {
     schema,
+    context,
     roots,
     execute,
     subscribe,
@@ -403,6 +412,7 @@ export function createServer(
             }
 
             let execArgsMaybeSchema: Optional<ExecutionArgs, 'schema'> = {
+              contextValue: context,
               schema,
               operationName: operation.operationName,
               document,
