@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.2...v1.5.0) (2020-09-18)
+
+
+### Bug Fixes
+
+* **server:** Use `subscribe` from the config ([6fbd47c](https://github.com/enisdenjo/graphql-transport-ws/commit/6fbd47c2ef14a6ae4297ffe0aaa689eeb3741ed0))
+
+
+### Features
+
+* **server:** Define execution/subscription `context` in creation options ([5b3d253](https://github.com/enisdenjo/graphql-transport-ws/commit/5b3d25351cdd2714a1edb9833ab2c2c7a9316944)), closes [#13](https://github.com/enisdenjo/graphql-transport-ws/issues/13)
+
 ## [1.4.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.1...v1.4.2) (2020-09-16)
 
 
