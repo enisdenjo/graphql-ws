@@ -17,6 +17,7 @@ import {
   getOperationAST,
   subscribe,
   GraphQLError,
+  SubscriptionArgs,
 } from 'graphql';
 import { Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
@@ -60,7 +61,10 @@ export interface ServerOptions {
    * `ExecutionArgs` BEFORE the `onSubscribe` callback.
    */
   roots?: {
-    [operation in OperationTypeNode]?: Record<string, unknown>;
+    [operation in OperationTypeNode]?: Record<
+      string,
+      NonNullable<SubscriptionArgs['rootValue']>
+    >;
   };
   /**
    * Is the `subscribe` function
