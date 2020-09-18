@@ -15,7 +15,6 @@ import {
   parse,
   validate,
   getOperationAST,
-  subscribe,
   GraphQLError,
   SubscriptionArgs,
 } from 'graphql';
@@ -216,6 +215,7 @@ export function createServer(
     schema,
     roots,
     execute,
+    subscribe,
     onConnect,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
     validationRules,
