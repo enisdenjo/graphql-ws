@@ -23,7 +23,7 @@
 
 *Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/types.ts#L17)*
+*Defined in [types.ts:17](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/types.ts#L17)*
 
 Dispose of the instance and clear up resources.
 
@@ -37,4 +37,4 @@ ___
 
 • **webSocketServer**: *Server*
 
-*Defined in [server.ts:195](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/server.ts#L195)*
+*Defined in [server.ts:206](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/server.ts#L206)*

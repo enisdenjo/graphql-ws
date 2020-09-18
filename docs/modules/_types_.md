@@ -19,7 +19,7 @@
 
 Ƭ **UUID**: *string*
 
-*Defined in [types.ts:13](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/types.ts#L13)*
+*Defined in [types.ts:13](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/types.ts#L13)*
 
 UUID v4 string type alias generated through the
 `generateUUID` function from the client.

@@ -25,7 +25,7 @@ Configuration used for the `create` client function.
 
 • **connectionParams**? : *Record‹string, unknown› | function*
 
-*Defined in [client.ts:40](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L40)*
+*Defined in [client.ts:40](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L40)*
 
 Optional parameters that the client specifies when establishing a connection with the server.
 
@@ -35,7 +35,7 @@ ___
 
 • **lazy**? : *undefined | false | true*
 
-*Defined in [client.ts:46](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L46)*
+*Defined in [client.ts:46](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L46)*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -48,7 +48,7 @@ ___
 
 • **on**? : *Partial‹object›*
 
-*Defined in [client.ts:63](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L63)*
+*Defined in [client.ts:63](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L63)*
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -61,7 +61,7 @@ ___
 
 • **retryAttempts**? : *undefined | number*
 
-*Defined in [client.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L51)*
+*Defined in [client.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L51)*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -73,7 +73,7 @@ ___
 
 • **retryTimeout**? : *undefined | number*
 
-*Defined in [client.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L56)*
+*Defined in [client.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L56)*
 
 How long should the client wait until attempting to retry.
 
@@ -85,6 +85,6 @@ ___
 
 • **url**: *string*
 
-*Defined in [client.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/757c6e9/src/client.ts#L38)*
+*Defined in [client.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/client.ts#L38)*
 
 URL of the GraphQL server to connect.
