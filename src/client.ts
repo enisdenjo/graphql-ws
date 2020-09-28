@@ -61,6 +61,12 @@ export interface ClientOptions {
    * to get the emitted event before other registered listeners.
    */
   on?: Partial<{ [event in Event]: EventListener<event> }>;
+  /**
+   * A custom WebSocket implementation to use instead of the
+   * one provided by the global scope. Mostly useful for when
+   * using the client outside of the browser environment.
+   */
+  webSocketImpl?: unknown;
 }
 
 export interface Client extends Disposable {
@@ -85,7 +91,16 @@ export function createClient(options: ClientOptions): Client {
     retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
     on,
+    webSocketImpl,
   } = options;
+
+  let WebSocketImpl = WebSocket;
+  if (webSocketImpl) {
+    if (!isWebSocket(webSocketImpl)) {
+      throw new Error('Invalid WebSocket implementation provided');
+    }
+    WebSocketImpl = webSocketImpl;
+  }
 
   const emitter = (() => {
     const listeners: { [event in Event]: EventListener<event>[] } = {
@@ -134,7 +149,7 @@ export function createClient(options: ClientOptions): Client {
   > {
     if (state.socket) {
       switch (state.socket.readyState) {
-        case WebSocket.OPEN: {
+        case WebSocketImpl.OPEN: {
           // if the socket is not acknowledged, wait a bit and reavaluate
           // TODO-db-200908 can you guarantee finite recursive calls?
           if (!state.acknowledged) {
@@ -149,7 +164,7 @@ export function createClient(options: ClientOptions): Client {
                 if (!state.socket) {
                   return reject(new Error('Socket closed unexpectedly'));
                 }
-                if (state.socket.readyState === WebSocket.CLOSED) {
+                if (state.socket.readyState === WebSocketImpl.CLOSED) {
                   return reject(new Error('Socket has already been closed'));
                 }
 
@@ -176,11 +191,11 @@ export function createClient(options: ClientOptions): Client {
               }),
           ];
         }
-        case WebSocket.CONNECTING: {
+        case WebSocketImpl.CONNECTING: {
           let waitedTimes = 0;
           while (
             state.socket && // the socket can be deleted in the meantime
-            state.socket.readyState === WebSocket.CONNECTING
+            state.socket.readyState === WebSocketImpl.CONNECTING
           ) {
             await new Promise((resolve) => setTimeout(resolve, 100));
             // 100ms * 50 = 5sec
@@ -193,13 +208,13 @@ export function createClient(options: ClientOptions): Client {
           }
           return connect(cancellerRef); // reavaluate
         }
-        case WebSocket.CLOSED:
+        case WebSocketImpl.CLOSED:
           break; // just continue, we'll make a new one
-        case WebSocket.CLOSING: {
+        case WebSocketImpl.CLOSING: {
           let waitedTimes = 0;
           while (
             state.socket && // the socket can be deleted in the meantime
-            state.socket.readyState === WebSocket.CLOSING
+            state.socket.readyState === WebSocketImpl.CLOSING
           ) {
             await new Promise((resolve) => setTimeout(resolve, 100));
             // 100ms * 50 = 5sec
@@ -218,7 +233,7 @@ export function createClient(options: ClientOptions): Client {
     }
 
     // establish connection and assign to singleton
-    const socket = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     state = {
       ...state,
       acknowledged: false,
@@ -302,7 +317,7 @@ export function createClient(options: ClientOptions): Client {
       socket,
       (cleanup) =>
         new Promise((resolve, reject) => {
-          if (socket.readyState === WebSocket.CLOSED) {
+          if (socket.readyState === WebSocketImpl.CLOSED) {
             return reject(new Error('Socket has already been closed'));
           }
 
@@ -485,6 +500,16 @@ export function createClient(options: ClientOptions): Client {
 
 function isCloseEvent(val: unknown): val is CloseEvent {
   return isObject(val) && 'code' in val && 'reason' in val && 'wasClean' in val;
+}
+
+function isWebSocket(val: unknown): val is typeof WebSocket {
+  return (
+    typeof val === 'function' &&
+    'CLOSED' in val &&
+    'CLOSING' in val &&
+    'CONNECTING' in val &&
+    'OPEN' in val
+  );
 }
 
 /** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */

@@ -12,12 +12,12 @@ import { noop } from '../utils';
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-Object.assign(global, {
-  WebSocket: WebSocket,
-});
-
 let server: Server, dispose: (() => Promise<void>) | undefined;
 beforeEach(async () => {
+  Object.assign(global, {
+    WebSocket: WebSocket,
+  });
+
   [server, dispose] = await startServer();
 });
 afterEach(async () => {
@@ -25,6 +25,36 @@ afterEach(async () => {
     await dispose();
   }
   dispose = undefined;
+});
+
+it('should use the provided WebSocket implementation', async () => {
+  Object.assign(global, {
+    WebSocket: null,
+  });
+
+  createClient({
+    url,
+    lazy: false,
+    webSocketImpl: WebSocket,
+  });
+
+  await wait(10);
+
+  expect(server.webSocketServer.clients.size).toBe(1);
+});
+
+it('should not accept invalid WebSocket implementations', async () => {
+  Object.assign(global, {
+    WebSocket: null,
+  });
+
+  expect(() =>
+    createClient({
+      url,
+      lazy: false,
+      webSocketImpl: {},
+    }),
+  ).toThrow();
 });
 
 describe('query operation', () => {
