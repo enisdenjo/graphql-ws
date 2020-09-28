@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.5.0...v1.6.0) (2020-09-28)
+
+
+### Features
+
+* **client:** Support providing custom WebSocket implementations ([#18](https://github.com/enisdenjo/graphql-transport-ws/issues/18)) ([1515fe2](https://github.com/enisdenjo/graphql-transport-ws/commit/1515fe2adcc0bb2b18a1309550f4e41528985f54))
+
 # [1.5.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.4.2...v1.5.0) (2020-09-18)
 
 
