@@ -504,9 +504,7 @@ function isCloseEvent(val: unknown): val is CloseEvent {
 
 function isWebSocket(val: unknown): val is typeof WebSocket {
   return (
-    isObject(val) &&
-    val.prototype === val &&
-    'constructor' in val &&
+    typeof val === 'function' &&
     'CLOSED' in val &&
     'CLOSING' in val &&
     'CONNECTING' in val &&

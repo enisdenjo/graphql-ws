@@ -27,6 +27,36 @@ afterEach(async () => {
   dispose = undefined;
 });
 
+it('should use the provided WebSocket implementation', async () => {
+  Object.assign(global, {
+    WebSocket: null,
+  });
+
+  createClient({
+    url,
+    lazy: false,
+    webSocketImpl: WebSocket,
+  });
+
+  await wait(10);
+
+  expect(server.webSocketServer.clients.size).toBe(1);
+});
+
+it('should not accept invalid WebSocket implementations', async () => {
+  Object.assign(global, {
+    WebSocket: null,
+  });
+
+  expect(() =>
+    createClient({
+      url,
+      lazy: false,
+      webSocketImpl: {},
+    }),
+  ).toThrow();
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', (done) => {
     const client = createClient({ url });
