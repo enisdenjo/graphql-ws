@@ -12,12 +12,12 @@ import { noop } from '../utils';
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-Object.assign(global, {
-  WebSocket: WebSocket,
-});
-
 let server: Server, dispose: (() => Promise<void>) | undefined;
 beforeEach(async () => {
+  Object.assign(global, {
+    WebSocket: WebSocket,
+  });
+
   [server, dispose] = await startServer();
 });
 afterEach(async () => {
