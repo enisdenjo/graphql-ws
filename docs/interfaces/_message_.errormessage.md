@@ -20,7 +20,7 @@
 
 • **id**: *string*
 
-*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/message.ts#L55)*
+*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/1515fe2/src/message.ts#L55)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • **payload**: *readonly GraphQLError[]*
 
-*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/message.ts#L57)*
+*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/1515fe2/src/message.ts#L57)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • **type**: *[Error](../enums/_message_.messagetype.md#error)*
 
-*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/5b3d253/src/message.ts#L56)*
+*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/1515fe2/src/message.ts#L56)*
