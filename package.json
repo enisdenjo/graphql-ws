@@ -1,7 +1,7 @@
 {
   "name": "graphql-transport-ws",
   "version": "1.6.0",
-  "description": "🚡 Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
+  "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "keywords": [
     "graphql",
     "graphql-subscriptions",
