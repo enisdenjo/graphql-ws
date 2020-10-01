@@ -281,6 +281,56 @@ describe('subscription operation', () => {
 
     expect(generateIDFn).toBeCalled();
   });
+
+  it('should dispose of the subscription on complete', async () => {
+    const client = createClient({ url });
+
+    const completeFn = jest.fn();
+    client.subscribe(
+      {
+        query: `{
+          getValue
+        }`,
+      },
+      {
+        next: noop,
+        error: () => {
+          fail(`Unexpected error call`);
+        },
+        complete: completeFn,
+      },
+    );
+    await wait(20);
+
+    expect(completeFn).toBeCalled();
+
+    await wait(20);
+    expect(server.webSocketServer.clients.size).toBe(0);
+  });
+
+  it('should dispose of the subscription on error', async () => {
+    const client = createClient({ url });
+
+    const errorFn = jest.fn();
+    client.subscribe(
+      {
+        query: `{
+          iDontExist
+        }`,
+      },
+      {
+        next: noop,
+        error: errorFn,
+        complete: noop,
+      },
+    );
+    await wait(20);
+
+    expect(errorFn).toBeCalled();
+
+    await wait(20);
+    expect(server.webSocketServer.clients.size).toBe(0);
+  });
 });
 
 describe('"concurrency"', () => {

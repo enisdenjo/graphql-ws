@@ -424,6 +424,7 @@ export function createClient(options: ClientOptions): Client {
     on: emitter.on,
     subscribe(payload, sink) {
       const id = generateID();
+      const cancellerRef: CancellerRef = { current: null };
 
       const messageHandler = ({ data }: MessageEvent) => {
         const message = memoParseMessage(data);
@@ -438,19 +439,28 @@ export function createClient(options: ClientOptions): Client {
           case MessageType.Error: {
             if (message.id === id) {
               sink.error(message.payload);
+              // the canceller must be set at this point
+              // because you cannot receive a message
+              // if there is no existing connection
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              cancellerRef.current!();
             }
             return;
           }
           case MessageType.Complete: {
             if (message.id === id) {
               sink.complete();
+              // the canceller must be set at this point
+              // because you cannot receive a message
+              // if there is no existing connection
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              cancellerRef.current!();
             }
             return;
           }
         }
       };
 
-      const cancellerRef: CancellerRef = { current: null };
       (async () => {
         for (;;) {
           try {
@@ -511,7 +521,8 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete); // resolves on cancel or normal closure
+        .then(sink.complete) // resolves on cancel or normal closure
+        .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
 
       return () => {
         if (cancellerRef.current) {
