@@ -73,7 +73,9 @@ The client is now **ready** to request subscription operations.
 
 Direction: **Client -> Server**
 
-Requests a operation specified in the message `payload`. This message leverages the unique ID field to connect future server messages to the operation started by this message.
+Requests a operation specified in the message `payload`. This message provides a unique ID field to connect future server messages to the operation started by this message.
+
+If there is already a live subscriber for a `subscription` operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. Since `query` and `mutation` resolve to a single emitted value, the subscription does not require reservations for additional future events. Having this in mind, the server may not assert this rule for these operations.
 
 ```typescript
 import { DocumentNode } from 'graphql';
