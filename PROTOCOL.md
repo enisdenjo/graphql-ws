@@ -7,13 +7,13 @@
 
 ## Communication
 
-The WebSocket sub-protocol for this specification is: `graphql-transport-ws`
+The WebSocket sub-protocol for this specification is: `graphql-transport-ws`.
 
-Messages are represented through the JSON structure and are stringified before being sent over the network. They are bidirectional, meaning both the server and the client conform to the specified message structure.
+Messages are represented through the JSON structure and are stringified before being sent over the network. They are bidirectional, meaning both the server and the client must conform to the specified message structure.
 
-**All** messages contain the `type` field outlining the type or action this message describes. Depending on the type, the message can contain two more _optional_ fields:
+**All** messages contain the `type` field outlining the action this message describes. Depending on the type, the message can contain two more _optional_ fields:
 
-- `id` used for uniquely identifying server responses and connecting them with the client requests
+- `id` used for uniquely identifying server responses and connecting them with the client's requests
 - `payload` holding the extra "payload" information to go with the specific message type
 
 The server can close the socket (kick the client off) at any time. The close event dispatched by the server is used to describe the fatal error to the client.
@@ -34,7 +34,7 @@ Ping and Pong feature is a mandatory requirement by [The WebSocket Protocol](htt
 
 Direction: **Client -> Server**
 
-Indicates that the client wants to establish a connection within the existing socket. This connection is **not** the actual WebSocket communication channel, but is rather a frame within it asking the server to allow future subscription operation requests.
+Indicates that the client wants to establish a connection within the existing socket. This connection is **not** the actual WebSocket communication channel, but is rather a frame within it asking the server to allow future operation requests.
 
 The client can specify additional `connectionParams` which are sent through the `payload` field in the outgoing message.
 
@@ -73,7 +73,7 @@ The client is now **ready** to request subscription operations.
 
 Direction: **Client -> Server**
 
-Requests a operation specified in the message `payload`. This message provides a unique ID field to connect future server messages to the operation started by this message.
+Requests an operation specified in the message `payload`. This message provides a unique ID field to connect future server messages to the operation started by this message.
 
 If there is already an active subscriber for a `subscription` operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. Since `query` and `mutation` resolve to a single emitted value, their subscription does not require reservations for additional future events. Having this in mind, the server may not assert this rule for these operations.
 
@@ -132,7 +132,7 @@ interface ErrorMessage {
 
 Direction: **bidirectional**
 
-- **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, **no `Complete` message will be emitted**.
+- **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
 
 - **Client -> Server** (for `subscription` operations only) indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original subscription, should be sent through.
 
