@@ -131,6 +131,9 @@ export function createClient(options: ClientOptions): Client {
     }
     WebSocketImpl = webSocketImpl;
   }
+  if (!WebSocketImpl) {
+    throw new Error('WebSocket implementation missing');
+  }
 
   const emitter = (() => {
     const listeners: { [event in Event]: EventListener<event>[] } = {
@@ -546,6 +549,7 @@ function isCloseEvent(val: unknown): val is CloseEvent {
 function isWebSocket(val: unknown): val is typeof WebSocket {
   return (
     typeof val === 'function' &&
+    'constructor' in val &&
     'CLOSED' in val &&
     'CLOSING' in val &&
     'CONNECTING' in val &&
