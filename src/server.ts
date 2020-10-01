@@ -461,6 +461,13 @@ export function createServer(
             if (operationAST.operation === 'subscription') {
               const subscriptionOrResult = await subscribe(execArgs);
               if (isAsyncIterable(subscriptionOrResult)) {
+                // iterable subscriptions are distinct on ID
+                if (ctx.subscriptions[message.id]) {
+                  return ctx.socket.close(
+                    4409,
+                    `Subscriber for ${message.id} already exists`,
+                  );
+                }
                 ctx.subscriptions[message.id] = subscriptionOrResult;
 
                 try {
