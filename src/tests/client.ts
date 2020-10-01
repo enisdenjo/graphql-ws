@@ -255,6 +255,32 @@ describe('subscription operation', () => {
     expect(nextFnForBananas).toHaveBeenCalledTimes(2);
     expect(completeFnForBananas).toBeCalled();
   });
+
+  it('should use the provided `generateID` for subscription IDs', async () => {
+    const generateIDFn = jest.fn(() => 'not unique');
+
+    const client = createClient({ url, generateID: generateIDFn });
+
+    client.subscribe(
+      {
+        query: `subscription {
+          boughtBananas {
+            name
+          }
+        }`,
+      },
+      {
+        next: noop,
+        error: () => {
+          fail(`Unexpected error call`);
+        },
+        complete: noop,
+      },
+    );
+    await wait(10);
+
+    expect(generateIDFn).toBeCalled();
+  });
 });
 
 describe('"concurrency"', () => {
