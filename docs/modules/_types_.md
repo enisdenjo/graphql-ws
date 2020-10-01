@@ -19,7 +19,7 @@
 
 Ƭ **ID**: *string*
 
-*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/types.ts#L14)*
+*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L14)*
 
 ID is a string type alias representing
 the globally unique ID used for identifying

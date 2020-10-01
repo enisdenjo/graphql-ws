@@ -26,7 +26,7 @@ A representation of any set of values over any amount of time.
 
 ▸ **complete**(): *void*
 
-*Defined in [types.ts:30](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/types.ts#L30)*
+*Defined in [types.ts:30](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L30)*
 
 The sink has completed. This function "closes" the sink.
 
@@ -38,7 +38,7 @@ ___
 
 ▸ **error**(`error`: Error | CloseEvent | readonly GraphQLError[]): *void*
 
-*Defined in [types.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/types.ts#L28)*
+*Defined in [types.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L28)*
 
 An error that has occured. Calling this function "closes" the sink.
 
@@ -56,7 +56,7 @@ ___
 
 ▸ **next**(`value`: T): *void*
 
-*Defined in [types.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/types.ts#L26)*
+*Defined in [types.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L26)*
 
 Next value arriving.
 

@@ -20,7 +20,7 @@
 
 • **operationName**? : *string | null*
 
-*Defined in [message.ts:43](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/message.ts#L43)*
+*Defined in [message.ts:43](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L43)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • **query**: *string | DocumentNode*
 
-*Defined in [message.ts:44](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/message.ts#L44)*
+*Defined in [message.ts:44](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L44)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • **variables**? : *Record‹string, unknown› | null*
 
-*Defined in [message.ts:45](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/message.ts#L45)*
+*Defined in [message.ts:45](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L45)*

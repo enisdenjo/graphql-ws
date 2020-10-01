@@ -19,7 +19,7 @@
 
 • **payload**? : *Record‹string, unknown›*
 
-*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/message.ts#L29)*
+*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L29)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 • **type**: *[ConnectionInit](../enums/_message_.messagetype.md#connectioninit)*
 
-*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/message.ts#L28)*
+*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L28)*

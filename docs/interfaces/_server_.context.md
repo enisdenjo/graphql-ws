@@ -23,7 +23,7 @@
 
 • **acknowledged**: *boolean*
 
-*Defined in [server.ts:194](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L194)*
+*Defined in [server.ts:194](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L194)*
 
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
@@ -35,7 +35,7 @@ ___
 
 • **connectionInitReceived**: *boolean*
 
-*Defined in [server.ts:188](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L188)*
+*Defined in [server.ts:188](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L188)*
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -48,7 +48,7 @@ ___
 
 • **connectionParams**? : *Readonly‹Record‹string, unknown››*
 
-*Defined in [server.ts:196](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L196)*
+*Defined in [server.ts:196](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L196)*
 
 The parameters passed during the connection initialisation.
 
@@ -58,7 +58,7 @@ ___
 
 • **request**: *IncomingMessage*
 
-*Defined in [server.ts:181](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L181)*
+*Defined in [server.ts:181](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L181)*
 
 The initial HTTP request before the actual
 socket and connection is established.
@@ -69,7 +69,7 @@ ___
 
 • **socket**: *WebSocket*
 
-*Defined in [server.ts:176](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L176)*
+*Defined in [server.ts:176](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L176)*
 
 The actual WebSocket connection between the server and the client.
 
@@ -79,7 +79,7 @@ ___
 
 • **subscriptions**: *Record‹[ID](../modules/_types_.md#id), AsyncIterator‹unknown››*
 
-*Defined in [server.ts:202](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/server.ts#L202)*
+*Defined in [server.ts:202](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L202)*
 
 Holds the active subscriptions for this context.
 Subscriptions are for `subscription` operations **only**,
