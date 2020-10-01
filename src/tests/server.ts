@@ -819,6 +819,64 @@ describe('Subscribe', () => {
 
     expect(onMessageFn).toBeCalledTimes(3); // ack, next, complete
   });
+
+  it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
+    expect.assertions(3);
+
+    await makeServer();
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: 'not-unique',
+            type: MessageType.Subscribe,
+            payload: {
+              query: `subscription {
+              boughtBananas {
+                name
+              }
+            }`,
+            },
+          }),
+        );
+
+        // try subscribing with a live subscription id
+        setTimeout(() => {
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: 'not-unique',
+              type: MessageType.Subscribe,
+              payload: {
+                query: `subscription {
+                  greetings
+                }`,
+              },
+            }),
+          );
+        }, 10);
+      }
+    };
+
+    await new Promise((resolve) => {
+      client.onclose = (event) => {
+        expect(event.code).toBe(4409);
+        expect(event.reason).toBe('Subscriber for not-unique already exists');
+        expect(event.wasClean).toBeTruthy();
+        resolve(); // done
+      };
+    });
+  });
 });
 
 describe('Keep-Alive', () => {
