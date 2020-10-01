@@ -326,7 +326,7 @@ const link = new WebSocketLink({
 <summary>Client usage in Node</summary>
 
 ```ts
-const WebSocket = require('ws');
+const WebSocket = require('ws'); // yarn add ws
 const Crypto = require('crypto');
 const { createClient } = require('graphql-transport-ws');
 
