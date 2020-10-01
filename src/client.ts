@@ -69,8 +69,8 @@ export interface ClientOptions {
   webSocketImpl?: unknown;
   /**
    * A custom ID generator for identifying subscriptions.
-   * The default uses the `crypto` module in the global window
-   * object, suitable for the browser environment. However, if
+   * The default uses the `crypto` module in the global scope
+   * which is present for modern browsers. However, if
    * it can't be found, `Math.random` would be used instead.
    */
   generateID?: () => ID;
@@ -104,12 +104,12 @@ export function createClient(options: ClientOptions): Client {
      * Reference: https://stackoverflow.com/a/2117523/709884
      */
     generateID = function generateUUID() {
-      if (window && window.crypto) {
+      if (globalThis.crypto) {
         return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (s) => {
           const c = Number.parseInt(s, 10);
           return (
             c ^
-            (window.crypto.getRandomValues(new Uint8Array(1))[0] &
+            (globalThis.crypto.getRandomValues(new Uint8Array(1))[0] &
               (15 >> (c / 4)))
           ).toString(16);
         });
@@ -124,7 +124,7 @@ export function createClient(options: ClientOptions): Client {
     },
   } = options;
 
-  let WebSocketImpl = WebSocket;
+  let WebSocketImpl = globalThis.WebSocket;
   if (webSocketImpl) {
     if (!isWebSocket(webSocketImpl)) {
       throw new Error('Invalid WebSocket implementation provided');
