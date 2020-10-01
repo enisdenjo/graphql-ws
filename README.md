@@ -89,17 +89,14 @@ const client = createClient({
 (async () => {
   const result = await new Promise((resolve, reject) => {
     let result;
-    const dispose = client.subscribe(
+    client.subscribe(
       {
         query: '{ hello }',
       },
       {
         next: (data) => (result = data),
         error: reject,
-        complete: () => {
-          dispose();
-          resolve(result);
-        },
+        complete: () => resolve(result),
       },
     );
   });
@@ -114,17 +111,14 @@ const client = createClient({
   };
 
   await new Promise((resolve, reject) => {
-    const dispose = client.subscribe(
+    client.subscribe(
       {
         query: 'subscription { greetings }',
       },
       {
         next: onNext,
         error: reject,
-        complete: () => {
-          dispose();
-          resolve();
-        },
+        complete: resolve,
       },
     );
   });
@@ -148,13 +142,10 @@ const client = createClient({
 async function execute<T>(payload: SubscribePayload) {
   return new Promise((resolve, reject) => {
     let result: T;
-    const dispose = client.subscribe<T>(payload, {
+    client.subscribe<T>(payload, {
       next: (data) => (result = data),
       error: reject,
-      complete: () => {
-        dispose();
-        resolve(result);
-      },
+      complete: () => resolve(result),
     });
   });
 }
@@ -165,7 +156,7 @@ async function execute<T>(payload: SubscribePayload) {
     const result = await execute({
       query: '{ hello }',
     });
-    // complete and dispose
+    // complete
     // next = result = { data: { hello: 'Hello World!' } }
   } catch (err) {
     // error
