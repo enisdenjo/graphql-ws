@@ -16,9 +16,9 @@ Messages are represented through the JSON structure and are stringified before b
 - `id` used for uniquely identifying server responses and connecting them with the client requests
 - `payload` holding the extra "payload" information to go with the specific message type
 
-The server can terminate the socket (kick the client off) at any time. The close event dispatched by the server is used to describe the fatal error to the client.
+The server can close the socket (kick the client off) at any time. The close event dispatched by the server is used to describe the fatal error to the client.
 
-The client terminates the socket and closes the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
+The client closes the socket and the connection by dispatching a `1000: Normal Closure` close event to the server indicating a normal closure.
 
 ## Keep-Alive
 
@@ -38,9 +38,9 @@ Indicates that the client wants to establish a connection within the existing so
 
 The client can specify additional `connectionParams` which are sent through the `payload` field in the outgoing message.
 
-The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will terminate the socket with the close event: `4408: Connection initialisation timeout`.
+The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will close the socket with the event: `4408: Connection initialisation timeout`.
 
-If the server receives more than one `ConnectionInit` message at any given time, the server will terminate the socket with the close event `4429: Too many initialisation requests`.
+If the server receives more than one `ConnectionInit` message at any given time, the server will close the socket with the event `4429: Too many initialisation requests`.
 
 ```typescript
 interface ConnectionInitMessage {
@@ -91,7 +91,7 @@ interface SubscribeMessage {
 }
 ```
 
-Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged, the socket will be terminated immediately with a close event `4401: Unauthorized`.
+Executing operations is allowed **only** after the server has acknowledged the connection through the `ConnectionAck` message, if the connection is not acknowledged, the socket will be closed immediately with the event `4401: Unauthorized`.
 
 ### `Next`
 
@@ -147,7 +147,7 @@ interface CompleteMessage {
 
 Direction: **bidirectional**
 
-Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket termination with a close event `4400: <error-message>`. The `<error-message>` can be vaguely descriptive on why the received message is invalid.
+Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket closure with the event `4400: <error-message>`. The `<error-message>` can be vaguely descriptive on why the received message is invalid.
 
 ## Examples
 
@@ -167,7 +167,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 1. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
-1. _Server_ terminates the socket by dispatching the close event `4403: Forbidden`
+1. _Server_ closes the socket by dispatching the event `4403: Forbidden`
 1. _Client_ reports an error using the close event reason (which is `Forbidden`)
 
 ### Erroneous connection initialisation
@@ -176,7 +176,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
 1. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
-1. _Server_ terminates the socket by dispatching the close event `4400: I'm a teapot`
+1. _Server_ closes the socket by dispatching the event `4400: I'm a teapot`
 1. _Client_ reports an error using the close event reason (which is `I'm a teapot`)
 
 ### Connection initialisation timeout
@@ -186,7 +186,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 1. _Client_ does not dispatch a `ConnectionInit` message
 1. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
 1. _Server_ waiting time has passed
-1. _Server_ terminates the socket by dispatching the close event `4408: Connection initialisation timeout`
+1. _Server_ closes the socket by dispatching the event `4408: Connection initialisation timeout`
 1. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`)
 
 ### Query/Mutation operation
