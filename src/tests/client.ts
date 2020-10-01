@@ -344,7 +344,7 @@ describe('"concurrency"', () => {
       });
     });
 
-    await wait(25);
+    await wait(30);
 
     expect(nextFnForHappy).not.toBeCalled();
     expect(completeFnForHappy).toBeCalled();
