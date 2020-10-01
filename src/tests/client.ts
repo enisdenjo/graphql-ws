@@ -438,7 +438,7 @@ describe('lazy', () => {
       {
         operationName: 'BecomingHappy',
         query: `subscription BecomingHappy {
-          becameHappy {
+          becameHappy(secret: "live in the moment") {
             name
           }
         }`,
