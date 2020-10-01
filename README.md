@@ -323,6 +323,32 @@ const link = new WebSocketLink({
 </details>
 
 <details>
+<summary>Client usage in Node</summary>
+
+```ts
+const WebSocket = require('ws');
+const Crypto = require('crypto');
+const { createClient } = require('graphql-transport-ws');
+
+const client = createClient({
+  url: 'wss://no.browser/graphql',
+  webSocketImpl: WebSocket,
+  /**
+   * Generates a v4 UUID to be used as the ID.
+   * Reference: https://stackoverflow.com/a/2117523/709884
+   */
+  generateID: () =>
+    ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+      (c ^ (Crypto.randomBytes(1)[0] & (15 >> (c / 4)))).toString(16),
+    ),
+});
+
+// consider other recipes for usage inspiration
+```
+
+</details>
+
+<details>
 <summary>Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
 ```typescript
