@@ -11,15 +11,16 @@
 
 ### Type aliases
 
-* [UUID](_types_.md#uuid)
+* [ID](_types_.md#id)
 
 ## Type aliases
 
-###  UUID
+###  ID
 
-Ƭ **UUID**: *string*
+Ƭ **ID**: *string*
 
-*Defined in [types.ts:13](https://github.com/enisdenjo/graphql-transport-ws/blob/1515fe2/src/types.ts#L13)*
+*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/e35a1ac/src/types.ts#L14)*
 
-UUID v4 string type alias generated through the
-`generateUUID` function from the client.
+ID is a string type alias representing
+the globally unique ID used for identifying
+subscriptions established by the client.
