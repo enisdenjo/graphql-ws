@@ -511,7 +511,8 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete); // resolves on cancel or normal closure
+        .then(sink.complete) // resolves on cancel or normal closure
+        .finally(cancellerRef.current);
 
       return () => {
         if (cancellerRef.current) {
