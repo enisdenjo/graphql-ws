@@ -1,3 +1,16 @@
+# [1.7.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.6.0...v1.7.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **client:** Dispose of subscription on complete or error messages ([#23](https://github.com/enisdenjo/graphql-transport-ws/issues/23)) ([fb4d8e9](https://github.com/enisdenjo/graphql-transport-ws/commit/fb4d8e9efdfdd0cbe3b7cc34ddadbad3a795ae35))
+* **server:** `subscription` operations are distinct on the message ID ([#24](https://github.com/enisdenjo/graphql-transport-ws/issues/24)) ([dfffb05](https://github.com/enisdenjo/graphql-transport-ws/commit/dfffb0502be5dd9ab5598e785b9988b1f4000227))
+
+
+### Features
+
+* **client:** Optional `generateID` to provide subscription IDs ([#22](https://github.com/enisdenjo/graphql-transport-ws/issues/22)) ([9a3f54a](https://github.com/enisdenjo/graphql-transport-ws/commit/9a3f54a8198379b402a8abe414ab5727ccec45cf)), closes [#21](https://github.com/enisdenjo/graphql-transport-ws/issues/21)
+
 # [1.6.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.5.0...v1.6.0) (2020-09-28)
 
 
