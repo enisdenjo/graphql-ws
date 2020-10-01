@@ -6,7 +6,7 @@
  *
  */
 
-import { Sink, UUID, Disposable } from './types';
+import { Sink, ID, Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
   Message,
@@ -67,6 +67,13 @@ export interface ClientOptions {
    * using the client outside of the browser environment.
    */
   webSocketImpl?: unknown;
+  /**
+   * A custom ID generator for identifying subscriptions.
+   * The default uses the `crypto` module in the global window
+   * object, suitable for the browser environment. However, if
+   * it can't be found, `Math.random` would be used instead.
+   */
+  generateID?: () => ID;
 }
 
 export interface Client extends Disposable {
@@ -92,6 +99,29 @@ export function createClient(options: ClientOptions): Client {
     retryTimeout = 3 * 1000, // 3 seconds
     on,
     webSocketImpl,
+    /**
+     * Generates a v4 UUID to be used as the ID.
+     * Reference: https://stackoverflow.com/a/2117523/709884
+     */
+    generateID = function generateUUID() {
+      if (window && window.crypto) {
+        return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (s) => {
+          const c = Number.parseInt(s, 10);
+          return (
+            c ^
+            (window.crypto.getRandomValues(new Uint8Array(1))[0] &
+              (15 >> (c / 4)))
+          ).toString(16);
+        });
+      }
+
+      // use Math.random when crypto is not available
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0,
+          v = c == 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    },
   } = options;
 
   let WebSocketImpl = WebSocket;
@@ -393,26 +423,26 @@ export function createClient(options: ClientOptions): Client {
   return {
     on: emitter.on,
     subscribe(payload, sink) {
-      const uuid = generateUUID();
+      const id = generateID();
 
       const messageHandler = ({ data }: MessageEvent) => {
         const message = memoParseMessage(data);
         switch (message.type) {
           case MessageType.Next: {
-            if (message.id === uuid) {
+            if (message.id === id) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               sink.next(message.payload as any);
             }
             return;
           }
           case MessageType.Error: {
-            if (message.id === uuid) {
+            if (message.id === id) {
               sink.error(message.payload);
             }
             return;
           }
           case MessageType.Complete: {
-            if (message.id === uuid) {
+            if (message.id === id) {
               sink.complete();
             }
             return;
@@ -431,7 +461,7 @@ export function createClient(options: ClientOptions): Client {
 
             socket.send(
               stringifyMessage<MessageType.Subscribe>({
-                id: uuid,
+                id: id,
                 type: MessageType.Subscribe,
                 payload,
               }),
@@ -443,7 +473,7 @@ export function createClient(options: ClientOptions): Client {
               // send complete message to server on cancel
               socket.send(
                 stringifyMessage<MessageType.Complete>({
-                  id: uuid,
+                  id: id,
                   type: MessageType.Complete,
                 }),
               );
@@ -481,7 +511,8 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete); // resolves on cancel or normal closure
+        .then(sink.complete) // resolves on cancel or normal closure
+        .finally(cancellerRef.current);
 
       return () => {
         if (cancellerRef.current) {
@@ -510,25 +541,4 @@ function isWebSocket(val: unknown): val is typeof WebSocket {
     'CONNECTING' in val &&
     'OPEN' in val
   );
-}
-
-/** Generates a new v4 UUID. Reference: https://stackoverflow.com/a/2117523/709884 */
-function generateUUID(): UUID {
-  if (!window.crypto) {
-    // fallback to Math.random when crypto is not available
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (
-      c,
-    ) {
-      const r = (Math.random() * 16) | 0,
-        v = c == 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  }
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (s) => {
-    const c = Number.parseInt(s, 10);
-    return (
-      c ^
-      (window.crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16);
-  });
 }

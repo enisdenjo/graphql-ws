@@ -7,10 +7,11 @@
 import { GraphQLError } from 'graphql';
 
 /**
- * UUID v4 string type alias generated through the
- * `generateUUID` function from the client.
+ * ID is a string type alias representing
+ * the globally unique ID used for identifying
+ * subscriptions established by the client.
  */
-export type UUID = string;
+export type ID = string;
 
 export interface Disposable {
   /** Dispose of the instance and clear up resources. */

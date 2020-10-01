@@ -36,7 +36,7 @@ import {
   hasOwnStringProperty,
   noop,
 } from './utils';
-import { UUID } from './types';
+import { ID } from './types';
 
 export type ExecutionResultFormatter = (
   ctx: Context,
@@ -199,7 +199,7 @@ export interface Context {
    * Subscriptions are for `subscription` operations **only**,
    * other operations (`query`/`mutation`) are resolved immediately.
    */
-  subscriptions: Record<UUID, AsyncIterator<unknown>>;
+  subscriptions: Record<ID, AsyncIterator<unknown>>;
 }
 
 export interface Server extends Disposable {
