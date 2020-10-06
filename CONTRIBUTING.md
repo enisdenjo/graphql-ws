@@ -1,4 +1,4 @@
-# Contributing to `domonda.js`
+# Contributing to `graphql-transport-ws`
 
 - [Report Issues](#issues)
 - [Commit Message Guidelines](#commit)
