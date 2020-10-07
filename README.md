@@ -51,11 +51,11 @@ const roots = {
 #### Start the server
 
 ```ts
-import http from 'http';
+import https from 'https';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-transport-ws';
 
-const server = http.createServer(function weServeSocketsOnly(_, res) {
+const server = https.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
   res.end();
 });
@@ -196,6 +196,7 @@ const subscription = observable.subscribe({
 });
 
 // ⏱
+
 subscription.unsubscribe();
 ```
 
@@ -352,7 +353,7 @@ const client = createClient({
 <summary>Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
 ```typescript
-import http from 'http';
+import https from 'https';
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import { createServer } from 'graphql-transport-ws';
@@ -364,9 +365,9 @@ const app = express();
 app.use('/graphql', graphqlHTTP({ schema }));
 
 // create a http server using express
-const server = http.createServer(app);
+const server = https.createServer(app);
 
-server.listen(PORT, () => {
+server.listen(443, () => {
   createServer(
     {
       schema,
