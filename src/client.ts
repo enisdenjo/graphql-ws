@@ -276,8 +276,7 @@ export function createClient(options: ClientOptions): Client {
     emitter.emit('connecting');
 
     await new Promise((resolve, reject) => {
-      let cancelled = false,
-        resolved = false;
+      let cancelled = false;
       cancellerRef.current = () => (cancelled = true);
 
       const tooLong = setTimeout(() => {
@@ -298,9 +297,7 @@ export function createClient(options: ClientOptions): Client {
         clearTimeout(tooLong);
         state = { ...state, acknowledged: false, socket: null };
         emitter.emit('closed', event);
-        if (!resolved) {
-          return reject(event);
-        }
+        return reject(event);
       };
 
       socket.onmessage = (event: MessageEvent) => {
@@ -319,7 +316,6 @@ export function createClient(options: ClientOptions): Client {
           clearTimeout(tooLong);
           state = { ...state, acknowledged: true, socket, retries: 0 };
           emitter.emit('connected', socket); // connected = socket opened + acknowledged
-          resolved = true;
           return resolve();
         } catch (err) {
           socket.close(4400, err);
