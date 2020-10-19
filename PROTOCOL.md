@@ -75,7 +75,7 @@ Direction: **Client -> Server**
 
 Requests an operation specified in the message `payload`. This message provides a unique ID field to connect future server messages to the operation started by this message.
 
-If there is already an active subscriber for a `subscription` operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. Since `query` and `mutation` resolve to a single emitted value, their subscription does not require reservations for additional future events. Having this in mind, the server may not assert this rule for these operations.
+If there is already an active subscriber for a live operation (any operation that emits **multiple** results) matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. Operations resolving to a **single** emitted result do not require reservations for additional future events - having this in mind, the server may not assert this rule for such cases.
 
 ```typescript
 import { DocumentNode } from 'graphql';
@@ -97,10 +97,7 @@ Executing operations is allowed **only** after the server has acknowledged the c
 
 Direction: **Server -> Client**
 
-Operation execution result message.
-
-- If the operation is a `query` or `mutation`, the message can be seen as the final execution result. This message is followed by the `Complete` message indicating the completion of the operation.
-- If the operation is a `subscription`, the message can be seen as an event in the source stream requested by the `Subscribe` message.
+Operation execution result(s) from the source stream created by the binding `Subscribe` message. After all results have been emitted, the `Complete` message will follow indicating stream completion.
 
 ```typescript
 import { ExecutionResult } from 'graphql';
@@ -134,7 +131,7 @@ Direction: **bidirectional**
 
 - **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
 
-- **Client -> Server** (for `subscription` operations only) indicating that the client has stopped listening to the events and wants to complete the source stream. No further data events, relevant to the original subscription, should be sent through.
+- **Client -> Server** indicates that the client has stopped listening and wants to complete the source stream. No further events, relevant to the original subscription, should be sent through.
 
 ```typescript
 interface CompleteMessage {
@@ -199,6 +196,19 @@ _The client and the server has already gone through [successful connection initi
 1. _Server_ validates the request and executes the GraphQL operation
 1. _Server_ dispatches a `Next` message with the execution result matching the client's unique ID
 1. _Server_ dispatches the `Complete` message with the matching unique ID indicating that the execution has completed
+1. _Server_ triggers the `onComplete` callback, if specified
+
+### Live Query operation
+
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+
+1. _Client_ generates a unique ID for the following operation
+1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested `live query` operation passed through the `payload` field
+1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
+1. _Server_ validates the request, establishes a GraphQL subscription on the `live query` and listens for data events in the source stream
+1. _Server_ dispatches `Next` messages for every data event in the underlying `live query` source stream matching the client's unique ID
+1. _Client_ stops the `live query` by dispatching a `Complete` message with the matching unique ID
+1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
 1. _Server_ triggers the `onComplete` callback, if specified
 
 ### Subscribe operation
