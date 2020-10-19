@@ -462,9 +462,17 @@ export function createServer(
               });
             }
 
-            const asyncIterableHandler = async (
-              asyncIterable: AsyncIterableIterator<ExecutionResult>,
-            ) => {
+            // perform
+            let iterableOrResult;
+            if (operationAST.operation === 'subscription') {
+              iterableOrResult = await subscribe(execArgs);
+            } else {
+              // operationAST.operation === 'query' || 'mutation'
+              iterableOrResult = await execute(execArgs);
+            }
+            if (isAsyncIterable(iterableOrResult)) {
+              /** multiple emitted results */
+
               // iterable subscriptions are distinct on ID
               if (ctx.subscriptions[message.id]) {
                 return ctx.socket.close(
@@ -472,10 +480,10 @@ export function createServer(
                   `Subscriber for ${message.id} already exists`,
                 );
               }
-              ctx.subscriptions[message.id] = asyncIterable;
+              ctx.subscriptions[message.id] = iterableOrResult;
 
               try {
-                for await (let result of asyncIterable) {
+                for await (let result of iterableOrResult) {
                   // use the root formater first
                   if (formatExecutionResult) {
                     result = await formatExecutionResult(ctx, result);
@@ -484,13 +492,14 @@ export function createServer(
                   if (onSubscribeFormatter) {
                     result = await onSubscribeFormatter(ctx, result);
                   }
+                  // emit
                   await sendMessage<MessageType.Next>(ctx, {
                     id: message.id,
                     type: MessageType.Next,
                     payload: result,
                   });
                 }
-
+                // source stream completed
                 const completeMessage: CompleteMessage = {
                   id: message.id,
                   type: MessageType.Complete,
@@ -514,68 +523,37 @@ export function createServer(
               } finally {
                 delete ctx.subscriptions[message.id];
               }
-            };
-
-            // perform
-            if (operationAST.operation === 'subscription') {
-              const subscriptionOrResult = await subscribe(execArgs);
-              if (isAsyncIterable(subscriptionOrResult)) {
-                await asyncIterableHandler(subscriptionOrResult);
-              } else {
-                let result = subscriptionOrResult;
-                // use the root formater first
-                if (formatExecutionResult) {
-                  result = await formatExecutionResult(ctx, result);
-                }
-                // then use the subscription specific formatter
-                if (onSubscribeFormatter) {
-                  result = await onSubscribeFormatter(ctx, result);
-                }
-                await sendMessage<MessageType.Next>(ctx, {
-                  id: message.id,
-                  type: MessageType.Next,
-                  payload: result,
-                });
-
-                const completeMessage: CompleteMessage = {
-                  id: message.id,
-                  type: MessageType.Complete,
-                };
-                await sendMessage<MessageType.Complete>(ctx, completeMessage);
-                if (onComplete) {
-                  onComplete(ctx, completeMessage);
-                }
-              }
             } else {
-              // operationAST.operation === 'query' || 'mutation'
+              /** single emitted result */
 
-              let result = await execute(execArgs);
-
-              if (isAsyncIterable(result)) {
-                await asyncIterableHandler(result);
-              } else {
-                // use the root formater first
-                if (formatExecutionResult) {
-                  result = await formatExecutionResult(ctx, result);
-                }
-                // then use the subscription specific formatter
-                if (onSubscribeFormatter) {
-                  result = await onSubscribeFormatter(ctx, result);
-                }
-                await sendMessage<MessageType.Next>(ctx, {
-                  id: message.id,
-                  type: MessageType.Next,
-                  payload: result,
-                });
-
-                const completeMessage: CompleteMessage = {
-                  id: message.id,
-                  type: MessageType.Complete,
-                };
-                await sendMessage<MessageType.Complete>(ctx, completeMessage);
-                if (onComplete) {
-                  onComplete(ctx, completeMessage);
-                }
+              // use the root formater first
+              if (formatExecutionResult) {
+                iterableOrResult = await formatExecutionResult(
+                  ctx,
+                  iterableOrResult,
+                );
+              }
+              // then use the subscription specific formatter
+              if (onSubscribeFormatter) {
+                iterableOrResult = await onSubscribeFormatter(
+                  ctx,
+                  iterableOrResult,
+                );
+              }
+              // emit
+              await sendMessage<MessageType.Next>(ctx, {
+                id: message.id,
+                type: MessageType.Next,
+                payload: iterableOrResult,
+              });
+              // resolved
+              const completeMessage: CompleteMessage = {
+                id: message.id,
+                type: MessageType.Complete,
+              };
+              await sendMessage<MessageType.Complete>(ctx, completeMessage);
+              if (onComplete) {
+                onComplete(ctx, completeMessage);
               }
             }
             break;
