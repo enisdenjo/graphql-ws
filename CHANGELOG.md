@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.7.0...v1.8.0) (2020-10-19)
+
+
+### Features
+
+* **server:** Support returning multiple results from `execute` ([#28](https://github.com/enisdenjo/graphql-transport-ws/issues/28)) ([dbbd88b](https://github.com/enisdenjo/graphql-transport-ws/commit/dbbd88bb26843da55d9558e7a44bff3108f095ab))
+
 # [1.7.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.6.0...v1.7.0) (2020-10-01)
 
 
