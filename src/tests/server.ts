@@ -559,7 +559,7 @@ describe('Subscribe', () => {
     await wait(20);
   });
 
-  it('should execute a query operation with custom execute that returns a AsyncIterableIterator, "next" the results and then "complete"', async () => {
+  it('should execute the live query, "next" multiple results and then "complete"', async () => {
     expect.assertions(5);
 
     await makeServer({
