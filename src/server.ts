@@ -82,9 +82,9 @@ export interface ServerOptions {
   execute: (
     args: ExecutionArgs,
   ) =>
-    | Promise<ExecutionResult>
-    | ExecutionResult
-    | AsyncIterableIterator<ExecutionResult>;
+    | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
+    | AsyncIterableIterator<ExecutionResult>
+    | ExecutionResult;
   /**
    * Is the `subscribe` function
    * from GraphQL which is used to
