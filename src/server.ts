@@ -74,10 +74,8 @@ export interface ServerOptions {
     >;
   };
   /**
-   * Is the `subscribe` function
-   * from GraphQL which is used to
-   * execute the subscription operation
-   * upon.
+   * Is the `execute` function from GraphQL which is
+   * used to execute the query/mutation operation.
    */
   execute: (
     args: ExecutionArgs,
@@ -86,10 +84,8 @@ export interface ServerOptions {
     | AsyncIterableIterator<ExecutionResult>
     | ExecutionResult;
   /**
-   * Is the `subscribe` function
-   * from GraphQL which is used to
-   * execute the subscription operation
-   * upon.
+   * Is the `subscribe` function from GraphQL which is
+   * used to execute the subscription operation.
    */
   subscribe: (
     args: ExecutionArgs,
