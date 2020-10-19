@@ -384,6 +384,58 @@ server.listen(443, () => {
 
 </details>
 
+<details>
+<summary>Server usage with console logging</summary>
+
+```typescript
+import https from 'https';
+import { execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+createServer(
+  {
+    schema,
+    execute: async (args) => {
+      console.log('Execute', args);
+      const result = await execute(args);
+      console.debug('Execute result', result);
+      return result;
+    },
+    subscribe: async (args) => {
+      console.log('Subscribe', args);
+      const subscription = await subscribe(args);
+      // NOTE: `subscribe` can sometimes return a single result, I dont consider it here for sake of simplicity
+      return (async function* () {
+        for await (const result of subscription) {
+          console.debug('Subscribe yielded result', { args, result });
+          yield result;
+        }
+      })();
+    },
+    onConnect: (ctx) => {
+      console.log('Connect', ctx);
+      return true; // default behaviour - permit all connection attempts
+    },
+    onComplete: (ctx, msg) => {
+      console.debug('Complete', { ctx, msg });
+    },
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+
+server.listen(443);
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
