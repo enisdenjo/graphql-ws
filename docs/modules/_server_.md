@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["server"](_server_.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / "server"
 
 # Module: "server"
 
@@ -20,40 +22,29 @@
 
 ## Type aliases
 
-###  ExecutionResultFormatter
+### ExecutionResultFormatter
 
-Ƭ **ExecutionResultFormatter**: *function*
+Ƭ  **ExecutionResultFormatter**: (ctx: [Context](../interfaces/_server_.context.md), result: ExecutionResult) => Promise\<ExecutionResult> \| ExecutionResult
 
-*Defined in [server.ts:41](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L41)*
-
-#### Type declaration:
-
-▸ (`ctx`: [Context](../interfaces/_server_.context.md), `result`: ExecutionResult): *Promise‹ExecutionResult› | ExecutionResult*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`ctx` | [Context](../interfaces/_server_.context.md) |
-`result` | ExecutionResult |
+*Defined in [server.ts:41](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L41)*
 
 ## Functions
 
-###  createServer
+### createServer
 
-▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions | WebSocketServer): *[Server](../interfaces/_server_.server.md)*
+▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions \| WebSocketServer): [Server](../interfaces/_server_.server.md)
 
-*Defined in [server.ts:218](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L218)*
+*Defined in [server.ts:219](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L219)*
 
 Creates a protocol complient WebSocket GraphQL
 subscription server. Read more about the protocol
 in the PROTOCOL.md documentation file.
 
-**Parameters:**
+#### Parameters:
 
 Name | Type |
 ------ | ------ |
 `options` | [ServerOptions](../interfaces/_server_.serveroptions.md) |
-`websocketOptionsOrServer` | WebSocketServerOptions &#124; WebSocketServer |
+`websocketOptionsOrServer` | WebSocketServerOptions \| WebSocketServer |
 
-**Returns:** *[Server](../interfaces/_server_.server.md)*
+**Returns:** [Server](../interfaces/_server_.server.md)

@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [CompleteMessage](_message_.completemessage.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / CompleteMessage
 
 # Interface: CompleteMessage
 
@@ -10,21 +12,21 @@
 
 ### Properties
 
-* [id](_message_.completemessage.md#readonly-id)
-* [type](_message_.completemessage.md#readonly-type)
+* [id](_message_.completemessage.md#id)
+* [type](_message_.completemessage.md#type)
 
 ## Properties
 
-### `Readonly` id
+### id
 
-• **id**: *string*
+• `Readonly` **id**: string
 
-*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L61)*
+*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L61)*
 
 ___
 
-### `Readonly` type
+### type
 
-• **type**: *[Complete](../enums/_message_.messagetype.md#complete)*
+• `Readonly` **type**: [Complete](../enums/_message_.messagetype.md#complete)
 
-*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L62)*
+*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L62)*

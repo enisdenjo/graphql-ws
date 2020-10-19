@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ErrorMessage](_message_.errormessage.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / ErrorMessage
 
 # Interface: ErrorMessage
 
@@ -10,30 +12,30 @@
 
 ### Properties
 
-* [id](_message_.errormessage.md#readonly-id)
-* [payload](_message_.errormessage.md#readonly-payload)
-* [type](_message_.errormessage.md#readonly-type)
+* [id](_message_.errormessage.md#id)
+* [payload](_message_.errormessage.md#payload)
+* [type](_message_.errormessage.md#type)
 
 ## Properties
 
-### `Readonly` id
+### id
 
-• **id**: *string*
+• `Readonly` **id**: string
 
-*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L55)*
-
-___
-
-### `Readonly` payload
-
-• **payload**: *readonly GraphQLError[]*
-
-*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L57)*
+*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L55)*
 
 ___
 
-### `Readonly` type
+### payload
 
-• **type**: *[Error](../enums/_message_.messagetype.md#error)*
+• `Readonly` **payload**: readonly GraphQLError[]
 
-*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L56)*
+*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L57)*
+
+___
+
+### type
+
+• `Readonly` **type**: [Error](../enums/_message_.messagetype.md#error)
+
+*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L56)*

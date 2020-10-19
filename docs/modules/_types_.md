@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["types"](_types_.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / "types"
 
 # Module: "types"
 
@@ -15,11 +17,11 @@
 
 ## Type aliases
 
-###  ID
+### ID
 
-Ƭ **ID**: *string*
+Ƭ  **ID**: string
 
-*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L14)*
+*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L14)*
 
 ID is a string type alias representing
 the globally unique ID used for identifying

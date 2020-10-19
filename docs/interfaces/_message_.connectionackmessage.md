@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ConnectionAckMessage](_message_.connectionackmessage.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / ConnectionAckMessage
 
 # Interface: ConnectionAckMessage
 
@@ -10,12 +12,12 @@
 
 ### Properties
 
-* [type](_message_.connectionackmessage.md#readonly-type)
+* [type](_message_.connectionackmessage.md#type)
 
 ## Properties
 
-### `Readonly` type
+### type
 
-• **type**: *[ConnectionAck](../enums/_message_.messagetype.md#connectionack)*
+• `Readonly` **type**: [ConnectionAck](../enums/_message_.messagetype.md#connectionack)
 
-*Defined in [message.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L33)*
+*Defined in [message.ts:33](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L33)*

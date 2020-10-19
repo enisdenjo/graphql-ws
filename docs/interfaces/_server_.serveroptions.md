@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["server"](../modules/_server_.md) › [ServerOptions](_server_.serveroptions.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["server"](../modules/_server_.md) / ServerOptions
 
 # Interface: ServerOptions
 
@@ -10,26 +12,26 @@
 
 ### Properties
 
-* [connectionInitWaitTimeout](_server_.serveroptions.md#optional-connectioninitwaittimeout)
-* [context](_server_.serveroptions.md#optional-context)
+* [connectionInitWaitTimeout](_server_.serveroptions.md#connectioninitwaittimeout)
+* [context](_server_.serveroptions.md#context)
 * [execute](_server_.serveroptions.md#execute)
-* [formatExecutionResult](_server_.serveroptions.md#optional-formatexecutionresult)
-* [keepAlive](_server_.serveroptions.md#optional-keepalive)
-* [onComplete](_server_.serveroptions.md#optional-oncomplete)
-* [onConnect](_server_.serveroptions.md#optional-onconnect)
-* [onSubscribe](_server_.serveroptions.md#optional-onsubscribe)
-* [roots](_server_.serveroptions.md#optional-roots)
-* [schema](_server_.serveroptions.md#optional-schema)
+* [formatExecutionResult](_server_.serveroptions.md#formatexecutionresult)
+* [keepAlive](_server_.serveroptions.md#keepalive)
+* [onComplete](_server_.serveroptions.md#oncomplete)
+* [onConnect](_server_.serveroptions.md#onconnect)
+* [onSubscribe](_server_.serveroptions.md#onsubscribe)
+* [roots](_server_.serveroptions.md#roots)
+* [schema](_server_.serveroptions.md#schema)
 * [subscribe](_server_.serveroptions.md#subscribe)
-* [validationRules](_server_.serveroptions.md#optional-validationrules)
+* [validationRules](_server_.serveroptions.md#validationrules)
 
 ## Properties
 
-### `Optional` connectionInitWaitTimeout
+### connectionInitWaitTimeout
 
-• **connectionInitWaitTimeout**? : *undefined | number*
+• `Optional` **connectionInitWaitTimeout**: undefined \| number
 
-*Defined in [server.ts:126](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L126)*
+*Defined in [server.ts:127](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L127)*
 
 **`default`** 3 * 1000 (3 seconds)
 
@@ -45,11 +47,11 @@ dispatching a close event `4408: Connection initialisation timeout`
 
 ___
 
-### `Optional` context
+### context
 
-• **context**? : *SubscriptionArgs["contextValue"]*
+• `Optional` **context**: SubscriptionArgs[\"contextValue\"]
 
-*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L62)*
+*Defined in [server.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L62)*
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -59,34 +61,22 @@ Related operation context value will be injected to the
 
 ___
 
-###  execute
+### execute
 
-• **execute**: *function*
+•  **execute**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult> \| AsyncIterableIterator\<ExecutionResult> \| ExecutionResult
 
-*Defined in [server.ts:82](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L82)*
+*Defined in [server.ts:80](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L80)*
 
-Is the `subscribe` function
-from GraphQL which is used to
-execute the subscription operation
-upon.
-
-#### Type declaration:
-
-▸ (`args`: ExecutionArgs): *Promise‹ExecutionResult› | ExecutionResult*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`args` | ExecutionArgs |
+Is the `execute` function from GraphQL which is
+used to execute the query/mutation operation.
 
 ___
 
-### `Optional` formatExecutionResult
+### formatExecutionResult
 
-• **formatExecutionResult**? : *[ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)*
+• `Optional` **formatExecutionResult**: [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)
 
-*Defined in [server.ts:138](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L138)*
+*Defined in [server.ts:139](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L139)*
 
 Format the operation execution results
 if the implementation requires an adjusted
@@ -95,11 +85,11 @@ result. This formatter is run BEFORE the
 
 ___
 
-### `Optional` keepAlive
+### keepAlive
 
-• **keepAlive**? : *undefined | number*
+• `Optional` **keepAlive**: undefined \| number
 
-*Defined in [server.ts:169](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L169)*
+*Defined in [server.ts:170](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L170)*
 
 The timout between dispatched keep-alive messages. Internally the lib
 uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
@@ -110,11 +100,11 @@ Set to nullish value to disable.
 
 ___
 
-### `Optional` onComplete
+### onComplete
 
-• **onComplete**? : *undefined | function*
+• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md), message: [CompleteMessage](_message_.completemessage.md)) => void
 
-*Defined in [server.ts:160](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L160)*
+*Defined in [server.ts:161](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L161)*
 
 The complete callback is executed after the
 operation has completed or the subscription
@@ -122,11 +112,11 @@ has been closed.
 
 ___
 
-### `Optional` onConnect
+### onConnect
 
-• **onConnect**? : *undefined | function*
+• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean> \| boolean
 
-*Defined in [server.ts:112](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L112)*
+*Defined in [server.ts:113](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L113)*
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -149,11 +139,11 @@ thrown `Error`.
 
 ___
 
-### `Optional` onSubscribe
+### onSubscribe
 
-• **onSubscribe**? : *undefined | function*
+• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md), args: Optional\<ExecutionArgs, \"schema\">) => Promise\<[ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]> \| [ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]
 
-*Defined in [server.ts:148](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L148)*
+*Defined in [server.ts:149](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L149)*
 
 The subscribe callback executed before
 the actual operation execution. Useful
@@ -165,11 +155,11 @@ is run AFTER the root `formatExecutionResult`.
 
 ___
 
-### `Optional` roots
+### roots
 
-• **roots**? : *undefined | object*
+• `Optional` **roots**: undefined \| {}
 
-*Defined in [server.ts:70](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L70)*
+*Defined in [server.ts:70](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L70)*
 
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
@@ -179,11 +169,11 @@ Related operation root value will be injected to the
 
 ___
 
-### `Optional` schema
+### schema
 
-• **schema**? : *GraphQLSchema*
+• `Optional` **schema**: GraphQLSchema
 
-*Defined in [server.ts:54](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L54)*
+*Defined in [server.ts:54](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L54)*
 
 The GraphQL schema on which the operations
 will be executed and validated against. If
@@ -193,34 +183,22 @@ from the `onSubscribe` callback.
 
 ___
 
-###  subscribe
+### subscribe
 
-• **subscribe**: *function*
+•  **subscribe**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult>
 
-*Defined in [server.ts:89](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L89)*
+*Defined in [server.ts:90](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L90)*
 
-Is the `subscribe` function
-from GraphQL which is used to
-execute the subscription operation
-upon.
-
-#### Type declaration:
-
-▸ (`args`: ExecutionArgs): *Promise‹AsyncIterableIterator‹ExecutionResult› | ExecutionResult›*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`args` | ExecutionArgs |
+Is the `subscribe` function from GraphQL which is
+used to execute the subscription operation.
 
 ___
 
-### `Optional` validationRules
+### validationRules
 
-• **validationRules**? : *readonly ValidationRule[]*
+• `Optional` **validationRules**: readonly ValidationRule[]
 
-*Defined in [server.ts:131](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L131)*
+*Defined in [server.ts:132](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L132)*
 
 Custom validation rules overriding all
 validation rules defined by the GraphQL spec.

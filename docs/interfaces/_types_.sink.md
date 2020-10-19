@@ -1,12 +1,16 @@
-[graphql-transport-ws](../README.md) › ["types"](../modules/_types_.md) › [Sink](_types_.sink.md)
+**[graphql-transport-ws](../README.md)**
 
-# Interface: Sink ‹**T**›
+> [Globals](../README.md) / ["types"](../modules/_types_.md) / Sink
+
+# Interface: Sink\<T>
 
 A representation of any set of values over any amount of time.
 
 ## Type parameters
 
-▪ **T**
+Name | Default |
+------ | ------ |
+`T` | unknown |
 
 ## Hierarchy
 
@@ -22,48 +26,48 @@ A representation of any set of values over any amount of time.
 
 ## Methods
 
-###  complete
+### complete
 
-▸ **complete**(): *void*
+▸ **complete**(): void
 
-*Defined in [types.ts:30](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L30)*
+*Defined in [types.ts:30](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L30)*
 
 The sink has completed. This function "closes" the sink.
 
-**Returns:** *void*
+**Returns:** void
 
 ___
 
-###  error
+### error
 
-▸ **error**(`error`: Error | CloseEvent | readonly GraphQLError[]): *void*
+▸ **error**(`error`: Error \| CloseEvent \| readonly GraphQLError[]): void
 
-*Defined in [types.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L28)*
+*Defined in [types.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L28)*
 
 An error that has occured. Calling this function "closes" the sink.
 
-**Parameters:**
+#### Parameters:
 
 Name | Type |
 ------ | ------ |
-`error` | Error &#124; CloseEvent &#124; readonly GraphQLError[] |
+`error` | Error \| CloseEvent \| readonly GraphQLError[] |
 
-**Returns:** *void*
+**Returns:** void
 
 ___
 
-###  next
+### next
 
-▸ **next**(`value`: T): *void*
+▸ **next**(`value`: T): void
 
-*Defined in [types.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L26)*
+*Defined in [types.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L26)*
 
 Next value arriving.
 
-**Parameters:**
+#### Parameters:
 
 Name | Type |
 ------ | ------ |
 `value` | T |
 
-**Returns:** *void*
+**Returns:** void

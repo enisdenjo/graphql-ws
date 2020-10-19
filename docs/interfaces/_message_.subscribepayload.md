@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [SubscribePayload](_message_.subscribepayload.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / SubscribePayload
 
 # Interface: SubscribePayload
 
@@ -10,30 +12,30 @@
 
 ### Properties
 
-* [operationName](_message_.subscribepayload.md#optional-readonly-operationname)
-* [query](_message_.subscribepayload.md#readonly-query)
-* [variables](_message_.subscribepayload.md#optional-readonly-variables)
+* [operationName](_message_.subscribepayload.md#operationname)
+* [query](_message_.subscribepayload.md#query)
+* [variables](_message_.subscribepayload.md#variables)
 
 ## Properties
 
-### `Optional` `Readonly` operationName
+### operationName
 
-• **operationName**? : *string | null*
+• `Optional` `Readonly` **operationName**: string \| null
 
-*Defined in [message.ts:43](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L43)*
-
-___
-
-### `Readonly` query
-
-• **query**: *string | DocumentNode*
-
-*Defined in [message.ts:44](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L44)*
+*Defined in [message.ts:43](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L43)*
 
 ___
 
-### `Optional` `Readonly` variables
+### query
 
-• **variables**? : *Record‹string, unknown› | null*
+• `Readonly` **query**: string \| DocumentNode
 
-*Defined in [message.ts:45](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L45)*
+*Defined in [message.ts:44](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L44)*
+
+___
+
+### variables
+
+• `Optional` `Readonly` **variables**: Record\<string, unknown> \| null
+
+*Defined in [message.ts:45](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L45)*

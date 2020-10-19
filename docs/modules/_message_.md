@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](_message_.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / "message"
 
 # Module: "message"
 
@@ -24,8 +26,14 @@
 
 ## Type aliases
 
-###  Message
+### Message
 
-Ƭ **Message**: *T extends ConnectionAck ? ConnectionAckMessage : T extends ConnectionInit ? ConnectionInitMessage : T extends Subscribe ? SubscribeMessage : T extends Next ? NextMessage : T extends Error ? ErrorMessage : T extends Complete ? CompleteMessage : never*
+Ƭ  **Message**\<T>: T *extends* ConnectionAck ? ConnectionAckMessage : T *extends* ConnectionInit ? ConnectionInitMessage : T *extends* Subscribe ? SubscribeMessage : T *extends* Next ? NextMessage : T *extends* Error ? ErrorMessage : T *extends* Complete ? CompleteMessage : never
 
-*Defined in [message.ts:65](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L65)*
+*Defined in [message.ts:65](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L65)*
+
+#### Type parameters:
+
+Name | Type | Default |
+------ | ------ | ------ |
+`T` | [MessageType](../enums/_message_.messagetype.md) | MessageType |

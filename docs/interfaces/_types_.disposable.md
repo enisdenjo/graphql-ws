@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["types"](../modules/_types_.md) › [Disposable](_types_.disposable.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["types"](../modules/_types_.md) / Disposable
 
 # Interface: Disposable
 
@@ -18,14 +20,10 @@
 
 ## Properties
 
-###  dispose
+### dispose
 
-• **dispose**: *function*
+•  **dispose**: () => void \| Promise\<void>
 
-*Defined in [types.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/types.ts#L18)*
+*Defined in [types.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L18)*
 
 Dispose of the instance and clear up resources.
-
-#### Type declaration:
-
-▸ (): *void | Promise‹void›*

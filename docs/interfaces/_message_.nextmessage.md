@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [NextMessage](_message_.nextmessage.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / NextMessage
 
 # Interface: NextMessage
 
@@ -10,30 +12,30 @@
 
 ### Properties
 
-* [id](_message_.nextmessage.md#readonly-id)
-* [payload](_message_.nextmessage.md#readonly-payload)
-* [type](_message_.nextmessage.md#readonly-type)
+* [id](_message_.nextmessage.md#id)
+* [payload](_message_.nextmessage.md#payload)
+* [type](_message_.nextmessage.md#type)
 
 ## Properties
 
-### `Readonly` id
+### id
 
-• **id**: *string*
+• `Readonly` **id**: string
 
-*Defined in [message.ts:49](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L49)*
-
-___
-
-### `Readonly` payload
-
-• **payload**: *ExecutionResult*
-
-*Defined in [message.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L51)*
+*Defined in [message.ts:49](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L49)*
 
 ___
 
-### `Readonly` type
+### payload
 
-• **type**: *[Next](../enums/_message_.messagetype.md#next)*
+• `Readonly` **payload**: ExecutionResult
 
-*Defined in [message.ts:50](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L50)*
+*Defined in [message.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L51)*
+
+___
+
+### type
+
+• `Readonly` **type**: [Next](../enums/_message_.messagetype.md#next)
+
+*Defined in [message.ts:50](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L50)*

@@ -1,4 +1,6 @@
-[graphql-transport-ws](README.md)
+**[graphql-transport-ws](README.md)**
+
+> Globals
 
 # graphql-transport-ws
 

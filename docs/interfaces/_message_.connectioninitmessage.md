@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["message"](../modules/_message_.md) › [ConnectionInitMessage](_message_.connectioninitmessage.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["message"](../modules/_message_.md) / ConnectionInitMessage
 
 # Interface: ConnectionInitMessage
 
@@ -10,21 +12,21 @@
 
 ### Properties
 
-* [payload](_message_.connectioninitmessage.md#optional-readonly-payload)
-* [type](_message_.connectioninitmessage.md#readonly-type)
+* [payload](_message_.connectioninitmessage.md#payload)
+* [type](_message_.connectioninitmessage.md#type)
 
 ## Properties
 
-### `Optional` `Readonly` payload
+### payload
 
-• **payload**? : *Record‹string, unknown›*
+• `Optional` `Readonly` **payload**: Record\<string, unknown>
 
-*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L29)*
+*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L29)*
 
 ___
 
-### `Readonly` type
+### type
 
-• **type**: *[ConnectionInit](../enums/_message_.messagetype.md#connectioninit)*
+• `Readonly` **type**: [ConnectionInit](../enums/_message_.messagetype.md#connectioninit)
 
-*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/message.ts#L28)*
+*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L28)*

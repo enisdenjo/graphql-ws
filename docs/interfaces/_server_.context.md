@@ -1,4 +1,6 @@
-[graphql-transport-ws](../README.md) › ["server"](../modules/_server_.md) › [Context](_server_.context.md)
+**[graphql-transport-ws](../README.md)**
+
+> [Globals](../README.md) / ["server"](../modules/_server_.md) / Context
 
 # Interface: Context
 
@@ -12,18 +14,18 @@
 
 * [acknowledged](_server_.context.md#acknowledged)
 * [connectionInitReceived](_server_.context.md#connectioninitreceived)
-* [connectionParams](_server_.context.md#optional-connectionparams)
-* [request](_server_.context.md#readonly-request)
-* [socket](_server_.context.md#readonly-socket)
+* [connectionParams](_server_.context.md#connectionparams)
+* [request](_server_.context.md#request)
+* [socket](_server_.context.md#socket)
 * [subscriptions](_server_.context.md#subscriptions)
 
 ## Properties
 
-###  acknowledged
+### acknowledged
 
-• **acknowledged**: *boolean*
+•  **acknowledged**: boolean
 
-*Defined in [server.ts:194](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L194)*
+*Defined in [server.ts:195](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L195)*
 
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
@@ -31,11 +33,11 @@ to the related client.
 
 ___
 
-###  connectionInitReceived
+### connectionInitReceived
 
-• **connectionInitReceived**: *boolean*
+•  **connectionInitReceived**: boolean
 
-*Defined in [server.ts:188](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L188)*
+*Defined in [server.ts:189](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L189)*
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -44,42 +46,42 @@ the wait timeout has passed.
 
 ___
 
-### `Optional` connectionParams
+### connectionParams
 
-• **connectionParams**? : *Readonly‹Record‹string, unknown››*
+• `Optional` **connectionParams**: Readonly\<Record\<string, unknown>>
 
-*Defined in [server.ts:196](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L196)*
+*Defined in [server.ts:197](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L197)*
 
 The parameters passed during the connection initialisation.
 
 ___
 
-### `Readonly` request
+### request
 
-• **request**: *IncomingMessage*
+• `Readonly` **request**: IncomingMessage
 
-*Defined in [server.ts:181](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L181)*
+*Defined in [server.ts:182](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L182)*
 
 The initial HTTP request before the actual
 socket and connection is established.
 
 ___
 
-### `Readonly` socket
+### socket
 
-• **socket**: *WebSocket*
+• `Readonly` **socket**: WebSocket
 
-*Defined in [server.ts:176](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L176)*
+*Defined in [server.ts:177](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L177)*
 
 The actual WebSocket connection between the server and the client.
 
 ___
 
-###  subscriptions
+### subscriptions
 
-• **subscriptions**: *Record‹[ID](../modules/_types_.md#id), AsyncIterator‹unknown››*
+•  **subscriptions**: Record\<[ID](../modules/_types_.md#id), AsyncIterator\<unknown>>
 
-*Defined in [server.ts:202](https://github.com/enisdenjo/graphql-transport-ws/blob/42eb7d9/src/server.ts#L202)*
+*Defined in [server.ts:203](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L203)*
 
 Holds the active subscriptions for this context.
 Subscriptions are for `subscription` operations **only**,
