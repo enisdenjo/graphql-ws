@@ -559,6 +559,87 @@ describe('Subscribe', () => {
     await wait(20);
   });
 
+  it('should execute the live query, "next" multiple results and then "complete"', async () => {
+    expect.assertions(5);
+
+    await makeServer({
+      schema,
+      execute: async function* () {
+        for (const value of ['Hi', 'Hello', 'Sup']) {
+          yield {
+            data: {
+              getValue: value,
+            },
+          };
+        }
+      },
+    });
+
+    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.onopen = () => {
+      client.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    };
+
+    let receivedNextCount = 0;
+    client.onmessage = ({ data }) => {
+      const message = parseMessage(data);
+      switch (message.type) {
+        case MessageType.ConnectionAck:
+          client.send(
+            stringifyMessage<MessageType.Subscribe>({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: {
+                operationName: 'TestString',
+                query: `query TestString {
+                  getValue
+                }`,
+                variables: {},
+              },
+            }),
+          );
+          break;
+        case MessageType.Next:
+          receivedNextCount++;
+          if (receivedNextCount === 1) {
+            expect(message).toEqual({
+              id: '1',
+              type: MessageType.Next,
+              payload: { data: { getValue: 'Hi' } },
+            });
+          } else if (receivedNextCount === 2) {
+            expect(message).toEqual({
+              id: '1',
+              type: MessageType.Next,
+              payload: { data: { getValue: 'Hello' } },
+            });
+          } else if (receivedNextCount === 3) {
+            expect(message).toEqual({
+              id: '1',
+              type: MessageType.Next,
+              payload: { data: { getValue: 'Sup' } },
+            });
+          }
+          break;
+        case MessageType.Complete:
+          expect(receivedNextCount).toEqual(3);
+          expect(message).toEqual({
+            id: '1',
+            type: MessageType.Complete,
+          });
+          break;
+        default:
+          fail(`Not supposed to receive a message of type ${message.type}`);
+      }
+    };
+
+    await wait(20);
+  });
+
   it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
     expect.assertions(3);
 

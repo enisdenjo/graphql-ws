@@ -74,17 +74,18 @@ export interface ServerOptions {
     >;
   };
   /**
-   * Is the `subscribe` function
-   * from GraphQL which is used to
-   * execute the subscription operation
-   * upon.
+   * Is the `execute` function from GraphQL which is
+   * used to execute the query/mutation operation.
    */
-  execute: (args: ExecutionArgs) => Promise<ExecutionResult> | ExecutionResult;
+  execute: (
+    args: ExecutionArgs,
+  ) =>
+    | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
+    | AsyncIterableIterator<ExecutionResult>
+    | ExecutionResult;
   /**
-   * Is the `subscribe` function
-   * from GraphQL which is used to
-   * execute the subscription operation
-   * upon.
+   * Is the `subscribe` function from GraphQL which is
+   * used to execute the subscription operation.
    */
   subscribe: (
     args: ExecutionArgs,
@@ -458,74 +459,43 @@ export function createServer(
             }
 
             // perform
+            let iterableOrResult;
             if (operationAST.operation === 'subscription') {
-              const subscriptionOrResult = await subscribe(execArgs);
-              if (isAsyncIterable(subscriptionOrResult)) {
-                // iterable subscriptions are distinct on ID
-                if (ctx.subscriptions[message.id]) {
-                  return ctx.socket.close(
-                    4409,
-                    `Subscriber for ${message.id} already exists`,
-                  );
-                }
-                ctx.subscriptions[message.id] = subscriptionOrResult;
+              iterableOrResult = await subscribe(execArgs);
+            } else {
+              // operationAST.operation === 'query' || 'mutation'
+              iterableOrResult = await execute(execArgs);
+            }
+            if (isAsyncIterable(iterableOrResult)) {
+              /** multiple emitted results */
 
-                try {
-                  for await (let result of subscriptionOrResult) {
-                    // use the root formater first
-                    if (formatExecutionResult) {
-                      result = await formatExecutionResult(ctx, result);
-                    }
-                    // then use the subscription specific formatter
-                    if (onSubscribeFormatter) {
-                      result = await onSubscribeFormatter(ctx, result);
-                    }
-                    await sendMessage<MessageType.Next>(ctx, {
-                      id: message.id,
-                      type: MessageType.Next,
-                      payload: result,
-                    });
-                  }
+              // iterable subscriptions are distinct on ID
+              if (ctx.subscriptions[message.id]) {
+                return ctx.socket.close(
+                  4409,
+                  `Subscriber for ${message.id} already exists`,
+                );
+              }
+              ctx.subscriptions[message.id] = iterableOrResult;
 
-                  const completeMessage: CompleteMessage = {
-                    id: message.id,
-                    type: MessageType.Complete,
-                  };
-                  await sendMessage<MessageType.Complete>(ctx, completeMessage);
-                  if (onComplete) {
-                    onComplete(ctx, completeMessage);
+              try {
+                for await (let result of iterableOrResult) {
+                  // use the root formater first
+                  if (formatExecutionResult) {
+                    result = await formatExecutionResult(ctx, result);
                   }
-                } catch (err) {
-                  await sendMessage<MessageType.Error>(ctx, {
+                  // then use the subscription specific formatter
+                  if (onSubscribeFormatter) {
+                    result = await onSubscribeFormatter(ctx, result);
+                  }
+                  // emit
+                  await sendMessage<MessageType.Next>(ctx, {
                     id: message.id,
-                    type: MessageType.Error,
-                    payload: [
-                      new GraphQLError(
-                        err instanceof Error
-                          ? err.message
-                          : new Error(err).message,
-                      ),
-                    ],
+                    type: MessageType.Next,
+                    payload: result,
                   });
-                } finally {
-                  delete ctx.subscriptions[message.id];
                 }
-              } else {
-                let result = subscriptionOrResult;
-                // use the root formater first
-                if (formatExecutionResult) {
-                  result = await formatExecutionResult(ctx, result);
-                }
-                // then use the subscription specific formatter
-                if (onSubscribeFormatter) {
-                  result = await onSubscribeFormatter(ctx, result);
-                }
-                await sendMessage<MessageType.Next>(ctx, {
-                  id: message.id,
-                  type: MessageType.Next,
-                  payload: result,
-                });
-
+                // source stream completed
                 const completeMessage: CompleteMessage = {
                   id: message.id,
                   type: MessageType.Complete,
@@ -534,25 +504,45 @@ export function createServer(
                 if (onComplete) {
                   onComplete(ctx, completeMessage);
                 }
+              } catch (err) {
+                await sendMessage<MessageType.Error>(ctx, {
+                  id: message.id,
+                  type: MessageType.Error,
+                  payload: [
+                    new GraphQLError(
+                      err instanceof Error
+                        ? err.message
+                        : new Error(err).message,
+                    ),
+                  ],
+                });
+              } finally {
+                delete ctx.subscriptions[message.id];
               }
             } else {
-              // operationAST.operation === 'query' || 'mutation'
+              /** single emitted result */
 
-              let result = await execute(execArgs);
               // use the root formater first
               if (formatExecutionResult) {
-                result = await formatExecutionResult(ctx, result);
+                iterableOrResult = await formatExecutionResult(
+                  ctx,
+                  iterableOrResult,
+                );
               }
               // then use the subscription specific formatter
               if (onSubscribeFormatter) {
-                result = await onSubscribeFormatter(ctx, result);
+                iterableOrResult = await onSubscribeFormatter(
+                  ctx,
+                  iterableOrResult,
+                );
               }
+              // emit
               await sendMessage<MessageType.Next>(ctx, {
                 id: message.id,
                 type: MessageType.Next,
-                payload: result,
+                payload: iterableOrResult,
               });
-
+              // resolved
               const completeMessage: CompleteMessage = {
                 id: message.id,
                 type: MessageType.Complete,
