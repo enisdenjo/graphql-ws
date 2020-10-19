@@ -41,6 +41,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=12",
+    "yarn": ">=1.22.4"
+  },
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/",
     "lint": "eslint 'src'",
