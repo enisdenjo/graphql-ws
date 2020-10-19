@@ -174,20 +174,26 @@ export function createClient(options: ClientOptions): Client {
   };
   async function connect(
     cancellerRef: CancellerRef,
+    callDepth = 0,
   ): Promise<
     [
       socket: WebSocket,
       throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
     ]
   > {
+    // prevents too many recursive calls when reavaluating/re-connecting
+    if (callDepth > 10) {
+      throw new Error('Kept trying to connect but the socket never settled.');
+    }
+
+    // socket already exists. can be ready or pending, check and behave accordingly
     if (state.socket) {
       switch (state.socket.readyState) {
         case WebSocketImpl.OPEN: {
           // if the socket is not acknowledged, wait a bit and reavaluate
-          // TODO-db-200908 can you guarantee finite recursive calls?
           if (!state.acknowledged) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            return connect(cancellerRef);
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            return connect(cancellerRef, callDepth + 1);
           }
 
           return [
@@ -225,40 +231,16 @@ export function createClient(options: ClientOptions): Client {
           ];
         }
         case WebSocketImpl.CONNECTING: {
-          let waitedTimes = 0;
-          while (
-            state.socket && // the socket can be deleted in the meantime
-            state.socket.readyState === WebSocketImpl.CONNECTING
-          ) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            // 100ms * 50 = 5sec
-            if (waitedTimes >= 50) {
-              throw new Error(
-                'Waited 5 seconds but socket never finished connecting',
-              );
-            }
-            waitedTimes++;
-          }
-          return connect(cancellerRef); // reavaluate
+          // if the socket is in the connecting phase, wait a bit and reavaluate
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          return connect(cancellerRef, callDepth + 1);
         }
         case WebSocketImpl.CLOSED:
           break; // just continue, we'll make a new one
         case WebSocketImpl.CLOSING: {
-          let waitedTimes = 0;
-          while (
-            state.socket && // the socket can be deleted in the meantime
-            state.socket.readyState === WebSocketImpl.CLOSING
-          ) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            // 100ms * 50 = 5sec
-            if (waitedTimes >= 50) {
-              throw new Error(
-                'Waited 5 seconds but socket never finished closing',
-              );
-            }
-            waitedTimes++;
-          }
-          return connect(cancellerRef); // reavaluate
+          // if the socket is in the closing phase, wait a bit and connect
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          return connect(cancellerRef, callDepth + 1);
         }
         default:
           throw new Error(`Impossible ready state ${state.socket.readyState}`);
