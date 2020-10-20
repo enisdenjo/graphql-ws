@@ -34,11 +34,11 @@ function createTClient(
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
 ) {
   let closeEvent: WebSocket.CloseEvent;
+  const queue: WebSocket.MessageEvent[] = [];
   return new Promise<{
     send: (data?: unknown) => void;
     waitForMessage: (
-      test: (data: WebSocket.MessageEvent, count: number) => void,
-      waitCount?: number, // messages come in to fast sometimes
+      test: (data: WebSocket.MessageEvent) => void,
     ) => Promise<void>;
     waitForClose: (
       test?: (event: WebSocket.CloseEvent) => void,
@@ -47,21 +47,24 @@ function createTClient(
   }>((resolve) => {
     const ws = new WebSocket(url, protocols);
     ws.onclose = (event) => (closeEvent = event); // just so that none are missed
+    ws.onmessage = (message) => {
+      queue.push(message);
+    };
     ws.once('open', () =>
       resolve({
         send: (data) => ws.send(data),
-        async waitForMessage(test, waitCount = 1) {
+        async waitForMessage(test) {
           return new Promise((resolve) => {
-            let count = 0;
-            ws.onmessage = (event) => {
-              count++;
-              test(event, count);
-              if (waitCount === count) {
-                // @ts-expect-error: its ok
-                ws.onmessage = null;
-                resolve();
-              }
+            const done = () => {
+              // the onmessage listener above will be called first
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              test(queue.shift()!);
+              resolve();
             };
+            if (queue.length > 0) {
+              return done();
+            }
+            ws.once('message', done);
           });
         },
         async waitForClose(
