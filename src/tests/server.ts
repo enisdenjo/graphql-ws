@@ -30,37 +30,46 @@ afterEach(async () => {
   }
 });
 
-class Client extends WebSocket {
-  private closeEvent?: WebSocket.CloseEvent;
-
-  constructor(protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL) {
-    super(url, protocols);
-    this.onclose = (event) => (this.closeEvent = event); // just so that none are missed
-  }
-
-  public async waitForClose(
-    test?: (event: WebSocket.CloseEvent) => void,
-    expire?: number,
-  ) {
-    return new Promise((resolve) => {
-      if (this.closeEvent) {
-        if (test) test(this.closeEvent);
-        return resolve();
-      }
-      if (expire) {
-        setTimeout(() => {
-          // @ts-expect-error: its ok
-          this.onclose = null; // expired
-          resolve();
-        }, expire);
-      }
-      this.onclose = (event) => {
-        this.closeEvent = event;
-        if (test) test(event);
-        resolve();
-      };
-    });
-  }
+function createClient(
+  protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
+) {
+  let closeEvent: WebSocket.CloseEvent;
+  return new Promise<{
+    waitForClose: (
+      test?: (event: WebSocket.CloseEvent) => void,
+      expire?: number,
+    ) => Promise<void>;
+  }>((resolve) => {
+    const ws = new WebSocket(url, protocols);
+    ws.onclose = (event) => (closeEvent = event); // just so that none are missed
+    ws.once('open', () =>
+      resolve({
+        async waitForClose(
+          test?: (event: WebSocket.CloseEvent) => void,
+          expire?: number,
+        ) {
+          return new Promise((resolve) => {
+            if (closeEvent) {
+              if (test) test(closeEvent);
+              return resolve();
+            }
+            if (expire) {
+              setTimeout(() => {
+                // @ts-expect-error: its ok
+                ws.onclose = null; // expired
+                resolve();
+              }, expire);
+            }
+            ws.onclose = (event) => {
+              closeEvent = event;
+              if (test) test(event);
+              resolve();
+            };
+          });
+        },
+      }),
+    );
+  });
 }
 
 /**
@@ -70,28 +79,28 @@ class Client extends WebSocket {
 it('should allow connections with valid protocols only', async () => {
   await makeServer();
 
-  let client = new Client('');
+  let client = await createClient('');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = new Client(['graphql', 'json']);
+  client = await createClient(['graphql', 'json']);
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = new Client(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
+  client = await createClient(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = new Client(GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client = await createClient(GRAPHQL_TRANSPORT_WS_PROTOCOL);
   await client.waitForClose(
     () => fail('shouldnt close for valid protocol'),
     100, // should be kicked off within this time
@@ -99,37 +108,23 @@ it('should allow connections with valid protocols only', async () => {
 });
 
 it('should gracefully go away when disposing', async () => {
-  expect.assertions(9);
-
   const [, dispose] = await makeServer();
 
-  const errorFn = jest.fn();
-
-  const client1 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  client1.onerror = errorFn;
-  client1.onclose = (event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  };
-
-  const client2 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  client2.onerror = errorFn;
-  client2.onclose = (event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  };
-
-  await wait(10);
+  const client1 = await createClient();
+  const client2 = await createClient();
 
   await dispose(true);
 
-  await wait(10);
-
-  expect(errorFn).not.toBeCalled();
-  expect(client1.readyState).toBe(WebSocket.CLOSED);
-  expect(client2.readyState).toBe(WebSocket.CLOSED);
+  await client1.waitForClose((event) => {
+    expect(event.code).toBe(1001);
+    expect(event.reason).toBe('Going away');
+    expect(event.wasClean).toBeTruthy();
+  });
+  await client2.waitForClose((event) => {
+    expect(event.code).toBe(1001);
+    expect(event.reason).toBe('Going away');
+    expect(event.wasClean).toBeTruthy();
+  });
 });
 
 it('should report server errors to clients by closing the connection', async () => {
