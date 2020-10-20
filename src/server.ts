@@ -220,6 +220,8 @@ export function createServer(
   options: ServerOptions,
   websocketOptionsOrServer: WebSocketServerOptions | WebSocketServer,
 ): Server {
+  const isProd = process.env.NODE_ENV === 'production';
+
   const {
     schema,
     context,
@@ -315,9 +317,11 @@ export function createServer(
       }
 
       if (isErrorEvent(errorOrClose)) {
-        // TODO-db-200805 leaking sensitive information by sending the error message too?
         // 1011: Internal Error
-        ctxRef.current.socket.close(1011, errorOrClose.message);
+        ctxRef.current.socket.close(
+          1011,
+          isProd ? 'Internal Error' : errorOrClose.message,
+        );
       }
 
       Object.entries(ctxRef.current.subscriptions).forEach(
