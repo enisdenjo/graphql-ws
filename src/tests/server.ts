@@ -367,54 +367,43 @@ describe('Connect', () => {
 
 describe('Subscribe', () => {
   it('should close the socket on request if connection is not acknowledged', async () => {
-    expect.assertions(3);
-
     await makeServer();
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          operationName: 'NoAck',
+          query: `subscription NoAck {}`,
+          variables: {},
+        },
+      }),
+    );
+
+    await client.waitForClose((event) => {
       expect(event.code).toBe(4401);
       expect(event.reason).toBe('Unauthorized');
       expect(event.wasClean).toBeTruthy();
-    };
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.Subscribe>({
-          id: '1',
-          type: MessageType.Subscribe,
-          payload: {
-            operationName: 'NoAck',
-            query: `subscription NoAck {}`,
-            variables: {},
-          },
-        }),
-      );
-    };
-
-    await wait(20);
+    });
   });
 
   it('should close the socket on request if schema is left undefined', async () => {
-    expect.assertions(3);
-
     await makeServer({
       schema: undefined,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
-      expect(event.code).toBe(1011);
-      expect(event.reason).toBe('The GraphQL schema is not provided');
-      expect(event.wasClean).toBeTruthy();
-    };
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    client.onmessage = ({ data }) => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       switch (message.type) {
         case MessageType.ConnectionAck:
@@ -435,14 +424,16 @@ describe('Subscribe', () => {
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(10);
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(1011);
+      expect(event.reason).toBe('The GraphQL schema is not provided');
+      expect(event.wasClean).toBeTruthy();
+    });
   });
 
   it('should pick up the schema from `onSubscribe`', async () => {
-    expect.assertions(2);
-
     await makeServer({
       schema: undefined,
       onSubscribe: (_ctx, _message, args) => {
@@ -455,111 +446,98 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    const closeOrErrorFn = jest.fn();
-    client.onerror = closeOrErrorFn;
-    client.onclose = closeOrErrorFn;
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    client.onmessage = ({ data }) => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestString',
-                query: `query TestString {
-                  getValue
-                }`,
-                variables: {},
-              },
-            }),
-          );
-          break;
-        case MessageType.Next:
-          expect(message).toEqual({
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
             id: '1',
-            type: MessageType.Next,
-            payload: { data: { getValue: 'value' } },
-          });
-          break;
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'TestString',
+              query: `query TestString {
+                getValue
+              }`,
+              variables: {},
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'value' } },
+      });
+    });
 
-    expect(closeOrErrorFn).not.toBeCalled();
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 100);
   });
 
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
-    expect.assertions(3);
-
     await makeServer({
       schema,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    let receivedNext = false;
-    client.onmessage = ({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestString',
-                query: `query TestString {
-                  getValue
-                }`,
-                variables: {},
-              },
-            }),
-          );
-          break;
-        case MessageType.Next:
-          expect(message).toEqual({
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
             id: '1',
-            type: MessageType.Next,
-            payload: { data: { getValue: 'value' } },
-          });
-          receivedNext = true;
-          break;
-        case MessageType.Complete:
-          expect(receivedNext).toBeTruthy();
-          expect(message).toEqual({
-            id: '1',
-            type: MessageType.Complete,
-          });
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'TestString',
+              query: `query TestString {
+                getValue
+              }`,
+              variables: {},
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'value' } },
+      });
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
+    });
   });
 
   it('should execute the live query, "next" multiple results and then "complete"', async () => {
-    expect.assertions(5);
-
     await makeServer({
       schema,
       execute: async function* () {
@@ -573,253 +551,230 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    let receivedNextCount = 0;
-    client.onmessage = ({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestString',
-                query: `query TestString {
-                  getValue
-                }`,
-                variables: {},
-              },
-            }),
-          );
-          break;
-        case MessageType.Next:
-          receivedNextCount++;
-          if (receivedNextCount === 1) {
-            expect(message).toEqual({
-              id: '1',
-              type: MessageType.Next,
-              payload: { data: { getValue: 'Hi' } },
-            });
-          } else if (receivedNextCount === 2) {
-            expect(message).toEqual({
-              id: '1',
-              type: MessageType.Next,
-              payload: { data: { getValue: 'Hello' } },
-            });
-          } else if (receivedNextCount === 3) {
-            expect(message).toEqual({
-              id: '1',
-              type: MessageType.Next,
-              payload: { data: { getValue: 'Sup' } },
-            });
-          }
-          break;
-        case MessageType.Complete:
-          expect(receivedNextCount).toEqual(3);
-          expect(message).toEqual({
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
             id: '1',
-            type: MessageType.Complete,
-          });
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'TestString',
+              query: `query TestString {
+                getValue
+              }`,
+              variables: {},
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'Hi' } },
+      });
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'Hello' } },
+      });
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'Sup' } },
+      });
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
+    });
   });
 
   it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
-    expect.assertions(3);
-
     await makeServer({
       schema,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    let receivedNext = false;
-    client.onmessage = ({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestString',
-                query: parse(`query TestString {
-                  getValue
-                }`),
-                variables: {},
-              },
-            }),
-          );
-          break;
-        case MessageType.Next:
-          expect(message).toEqual({
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
             id: '1',
-            type: MessageType.Next,
-            payload: { data: { getValue: 'value' } },
-          });
-          receivedNext = true;
-          break;
-        case MessageType.Complete:
-          expect(receivedNext).toBeTruthy();
-          expect(message).toEqual({
-            id: '1',
-            type: MessageType.Complete,
-          });
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'TestString',
+              query: parse(`query TestString {
+                getValue
+              }`),
+              variables: {},
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'value' } },
+      });
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
+    });
   });
 
   it('should execute the query and "error" out because of validation errors', async () => {
-    expect.assertions(8);
-
     await makeServer({
       schema,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    const closeOrErrorFn = jest.fn();
-    client.onerror = closeOrErrorFn;
-    client.onclose = closeOrErrorFn;
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    client.onmessage = ({ data }) => {
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestNoField',
-                query: `query TestNoField {
-                  testNumber
-                  testBoolean
-                }`,
-                variables: {},
-              },
-            }),
-          );
-          break;
-        case MessageType.Error:
-          expect(message.id).toBe('1');
-          expect(message.payload).toBeInstanceOf(Array);
-          expect(message.payload.length).toBe(2);
-
-          // testNumber
-          expect(message.payload[0].message).toBe(
-            'Cannot query field "testNumber" on type "Query".',
-          );
-          expect(message.payload[0].locations).toBeInstanceOf(Array);
-
-          // testBoolean
-          expect(message.payload[1].message).toBe(
-            'Cannot query field "testBoolean" on type "Query".',
-          );
-          expect(message.payload[1].locations).toBeInstanceOf(Array);
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: '1',
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'TestNoField',
+              query: `query TestNoField {
+                testNumber
+                testBoolean
+              }`,
+              variables: {},
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Error,
+        payload: [
+          {
+            locations: [
+              {
+                column: 17,
+                line: 2,
+              },
+            ],
+            message: 'Cannot query field "testNumber" on type "Query".',
+          },
+          {
+            locations: [
+              {
+                column: 17,
+                line: 3,
+              },
+            ],
+            message: 'Cannot query field "testBoolean" on type "Query".',
+          },
+        ],
+      });
+    });
 
-    // socket shouldnt close or error because of GraphQL errors
-    expect(closeOrErrorFn).not.toBeCalled();
+    await client.waitForClose(() => {
+      fail('Shouldnt close because of GraphQL errors');
+    }, 100);
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
-    expect.assertions(1);
-
     await makeServer({
       schema,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    client.onmessage = ({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck: {
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'BecomingHappy',
-                query: `subscription BecomingHappy {
-                  becameHappy(secret: "smile more") {
-                    name
-                  }
-                }`,
-              },
-            }),
-            () =>
-              setTimeout(
-                () =>
-                  pubsub.publish('becameHappy', {
-                    becameHappy: {
-                      name: 'john',
-                    },
-                  }),
-                0,
-              ),
-          );
-          break;
-        }
-        case MessageType.Next:
-          expect(message).toEqual({
+      if (message.type === MessageType.ConnectionAck) {
+        client.send(
+          stringifyMessage<MessageType.Subscribe>({
             id: '1',
-            type: MessageType.Next,
-            payload: { data: { becameHappy: { name: 'john' } } },
-          });
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
+            type: MessageType.Subscribe,
+            payload: {
+              operationName: 'BecomingHappy',
+              query: `subscription BecomingHappy {
+                becameHappy(secret: "smile more") {
+                  name
+                }
+              }`,
+            },
+          }),
+        );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await wait(20);
+    setTimeout(() => {
+      pubsub.publish('becameHappy', {
+        becameHappy: {
+          name: 'john',
+        },
+      });
+    }, 0);
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { becameHappy: { name: 'john' } } },
+      });
+    });
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
@@ -827,16 +782,14 @@ describe('Subscribe', () => {
       schema,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    const onMessageFn = jest.fn(({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
         client.send(
@@ -852,23 +805,25 @@ describe('Subscribe', () => {
             },
           }),
         );
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-      return message;
     });
-    client.onmessage = onMessageFn;
-    await wait(10);
 
-    pubsub.publish('boughtBananas', {
-      boughtBananas: {
-        name: 'john',
-      },
-    });
-    await wait(10);
+    setTimeout(() => {
+      pubsub.publish('boughtBananas', {
+        boughtBananas: {
+          name: 'john',
+        },
+      });
+    }, 0);
 
-    expect(onMessageFn.mock.results[1].value).toEqual({
-      id: '1',
-      type: MessageType.Next,
-      payload: { data: { boughtBananas: { name: 'john' } } },
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { boughtBananas: { name: 'john' } } },
+      });
     });
 
     // complete
@@ -881,39 +836,41 @@ describe('Subscribe', () => {
     await wait(10);
 
     // confirm complete
-    expect(onMessageFn).toHaveLastReturnedWith({
-      id: '1',
-      type: MessageType.Complete,
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
     });
 
-    pubsub.publish('boughtBananas', new Error('Something weird happened!'));
-    await wait(10);
+    setTimeout(() => {
+      pubsub.publish('boughtBananas', new Error('Something weird happened!'));
+    }, 0);
 
-    pubsub.publish('boughtBananas', {
-      boughtBananas: {
-        name: 'john',
-      },
-    });
-    await wait(10);
+    setTimeout(() => {
+      pubsub.publish('boughtBananas', {
+        boughtBananas: {
+          name: 'john',
+        },
+      });
+    }, 0);
 
-    expect(onMessageFn).toBeCalledTimes(3); // ack, next, complete
+    await client.waitForClose(() => {
+      fail('Shouldnt have received a message');
+    }, 100);
   });
 
   it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
-    expect.assertions(3);
-
     await makeServer();
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    client.onmessage = ({ data }) => {
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
         client.send(
@@ -929,31 +886,28 @@ describe('Subscribe', () => {
             },
           }),
         );
-
-        // try subscribing with a live subscription id
-        setTimeout(() => {
-          client.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: 'not-unique',
-              type: MessageType.Subscribe,
-              payload: {
-                query: `subscription {
-                  greetings
-                }`,
-              },
-            }),
-          );
-        }, 10);
+      } else {
+        fail(`Not supposed to receive a message of type ${message.type}`);
       }
-    };
+    });
 
-    await new Promise((resolve) => {
-      client.onclose = (event) => {
-        expect(event.code).toBe(4409);
-        expect(event.reason).toBe('Subscriber for not-unique already exists');
-        expect(event.wasClean).toBeTruthy();
-        resolve(); // done
-      };
+    // try subscribing with a live subscription id
+    client.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: 'not-unique',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `subscription {
+            greetings
+          }`,
+        },
+      }),
+    );
+
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4409);
+      expect(event.reason).toBe('Subscriber for not-unique already exists');
+      expect(event.wasClean).toBeTruthy();
     });
   });
 });
