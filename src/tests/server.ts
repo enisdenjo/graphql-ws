@@ -127,7 +127,7 @@ it('should allow connections with valid protocols only', async () => {
   client = await createTClient(GRAPHQL_TRANSPORT_WS_PROTOCOL);
   await client.waitForClose(
     () => fail('shouldnt close for valid protocol'),
-    100, // should be kicked off within this time
+    30, // should be kicked off within this time
   );
 });
 
@@ -449,7 +449,7 @@ describe('Connect', () => {
 
     await client.waitForClose(() => {
       fail('Shouldnt have closed');
-    }, 100);
+    }, 30);
   });
 
   it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async () => {
@@ -622,7 +622,7 @@ describe('Subscribe', () => {
 
     await client.waitForClose(() => {
       fail('Shouldt have closed');
-    }, 100);
+    }, 30);
   });
 
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
@@ -844,7 +844,7 @@ describe('Subscribe', () => {
 
     await client.waitForClose(() => {
       fail('Shouldnt close because of GraphQL errors');
-    }, 100);
+    }, 30);
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
@@ -969,7 +969,7 @@ describe('Subscribe', () => {
 
     await client.waitForClose(() => {
       fail('Shouldnt have received a message');
-    }, 100);
+    }, 30);
   });
 
   it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
