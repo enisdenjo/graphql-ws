@@ -30,7 +30,7 @@ afterEach(async () => {
   }
 });
 
-function createClient(
+function createTClient(
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
 ) {
   let closeEvent: WebSocket.CloseEvent;
@@ -79,28 +79,28 @@ function createClient(
 it('should allow connections with valid protocols only', async () => {
   await makeServer();
 
-  let client = await createClient('');
+  let client = await createTClient('');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createClient(['graphql', 'json']);
+  client = await createTClient(['graphql', 'json']);
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createClient(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
+  client = await createTClient(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createClient(GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client = await createTClient(GRAPHQL_TRANSPORT_WS_PROTOCOL);
   await client.waitForClose(
     () => fail('shouldnt close for valid protocol'),
     100, // should be kicked off within this time
@@ -110,8 +110,8 @@ it('should allow connections with valid protocols only', async () => {
 it('should gracefully go away when disposing', async () => {
   const [, dispose] = await makeServer();
 
-  const client1 = await createClient();
-  const client2 = await createClient();
+  const client1 = await createTClient();
+  const client2 = await createTClient();
 
   await dispose(true);
 
@@ -128,24 +128,18 @@ it('should gracefully go away when disposing', async () => {
 });
 
 it('should report server errors to clients by closing the connection', async () => {
-  expect.assertions(3);
-
   const [{ webSocketServer }] = await makeServer();
 
-  const emittedError = new Error("I'm a teapot");
+  const client = await createTClient();
 
-  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  client.onclose = (event) => {
+  const emittedError = new Error("I'm a teapot");
+  webSocketServer.emit('error', emittedError);
+
+  await client.waitForClose((event) => {
     expect(event.code).toBe(1011); // 1011: Internal Error
     expect(event.reason).toBe(emittedError.message);
     expect(event.wasClean).toBeTruthy(); // because the server reported the error
-  };
-
-  await wait(10);
-
-  webSocketServer.emit('error', emittedError);
-
-  await wait(10);
+  });
 });
 
 describe('Connect', () => {
