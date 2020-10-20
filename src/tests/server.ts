@@ -63,13 +63,13 @@ function createTClient(
             if (queue.length > 0) {
               return done();
             }
+            ws.once('message', done);
             if (expire) {
               setTimeout(() => {
                 ws.removeListener('message', done); // expired
                 resolve();
               }, expire);
             }
-            ws.once('message', done);
           });
         },
         async waitForClose(
@@ -81,6 +81,11 @@ function createTClient(
               if (test) test(closeEvent);
               return resolve();
             }
+            ws.onclose = (event) => {
+              closeEvent = event;
+              if (test) test(event);
+              resolve();
+            };
             if (expire) {
               setTimeout(() => {
                 // @ts-expect-error: its ok
@@ -88,11 +93,6 @@ function createTClient(
                 resolve();
               }, expire);
             }
-            ws.onclose = (event) => {
-              closeEvent = event;
-              if (test) test(event);
-              resolve();
-            };
           });
         },
       }),
