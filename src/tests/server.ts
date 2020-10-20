@@ -39,6 +39,7 @@ function createTClient(
     send: (data?: unknown) => void;
     waitForMessage: (
       test: (data: WebSocket.MessageEvent) => void,
+      expire?: number,
     ) => Promise<void>;
     waitForClose: (
       test?: (event: WebSocket.CloseEvent) => void,
@@ -47,22 +48,26 @@ function createTClient(
   }>((resolve) => {
     const ws = new WebSocket(url, protocols);
     ws.onclose = (event) => (closeEvent = event); // just so that none are missed
-    ws.onmessage = (message) => {
-      queue.push(message);
-    };
+    ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
     ws.once('open', () =>
       resolve({
         send: (data) => ws.send(data),
-        async waitForMessage(test) {
+        async waitForMessage(test, expire) {
           return new Promise((resolve) => {
             const done = () => {
-              // the onmessage listener above will be called first
+              // the onmessage listener above will be called before our listener, populating the queue
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               test(queue.shift()!);
               resolve();
             };
             if (queue.length > 0) {
               return done();
+            }
+            if (expire) {
+              setTimeout(() => {
+                ws.removeListener('message', done); // expired
+                resolve();
+              }, expire);
             }
             ws.once('message', done);
           });
