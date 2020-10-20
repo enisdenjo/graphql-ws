@@ -31,8 +31,11 @@ afterEach(async () => {
 });
 
 class Client extends WebSocket {
+  private closeEvent?: WebSocket.CloseEvent;
+
   constructor(protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL) {
     super(url, protocols);
+    this.onclose = (event) => (this.closeEvent = event); // just so that none are missed
   }
 
   public async waitForClose(
@@ -40,6 +43,10 @@ class Client extends WebSocket {
     expire?: number,
   ) {
     return new Promise((resolve) => {
+      if (this.closeEvent) {
+        if (test) test(this.closeEvent);
+        return resolve();
+      }
       if (expire) {
         setTimeout(() => {
           // @ts-expect-error: its ok
@@ -48,6 +55,7 @@ class Client extends WebSocket {
         }, expire);
       }
       this.onclose = (event) => {
+        this.closeEvent = event;
         if (test) test(event);
         resolve();
       };
