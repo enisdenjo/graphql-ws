@@ -35,6 +35,11 @@ function createTClient(
 ) {
   let closeEvent: WebSocket.CloseEvent;
   return new Promise<{
+    send: (data?: unknown) => void;
+    waitForMessage: (
+      test: (data: WebSocket.MessageEvent) => void,
+      expire?: number,
+    ) => Promise<void>;
     waitForClose: (
       test?: (event: WebSocket.CloseEvent) => void,
       expire?: number,
@@ -44,6 +49,10 @@ function createTClient(
     ws.onclose = (event) => (closeEvent = event); // just so that none are missed
     ws.once('open', () =>
       resolve({
+        send: (data) => ws.send(data),
+        async waitForMessage(test) {
+          ws.onmessage = (event) => test(event);
+        },
         async waitForClose(
           test?: (event: WebSocket.CloseEvent) => void,
           expire?: number,
@@ -144,34 +153,28 @@ it('should report server errors to clients by closing the connection', async () 
 
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
-    expect.assertions(3);
-
     await makeServer({
       onConnect: () => {
         return false;
       },
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForClose((event) => {
       expect(event.code).toBe(4403);
       expect(event.reason).toBe('Forbidden');
       expect(event.wasClean).toBeTruthy();
-    };
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-
-    await wait(10);
+    });
   });
 
   it('should close socket with error thrown from the callback', async () => {
-    expect.assertions(3);
-
     const error = new Error("I'm a teapot");
 
     await makeServer({
@@ -180,45 +183,38 @@ describe('Connect', () => {
       },
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForClose((event) => {
       expect(event.code).toBe(4400);
       expect(event.reason).toBe(error.message);
       expect(event.wasClean).toBeTruthy();
-    };
-    client.onopen = () => {
+    });
+  });
+
+  it('should acknowledge connection if not implemented or returning `true`', async () => {
+    async function test() {
+      const client = await createTClient();
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
       );
-    };
-
-    await wait(10);
-  });
-
-  it('should acknowledge connection if not implemented or returning `true`', async () => {
-    expect.assertions(2);
-
-    function test() {
-      const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-      client.onmessage = ({ data }) => {
+      await client.waitForMessage(({ data }) => {
         const message = parseMessage(data);
         expect(message.type).toBe(MessageType.ConnectionAck);
-      };
-      client.onopen = () => {
-        client.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-          }),
-        );
-      };
+      });
     }
 
     // no implementation
     const [, dispose] = await makeServer();
-    test();
-    await wait(10);
+    await test();
+
     await dispose();
 
     // returns true
@@ -227,13 +223,10 @@ describe('Connect', () => {
         return true;
       },
     });
-    test();
-    await wait(10);
+    await test();
   });
 
-  it('should pass in the `connectionParams` through the context and have other flags correctly set', async () => {
-    expect.assertions(3);
-
+  it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
     const connectionParams = {
       some: 'string',
       with: 'a',
@@ -245,21 +238,18 @@ describe('Connect', () => {
         expect(ctx.connectionParams).toEqual(connectionParams);
         expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
         expect(ctx.acknowledged).toBeFalsy(); // not yet acknowledged
+        done();
         return true;
       },
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-          payload: connectionParams,
-        }),
-      );
-    };
-
-    await wait(10);
+    const client = await createTClient();
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+        payload: connectionParams,
+      }),
+    );
   });
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
