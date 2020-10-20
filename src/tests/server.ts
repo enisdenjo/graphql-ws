@@ -8,24 +8,25 @@ import { startServer, url, schema, pubsub } from './fixtures/simple';
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-let dispose: (() => Promise<void>) | undefined;
-async function makeServer(...args: Parameters<typeof startServer>) {
-  let server;
-  [server, dispose] = await startServer(...args);
+let forgottenDispose: (() => Promise<void>) | undefined;
+async function makeServer(
+  ...args: Parameters<typeof startServer>
+): ReturnType<typeof startServer> {
+  const [server, dispose] = await startServer(...args);
+  forgottenDispose = dispose;
   return [
     server,
-    async () => {
-      if (dispose) {
-        await dispose();
-        dispose = undefined;
-      }
+    async (beNice) => {
+      await dispose(beNice);
+      forgottenDispose = undefined;
     },
-  ] as [typeof server, typeof dispose];
+  ];
 }
 afterEach(async () => {
-  if (dispose) {
-    await dispose();
-    dispose = undefined;
+  // if not disposed manually
+  if (forgottenDispose) {
+    await forgottenDispose();
+    forgottenDispose = undefined;
   }
 });
 
@@ -114,7 +115,7 @@ it('should gracefully go away when disposing', async () => {
 
   await wait(10);
 
-  await dispose();
+  await dispose(true);
 
   await wait(10);
 
