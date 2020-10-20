@@ -59,8 +59,6 @@ class Client extends WebSocket {
  */
 
 it('should allow connections with valid protocols only', async () => {
-  expect.assertions(10);
-
   await makeServer();
 
   let client = new Client('');
