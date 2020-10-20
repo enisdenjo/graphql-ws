@@ -51,7 +51,14 @@ function createTClient(
       resolve({
         send: (data) => ws.send(data),
         async waitForMessage(test) {
-          ws.onmessage = (event) => test(event);
+          return new Promise((resolve) => {
+            ws.onmessage = (event) => {
+              // @ts-expect-error: its ok
+              ws.onmessage = null;
+              test(event);
+              resolve();
+            };
+          });
         },
         async waitForClose(
           test?: (event: WebSocket.CloseEvent) => void,
