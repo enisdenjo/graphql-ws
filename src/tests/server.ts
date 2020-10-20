@@ -4,10 +4,6 @@ import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pubsub } from './fixtures/simple';
 
-/** Waits for the specified timeout and then resolves the promise. */
-const wait = (timeout: number) =>
-  new Promise((resolve) => setTimeout(resolve, timeout));
-
 let forgottenDispose: (() => Promise<void>) | undefined;
 async function makeServer(
   ...args: Parameters<typeof startServer>
@@ -950,7 +946,6 @@ describe('Subscribe', () => {
         type: MessageType.Complete,
       }),
     );
-    await wait(10);
 
     // confirm complete
     await client.waitForMessage(({ data }) => {
@@ -1041,7 +1036,7 @@ describe('Keep-Alive', () => {
     client.ws.once('ping', () => done());
   });
 
-  it('should not dispatch pings if disabled with nullish timeout', async () => {
+  it('should not dispatch pings if disabled with nullish timeout', async (done) => {
     await makeServer({
       keepAlive: 0,
     });
@@ -1055,7 +1050,7 @@ describe('Keep-Alive', () => {
 
     client.ws.once('ping', () => fail('Shouldnt have pinged'));
 
-    await wait(100);
+    setTimeout(done, 50);
   });
 
   it('should terminate the socket if no pong is sent in response to a ping', async () => {
