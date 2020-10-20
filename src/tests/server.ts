@@ -170,6 +170,160 @@ it('should report server errors to clients by closing the connection', async () 
   });
 });
 
+it('should use the provided roots as resolvers', async () => {
+  const schema = buildSchema(`
+    type Query {
+      hello: String
+    }
+    type Subscription {
+      count: Int
+    }
+  `);
+
+  const roots = {
+    query: {
+      hello: () => 'Hello World!',
+    },
+    subscription: {
+      count: async function* () {
+        for (const num of [1, 2, 3]) {
+          yield num;
+        }
+      },
+    },
+  };
+
+  await makeServer({
+    schema,
+    roots,
+  });
+
+  const client = await createTClient();
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ hello }`,
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '1',
+      type: MessageType.Next,
+      payload: { data: { hello: 'Hello World!' } },
+    });
+  });
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '1',
+      type: MessageType.Complete,
+    });
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '2',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `subscription { count }`,
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.Next);
+  });
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.Next);
+  });
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.Next);
+  });
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '2',
+      type: MessageType.Complete,
+    });
+  });
+});
+
+it('should pass in the context value from the config', async () => {
+  const context = {};
+
+  const executeFn = jest.fn((args) => execute(args));
+  const subscribeFn = jest.fn((args) => subscribe(args));
+
+  await makeServer({
+    context,
+    execute: executeFn,
+    subscribe: subscribeFn,
+  });
+
+  const client = await createTClient();
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    const message = parseMessage(data);
+    expect(message.type).toBe(MessageType.Next);
+    // @ts-expect-error it is next message
+    expect(message.id).toBe('1');
+  });
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '1',
+      type: MessageType.Complete,
+    });
+  });
+
+  expect(executeFn).toBeCalled();
+  expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '2',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `subscription { greetings }`,
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    const message = parseMessage(data);
+    expect(message.type).toBe(MessageType.Next);
+    // @ts-expect-error it is next message
+    expect(message.id).toBe('2');
+  });
+
+  expect(subscribeFn).toBeCalled();
+  expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
+});
+
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     await makeServer({
@@ -225,8 +379,7 @@ describe('Connect', () => {
         }),
       );
       await client.waitForMessage(({ data }) => {
-        const message = parseMessage(data);
-        expect(message.type).toBe(MessageType.ConnectionAck);
+        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
       });
     }
 
@@ -295,8 +448,7 @@ describe('Connect', () => {
       }),
     );
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      expect(message.type).toBe(MessageType.ConnectionAck);
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
     });
 
     await client.waitForClose(() => {
@@ -346,8 +498,7 @@ describe('Connect', () => {
       }),
     );
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      expect(message.type).toBe(MessageType.ConnectionAck);
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
     });
 
     // random connection init message even after acknowledgement
@@ -404,26 +555,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.ConnectionAck:
-          client.ws.send(
-            stringifyMessage<MessageType.Subscribe>({
-              id: '1',
-              type: MessageType.Subscribe,
-              payload: {
-                operationName: 'TestString',
-                query: `query TestString {
-                  getValue
-                }`,
-                variables: {},
-              },
-            }),
-          );
-          break;
-        default:
-          fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestString',
+            query: `query TestString {
+              getValue
+            }`,
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForClose((event) => {
@@ -455,24 +600,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'TestString',
-              query: `query TestString {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestString',
+            query: `query TestString {
                 getValue
               }`,
-              variables: {},
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForMessage(({ data }) => {
@@ -501,24 +642,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'TestString',
-              query: `query TestString {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestString',
+            query: `query TestString {
                 getValue
               }`,
-              variables: {},
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForMessage(({ data }) => {
@@ -559,24 +696,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'TestString',
-              query: `query TestString {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestString',
+            query: `query TestString {
                 getValue
               }`,
-              variables: {},
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForMessage(({ data }) => {
@@ -624,24 +757,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'TestString',
-              query: parse(`query TestString {
-                getValue
-              }`),
-              variables: {},
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestString',
+            query: parse(`query TestString {
+              getValue
+            }`),
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForMessage(({ data }) => {
@@ -673,25 +802,21 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'TestNoField',
-              query: `query TestNoField {
-                testNumber
-                testBoolean
-              }`,
-              variables: {},
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'TestNoField',
+            query: `query TestNoField {
+              testNumber
+              testBoolean
+            }`,
+            variables: {},
+          },
+        }),
+      );
     });
 
     await client.waitForMessage(({ data }) => {
@@ -702,7 +827,7 @@ describe('Subscribe', () => {
           {
             locations: [
               {
-                column: 17,
+                column: 15,
                 line: 2,
               },
             ],
@@ -711,7 +836,7 @@ describe('Subscribe', () => {
           {
             locations: [
               {
-                column: 17,
+                column: 15,
                 line: 3,
               },
             ],
@@ -739,25 +864,21 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              operationName: 'BecomingHappy',
-              query: `subscription BecomingHappy {
-                becameHappy(secret: "smile more") {
-                  name
-                }
-              }`,
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'BecomingHappy',
+            query: `subscription BecomingHappy {
+              becameHappy(secret: "smile more") {
+                name
+              }
+            }`,
+          },
+        }),
+      );
     });
 
     setTimeout(() => {
@@ -790,24 +911,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload: {
-              query: `subscription {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: `subscription {
               boughtBananas {
                 name
               }
             }`,
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+          },
+        }),
+      );
     });
 
     setTimeout(() => {
@@ -871,24 +988,20 @@ describe('Subscribe', () => {
     );
 
     await client.waitForMessage(({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: 'not-unique',
-            type: MessageType.Subscribe,
-            payload: {
-              query: `subscription {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: 'not-unique',
+          type: MessageType.Subscribe,
+          payload: {
+            query: `subscription {
               boughtBananas {
                 name
               }
             }`,
-            },
-          }),
-        );
-      } else {
-        fail(`Not supposed to receive a message of type ${message.type}`);
-      }
+          },
+        }),
+      );
     });
 
     // try subscribing with a live subscription id
@@ -971,170 +1084,4 @@ describe('Keep-Alive', () => {
       expect(event.wasClean).toBeFalsy();
     });
   });
-});
-
-it('should use the provided roots as resolvers', async () => {
-  const schema = buildSchema(`
-    type Query {
-      hello: String
-    }
-    type Subscription {
-      count: Int
-    }
-  `);
-
-  const roots = {
-    query: {
-      hello: () => 'Hello World!',
-    },
-    subscription: {
-      count: async function* () {
-        for (const num of [1, 2, 3]) {
-          yield num;
-        }
-      },
-    },
-  };
-
-  await makeServer({
-    schema,
-    roots,
-  });
-
-  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  client.onopen = () => {
-    client.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-  };
-  await wait(10);
-
-  await new Promise((resolve, reject) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `{ hello }`,
-        },
-      }),
-    );
-    client.on('message', function onMessage(data) {
-      const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.Next:
-          expect(message.type).toBe(MessageType.Next);
-          expect(message.payload).toEqual({ data: { hello: 'Hello World!' } });
-          break;
-        case MessageType.Error:
-          client.off('message', onMessage);
-          return reject();
-        case MessageType.Complete:
-          client.off('message', onMessage);
-          return resolve();
-      }
-    });
-  });
-
-  const nextFn = jest.fn();
-  await new Promise((resolve, reject) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '2',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `subscription { count }`,
-        },
-      }),
-    );
-    client.on('message', function onMessage(data) {
-      const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.Next:
-          nextFn();
-          break;
-        case MessageType.Error:
-          client.off('message', onMessage);
-          return reject(message.payload);
-        case MessageType.Complete:
-          client.off('message', onMessage);
-          return resolve();
-      }
-    });
-  });
-  expect(nextFn).toBeCalledTimes(3);
-});
-
-it('should pass in the context value from the config', async () => {
-  const context = {};
-
-  const executeFn = jest.fn((args) => execute(args));
-  const subscribeFn = jest.fn((args) => subscribe(args));
-
-  await makeServer({
-    context,
-    execute: executeFn,
-    subscribe: subscribeFn,
-  });
-
-  const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  await new Promise((resolve) => {
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        resolve();
-      }
-    };
-  });
-
-  await new Promise((resolve) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `{ getValue }`,
-        },
-      }),
-    );
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.Next && message.id === '1') {
-        resolve();
-      }
-    };
-  });
-
-  expect(executeFn).toBeCalled();
-  expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
-
-  await new Promise((resolve) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '2',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `subscription { greetings }`,
-        },
-      }),
-    );
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.Complete && message.id === '2') {
-        resolve();
-      }
-    };
-  });
-
-  expect(subscribeFn).toBeCalled();
-  expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
 });
