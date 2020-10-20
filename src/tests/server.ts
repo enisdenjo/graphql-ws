@@ -37,8 +37,8 @@ function createTClient(
   return new Promise<{
     send: (data?: unknown) => void;
     waitForMessage: (
-      test: (data: WebSocket.MessageEvent) => void,
-      expire?: number,
+      test: (data: WebSocket.MessageEvent, count: number) => void,
+      waitCount?: number, // messages come in to fast sometimes
     ) => Promise<void>;
     waitForClose: (
       test?: (event: WebSocket.CloseEvent) => void,
@@ -50,13 +50,17 @@ function createTClient(
     ws.once('open', () =>
       resolve({
         send: (data) => ws.send(data),
-        async waitForMessage(test) {
+        async waitForMessage(test, waitCount = 1) {
           return new Promise((resolve) => {
+            let count = 0;
             ws.onmessage = (event) => {
-              // @ts-expect-error: its ok
-              ws.onmessage = null;
-              test(event);
-              resolve();
+              count++;
+              test(event, count);
+              if (waitCount === count) {
+                // @ts-expect-error: its ok
+                ws.onmessage = null;
+                resolve();
+              }
             };
           });
         },
