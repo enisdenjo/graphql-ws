@@ -243,8 +243,7 @@ describe('Connect', () => {
       },
     });
 
-    const client = await createTClient();
-    client.send(
+    (await createTClient()).send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
         payload: connectionParams,
@@ -253,109 +252,84 @@ describe('Connect', () => {
   });
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
-    expect.assertions(3);
-
     await makeServer({ connectionInitWaitTimeout: 10 });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
+    await (await createTClient()).waitForClose((event) => {
       expect(event.code).toBe(4408);
       expect(event.reason).toBe('Connection initialisation timeout');
       expect(event.wasClean).toBeTruthy();
-    };
-
-    await wait(20);
+    });
   });
 
   it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async () => {
-    expect.assertions(2);
-
     await makeServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
         new Promise((resolve) => setTimeout(() => resolve(true), 20)),
     });
 
-    const closeFn = jest.fn();
+    const client = await createTClient();
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = closeFn;
-    client.onmessage = ({ data }) => {
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       expect(message.type).toBe(MessageType.ConnectionAck);
-    };
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
+    });
 
-    await wait(30);
-
-    expect(closeFn).not.toBeCalled();
+    await client.waitForClose(() => {
+      fail('Shouldnt have closed');
+    }, 100);
   });
 
   it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async () => {
-    expect.assertions(3);
-
     await makeServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
         new Promise((resolve) => setTimeout(() => resolve(true), 50)),
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
-      expect(event.code).toBe(4429);
-      expect(event.reason).toBe('Too many initialisation requests');
-      expect(event.wasClean).toBeTruthy();
-    };
-    client.onopen = () => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    // issue an additional one a bit later
+    setTimeout(() => {
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
       );
+    }, 10);
 
-      // issue an additional one a bit later
-      setTimeout(() => {
-        client.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-          }),
-        );
-      }, 10);
-    };
-
-    await wait(30);
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4429);
+      expect(event.reason).toBe('Too many initialisation requests');
+      expect(event.wasClean).toBeTruthy();
+    });
   });
 
   it('should close the socket if more than one `ConnectionInit` message is received at any given time', async () => {
-    expect.assertions(4);
-
     await makeServer();
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onclose = (event) => {
-      expect(event.code).toBe(4429);
-      expect(event.reason).toBe('Too many initialisation requests');
-      expect(event.wasClean).toBeTruthy();
-    };
-    client.onmessage = ({ data }) => {
+    const client = await createTClient();
+
+    client.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       expect(message.type).toBe(MessageType.ConnectionAck);
-    };
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-
-    await wait(10);
+    });
 
     // random connection init message even after acknowledgement
     client.send(
@@ -364,7 +338,11 @@ describe('Connect', () => {
       }),
     );
 
-    await wait(10);
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4429);
+      expect(event.reason).toBe('Too many initialisation requests');
+      expect(event.wasClean).toBeTruthy();
+    });
   });
 });
 
