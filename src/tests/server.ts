@@ -1,12 +1,40 @@
 import WebSocket from 'ws';
 import { parse, buildSchema, execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import { MessageType, parseMessage, stringifyMessage } from '../message';
+import {
+  Message,
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+} from '../message';
+import { Server } from '../server';
 import { startServer, url, schema, pubsub } from './fixtures/simple';
+import { createDeferred } from './fixtures/deferred';
 
-/** Waits for the specified timeout and then resolves the promise. */
-const wait = (timeout: number) =>
-  new Promise((resolve) => setTimeout(resolve, timeout));
+// do sth. after the server received a message
+const onReceiveNextMessage = (
+  server: Server,
+  callback: (message: WebSocket.Data) => void,
+) => {
+  const handler = (message: WebSocket.Data) => {
+    server.webSocketServer.clients.forEach((socket) => {
+      socket.off('message', handler);
+    });
+    setImmediate(() => {
+      callback(message);
+    });
+  };
+
+  server.webSocketServer.clients.forEach((socket) => {
+    socket.on('message', handler);
+  });
+
+  return () => {
+    server.webSocketServer.clients.forEach((socket) => {
+      socket.off('message', handler);
+    });
+  };
+};
 
 let dispose: (() => Promise<void>) | undefined;
 async function makeServer(...args: Parameters<typeof startServer>) {
@@ -34,46 +62,53 @@ afterEach(async () => {
  */
 
 it('should allow connections with valid protocols only', async () => {
-  expect.assertions(10);
+  expect.assertions(9);
 
   await makeServer();
 
+  let dOnClose = createDeferred();
   let client = new WebSocket(url);
   client.onclose = (event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
+    dOnClose.resolve();
   };
 
-  await wait(10);
+  await dOnClose.promise;
 
+  dOnClose = createDeferred();
   client = new WebSocket(url, ['graphql', 'json']);
   client.onclose = (event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
+    dOnClose.resolve();
   };
 
-  await wait(10);
+  await dOnClose.promise;
 
+  dOnClose = createDeferred();
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
   client.onclose = (event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
+    dOnClose.resolve();
   };
 
-  await wait(10);
+  await dOnClose.promise;
 
+  dOnClose = createDeferred();
   client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  const closeFn = jest.fn();
-  client.onclose = closeFn;
-
-  await wait(10);
-
-  expect(closeFn).not.toBeCalled();
-
-  await wait(10);
+  client.onclose = () => dOnClose.reject('Should not close.');
+  // Here it seems like we cannot work without timeouts :/
+  client.onopen = () => {
+    setTimeout(() => {
+      dOnClose.resolve();
+    }, 0);
+  };
+  await dOnClose.promise;
 });
 
 it('should gracefully go away when disposing', async () => {
@@ -83,13 +118,21 @@ it('should gracefully go away when disposing', async () => {
 
   const errorFn = jest.fn();
 
+  const onClose1 = createDeferred();
+  const onClose2 = createDeferred();
+  const onOpen1 = createDeferred();
+  const onOpen2 = createDeferred();
+
   const client1 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client1.onerror = errorFn;
   client1.onclose = (event) => {
     expect(event.code).toBe(1001);
     expect(event.reason).toBe('Going away');
     expect(event.wasClean).toBeTruthy();
+    onClose1.resolve();
   };
+
+  client1.onopen = () => onOpen1.resolve();
 
   const client2 = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client2.onerror = errorFn;
@@ -97,13 +140,16 @@ it('should gracefully go away when disposing', async () => {
     expect(event.code).toBe(1001);
     expect(event.reason).toBe('Going away');
     expect(event.wasClean).toBeTruthy();
+    onClose2.resolve();
   };
 
-  await wait(10);
+  client2.onopen = () => onOpen2.resolve();
+
+  await Promise.all([onOpen1.promise, onOpen2.promise]);
 
   await dispose();
 
-  await wait(10);
+  await Promise.all([onClose1.promise, onClose2.promise]);
 
   expect(errorFn).not.toBeCalled();
   expect(client1.readyState).toBe(WebSocket.CLOSED);
@@ -117,18 +163,26 @@ it('should report server errors to clients by closing the connection', async () 
 
   const emittedError = new Error("I'm a teapot");
 
+  const dOnOpen = createDeferred();
+  const dOnClose = createDeferred();
+
   const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client.onclose = (event) => {
     expect(event.code).toBe(1011); // 1011: Internal Error
     expect(event.reason).toBe(emittedError.message);
     expect(event.wasClean).toBeTruthy(); // because the server reported the error
+    dOnClose.resolve();
   };
 
-  await wait(10);
+  client.onopen = () => {
+    dOnOpen.resolve();
+  };
+
+  await dOnOpen.promise;
 
   webSocketServer.emit('error', emittedError);
 
-  await wait(10);
+  await dOnClose.promise;
 });
 
 describe('Connect', () => {
@@ -141,11 +195,15 @@ describe('Connect', () => {
       },
     });
 
+    const dOnClose = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4403);
       expect(event.reason).toBe('Forbidden');
       expect(event.wasClean).toBeTruthy();
+
+      dOnClose.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -155,7 +213,7 @@ describe('Connect', () => {
       );
     };
 
-    await wait(10);
+    await dOnClose.promise;
   });
 
   it('should close socket with error thrown from the callback', async () => {
@@ -168,12 +226,14 @@ describe('Connect', () => {
         throw error;
       },
     });
+    const dOnClose = createDeferred();
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4400);
       expect(event.reason).toBe(error.message);
       expect(event.wasClean).toBeTruthy();
+      dOnClose.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -183,17 +243,20 @@ describe('Connect', () => {
       );
     };
 
-    await wait(10);
+    await dOnClose.promise;
   });
 
   it('should acknowledge connection if not implemented or returning `true`', async () => {
     expect.assertions(2);
+
+    let dOnAck = createDeferred();
 
     function test() {
       const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
       client.onmessage = ({ data }) => {
         const message = parseMessage(data);
         expect(message.type).toBe(MessageType.ConnectionAck);
+        dOnAck.resolve();
       };
       client.onopen = () => {
         client.send(
@@ -207,17 +270,18 @@ describe('Connect', () => {
     // no implementation
     const [, dispose] = await makeServer();
     test();
-    await wait(10);
+    await dOnAck.promise;
     await dispose();
 
     // returns true
+    dOnAck = createDeferred();
     await makeServer({
       onConnect: () => {
         return true;
       },
     });
     test();
-    await wait(10);
+    await dOnAck.promise;
   });
 
   it('should pass in the `connectionParams` through the context and have other flags correctly set', async () => {
@@ -229,11 +293,14 @@ describe('Connect', () => {
       number: 10,
     };
 
+    const dOnConnect = createDeferred();
+
     await makeServer({
       onConnect: (ctx) => {
         expect(ctx.connectionParams).toEqual(connectionParams);
         expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
         expect(ctx.acknowledged).toBeFalsy(); // not yet acknowledged
+        dOnConnect.resolve();
         return true;
       },
     });
@@ -248,22 +315,23 @@ describe('Connect', () => {
       );
     };
 
-    await wait(10);
+    await dOnConnect.promise;
   });
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
     expect.assertions(3);
 
     await makeServer({ connectionInitWaitTimeout: 10 });
-
+    const dClose = createDeferred();
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4408);
       expect(event.reason).toBe('Connection initialisation timeout');
       expect(event.wasClean).toBeTruthy();
+      dClose.resolve();
     };
 
-    await wait(20);
+    await dClose.promise;
   });
 
   it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async () => {
@@ -277,11 +345,14 @@ describe('Connect', () => {
 
     const closeFn = jest.fn();
 
+    const dConnectionAck = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = closeFn;
     client.onmessage = ({ data }) => {
       const message = parseMessage(data);
       expect(message.type).toBe(MessageType.ConnectionAck);
+      dConnectionAck.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -291,7 +362,7 @@ describe('Connect', () => {
       );
     };
 
-    await wait(30);
+    await dConnectionAck.promise;
 
     expect(closeFn).not.toBeCalled();
   });
@@ -305,11 +376,14 @@ describe('Connect', () => {
         new Promise((resolve) => setTimeout(() => resolve(true), 50)),
     });
 
+    const dOnClose = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4429);
       expect(event.reason).toBe('Too many initialisation requests');
       expect(event.wasClean).toBeTruthy();
+      dOnClose.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -328,7 +402,7 @@ describe('Connect', () => {
       }, 10);
     };
 
-    await wait(30);
+    await dOnClose.promise;
   });
 
   it('should close the socket if more than one `ConnectionInit` message is received at any given time', async () => {
@@ -336,17 +410,22 @@ describe('Connect', () => {
 
     await makeServer();
 
+    const dOpen = createDeferred();
+    const dClose = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4429);
       expect(event.reason).toBe('Too many initialisation requests');
       expect(event.wasClean).toBeTruthy();
+      dClose.resolve();
     };
     client.onmessage = ({ data }) => {
       const message = parseMessage(data);
       expect(message.type).toBe(MessageType.ConnectionAck);
     };
     client.onopen = () => {
+      dOpen.resolve();
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
@@ -354,7 +433,7 @@ describe('Connect', () => {
       );
     };
 
-    await wait(10);
+    await dOpen.promise;
 
     // random connection init message even after acknowledgement
     client.send(
@@ -363,7 +442,7 @@ describe('Connect', () => {
       }),
     );
 
-    await wait(10);
+    await dClose.promise;
   });
 });
 
@@ -373,11 +452,14 @@ describe('Subscribe', () => {
 
     await makeServer();
 
+    const dOnClose = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(4401);
       expect(event.reason).toBe('Unauthorized');
       expect(event.wasClean).toBeTruthy();
+      dOnClose.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -393,7 +475,7 @@ describe('Subscribe', () => {
       );
     };
 
-    await wait(20);
+    await dOnClose.promise;
   });
 
   it('should close the socket on request if schema is left undefined', async () => {
@@ -403,11 +485,14 @@ describe('Subscribe', () => {
       schema: undefined,
     });
 
+    const dClose = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onclose = (event) => {
       expect(event.code).toBe(1011);
       expect(event.reason).toBe('The GraphQL schema is not provided');
       expect(event.wasClean).toBeTruthy();
+      dClose.resolve();
     };
     client.onopen = () => {
       client.send(
@@ -439,11 +524,11 @@ describe('Subscribe', () => {
       }
     };
 
-    await wait(10);
+    await dClose.promise;
   });
 
   it('should pick up the schema from `onSubscribe`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     await makeServer({
       schema: undefined,
@@ -457,10 +542,11 @@ describe('Subscribe', () => {
       },
     });
 
+    const dOnNext = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    const closeOrErrorFn = jest.fn();
-    client.onerror = closeOrErrorFn;
-    client.onclose = closeOrErrorFn;
+    client.onerror = (ev) => dOnNext.reject((ev as any).reason);
+    client.onclose = () => dOnNext.reject('Should not close.');
     client.onopen = () => {
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
@@ -492,13 +578,12 @@ describe('Subscribe', () => {
             type: MessageType.Next,
             payload: { data: { getValue: 'value' } },
           });
+          dOnNext.resolve();
           break;
       }
     };
 
-    await wait(20);
-
-    expect(closeOrErrorFn).not.toBeCalled();
+    await dOnNext.promise;
   });
 
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
@@ -507,6 +592,8 @@ describe('Subscribe', () => {
     await makeServer({
       schema,
     });
+
+    const dOnComplete = createDeferred();
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
@@ -550,13 +637,14 @@ describe('Subscribe', () => {
             id: '1',
             type: MessageType.Complete,
           });
+          dOnComplete.resolve();
           break;
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
     };
 
-    await wait(20);
+    await dOnComplete.promise;
   });
 
   it('should execute the live query, "next" multiple results and then "complete"', async () => {
@@ -574,6 +662,8 @@ describe('Subscribe', () => {
         }
       },
     });
+
+    const dOnComplete = createDeferred();
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
@@ -631,13 +721,14 @@ describe('Subscribe', () => {
             id: '1',
             type: MessageType.Complete,
           });
+          dOnComplete.resolve();
           break;
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
     };
 
-    await wait(20);
+    await dOnComplete.promise;
   });
 
   it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
@@ -646,6 +737,8 @@ describe('Subscribe', () => {
     await makeServer({
       schema,
     });
+
+    const dMessageComplete = createDeferred();
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
@@ -689,26 +782,28 @@ describe('Subscribe', () => {
             id: '1',
             type: MessageType.Complete,
           });
+          dMessageComplete.resolve();
           break;
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
     };
 
-    await wait(20);
+    await dMessageComplete.promise;
   });
 
   it('should execute the query and "error" out because of validation errors', async () => {
-    expect.assertions(8);
+    expect.assertions(7);
 
     await makeServer({
       schema,
     });
 
+    const dOnError = createDeferred();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    const closeOrErrorFn = jest.fn();
-    client.onerror = closeOrErrorFn;
-    client.onclose = closeOrErrorFn;
+    client.onerror = (ev) => dOnError.reject((ev as any).reason);
+    client.onclose = () => dOnError.reject('Should not close.');
     client.onopen = () => {
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
@@ -751,16 +846,14 @@ describe('Subscribe', () => {
             'Cannot query field "testBoolean" on type "Query".',
           );
           expect(message.payload[1].locations).toBeInstanceOf(Array);
+          dOnError.resolve();
           break;
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
     };
 
-    await wait(20);
-
-    // socket shouldnt close or error because of GraphQL errors
-    expect(closeOrErrorFn).not.toBeCalled();
+    await dOnError.promise;
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
@@ -769,6 +862,8 @@ describe('Subscribe', () => {
     await makeServer({
       schema,
     });
+
+    const dMessageNext = createDeferred();
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
@@ -815,17 +910,18 @@ describe('Subscribe', () => {
             type: MessageType.Next,
             payload: { data: { becameHappy: { name: 'john' } } },
           });
+          dMessageNext.resolve();
           break;
         default:
           fail(`Not supposed to receive a message of type ${message.type}`);
       }
     };
 
-    await wait(20);
+    await dMessageNext.promise;
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
-    await makeServer({
+    const [server] = await makeServer({
       schema,
     });
 
@@ -838,9 +934,15 @@ describe('Subscribe', () => {
       );
     };
 
+    let dMessage = createDeferred<Message>();
+    const dServerReceivedSubscribe = createDeferred<WebSocket.Data>();
+
+    let invocationCounter = 0;
+
     const onMessageFn = jest.fn(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
+        onReceiveNextMessage(server, dServerReceivedSubscribe.resolve);
         client.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
@@ -854,24 +956,30 @@ describe('Subscribe', () => {
             },
           }),
         );
+      } else {
+        dMessage.resolve(message);
       }
-      return message;
+      invocationCounter++;
     });
     client.onmessage = onMessageFn;
-    await wait(10);
+
+    await dServerReceivedSubscribe.promise;
 
     pubsub.publish('boughtBananas', {
       boughtBananas: {
         name: 'john',
       },
     });
-    await wait(10);
 
-    expect(onMessageFn.mock.results[1].value).toEqual({
+    let value = await dMessage.promise;
+
+    expect(value).toEqual({
       id: '1',
       type: MessageType.Next,
       payload: { data: { boughtBananas: { name: 'john' } } },
     });
+
+    dMessage = createDeferred();
 
     // complete
     client.send(
@@ -880,25 +988,28 @@ describe('Subscribe', () => {
         type: MessageType.Complete,
       }),
     );
-    await wait(10);
+
+    value = await dMessage.promise;
 
     // confirm complete
-    expect(onMessageFn).toHaveLastReturnedWith({
+    expect(value).toEqual({
       id: '1',
       type: MessageType.Complete,
     });
 
-    pubsub.publish('boughtBananas', new Error('Something weird happened!'));
-    await wait(10);
+    // TODO: if we use something like a PushPull publish we can better confirm nobody is subscribing anymore
 
-    pubsub.publish('boughtBananas', {
+    await pubsub.publish(
+      'boughtBananas',
+      new Error('Something weird happened!'),
+    );
+    await pubsub.publish('boughtBananas', {
       boughtBananas: {
         name: 'john',
       },
     });
-    await wait(10);
 
-    expect(onMessageFn).toBeCalledTimes(3); // ack, next, complete
+    expect(invocationCounter).toEqual(3); // ack, next, complete
   });
 
   it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
@@ -962,83 +1073,103 @@ describe('Subscribe', () => {
 
 describe('Keep-Alive', () => {
   it('should dispatch pings after the timeout has passed', async () => {
-    await makeServer({
+    expect.assertions(1);
+    jest.useFakeTimers();
+
+    const [server] = await makeServer({
       keepAlive: 50,
     });
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    const dConnectionInit = createDeferred<unknown>();
+
     client.onopen = () => {
+      onReceiveNextMessage(server, dConnectionInit.resolve);
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
       );
     };
-    await wait(10);
 
-    const onPingFn = jest.fn();
-    client.once('ping', onPingFn);
-    await wait(50);
+    await dConnectionInit.promise;
 
-    expect(onPingFn).toBeCalled();
+    const callback = jest.fn();
+    client.once('ping', callback);
+    jest.advanceTimersByTime(50);
+    await new Promise(setImmediate);
+    expect(callback).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 
   it('should not dispatch pings if disabled with nullish timeout', async () => {
-    await makeServer({
+    jest.useFakeTimers();
+
+    const [server] = await makeServer({
       keepAlive: 0,
     });
 
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    const dConnectionInit = createDeferred<unknown>();
+
     client.onopen = () => {
+      onReceiveNextMessage(server, dConnectionInit.resolve);
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
       );
     };
-    await wait(10);
+
+    await dConnectionInit.promise;
 
     const onPingFn = jest.fn();
     client.once('ping', onPingFn);
-    await wait(50);
-
+    jest.advanceTimersByTime(50);
+    await new Promise(setImmediate);
     expect(onPingFn).not.toBeCalled();
+    jest.useRealTimers();
   });
 
   it('should terminate the socket if no pong is sent in response to a ping', async () => {
-    expect.assertions(4);
+    expect.assertions(3);
 
-    await makeServer({
+    const [server] = await makeServer({
       keepAlive: 50,
     });
 
+    const dConnectionInit = createDeferred<unknown>();
+
     const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
     client.onopen = () => {
+      onReceiveNextMessage(server, dConnectionInit.resolve);
       client.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
       );
     };
-    await wait(10);
+    await dConnectionInit.promise;
 
     // disable pong
     client.pong = () => {
       /**/
     };
+
+    const dClose = createDeferred();
     client.onclose = (event) => {
       // termination is not graceful or clean
       expect(event.code).toBe(1006);
       expect(event.wasClean).toBeFalsy();
+      dClose.resolve();
     };
 
-    const onPingFn = jest.fn();
-    client.once('ping', onPingFn);
-    await wait(50);
+    const dOnPing = createDeferred<unknown>();
+    client.once('ping', dOnPing.resolve);
 
-    expect(onPingFn).toBeCalled(); // ping is received
-
-    await wait(50 + 10); // wait for the timeout to pass and termination to settle
+    await dOnPing.promise;
+    await dClose.promise;
+    await new Promise(setImmediate);
 
     expect(client.readyState).toBe(WebSocket.CLOSED);
   });
@@ -1067,74 +1198,83 @@ it('should use the provided roots as resolvers', async () => {
     },
   };
 
-  await makeServer({
+  const [server] = await makeServer({
     schema,
     roots,
   });
 
   const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  const dConnectionInit = createDeferred<unknown>();
   client.onopen = () => {
+    onReceiveNextMessage(server, dConnectionInit.resolve);
     client.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
     );
   };
-  await wait(10);
+  await dConnectionInit.promise;
 
-  await new Promise((resolve, reject) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `{ hello }`,
-        },
-      }),
-    );
-    client.on('message', function onMessage(data) {
-      const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.Next:
-          expect(message.type).toBe(MessageType.Next);
-          expect(message.payload).toEqual({ data: { hello: 'Hello World!' } });
-          break;
-        case MessageType.Error:
-          client.off('message', onMessage);
-          return reject();
-        case MessageType.Complete:
-          client.off('message', onMessage);
-          return resolve();
-      }
-    });
+  const dMessage = createDeferred();
+
+  client.on('message', function onMessage(data) {
+    const message = parseMessage(data);
+    switch (message.type) {
+      case MessageType.Next:
+        expect(message.type).toBe(MessageType.Next);
+        expect(message.payload).toEqual({ data: { hello: 'Hello World!' } });
+        break;
+      case MessageType.Error:
+        client.off('message', onMessage);
+        return dMessage.reject('Received error.');
+      case MessageType.Complete:
+        client.off('message', onMessage);
+        return dMessage.resolve();
+    }
   });
 
+  client.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ hello }`,
+      },
+    }),
+  );
+
+  await dMessage.promise;
+
+  const dNextMessage = createDeferred();
   const nextFn = jest.fn();
-  await new Promise((resolve, reject) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '2',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `subscription { count }`,
-        },
-      }),
-    );
-    client.on('message', function onMessage(data) {
-      const message = parseMessage(data);
-      switch (message.type) {
-        case MessageType.Next:
-          nextFn();
-          break;
-        case MessageType.Error:
-          client.off('message', onMessage);
-          return reject(message.payload);
-        case MessageType.Complete:
-          client.off('message', onMessage);
-          return resolve();
-      }
-    });
+
+  client.on('message', function onMessage(data) {
+    const message = parseMessage(data);
+    switch (message.type) {
+      case MessageType.Next:
+        nextFn();
+        break;
+      case MessageType.Error:
+        client.off('message', onMessage);
+        return dNextMessage.reject(message.payload);
+      case MessageType.Complete:
+        client.off('message', onMessage);
+        return dNextMessage.resolve();
+    }
   });
+
+  client.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '2',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `subscription { count }`,
+      },
+    }),
+  );
+
+  await dNextMessage.promise;
+
   expect(nextFn).toBeCalledTimes(3);
 });
 
@@ -1151,60 +1291,65 @@ it('should pass in the context value from the config', async () => {
   });
 
   const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  await new Promise((resolve) => {
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.ConnectionAck) {
-        resolve();
-      }
-    };
-  });
-
-  await new Promise((resolve) => {
+  const dConnectionInit = createDeferred();
+  client.onopen = () => {
     client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `{ getValue }`,
-        },
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
       }),
     );
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.Next && message.id === '1') {
-        resolve();
-      }
-    };
-  });
+  };
+  client.onmessage = ({ data }) => {
+    const message = parseMessage(data);
+    if (message.type === MessageType.ConnectionAck) {
+      dConnectionInit.resolve();
+    }
+  };
+
+  await dConnectionInit.promise;
+
+  const dQueryOperation = createDeferred();
+
+  client.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+  client.onmessage = ({ data }) => {
+    const message = parseMessage(data);
+    if (message.type === MessageType.Next && message.id === '1') {
+      dQueryOperation.resolve();
+    }
+  };
+
+  await dQueryOperation.promise;
 
   expect(executeFn).toBeCalled();
   expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
 
-  await new Promise((resolve) => {
-    client.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '2',
-        type: MessageType.Subscribe,
-        payload: {
-          query: `subscription { greetings }`,
-        },
-      }),
-    );
-    client.onmessage = ({ data }) => {
-      const message = parseMessage(data);
-      if (message.type === MessageType.Complete && message.id === '2') {
-        resolve();
-      }
-    };
-  });
+  const dSubscriptionOperation = createDeferred();
+
+  client.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '2',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `subscription { greetings }`,
+      },
+    }),
+  );
+  client.onmessage = ({ data }) => {
+    const message = parseMessage(data);
+    if (message.type === MessageType.Complete && message.id === '2') {
+      dSubscriptionOperation.resolve();
+    }
+  };
+
+  await dSubscriptionOperation.promise;
 
   expect(subscribeFn).toBeCalled();
   expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
