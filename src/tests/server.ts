@@ -36,14 +36,16 @@ class Client extends WebSocket {
 
   public async waitForClose(
     test?: (event: WebSocket.CloseEvent) => void,
-    expire = 3000,
+    expire?: number,
   ) {
     return new Promise((resolve) => {
-      setTimeout(() => {
-        // @ts-expect-error: its ok
-        this.onclose = null; // expired
-        resolve();
-      }, expire);
+      if (expire) {
+        setTimeout(() => {
+          // @ts-expect-error: its ok
+          this.onclose = null; // expired
+          resolve();
+        }, expire);
+      }
       this.onclose = (event) => {
         if (test) test(event);
         resolve();
