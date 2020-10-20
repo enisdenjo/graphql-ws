@@ -247,7 +247,6 @@ export function createServer(
       (Array.isArray(socket.protocol) &&
         socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1)
     ) {
-      // 1002: Protocol Error
       socket.close(1002, 'Protocol Error');
       return;
     }
@@ -317,7 +316,6 @@ export function createServer(
       }
 
       if (isErrorEvent(errorOrClose)) {
-        // 1011: Internal Error
         ctxRef.current.socket.close(
           1011,
           isProd ? 'Internal Error' : errorOrClose.message,
@@ -565,7 +563,6 @@ export function createServer(
     webSocketServer,
     dispose: async () => {
       for (const client of webSocketServer.clients) {
-        // 1001: Going away
         client.close(1001, 'Going away');
       }
 
