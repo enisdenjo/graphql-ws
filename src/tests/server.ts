@@ -36,7 +36,7 @@ function createTClient(
   let closeEvent: WebSocket.CloseEvent;
   const queue: WebSocket.MessageEvent[] = [];
   return new Promise<{
-    send: (data?: unknown) => void;
+    ws: WebSocket;
     waitForMessage: (
       test: (data: WebSocket.MessageEvent) => void,
       expire?: number,
@@ -51,7 +51,7 @@ function createTClient(
     ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
     ws.once('open', () =>
       resolve({
-        send: (data) => ws.send(data),
+        ws,
         async waitForMessage(test, expire) {
           return new Promise((resolve) => {
             const done = () => {
@@ -180,7 +180,7 @@ describe('Connect', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -203,7 +203,7 @@ describe('Connect', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -219,7 +219,7 @@ describe('Connect', () => {
   it('should acknowledge connection if not implemented or returning `true`', async () => {
     async function test() {
       const client = await createTClient();
-      client.send(
+      client.ws.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
@@ -262,7 +262,7 @@ describe('Connect', () => {
       },
     });
 
-    (await createTClient()).send(
+    (await createTClient()).ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
         payload: connectionParams,
@@ -289,7 +289,7 @@ describe('Connect', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -313,7 +313,7 @@ describe('Connect', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -321,7 +321,7 @@ describe('Connect', () => {
 
     // issue an additional one a bit later
     setTimeout(() => {
-      client.send(
+      client.ws.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
         }),
@@ -340,7 +340,7 @@ describe('Connect', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -351,7 +351,7 @@ describe('Connect', () => {
     });
 
     // random connection init message even after acknowledgement
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -371,7 +371,7 @@ describe('Subscribe', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.Subscribe>({
         id: '1',
         type: MessageType.Subscribe,
@@ -397,7 +397,7 @@ describe('Subscribe', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -407,7 +407,7 @@ describe('Subscribe', () => {
       const message = parseMessage(data);
       switch (message.type) {
         case MessageType.ConnectionAck:
-          client.send(
+          client.ws.send(
             stringifyMessage<MessageType.Subscribe>({
               id: '1',
               type: MessageType.Subscribe,
@@ -448,7 +448,7 @@ describe('Subscribe', () => {
 
     const client = await createTClient();
 
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -457,7 +457,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -494,7 +494,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -503,7 +503,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -552,7 +552,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -561,7 +561,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -617,7 +617,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -626,7 +626,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -666,7 +666,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -675,7 +675,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -732,7 +732,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -741,7 +741,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -783,7 +783,7 @@ describe('Subscribe', () => {
     });
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -792,7 +792,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: '1',
             type: MessageType.Subscribe,
@@ -827,7 +827,7 @@ describe('Subscribe', () => {
     });
 
     // complete
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.Complete>({
         id: '1',
         type: MessageType.Complete,
@@ -864,7 +864,7 @@ describe('Subscribe', () => {
     await makeServer();
 
     const client = await createTClient();
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
       }),
@@ -873,7 +873,7 @@ describe('Subscribe', () => {
     await client.waitForMessage(({ data }) => {
       const message = parseMessage(data);
       if (message.type === MessageType.ConnectionAck) {
-        client.send(
+        client.ws.send(
           stringifyMessage<MessageType.Subscribe>({
             id: 'not-unique',
             type: MessageType.Subscribe,
@@ -892,7 +892,7 @@ describe('Subscribe', () => {
     });
 
     // try subscribing with a live subscription id
-    client.send(
+    client.ws.send(
       stringifyMessage<MessageType.Subscribe>({
         id: 'not-unique',
         type: MessageType.Subscribe,
@@ -913,26 +913,19 @@ describe('Subscribe', () => {
 });
 
 describe('Keep-Alive', () => {
-  it('should dispatch pings after the timeout has passed', async () => {
+  it('should dispatch pings after the timeout has passed', async (done) => {
     await makeServer({
       keepAlive: 50,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    await wait(10);
+    const client = await createTClient();
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    const onPingFn = jest.fn();
-    client.once('ping', onPingFn);
-    await wait(50);
-
-    expect(onPingFn).toBeCalled();
+    client.ws.once('ping', () => done());
   });
 
   it('should not dispatch pings if disabled with nullish timeout', async () => {
@@ -940,59 +933,43 @@ describe('Keep-Alive', () => {
       keepAlive: 0,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    await wait(10);
+    const client = await createTClient();
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-    const onPingFn = jest.fn();
-    client.once('ping', onPingFn);
-    await wait(50);
+    client.ws.once('ping', () => fail('Shouldnt have pinged'));
 
-    expect(onPingFn).not.toBeCalled();
+    await wait(100);
   });
 
   it('should terminate the socket if no pong is sent in response to a ping', async () => {
-    expect.assertions(4);
-
     await makeServer({
       keepAlive: 50,
     });
 
-    const client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    client.onopen = () => {
-      client.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-    };
-    await wait(10);
+    const client = await createTClient();
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
     // disable pong
-    client.pong = () => {
+    client.ws.pong = () => {
       /**/
     };
-    client.onclose = (event) => {
-      // termination is not graceful or clean
+
+    // ping is received
+    await new Promise((resolve) => client.ws.once('ping', resolve));
+
+    // termination is not graceful or clean
+    await client.waitForClose((event) => {
       expect(event.code).toBe(1006);
       expect(event.wasClean).toBeFalsy();
-    };
-
-    const onPingFn = jest.fn();
-    client.once('ping', onPingFn);
-    await wait(50);
-
-    expect(onPingFn).toBeCalled(); // ping is received
-
-    await wait(50 + 10); // wait for the timeout to pass and termination to settle
-
-    expect(client.readyState).toBe(WebSocket.CLOSED);
+    });
   });
 });
 
