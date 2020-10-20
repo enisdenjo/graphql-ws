@@ -29,6 +29,29 @@ afterEach(async () => {
   }
 });
 
+class Client extends WebSocket {
+  constructor(protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL) {
+    super(url, protocols);
+  }
+
+  public async waitForClose(
+    test?: (event: WebSocket.CloseEvent) => void,
+    expire = 3000,
+  ) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // @ts-expect-error: its ok
+        this.onclose = null; // expired
+        resolve();
+      }, expire);
+      this.onclose = (event) => {
+        if (test) test(event);
+        resolve();
+      };
+    });
+  }
+}
+
 /**
  * Tests
  */
@@ -38,42 +61,32 @@ it('should allow connections with valid protocols only', async () => {
 
   await makeServer();
 
-  let client = new WebSocket(url);
-  client.onclose = (event) => {
+  let client = new Client('');
+  await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
-  };
+  });
 
-  await wait(10);
-
-  client = new WebSocket(url, ['graphql', 'json']);
-  client.onclose = (event) => {
+  client = new Client(['graphql', 'json']);
+  await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
-  };
+  });
 
-  await wait(10);
-
-  client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
-  client.onclose = (event) => {
+  client = new Client(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
+  await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
-  };
+  });
 
-  await wait(10);
-
-  client = new WebSocket(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  const closeFn = jest.fn();
-  client.onclose = closeFn;
-
-  await wait(10);
-
-  expect(closeFn).not.toBeCalled();
-
-  await wait(10);
+  client = new Client(GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  await client.waitForClose(
+    () => fail('shouldnt close for valid protocol'),
+    100, // should be kicked off within this time
+  );
 });
 
 it('should gracefully go away when disposing', async () => {
