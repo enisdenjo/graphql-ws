@@ -859,7 +859,7 @@ describe('Subscribe', () => {
   it('should execute the subscription and "next" the published payload', async () => {
     expect.assertions(1);
 
-    await makeServer({
+    const [server] = await makeServer({
       schema,
     });
 
@@ -878,6 +878,14 @@ describe('Subscribe', () => {
       const message = parseMessage(data);
       switch (message.type) {
         case MessageType.ConnectionAck: {
+          onReceiveNextMessage(server, () => {
+            pubsub.publish('becameHappy', {
+              becameHappy: {
+                name: 'john',
+              },
+            });
+          });
+
           client.send(
             stringifyMessage<MessageType.Subscribe>({
               id: '1',
@@ -891,16 +899,6 @@ describe('Subscribe', () => {
                 }`,
               },
             }),
-            () =>
-              setTimeout(
-                () =>
-                  pubsub.publish('becameHappy', {
-                    becameHappy: {
-                      name: 'john',
-                    },
-                  }),
-                0,
-              ),
           );
           break;
         }
@@ -1073,9 +1071,7 @@ describe('Subscribe', () => {
 
 describe('Keep-Alive', () => {
   it('should dispatch pings after the timeout has passed', async () => {
-    expect.assertions(1);
-    jest.useFakeTimers();
-
+    expect.assertions(0);
     const [server] = await makeServer({
       keepAlive: 50,
     });
@@ -1094,17 +1090,11 @@ describe('Keep-Alive', () => {
 
     await dConnectionInit.promise;
 
-    const callback = jest.fn();
-    client.once('ping', callback);
-    jest.advanceTimersByTime(50);
-    await new Promise(setImmediate);
-    expect(callback).toHaveBeenCalledTimes(1);
-    jest.useRealTimers();
+    const dReceivedPing = createDeferred();
+    client.once('ping', dReceivedPing.resolve);
   });
 
   it('should not dispatch pings if disabled with nullish timeout', async () => {
-    jest.useFakeTimers();
-
     const [server] = await makeServer({
       keepAlive: 0,
     });
@@ -1125,10 +1115,9 @@ describe('Keep-Alive', () => {
 
     const onPingFn = jest.fn();
     client.once('ping', onPingFn);
-    jest.advanceTimersByTime(50);
-    await new Promise(setImmediate);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(onPingFn).not.toBeCalled();
-    jest.useRealTimers();
   });
 
   it('should terminate the socket if no pong is sent in response to a ping', async () => {

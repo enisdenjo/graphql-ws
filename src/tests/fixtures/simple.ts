@@ -86,7 +86,7 @@ export async function startServer(
     res.end();
   });
 
-  const server = await createServer(
+  const server = createServer(
     {
       schema,
       execute,
