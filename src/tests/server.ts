@@ -848,8 +848,14 @@ describe('Subscribe', () => {
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
-    await makeServer({
+    let onSubscribe: () => void;
+    makeServer({
       schema,
+      subscribe: async (args) => {
+        const subscription = await subscribe(args);
+        onSubscribe(); // test will fail if `onSubscribe` is not set yet
+        return subscription;
+      },
     });
 
     const client = await createTClient();
@@ -876,7 +882,9 @@ describe('Subscribe', () => {
         }),
       );
     });
+    await new Promise((resolve) => (onSubscribe = resolve));
 
+    // 👇 comment out the `setTimeout` to see the test fail
     setTimeout(() => {
       pubsub.publish('becameHappy', {
         becameHappy: {
