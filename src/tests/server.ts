@@ -1,8 +1,15 @@
 import WebSocket from 'ws';
-import { parse, buildSchema, execute, subscribe } from 'graphql';
+import {
+  parse,
+  buildSchema,
+  execute,
+  subscribe,
+  ExecutionResult,
+} from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
-import { startServer, url, schema, pubsub } from './fixtures/simple';
+import { startServer, url, schema } from './fixtures/simple';
+import { PushPullAsyncIterableIterator } from './utilities/push-pull-async-iterable-iterator';
 
 let forgottenDispose: (() => Promise<void>) | undefined;
 async function makeServer(
@@ -848,14 +855,19 @@ describe('Subscribe', () => {
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
-    let onSubscribe: () => void;
-    makeServer({
-      schema,
-      subscribe: async (args) => {
-        const subscription = await subscribe(args);
-        onSubscribe(); // test will fail if `onSubscribe` is not set yet
-        return subscription;
+    const iterator = new PushPullAsyncIterableIterator<ExecutionResult>();
+
+    iterator.push({
+      data: {
+        becameHappy: {
+          name: 'john',
+        },
       },
+    });
+
+    await makeServer({
+      schema,
+      subscribe: async () => iterator,
     });
 
     const client = await createTClient();
@@ -882,16 +894,6 @@ describe('Subscribe', () => {
         }),
       );
     });
-    await new Promise((resolve) => (onSubscribe = resolve));
-
-    // 👇 comment out the `setTimeout` to see the test fail
-    setTimeout(() => {
-      pubsub.publish('becameHappy', {
-        becameHappy: {
-          name: 'john',
-        },
-      });
-    }, 0);
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
@@ -903,8 +905,11 @@ describe('Subscribe', () => {
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
+    const iterator = new PushPullAsyncIterableIterator<ExecutionResult>();
+
     await makeServer({
       schema,
+      subscribe: async () => iterator,
     });
 
     const client = await createTClient();
@@ -931,13 +936,13 @@ describe('Subscribe', () => {
       );
     });
 
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', {
+    iterator.push({
+      data: {
         boughtBananas: {
           name: 'john',
         },
-      });
-    }, 0);
+      },
+    });
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
@@ -963,17 +968,19 @@ describe('Subscribe', () => {
       });
     });
 
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', new Error('Something weird happened!'));
-    }, 0);
-
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', {
+    iterator.push({
+      data: {
         boughtBananas: {
           name: 'john',
         },
-      });
-    }, 0);
+      },
+    });
+
+    // value got not be consumed into iterable
+    // the "for await of" loop is finished and no further next calls occur
+    expect(iterator.pushQueue).toHaveLength(1);
+    // return got called on this iterator
+    expect(iterator.getIsRunning()).toEqual(false);
 
     await client.waitForClose(() => {
       fail('Shouldnt have received a message');
