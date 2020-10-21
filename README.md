@@ -455,22 +455,22 @@ const server = https.createServer(function weServeSocketsOnly(_, res) {
 /**
  * Two websocket servers on different paths:
  * - `/wave` sends out waves
- * - `/grapqhl` serves graphql
+ * - `/graphql` serves graphql
  */
 const waveWS = new WebSocket.Server({ noServer: true });
 const graphqlWS = new WebSocket.Server({ noServer: true });
 
 // delegate upgrade requests to relevant destinations
-server.on('upgrade', function upgrade(request, socket, head) {
+server.on('upgrade', (request, socket, head) => {
   const pathname = url.parse(request.url).pathname;
 
   if (pathname === '/wave') {
-    waveWS.handleUpgrade(request, socket, head, (ws) => {
-      waveWS.emit('connection', ws, request);
+    waveWS.handleUpgrade(request, socket, head, (client) => {
+      waveWS.emit('connection', client, request);
     });
   } else if (pathname === '/graphql') {
-    graphqlWS.handleUpgrade(request, socket, head, (ws) => {
-      graphqlWS.emit('connection', ws, request);
+    graphqlWS.handleUpgrade(request, socket, head, (client) => {
+      graphqlWS.emit('connection', client, request);
     });
   } else {
     socket.destroy();
@@ -478,18 +478,18 @@ server.on('upgrade', function upgrade(request, socket, head) {
 });
 
 // wave on connect
-waveWS.on('connection', (ws) => {
-  ws.send('🌊');
+waveWS.on('connection', (socket) => {
+  socket.send('🌊');
 });
 
-// graphql over websocket
+// serve graphql
 createServer(
   {
     schema,
     execute,
     subscribe,
   },
-  graphqlWS, // 👈  the socket you wish to bind to
+  graphqlWS,
 );
 
 server.listen(443);
