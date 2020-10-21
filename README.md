@@ -436,6 +436,67 @@ server.listen(443);
 
 </details>
 
+<details>
+<summary>Server usage on a multi WebSocket server</summary>
+
+```typescript
+import https from 'https';
+import WebSocket from 'ws';
+import url from 'url';
+import { execute, subscribe } from 'graphql';
+import { createServer, createClient } from 'graphql-transport-ws';
+import { schema } from 'my-graphql-schema';
+
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+/**
+ * Two websocket servers on different paths:
+ * - `/wave` sends out waves
+ * - `/grapqhl` serves graphql
+ */
+const waveWS = new WebSocket.Server({ noServer: true });
+const graphqlWS = new WebSocket.Server({ noServer: true });
+
+// delegate upgrade requests to relevant destinations
+server.on('upgrade', function upgrade(request, socket, head) {
+  const pathname = url.parse(request.url).pathname;
+
+  if (pathname === '/wave') {
+    waveWS.handleUpgrade(request, socket, head, (ws) => {
+      waveWS.emit('connection', ws, request);
+    });
+  } else if (pathname === '/graphql') {
+    graphqlWS.handleUpgrade(request, socket, head, (ws) => {
+      graphqlWS.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+// wave on connect
+waveWS.on('connection', (ws) => {
+  ws.send('🌊');
+});
+
+// graphql over websocket
+createServer(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  graphqlWS, // 👈  the socket you wish to bind to
+);
+
+server.listen(443);
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
