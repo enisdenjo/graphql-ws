@@ -73,9 +73,9 @@ The client is now **ready** to request subscription operations.
 
 Direction: **Client -> Server**
 
-Requests an operation specified in the message `payload`. This message provides a unique ID field to connect future server messages to the operation started by this message.
+Requests an operation specified in the message `payload`. This message provides a unique ID field to connect published messages to the operation requested by this message.
 
-If there is already an active subscriber for a live operation (any operation that emits **multiple** results) matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. Operations resolving to a **single** emitted result do not require reservations for additional future events - having this in mind, the server may not assert this rule for such cases.
+If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future.
 
 ```typescript
 import { DocumentNode } from 'graphql';
@@ -186,40 +186,39 @@ For the sake of clarity, the following examples demonstrate the communication pr
 1. _Server_ closes the socket by dispatching the event `4408: Connection initialisation timeout`
 1. _Client_ reports an error using the close event reason (which is `Connection initialisation timeout`)
 
-### Query/Mutation operation
+### Single result operation
 
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
+_`query` and `mutation` operations without streaming directives_
+
 1. _Client_ generates a unique ID for the following operation
-1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested `query`/`mutation` operation passed through the `payload` field
+1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
+   <br>_All future communication is linked through this unique ID_
 1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
-1. _Server_ validates the request and executes the GraphQL operation
-1. _Server_ dispatches a `Next` message with the execution result matching the client's unique ID
-1. _Server_ dispatches the `Complete` message with the matching unique ID indicating that the execution has completed
+1. _Server_ validates the request and executes the single result GraphQL operation
+1. _Server_ dispatches the `Next` message with the execution result
+1. _Server_ dispatches the `Complete` message indicating that the execution has completed
 1. _Server_ triggers the `onComplete` callback, if specified
 
-### Live Query operation
+### Streaming operation
 
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
-1. _Client_ generates a unique ID for the following operation
-1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested `live query` operation passed through the `payload` field
-1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
-1. _Server_ validates the request, establishes a GraphQL subscription on the `live query` and listens for data events in the source stream
-1. _Server_ dispatches `Next` messages for every data event in the underlying `live query` source stream matching the client's unique ID
-1. _Client_ stops the `live query` by dispatching a `Complete` message with the matching unique ID
-1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
-1. _Server_ triggers the `onComplete` callback, if specified
-
-### Subscribe operation
-
-_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+_`subscription` operation and queries with streaming directives_
 
 1. _Client_ generates a unique ID for the following operation
-1. _Client_ dispatches the `Subscribe` message with the, previously generated, unique ID through the `id` field and the requested subscription operation passed through the `payload` field
+1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested streaming operation passed through the `payload` field
+   <br>_All future communication is linked through this unique ID_
 1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
-1. _Server_ validates the request, establishes a GraphQL subscription and listens for events in the source stream
-1. _Server_ dispatches `Next` messages for every event in the underlying subscription source stream matching the client's unique ID
-1. _Client_ stops the subscription by dispatching a `Complete` message with the matching unique ID
-1. _Server_ effectively stops the GraphQL subscription by completing/disposing the underlying source stream and cleaning up related resources
+1. _Server_ validates the request and executes the streaming GraphQL operation
+1. _Server_ checks if the generated ID is unique across active streaming subscriptions
+   - If **not** unique, the _server_ will close the socket with the event `4409: Subscriber for <generated-id> already exists`
+   - If unique, continue...
+1. _Server_ dispatches `Next` messages for every event in the source stream
+1. - _Client_ stops the subscription by dispatching a `Complete` message
+   - _Server_ completes the source stream
+     <br>_or_
+   - _Server_ dispatches the `Complete` message indicating that the source stream has completed
+   - _Client_ completes the stream observer
 1. _Server_ triggers the `onComplete` callback, if specified
