@@ -6,7 +6,11 @@ import WebSocket from 'ws';
 import { url, startServer, pubsub } from './fixtures/simple';
 import { Server } from '../server';
 import { createClient, EventListener } from '../client';
-import { noop } from '../utils';
+
+// Just does nothing
+export function noop(): void {
+  /**/
+}
 
 /** Waits for the specified timeout and then resolves the promise. */
 const wait = (timeout: number) =>

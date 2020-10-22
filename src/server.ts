@@ -34,7 +34,6 @@ import {
   isAsyncIterable,
   hasOwnObjectProperty,
   hasOwnStringProperty,
-  noop,
 } from './utils';
 import { ID } from './types';
 
@@ -324,7 +323,7 @@ export function createServer(
 
       Object.entries(ctxRef.current.subscriptions).forEach(
         ([, subscription]) => {
-          (subscription.return || noop)();
+          subscription.return?.();
         },
       );
     }
@@ -544,7 +543,7 @@ export function createServer(
           }
           case MessageType.Complete: {
             if (ctx.subscriptions[message.id]) {
-              await (ctx.subscriptions[message.id].return ?? noop)();
+              await ctx.subscriptions[message.id].return?.();
             }
             break;
           }

@@ -51,7 +51,3 @@ export function hasOwnStringProperty<
     typeof obj[prop] === 'string'
   );
 }
-
-export function noop(): void {
-  /**/
-}
