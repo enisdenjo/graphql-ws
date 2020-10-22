@@ -1,3 +1,11 @@
+## [1.8.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.0...v1.8.1) (2020-10-22)
+
+
+### Bug Fixes
+
+* yarn engine is not required ([#34](https://github.com/enisdenjo/graphql-transport-ws/issues/34)) ([89484b8](https://github.com/enisdenjo/graphql-transport-ws/commit/89484b89d6f561d0eb43d64e8c1ee568bcfebcd6))
+* **server:** Hide internal server error messages from the client in production ([36fe405](https://github.com/enisdenjo/graphql-transport-ws/commit/36fe405e0e7d5942f858073797cc85bb41739a1d)), closes [#31](https://github.com/enisdenjo/graphql-transport-ws/issues/31)
+
 # [1.8.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.7.0...v1.8.0) (2020-10-19)
 
 
