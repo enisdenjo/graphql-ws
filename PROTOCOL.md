@@ -188,7 +188,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 ### Single result operation
 
-#### `query` and `mutation` operations without streaming directives\_
+#### `query` and `mutation` operations without streaming directives
 
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
