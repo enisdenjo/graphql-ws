@@ -26,7 +26,7 @@
 
 Ƭ  **ExecutionResultFormatter**: (ctx: [Context](../interfaces/_server_.context.md), result: ExecutionResult) => Promise\<ExecutionResult> \| ExecutionResult
 
-*Defined in [server.ts:41](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L41)*
+*Defined in [server.ts:40](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L40)*
 
 ## Functions
 
@@ -34,7 +34,7 @@
 
 ▸ **createServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md), `websocketOptionsOrServer`: WebSocketServerOptions \| WebSocketServer): [Server](../interfaces/_server_.server.md)
 
-*Defined in [server.ts:219](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/server.ts#L219)*
+*Defined in [server.ts:218](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L218)*
 
 Creates a protocol complient WebSocket GraphQL
 subscription server. Read more about the protocol

@@ -29,7 +29,7 @@ Configuration used for the `create` client function.
 
 • `Optional` **connectionParams**: Record\<string, unknown> \| () => Record\<string, unknown>
 
-*Defined in [client.ts:40](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L40)*
+*Defined in [client.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L38)*
 
 Optional parameters that the client specifies when establishing a connection with the server.
 
@@ -39,7 +39,7 @@ ___
 
 • `Optional` **generateID**: undefined \| () => [ID](../modules/_types_.md#id)
 
-*Defined in [client.ts:76](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L76)*
+*Defined in [client.ts:74](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L74)*
 
 A custom ID generator for identifying subscriptions.
 The default uses the `crypto` module in the global scope
@@ -52,7 +52,7 @@ ___
 
 • `Optional` **lazy**: undefined \| false \| true
 
-*Defined in [client.ts:46](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L46)*
+*Defined in [client.ts:44](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L44)*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -65,7 +65,7 @@ ___
 
 • `Optional` **on**: Partial\<{}>
 
-*Defined in [client.ts:63](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L63)*
+*Defined in [client.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L61)*
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -78,7 +78,7 @@ ___
 
 • `Optional` **retryAttempts**: undefined \| number
 
-*Defined in [client.ts:51](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L51)*
+*Defined in [client.ts:49](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L49)*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -90,7 +90,7 @@ ___
 
 • `Optional` **retryTimeout**: undefined \| number
 
-*Defined in [client.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L56)*
+*Defined in [client.ts:54](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L54)*
 
 How long should the client wait until attempting to retry.
 
@@ -102,7 +102,7 @@ ___
 
 •  **url**: string
 
-*Defined in [client.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L38)*
+*Defined in [client.ts:36](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L36)*
 
 URL of the GraphQL server to connect.
 
@@ -112,7 +112,7 @@ ___
 
 • `Optional` **webSocketImpl**: unknown
 
-*Defined in [client.ts:69](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/client.ts#L69)*
+*Defined in [client.ts:67](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L67)*
 
 A custom WebSocket implementation to use instead of the
 one provided by the global scope. Mostly useful for when

@@ -21,7 +21,7 @@
 
 • `Readonly` **id**: string
 
-*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L61)*
+*Defined in [message.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L61)*
 
 ___
 
@@ -29,4 +29,4 @@ ___
 
 • `Readonly` **type**: [Complete](../enums/_message_.messagetype.md#complete)
 
-*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L62)*
+*Defined in [message.ts:62](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L62)*

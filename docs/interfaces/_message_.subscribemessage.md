@@ -22,7 +22,7 @@
 
 • `Readonly` **id**: string
 
-*Defined in [message.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L37)*
+*Defined in [message.ts:37](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L37)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Readonly` **payload**: [SubscribePayload](_message_.subscribepayload.md)
 
-*Defined in [message.ts:39](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L39)*
+*Defined in [message.ts:39](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L39)*
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 • `Readonly` **type**: [Subscribe](../enums/_message_.messagetype.md#subscribe)
 
-*Defined in [message.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/message.ts#L38)*
+*Defined in [message.ts:38](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L38)*

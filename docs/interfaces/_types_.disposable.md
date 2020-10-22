@@ -24,6 +24,6 @@
 
 •  **dispose**: () => void \| Promise\<void>
 
-*Defined in [types.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/624b4ce/src/types.ts#L18)*
+*Defined in [types.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L18)*
 
 Dispose of the instance and clear up resources.
