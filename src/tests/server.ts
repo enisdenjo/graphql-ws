@@ -945,7 +945,7 @@ describe('Subscribe', () => {
     pong();
     pong();
 
-    await client.waitForClose(() => {
+    await client.waitForMessage(() => {
       fail('Shouldnt have received a message');
     }, 30);
   });
