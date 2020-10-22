@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { parse, buildSchema, execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
-import { startServer, url, schema, pubsub } from './fixtures/simple';
+import { startServer, url, schema, pong } from './fixtures/simple';
 
 let forgottenDispose: (() => Promise<void>) | undefined;
 async function makeServer(
@@ -34,7 +34,7 @@ function createTClient(
   return new Promise<{
     ws: WebSocket;
     waitForMessage: (
-      test: (data: WebSocket.MessageEvent) => void,
+      test?: (data: WebSocket.MessageEvent) => void,
       expire?: number,
     ) => Promise<void>;
     waitForClose: (
@@ -53,7 +53,8 @@ function createTClient(
             const done = () => {
               // the onmessage listener above will be called before our listener, populating the queue
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              test(queue.shift()!);
+              const next = queue.shift()!;
+              if (test) test(next);
               resolve();
             };
             if (queue.length > 0) {
@@ -848,14 +849,8 @@ describe('Subscribe', () => {
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
-    let onSubscribe: () => void;
-    makeServer({
+    await makeServer({
       schema,
-      subscribe: async (args) => {
-        const subscription = await subscribe(args);
-        onSubscribe(); // test will fail if `onSubscribe` is not set yet
-        return subscription;
-      },
     });
 
     const client = await createTClient();
@@ -872,32 +867,25 @@ describe('Subscribe', () => {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            operationName: 'BecomingHappy',
-            query: `subscription BecomingHappy {
-              becameHappy(secret: "smile more") {
-                name
-              }
+            operationName: 'Greetings',
+            query: `subscription Greetings {
+              greetings
             }`,
           },
         }),
       );
     });
-    await new Promise((resolve) => (onSubscribe = resolve));
 
-    // 👇 comment out the `setTimeout` to see the test fail
-    setTimeout(() => {
-      pubsub.publish('becameHappy', {
-        becameHappy: {
-          name: 'john',
-        },
-      });
-    }, 0);
+    // we say Hi in 5 languages
+    for (let i = 0; i < 5; i++) {
+      await client.waitForMessage();
+    }
 
+    // completed
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
         id: '1',
-        type: MessageType.Next,
-        payload: { data: { becameHappy: { name: 'john' } } },
+        type: MessageType.Complete,
       });
     });
   });
@@ -921,29 +909,19 @@ describe('Subscribe', () => {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            query: `subscription {
-              boughtBananas {
-                name
-              }
-            }`,
+            query: `subscription { ping }`,
           },
         }),
       );
     });
 
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', {
-        boughtBananas: {
-          name: 'john',
-        },
-      });
-    }, 0);
+    pong();
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
         id: '1',
         type: MessageType.Next,
-        payload: { data: { boughtBananas: { name: 'john' } } },
+        payload: { data: { ping: 'pong' } },
       });
     });
 
@@ -963,17 +941,9 @@ describe('Subscribe', () => {
       });
     });
 
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', new Error('Something weird happened!'));
-    }, 0);
-
-    setTimeout(() => {
-      pubsub.publish('boughtBananas', {
-        boughtBananas: {
-          name: 'john',
-        },
-      });
-    }, 0);
+    pong();
+    pong();
+    pong();
 
     await client.waitForClose(() => {
       fail('Shouldnt have received a message');
