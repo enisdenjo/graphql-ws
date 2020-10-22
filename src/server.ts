@@ -196,8 +196,8 @@ export interface Context {
   connectionParams?: Readonly<Record<string, unknown>>;
   /**
    * Holds the active subscriptions for this context.
-   * Subscriptions are for `subscription` operations **only**,
-   * other operations (`query`/`mutation`) are resolved immediately.
+   * Subscriptions are for **streaming operations only**,
+   * those that resolve once wont be added here.
    */
   subscriptions: Record<ID, AsyncIterator<unknown>>;
 }
