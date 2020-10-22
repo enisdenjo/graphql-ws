@@ -75,7 +75,7 @@ Direction: **Client -> Server**
 
 Requests an operation specified in the message `payload`. This message provides a unique ID field to connect published messages to the operation requested by this message.
 
-If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future.
+If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future events.
 
 ```typescript
 import { DocumentNode } from 'graphql';
@@ -188,9 +188,9 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 ### Single result operation
 
-_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+#### `query` and `mutation` operations without streaming directives\_
 
-_`query` and `mutation` operations without streaming directives_
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
@@ -203,9 +203,9 @@ _`query` and `mutation` operations without streaming directives_
 
 ### Streaming operation
 
-_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
+#### `subscription` operation and queries with streaming directives
 
-_`subscription` operation and queries with streaming directives_
+_The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested streaming operation passed through the `payload` field
