@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.1...v1.8.2) (2020-10-22)
+
+
+### Bug Fixes
+
+* **server:** No need to bind `this` scope ([f76ac73](https://github.com/enisdenjo/graphql-transport-ws/commit/f76ac73e9d21c80abe0118007e168e4f5d525036))
+
 ## [1.8.1](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.0...v1.8.1) (2020-10-22)
 
 
