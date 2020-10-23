@@ -78,7 +78,7 @@ export type Message<
   ? CompleteMessage
   : never;
 
-/** @ignore */
+/** Checks if the provided value is a message. */
 export function isMessage(val: unknown): val is Message {
   if (isObject(val)) {
     // all messages must have the `type` prop
@@ -102,7 +102,7 @@ export function isMessage(val: unknown): val is Message {
           hasOwnObjectProperty(val, 'payload') &&
           (!hasOwnProperty(val.payload, 'operationName') ||
             hasOwnStringProperty(val.payload, 'operationName')) &&
-          (hasOwnStringProperty(val.payload, 'query') || // string query
+          (hasOwnStringProperty(val.payload, 'query') || // string query or persisted query id
             hasOwnObjectProperty(val.payload, 'query')) && // document node query
           (!hasOwnProperty(val.payload, 'variables') ||
             hasOwnObjectProperty(val.payload, 'variables'))
@@ -126,7 +126,7 @@ export function isMessage(val: unknown): val is Message {
   return false;
 }
 
-/** @ignore */
+/** Parses the raw websocket message data to a valid message. */
 export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
@@ -141,10 +141,7 @@ export function parseMessage(data: unknown): Message {
   return message;
 }
 
-/**
- * @ignore
- * Helps stringifying a valid message ready to be sent through the socket.
- */
+/** Stringifies a valid message ready to be sent through the socket. */
 export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
 ): string {
