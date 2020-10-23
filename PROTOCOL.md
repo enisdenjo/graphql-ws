@@ -195,11 +195,19 @@ _The client and the server has already gone through [successful connection initi
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
    <br>_All future communication is linked through this unique ID_
-1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
-1. _Server_ validates the request and executes the single result GraphQL operation
-1. _Server_ dispatches the `Next` message with the execution result
+1. _Server_ triggers the `onSubscribe` callback
+
+   - If `ExecutionArgs` are **not** returned, the arguments will be formed and validated using the payload
+   - If `ExecutionArgs` are returned, they will be used directly
+
+1. _Server_ executes the single result GraphQL operation using the arguments provided above
+1. _Server_ triggers the `onNext` callback
+
+   - If `ExecutionResult` is **not** returned, the direct result from the operation will be dispatched with the `Next` message
+   - If `ExecutionResult` is returned, it will be dispatched with the `Next` message
+
+1. _Server_ triggers the `onComplete` callback
 1. _Server_ dispatches the `Complete` message indicating that the execution has completed
-1. _Server_ triggers the `onComplete` callback, if specified
 
 ### Streaming operation
 
@@ -208,14 +216,24 @@ _The client and the server has already gone through [successful connection initi
 _The client and the server has already gone through [successful connection initialisation](#successful-connection-initialisation)._
 
 1. _Client_ generates a unique ID for the following operation
-1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested streaming operation passed through the `payload` field
+1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
    <br>_All future communication is linked through this unique ID_
-1. _Server_ triggers the `onSubscribe` callback, if specified, and uses the returned `ExecutionArgs` for the operation
-1. _Server_ validates the request and executes the streaming GraphQL operation
+1. _Server_ triggers the `onSubscribe` callback
+
+   - If `ExecutionArgs` are **not** returned, the arguments will be formed and validated using the payload
+   - If `ExecutionArgs` are returned, they will be used directly
+
+1. _Server_ executes the streaming GraphQL operation using the arguments provided above
 1. _Server_ checks if the generated ID is unique across active streaming subscriptions
+
    - If **not** unique, the _server_ will close the socket with the event `4409: Subscriber for <generated-id> already exists`
    - If unique, continue...
-1. _Server_ dispatches `Next` messages for every event in the source stream
+
+1. _Server_ triggers the `onNext` callback
+
+   - If `ExecutionResult` is **not** returned, the direct events from the source stream will be dispatched with the `Next` message
+   - If `ExecutionResult` is returned, it will be dispatched with the `Next` message instead of every event from the source stram
+
 1. - _Client_ stops the subscription by dispatching a `Complete` message
    - _Server_ completes the source stream
      <br>_or_
