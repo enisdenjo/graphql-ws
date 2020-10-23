@@ -632,6 +632,62 @@ describe('Subscribe', () => {
     }, 30);
   });
 
+  it('should use the execution result returned from `onNext`', async () => {
+    await makeServer({
+      onNext: (_ctx, _message) => {
+        return {
+          data: { hey: 'there' },
+        };
+      },
+    });
+
+    const client = await createTClient();
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: `subscription {
+              greetings
+            }`,
+            variables: {},
+          },
+        }),
+      );
+    });
+
+    // because onnext changed the result
+
+    for (let i = 0; i < 5; i++) {
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data)).toEqual({
+          id: '1',
+          type: MessageType.Next,
+          payload: { data: { hey: 'there' } },
+        });
+      });
+    }
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
+    });
+
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 30);
+  });
+
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
     await makeServer({
       schema,
