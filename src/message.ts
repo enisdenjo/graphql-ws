@@ -82,7 +82,7 @@ export type Message<
 export function isMessage(val: unknown): val is Message {
   if (isObject(val)) {
     // all messages must have the `type` prop
-    if (!hasOwnProperty(val, 'type')) {
+    if (!hasOwnStringProperty(val, 'type')) {
       return false;
     }
     // validate other properties depending on the `type`
