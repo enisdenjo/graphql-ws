@@ -497,6 +497,37 @@ server.listen(443);
 
 </details>
 
+<details>
+<summary>Server usage with a custom GraphQL context</summary>
+
+```typescript
+import { execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema } from 'my-graphql-schema';
+
+createServer(
+  {
+    schema,
+    execute,
+    subscribe,
+    onSubscribe: (ctx, msg, args) => {
+      return [
+        {
+          ...args,
+          contextValue: getCustomContext(ctx, msg, args),
+        },
+      ];
+    },
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
