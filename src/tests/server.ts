@@ -3,6 +3,7 @@ import { parse, buildSchema, execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pong } from './fixtures/simple';
+import { noop } from './client';
 
 let forgottenDispose: (() => Promise<void>) | undefined;
 async function makeServer(
@@ -575,16 +576,20 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should pick up the schema from `onSubscribe`', async () => {
+  it('should directly use the execution arguments returned from `onSubscribe`', async () => {
+    const nopeArgs = {
+      schema,
+      operationName: 'Nope',
+      document: parse(`query Nope { getValue }`),
+    };
     await makeServer({
       schema: undefined,
-      onSubscribe: (_ctx, _message, args) => {
-        return [
-          {
-            ...args,
-            schema,
-          },
-        ];
+      execute: (args) => {
+        expect(args).toBe(nopeArgs);
+        return execute(args);
+      },
+      onSubscribe: (_ctx, _message) => {
+        return nopeArgs;
       },
     });
 
@@ -603,15 +608,17 @@ describe('Subscribe', () => {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            operationName: 'TestString',
-            query: `query TestString {
-                getValue
-              }`,
+            operationName: 'Ping',
+            query: `subscribe Ping {
+              ping
+            }`,
             variables: {},
           },
         }),
       );
     });
+
+    // because onsubscribe changed the request
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
