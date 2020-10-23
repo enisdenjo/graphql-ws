@@ -22,20 +22,14 @@
 
 • `Readonly` **id**: string
 
-*Defined in [message.ts:55](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L55)*
-
 ___
 
 ### payload
 
 • `Readonly` **payload**: readonly GraphQLError[]
 
-*Defined in [message.ts:57](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L57)*
-
 ___
 
 ### type
 
 • `Readonly` **type**: [Error](../enums/_message_.messagetype.md#error)
-
-*Defined in [message.ts:56](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L56)*

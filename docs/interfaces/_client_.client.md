@@ -29,8 +29,6 @@
 
 *Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
 
-*Defined in [types.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L18)*
-
 Dispose of the instance and clear up resources.
 
 ## Methods
@@ -38,8 +36,6 @@ Dispose of the instance and clear up resources.
 ### on
 
 ▸ **on**\<E>(`event`: E, `listener`: [EventListener](../modules/_client_.md#eventlistener)\<E>): function
-
-*Defined in [client.ts:81](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L81)*
 
 Listens on the client which dispatches events about the socket state.
 
@@ -63,8 +59,6 @@ ___
 ### subscribe
 
 ▸ **subscribe**\<T>(`payload`: [SubscribePayload](_message_.subscribepayload.md), `sink`: [Sink](_types_.sink.md)\<T>): function
-
-*Defined in [client.ts:87](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L87)*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_

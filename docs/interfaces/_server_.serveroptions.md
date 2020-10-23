@@ -31,8 +31,6 @@
 
 • `Optional` **connectionInitWaitTimeout**: undefined \| number
 
-*Defined in [server.ts:126](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L126)*
-
 **`default`** 3 * 1000 (3 seconds)
 
 The amount of time for which the
@@ -51,8 +49,6 @@ ___
 
 • `Optional` **context**: SubscriptionArgs[\"contextValue\"]
 
-*Defined in [server.ts:61](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L61)*
-
 A value which is provided to every resolver and holds
 important contextual information like the currently
 logged in user, or access to a database.
@@ -65,8 +61,6 @@ ___
 
 •  **execute**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult> \| AsyncIterableIterator\<ExecutionResult> \| ExecutionResult
 
-*Defined in [server.ts:79](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L79)*
-
 Is the `execute` function from GraphQL which is
 used to execute the query/mutation operation.
 
@@ -75,8 +69,6 @@ ___
 ### formatExecutionResult
 
 • `Optional` **formatExecutionResult**: [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)
-
-*Defined in [server.ts:138](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L138)*
 
 Format the operation execution results
 if the implementation requires an adjusted
@@ -88,8 +80,6 @@ ___
 ### keepAlive
 
 • `Optional` **keepAlive**: undefined \| number
-
-*Defined in [server.ts:169](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L169)*
 
 The timout between dispatched keep-alive messages. Internally the lib
 uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
@@ -104,8 +94,6 @@ ___
 
 • `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md), message: [CompleteMessage](_message_.completemessage.md)) => void
 
-*Defined in [server.ts:160](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L160)*
-
 The complete callback is executed after the
 operation has completed or the subscription
 has been closed.
@@ -115,8 +103,6 @@ ___
 ### onConnect
 
 • `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean> \| boolean
-
-*Defined in [server.ts:112](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L112)*
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -143,8 +129,6 @@ ___
 
 • `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md), args: Optional\<ExecutionArgs, \"schema\">) => Promise\<[ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]> \| [ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]
 
-*Defined in [server.ts:148](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L148)*
-
 The subscribe callback executed before
 the actual operation execution. Useful
 for manipulating the execution arguments
@@ -159,8 +143,6 @@ ___
 
 • `Optional` **roots**: undefined \| {}
 
-*Defined in [server.ts:69](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L69)*
-
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
 here: https://graphql.org/learn/execution/#root-fields-resolvers.
@@ -172,8 +154,6 @@ ___
 ### schema
 
 • `Optional` **schema**: GraphQLSchema
-
-*Defined in [server.ts:53](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L53)*
 
 The GraphQL schema on which the operations
 will be executed and validated against. If
@@ -187,8 +167,6 @@ ___
 
 •  **subscribe**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult>
 
-*Defined in [server.ts:89](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L89)*
-
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
 
@@ -197,8 +175,6 @@ ___
 ### validationRules
 
 • `Optional` **validationRules**: readonly ValidationRule[]
-
-*Defined in [server.ts:131](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L131)*
 
 Custom validation rules overriding all
 validation rules defined by the GraphQL spec.

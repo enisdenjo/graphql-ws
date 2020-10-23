@@ -21,8 +21,6 @@
 
 Ƭ  **ID**: string
 
-*Defined in [types.ts:14](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L14)*
-
 ID is a string type alias representing
 the globally unique ID used for identifying
 subscriptions established by the client.

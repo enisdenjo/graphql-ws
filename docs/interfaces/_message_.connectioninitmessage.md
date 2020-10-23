@@ -21,12 +21,8 @@
 
 • `Optional` `Readonly` **payload**: Record\<string, unknown>
 
-*Defined in [message.ts:29](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L29)*
-
 ___
 
 ### type
 
 • `Readonly` **type**: [ConnectionInit](../enums/_message_.messagetype.md#connectioninit)
-
-*Defined in [message.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/message.ts#L28)*

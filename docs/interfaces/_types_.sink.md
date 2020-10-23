@@ -30,8 +30,6 @@ Name | Default |
 
 ▸ **complete**(): void
 
-*Defined in [types.ts:30](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L30)*
-
 The sink has completed. This function "closes" the sink.
 
 **Returns:** void
@@ -41,8 +39,6 @@ ___
 ### error
 
 ▸ **error**(`error`: Error \| CloseEvent \| readonly GraphQLError[]): void
-
-*Defined in [types.ts:28](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L28)*
 
 An error that has occured. Calling this function "closes" the sink.
 
@@ -59,8 +55,6 @@ ___
 ### next
 
 ▸ **next**(`value`: T): void
-
-*Defined in [types.ts:26](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/types.ts#L26)*
 
 Next value arriving.
 

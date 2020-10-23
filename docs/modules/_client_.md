@@ -29,15 +29,11 @@
 
 Ƭ  **Event**: [EventConnecting](_client_.md#eventconnecting) \| [EventConnected](_client_.md#eventconnected) \| [EventClosed](_client_.md#eventclosed)
 
-*Defined in [client.ts:21](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L21)*
-
 ___
 
 ### EventClosed
 
 Ƭ  **EventClosed**: \"closed\"
-
-*Defined in [client.ts:20](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L20)*
 
 ___
 
@@ -45,23 +41,17 @@ ___
 
 Ƭ  **EventConnected**: \"connected\"
 
-*Defined in [client.ts:19](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L19)*
-
 ___
 
 ### EventConnecting
 
 Ƭ  **EventConnecting**: \"connecting\"
 
-*Defined in [client.ts:18](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L18)*
-
 ___
 
 ### EventListener
 
 Ƭ  **EventListener**\<E>: E *extends* EventConnecting ? () => void : E *extends* EventConnected ? (socket: WebSocket) => void : E *extends* EventClosed ? (event: CloseEvent) => void : never
-
-*Defined in [client.ts:23](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L23)*
 
 #### Type parameters:
 
@@ -74,8 +64,6 @@ Name | Type |
 ### createClient
 
 ▸ **createClient**(`options`: [ClientOptions](../interfaces/_client_.clientoptions.md)): [Client](../interfaces/_client_.client.md)
-
-*Defined in [client.ts:91](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/client.ts#L91)*
 
 Creates a disposable GraphQL subscriptions client.
 

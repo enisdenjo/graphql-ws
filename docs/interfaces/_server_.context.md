@@ -25,8 +25,6 @@
 
 •  **acknowledged**: boolean
 
-*Defined in [server.ts:194](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L194)*
-
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
 to the related client.
@@ -36,8 +34,6 @@ ___
 ### connectionInitReceived
 
 •  **connectionInitReceived**: boolean
-
-*Defined in [server.ts:188](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L188)*
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -50,8 +46,6 @@ ___
 
 • `Optional` **connectionParams**: Readonly\<Record\<string, unknown>>
 
-*Defined in [server.ts:196](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L196)*
-
 The parameters passed during the connection initialisation.
 
 ___
@@ -59,8 +53,6 @@ ___
 ### request
 
 • `Readonly` **request**: IncomingMessage
-
-*Defined in [server.ts:181](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L181)*
 
 The initial HTTP request before the actual
 socket and connection is established.
@@ -71,8 +63,6 @@ ___
 
 • `Readonly` **socket**: WebSocket
 
-*Defined in [server.ts:176](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L176)*
-
 The actual WebSocket connection between the server and the client.
 
 ___
@@ -80,8 +70,6 @@ ___
 ### subscriptions
 
 •  **subscriptions**: Record\<[ID](../modules/_types_.md#id), AsyncIterator\<unknown>>
-
-*Defined in [server.ts:202](https://github.com/enisdenjo/graphql-transport-ws/blob/d8060fe/src/server.ts#L202)*
 
 Holds the active subscriptions for this context.
 Subscriptions are for **streaming operations only**,
