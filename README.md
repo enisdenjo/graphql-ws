@@ -498,17 +498,18 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with custom GraphQL arguments</summary>
+<summary>Server usage with custom static GraphQL arguments</summary>
 
 ```typescript
 import { validate, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-transport-ws';
-import { schema } from 'my-graphql-schema';
+import { schema, roots, getStaticContext } from 'my-graphql';
 
 createServer(
   {
     context: getStaticContext(),
     schema,
+    roots,
     execute,
     subscribe,
   },
@@ -517,10 +518,17 @@ createServer(
     path: '/graphql',
   },
 );
+```
 
-// or create execution args dynamically on every subscription
+</details>
 
-import { parse } from 'graphql';
+<details>
+<summary>Server usage with custom dynamic GraphQL arguments and validation</summary>
+
+```typescript
+import { parse, validate, execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema, getDynamicContext, myValidationRules } from 'my-graphql';
 
 createServer(
   {
@@ -535,8 +543,12 @@ createServer(
         variableValues: msg.variables,
       };
 
-      // if you are returning custom execution args, dont forget to validate them!
-      const validationErrors = validate(execArgs.schema, execArgs.document);
+      // dont forget to validate when returning custom execution args!
+      const validationErrors = validate(
+        execArgs.schema,
+        execArgs.document,
+        myValidationRules,
+      );
       if (validationErrors.length > 0) {
         return validationErrors; // return `GraphQLError[]` to send `ErrorMessage` and stop subscription
       }
