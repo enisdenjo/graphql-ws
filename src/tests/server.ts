@@ -1,5 +1,12 @@
 import WebSocket from 'ws';
-import { parse, buildSchema, execute, subscribe, GraphQLError } from 'graphql';
+import {
+  parse,
+  buildSchema,
+  execute,
+  subscribe,
+  GraphQLError,
+  ExecutionArgs,
+} from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import {
   MessageType,
@@ -1321,6 +1328,55 @@ describe('Subscribe', () => {
       expect(event.code).toBe(4409);
       expect(event.reason).toBe('Subscriber for not-unique already exists');
       expect(event.wasClean).toBeTruthy();
+    });
+  });
+
+  it('should support persisted queries', async () => {
+    const queriesStore: Record<string, ExecutionArgs> = {
+      iWantTheValue: {
+        schema,
+        document: parse('query GetValue { getValue }'),
+      },
+    };
+
+    await makeServer({
+      onSubscribe: (_ctx, msg) => {
+        // search using `SubscriptionPayload.query` as QueryID
+        // check the client example below for better understanding
+        const hit = queriesStore[msg.payload.query as string];
+        return {
+          ...hit,
+          variableValues: msg.payload.variables, // use the variables from the client
+        };
+      },
+    });
+
+    const client = await createTClient();
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'iWantTheValue',
+          },
+        }),
+      );
+    });
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'value' } },
+      });
     });
   });
 });

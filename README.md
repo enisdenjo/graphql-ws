@@ -543,6 +543,85 @@ createServer(
 );
 ```
 
+<summary>Server and client usage with persisted queries</summary>
+
+```typescript
+// 🛸 server
+
+import { parse, execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema } from 'my-graphql-schema';
+
+type QueryID = string;
+
+const queriesStore: Record<QueryID, ExecutionArgs> = {
+  iWantTheGreetings: {
+    schema, // you may even provide different schemas in the queries store
+    document: parse('subscription Greetings { greetings }'),
+  },
+};
+
+createServer(
+  {
+    execute,
+    subscribe,
+    onSubscribe: (_ctx, msg) => {
+      // search using `SubscriptionPayload.query` as QueryID
+      // check the client example below for better understanding
+      const hit = queriesStore[msg.payload.query];
+      if (hit) {
+        return {
+          ...hit,
+          variableValues: msg.payload.variables, // use the variables from the client
+        };
+      }
+      // if no hit, execute as usual
+      return {
+        schema,
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.operationName),
+        variableValues: msg.payload.variables,
+      };
+    },
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+```
+
+```typescript
+// 📺 client
+
+import { createClient } from 'graphql-transport-ws';
+
+const client = createClient({
+  url: 'wss://persisted.graphql/queries',
+});
+
+(async () => {
+  const onNext = () => {
+    /**/
+  };
+
+  await new Promise((resolve, reject) => {
+    client.subscribe(
+      {
+        query: 'iWantTheGreetings',
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: resolve,
+      },
+    );
+  });
+
+  expect(onNext).toBeCalledTimes(5); // greetings in 5 languages
+})();
+```
+
 </details>
 
 ## [Documentation](docs/)
