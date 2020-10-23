@@ -7,10 +7,10 @@
 import { GraphQLError, ExecutionResult, DocumentNode } from 'graphql';
 import {
   isObject,
+  areGraphQLErrors,
   hasOwnProperty,
   hasOwnObjectProperty,
   hasOwnStringProperty,
-  hasOwnArrayProperty,
 } from './utils';
 
 /** Types of messages allowed to be sent by the client/server over the WS protocol. */
@@ -116,12 +116,7 @@ export function isMessage(val: unknown): val is Message {
             hasOwnObjectProperty(val.payload, 'errors'))
         );
       case MessageType.Error:
-        return (
-          hasOwnStringProperty(val, 'id') &&
-          // GraphQLError
-          hasOwnArrayProperty(val, 'payload') &&
-          val.payload.length > 0 // must be at least one error
-        );
+        return hasOwnStringProperty(val, 'id') && areGraphQLErrors(val.payload);
       case MessageType.Complete:
         return hasOwnStringProperty(val, 'id');
       default:
