@@ -38,6 +38,11 @@ import {
 } from './utils';
 import { ID } from './types';
 
+export type OperationResult =
+  | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
+  | AsyncIterableIterator<ExecutionResult>
+  | ExecutionResult;
+
 export interface ServerOptions {
   /**
    * The GraphQL schema on which the operations
@@ -77,22 +82,12 @@ export interface ServerOptions {
    * Is the `execute` function from GraphQL which is
    * used to execute the query and mutation operations.
    */
-  execute: (
-    args: ExecutionArgs,
-  ) =>
-    | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
-    | AsyncIterableIterator<ExecutionResult>
-    | ExecutionResult;
+  execute: (args: ExecutionArgs) => OperationResult;
   /**
    * Is the `subscribe` function from GraphQL which is
    * used to execute the subscription operation.
    */
-  subscribe: (
-    args: ExecutionArgs,
-  ) =>
-    | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
-    | AsyncIterableIterator<ExecutionResult>
-    | ExecutionResult;
+  subscribe: (args: ExecutionArgs) => OperationResult;
   /**
    * The amount of time for which the
    * server will wait for `ConnectionInit` message.
@@ -162,6 +157,27 @@ export interface ServerOptions {
     ctx: Context,
     message: SubscribeMessage,
   ) => ExecutionArgs | readonly GraphQLError[] | void;
+  /**
+   * Executed after the operation call resolves. For streaming
+   * operations, triggering this callback does not necessarely
+   * mean that there is already a result available - it means
+   * that the subscription process for the stream has resolved
+   * and that the client is now subscribed.
+   *
+   * The `OperationResult` argument is the result of operation
+   * execution. It can be an iterator or already value.
+   *
+   * If you want the single result and the events from a streaming
+   * operation, use the `onNext` callback.
+   *
+   * Use this callback to listen for subscribe operation and
+   * execution result manipulation.
+   */
+  onOperation?: (
+    ctx: Context,
+    message: SubscribeMessage,
+    result: OperationResult,
+  ) => Promise<OperationResult | void> | OperationResult | void;
   /**
    * Executed after an error occured right before it
    * has been dispatched to the client.
@@ -262,6 +278,7 @@ export function createServer(
     keepAlive = 12 * 1000, // 12 seconds
     onConnect,
     onSubscribe,
+    onOperation,
     onNext,
     onError,
     onComplete,
@@ -521,15 +538,26 @@ export function createServer(
 
             // the execution arguments have been prepared
             // perform the operation and act accordingly
-            let iterableOrResult;
+            let operationResult;
             if (operationAST.operation === 'subscription') {
-              iterableOrResult = await subscribe(execArgs);
+              operationResult = await subscribe(execArgs);
             } else {
               // operation === 'query' || 'mutation'
-              iterableOrResult = await execute(execArgs);
+              operationResult = await execute(execArgs);
             }
 
-            if (isAsyncIterable(iterableOrResult)) {
+            if (onOperation) {
+              const maybeResult = await onOperation(
+                ctx,
+                message,
+                operationResult,
+              );
+              if (maybeResult) {
+                operationResult = maybeResult;
+              }
+            }
+
+            if (isAsyncIterable(operationResult)) {
               /** multiple emitted results */
 
               // iterable subscriptions are distinct on ID
@@ -539,10 +567,10 @@ export function createServer(
                   `Subscriber for ${message.id} already exists`,
                 );
               }
-              ctx.subscriptions[message.id] = iterableOrResult;
+              ctx.subscriptions[message.id] = operationResult;
 
               // only case where this might fail is if the socket is broken
-              for await (const result of iterableOrResult) {
+              for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
               await emit.complete();
@@ -550,7 +578,7 @@ export function createServer(
             } else {
               /** single emitted result */
 
-              await emit.next(iterableOrResult, execArgs);
+              await emit.next(operationResult, execArgs);
               await emit.complete();
             }
             break;
