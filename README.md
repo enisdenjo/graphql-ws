@@ -538,9 +538,9 @@ createServer(
       const args = {
         schema,
         contextValue: getDynamicContext(ctx, msg),
-        operationName: msg.operationName,
-        document: parse(msg.operationName),
-        variableValues: msg.variables,
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.operationName),
+        variableValues: msg.payload.variables,
       };
 
       // dont forget to validate when returning custom execution args!
