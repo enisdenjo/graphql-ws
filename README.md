@@ -544,13 +544,9 @@ createServer(
       };
 
       // dont forget to validate when returning custom execution args!
-      const validationErrors = validate(
-        execArgs.schema,
-        execArgs.document,
-        myValidationRules,
-      );
-      if (validationErrors.length > 0) {
-        return validationErrors; // return `GraphQLError[]` to send `ErrorMessage` and stop subscription
+      const errors = validate(args.schema, args.document, myValidationRules);
+      if (errors.length > 0) {
+        return errors; // return `GraphQLError[]` to send `ErrorMessage` and stop subscription
       }
 
       return args;
