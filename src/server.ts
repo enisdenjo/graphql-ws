@@ -180,6 +180,7 @@ export interface ServerOptions {
   onOperation?: (
     ctx: Context,
     message: SubscribeMessage,
+    args: ExecutionArgs,
     result: OperationResult,
   ) => Promise<OperationResult | void> | OperationResult | void;
   /**
@@ -554,6 +555,7 @@ export function createServer(
               const maybeResult = await onOperation(
                 ctx,
                 message,
+                execArgs,
                 operationResult,
               );
               if (maybeResult) {
