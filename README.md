@@ -498,19 +498,23 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with a custom context</summary>
+<summary>Server usage with a custom GraphQL context</summary>
 
 ```typescript
+import { execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema } from 'my-graphql-schema';
+
 createServer(
   {
     schema,
     execute,
     subscribe,
-    onSubscribe: (ctx, _msg, args) => {
+    onSubscribe: (ctx, msg, args) => {
       return [
         {
           ...args,
-          contextValue: getCustomContext(),
+          contextValue: getCustomContext(ctx, msg, args),
         },
       ];
     },
@@ -523,7 +527,6 @@ createServer(
 ```
 
 </details>
-
 
 ## [Documentation](docs/)
 
