@@ -543,6 +543,9 @@ createServer(
 );
 ```
 
+</details>
+
+<details>
 <summary>Server and client usage with persisted queries</summary>
 
 ```typescript
