@@ -118,7 +118,7 @@ export interface ServerOptions {
    * payload (`connectionParams` on the client) is
    * present in the `Context.connectionParams`.
    *
-   * - Returning `true` from the callback will
+   * - Returning `true` or nothing from the callback will
    * allow the client to connect.
    *
    * - Returning `false` from the callback will
@@ -131,7 +131,7 @@ export interface ServerOptions {
    * the `<error-message>` is the message of the
    * thrown `Error`.
    */
-  onConnect?: (ctx: Context) => Promise<boolean> | boolean;
+  onConnect?: (ctx: Context) => Promise<boolean | void> | boolean | void;
   /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
@@ -422,7 +422,7 @@ export function createServer(
 
             if (onConnect) {
               const permitted = await onConnect(ctx);
-              if (!permitted) {
+              if (permitted === false) {
                 return ctx.socket.close(4403, 'Forbidden');
               }
             }

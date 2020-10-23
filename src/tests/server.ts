@@ -379,7 +379,7 @@ describe('Connect', () => {
     });
   });
 
-  it('should acknowledge connection if not implemented or returning `true`', async () => {
+  it('should acknowledge connection if not implemented, returning `true` or nothing', async () => {
     async function test() {
       const client = await createTClient();
       client.ws.send(
@@ -393,15 +393,23 @@ describe('Connect', () => {
     }
 
     // no implementation
-    const [, dispose] = await makeServer();
+    let [, dispose] = await makeServer();
     await test();
-
     await dispose();
 
     // returns true
-    await makeServer({
+    [, dispose] = await makeServer({
       onConnect: () => {
         return true;
+      },
+    });
+    await test();
+    await dispose();
+
+    // returns nothing
+    await makeServer({
+      onConnect: () => {
+        /**/
       },
     });
     await test();
