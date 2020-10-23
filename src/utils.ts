@@ -3,9 +3,6 @@
  * utils
  *
  */
-
-export type Optional<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>> &
-  Partial<Pick<T, K>>;
 import { GraphQLError } from 'graphql';
 
 export function isObject(val: unknown): val is Record<PropertyKey, unknown> {
