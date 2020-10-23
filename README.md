@@ -498,7 +498,7 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with a custom GraphQL context</summary>
+<summary>Server usage with custom GraphQL arguments</summary>
 
 ```typescript
 import { execute, subscribe } from 'graphql';
@@ -507,16 +507,33 @@ import { schema } from 'my-graphql-schema';
 
 createServer(
   {
+    context: getStaticContext(),
     schema,
     execute,
     subscribe,
-    onSubscribe: (ctx, msg, args) => {
-      return [
-        {
-          ...args,
-          contextValue: getCustomContext(ctx, msg, args),
-        },
-      ];
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+
+// or create execution args dynamically on every subscription
+
+import { parse } from 'graphql';
+
+createServer(
+  {
+    execute,
+    subscribe,
+    onSubscribe: (ctx, msg) => {
+      return {
+        schema,
+        contextValue: getDynamicContext(ctx, msg),
+        operationName: msg.operationName,
+        document: parse(msg.operationName),
+        variableValues: msg.variables,
+      };
     },
   },
   {
