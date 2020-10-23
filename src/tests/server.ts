@@ -632,6 +632,53 @@ describe('Subscribe', () => {
     }, 30);
   });
 
+  it('should report the graphql errors returned from `onSubscribe`', async () => {
+    await makeServer({
+      onSubscribe: (_ctx, _message) => {
+        return [new GraphQLError('Report'), new GraphQLError('Me')];
+      },
+    });
+
+    const client = await createTClient();
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'Ping',
+            query: `subscribe Ping {
+              ping
+            }`,
+            variables: {},
+          },
+        }),
+      );
+    });
+
+    // because onsubscribe changed the request
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Error,
+        payload: [{ message: 'Report' }, { message: 'Me' }],
+      });
+    });
+
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 30);
+  });
+
   it('should use the execution result returned from `onNext`', async () => {
     await makeServer({
       onNext: (_ctx, _message) => {
