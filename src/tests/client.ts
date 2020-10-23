@@ -8,7 +8,7 @@ import { Server } from '../server';
 import { createClient, EventListener } from '../client';
 
 // Just does nothing
-export function noop(): void {
+function noop(): void {
   /**/
 }
 

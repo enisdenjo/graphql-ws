@@ -14,7 +14,7 @@
 
 ### Type aliases
 
-* [ExecutionResultFormatter](_server_.md#executionresultformatter)
+* [OperationResult](_server_.md#operationresult)
 
 ### Functions
 
@@ -22,9 +22,9 @@
 
 ## Type aliases
 
-### ExecutionResultFormatter
+### OperationResult
 
-Ƭ  **ExecutionResultFormatter**: (ctx: [Context](../interfaces/_server_.context.md), result: ExecutionResult) => Promise\<ExecutionResult> \| ExecutionResult
+Ƭ  **OperationResult**: Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult> \| AsyncIterableIterator\<ExecutionResult> \| ExecutionResult
 
 ## Functions
 

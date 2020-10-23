@@ -15,23 +15,22 @@
 * [connectionInitWaitTimeout](_server_.serveroptions.md#connectioninitwaittimeout)
 * [context](_server_.serveroptions.md#context)
 * [execute](_server_.serveroptions.md#execute)
-* [formatExecutionResult](_server_.serveroptions.md#formatexecutionresult)
 * [keepAlive](_server_.serveroptions.md#keepalive)
 * [onComplete](_server_.serveroptions.md#oncomplete)
 * [onConnect](_server_.serveroptions.md#onconnect)
+* [onError](_server_.serveroptions.md#onerror)
+* [onNext](_server_.serveroptions.md#onnext)
+* [onOperation](_server_.serveroptions.md#onoperation)
 * [onSubscribe](_server_.serveroptions.md#onsubscribe)
 * [roots](_server_.serveroptions.md#roots)
 * [schema](_server_.serveroptions.md#schema)
 * [subscribe](_server_.serveroptions.md#subscribe)
-* [validationRules](_server_.serveroptions.md#validationrules)
 
 ## Properties
 
 ### connectionInitWaitTimeout
 
 • `Optional` **connectionInitWaitTimeout**: undefined \| number
-
-**`default`** 3 * 1000 (3 seconds)
 
 The amount of time for which the
 server will wait for `ConnectionInit` message.
@@ -43,37 +42,30 @@ has not sent the `ConnectionInit` message,
 the server will terminate the socket by
 dispatching a close event `4408: Connection initialisation timeout`
 
+**`default`** 3 * 1000 (3 seconds)
+
 ___
 
 ### context
 
-• `Optional` **context**: SubscriptionArgs[\"contextValue\"]
+• `Optional` **context**: unknown
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
 logged in user, or access to a database.
-Related operation context value will be injected to the
-`ExecutionArgs` BEFORE the `onSubscribe` callback.
+
+If you return from the `onSubscribe` callback, this
+context value will NOT be injected. You should add it
+in the returned `ExecutionArgs` from the callback.
 
 ___
 
 ### execute
 
-•  **execute**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult> \| AsyncIterableIterator\<ExecutionResult> \| ExecutionResult
+•  **execute**: (args: ExecutionArgs) => [OperationResult](../modules/_server_.md#operationresult)
 
 Is the `execute` function from GraphQL which is
-used to execute the query/mutation operation.
-
-___
-
-### formatExecutionResult
-
-• `Optional` **formatExecutionResult**: [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)
-
-Format the operation execution results
-if the implementation requires an adjusted
-result. This formatter is run BEFORE the
-`onConnect` scoped formatter.
+used to execute the query and mutation operations.
 
 ___
 
@@ -92,17 +84,17 @@ ___
 
 ### onComplete
 
-• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md), message: [CompleteMessage](_message_.completemessage.md)) => void
+• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md), message: [CompleteMessage](_message_.completemessage.md)) => Promise\<void> \| void
 
 The complete callback is executed after the
-operation has completed or the subscription
-has been closed.
+operation has completed right before sending
+the complete message to the client.
 
 ___
 
 ### onConnect
 
-• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean> \| boolean
+• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean \| void> \| boolean \| void
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -110,7 +102,7 @@ through the message `ConnectionInit`. The message
 payload (`connectionParams` on the client) is
 present in the `Context.connectionParams`.
 
-- Returning `true` from the callback will
+- Returning `true` or nothing from the callback will
 allow the client to connect.
 
 - Returning `false` from the callback will
@@ -125,17 +117,79 @@ thrown `Error`.
 
 ___
 
+### onError
+
+• `Optional` **onError**: undefined \| (ctx: [Context](_server_.context.md), message: [ErrorMessage](_message_.errormessage.md), errors: readonly GraphQLError[]) => Promise\<readonly GraphQLError[] \| void> \| readonly GraphQLError[] \| void
+
+Executed after an error occured right before it
+has been dispatched to the client.
+
+Use this callback to format the outgoing GraphQL
+errors before they reach the client.
+
+Returned result will be injected in the error message payload.
+
+___
+
+### onNext
+
+• `Optional` **onNext**: undefined \| (ctx: [Context](_server_.context.md), message: [NextMessage](_message_.nextmessage.md), args: ExecutionArgs, result: ExecutionResult) => Promise\<ExecutionResult \| void> \| ExecutionResult \| void
+
+Executed after an operation has emitted a result right before
+that result has been sent to the client. Results from both
+single value and streaming operations will appear in this callback.
+
+Use this callback if you want to format the execution result
+before it reaches the client.
+
+Returned result will be injected in the next message payload.
+
+___
+
+### onOperation
+
+• `Optional` **onOperation**: undefined \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs, result: [OperationResult](../modules/_server_.md#operationresult)) => Promise\<[OperationResult](../modules/_server_.md#operationresult) \| void> \| [OperationResult](../modules/_server_.md#operationresult) \| void
+
+Executed after the operation call resolves. For streaming
+operations, triggering this callback does not necessarely
+mean that there is already a result available - it means
+that the subscription process for the stream has resolved
+and that the client is now subscribed.
+
+The `OperationResult` argument is the result of operation
+execution. It can be an iterator or already value.
+
+If you want the single result and the events from a streaming
+operation, use the `onNext` callback.
+
+Use this callback to listen for subscribe operation and
+execution result manipulation.
+
+___
+
 ### onSubscribe
 
-• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md), args: Optional\<ExecutionArgs, \"schema\">) => Promise\<[ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]> \| [ExecutionArgs, undefined \| [ExecutionResultFormatter](../modules/_server_.md#executionresultformatter)]
+• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md)) => Promise\<ExecutionArgs \| readonly GraphQLError[] \| void> \| ExecutionArgs \| readonly GraphQLError[] \| void
 
-The subscribe callback executed before
-the actual operation execution. Useful
-for manipulating the execution arguments
-before the doing the operation. As a second
-item in the array, you can pass in a scoped
-execution result formatter. This formatter
-is run AFTER the root `formatExecutionResult`.
+The subscribe callback executed right after
+acknowledging the request before any payload
+processing has been performed.
+
+If you return `ExecutionArgs` from the callback,
+it will be used instead of trying to build one
+internally. In this case, you are responsible
+for providing a ready set of arguments which will
+be directly plugged in the operation execution.
+
+To report GraphQL errors simply return an array
+of them from the callback, they will be reported
+to the client through the error message.
+
+Useful for preparing the execution arguments
+following a custom logic. A typical use case are
+persisted queries, you can identify the query from
+the subscribe message and create the GraphQL operation
+execution args which are then returned by the function.
 
 ___
 
@@ -146,8 +200,10 @@ ___
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
 here: https://graphql.org/learn/execution/#root-fields-resolvers.
-Related operation root value will be injected to the
-`ExecutionArgs` BEFORE the `onSubscribe` callback.
+
+If you return from the `onSubscribe` callback, the
+root field value will NOT be injected. You should add it
+in the returned `ExecutionArgs` from the callback.
 
 ___
 
@@ -156,25 +212,17 @@ ___
 • `Optional` **schema**: GraphQLSchema
 
 The GraphQL schema on which the operations
-will be executed and validated against. If
-the schema is left undefined, one must be
-provided by in the resulting `ExecutionArgs`
-from the `onSubscribe` callback.
+will be executed and validated against.
+
+If the schema is left undefined, you're trusted to
+provide one in the returned `ExecutionArgs` from the
+`onSubscribe` callback.
 
 ___
 
 ### subscribe
 
-•  **subscribe**: (args: ExecutionArgs) => Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult>
+•  **subscribe**: (args: ExecutionArgs) => [OperationResult](../modules/_server_.md#operationresult)
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
-
-___
-
-### validationRules
-
-• `Optional` **validationRules**: readonly ValidationRule[]
-
-Custom validation rules overriding all
-validation rules defined by the GraphQL spec.

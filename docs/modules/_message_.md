@@ -24,6 +24,12 @@
 
 * [Message](_message_.md#message)
 
+### Functions
+
+* [isMessage](_message_.md#ismessage)
+* [parseMessage](_message_.md#parsemessage)
+* [stringifyMessage](_message_.md#stringifymessage)
+
 ## Type aliases
 
 ### Message
@@ -35,3 +41,57 @@
 Name | Type | Default |
 ------ | ------ | ------ |
 `T` | [MessageType](../enums/_message_.messagetype.md) | MessageType |
+
+## Functions
+
+### isMessage
+
+▸ **isMessage**(`val`: unknown): val is Message
+
+Checks if the provided value is a message.
+
+#### Parameters:
+
+Name | Type |
+------ | ------ |
+`val` | unknown |
+
+**Returns:** val is Message
+
+___
+
+### parseMessage
+
+▸ **parseMessage**(`data`: unknown): [Message](_message_.md#message)
+
+Parses the raw websocket message data to a valid message.
+
+#### Parameters:
+
+Name | Type |
+------ | ------ |
+`data` | unknown |
+
+**Returns:** [Message](_message_.md#message)
+
+___
+
+### stringifyMessage
+
+▸ **stringifyMessage**\<T>(`msg`: [Message](_message_.md#message)\<T>): string
+
+Stringifies a valid message ready to be sent through the socket.
+
+#### Type parameters:
+
+Name | Type |
+------ | ------ |
+`T` | [MessageType](../enums/_message_.messagetype.md) |
+
+#### Parameters:
+
+Name | Type |
+------ | ------ |
+`msg` | [Message](_message_.md#message)\<T> |
+
+**Returns:** string

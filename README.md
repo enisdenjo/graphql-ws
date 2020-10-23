@@ -400,29 +400,20 @@ const server = https.createServer(function weServeSocketsOnly(_, res) {
 createServer(
   {
     schema,
-    execute: async (args) => {
-      console.log('Execute', args);
-      const result = await execute(args);
-      console.debug('Execute result', result);
-      return result;
-    },
-    subscribe: async (args) => {
-      console.log('Subscribe', args);
-      const subscription = await subscribe(args);
-      // NOTE: `subscribe` can sometimes return a single result, I dont consider it here for sake of simplicity
-      return (async function* () {
-        for await (const result of subscription) {
-          console.debug('Subscribe yielded result', { args, result });
-          yield result;
-        }
-      })();
-    },
     onConnect: (ctx) => {
       console.log('Connect', ctx);
-      return true; // default behaviour - permit all connection attempts
+    },
+    onSubscribe: (ctx, msg) => {
+      console.log('Subscribe', { ctx, msg });
+    },
+    onNext: (ctx, msg, args, result) => {
+      console.debug('Next', { ctx, msg, args, result });
+    },
+    onError: (ctx, msg, errors) => {
+      console.error('Error', { ctx, msg, errors });
     },
     onComplete: (ctx, msg) => {
-      console.debug('Complete', { ctx, msg });
+      console.log('Complete', { ctx, msg });
     },
   },
   {
@@ -498,25 +489,58 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with a custom GraphQL context</summary>
+<summary>Server usage with custom static GraphQL arguments</summary>
 
 ```typescript
-import { execute, subscribe } from 'graphql';
+import { validate, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-transport-ws';
-import { schema } from 'my-graphql-schema';
+import { schema, roots, getStaticContext } from 'my-graphql';
 
 createServer(
   {
+    context: getStaticContext(),
     schema,
+    roots,
     execute,
     subscribe,
-    onSubscribe: (ctx, msg, args) => {
-      return [
-        {
-          ...args,
-          contextValue: getCustomContext(ctx, msg, args),
-        },
-      ];
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+```
+
+</details>
+
+<details>
+<summary>Server usage with custom dynamic GraphQL arguments and validation</summary>
+
+```typescript
+import { parse, validate, execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema, getDynamicContext, myValidationRules } from 'my-graphql';
+
+createServer(
+  {
+    execute,
+    subscribe,
+    onSubscribe: (ctx, msg) => {
+      const args = {
+        schema,
+        contextValue: getDynamicContext(ctx, msg),
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.operationName),
+        variableValues: msg.payload.variables,
+      };
+
+      // dont forget to validate when returning custom execution args!
+      const errors = validate(args.schema, args.document, myValidationRules);
+      if (errors.length > 0) {
+        return errors; // return `GraphQLError[]` to send `ErrorMessage` and stop subscription
+      }
+
+      return args;
     },
   },
   {
@@ -524,6 +548,88 @@ createServer(
     path: '/graphql',
   },
 );
+```
+
+</details>
+
+<details>
+<summary>Server and client usage with persisted queries</summary>
+
+```typescript
+// 🛸 server
+
+import { parse, execute, subscribe } from 'graphql';
+import { createServer } from 'graphql-transport-ws';
+import { schema } from 'my-graphql-schema';
+
+type QueryID = string;
+
+const queriesStore: Record<QueryID, ExecutionArgs> = {
+  iWantTheGreetings: {
+    schema, // you may even provide different schemas in the queries store
+    document: parse('subscription Greetings { greetings }'),
+  },
+};
+
+createServer(
+  {
+    execute,
+    subscribe,
+    onSubscribe: (_ctx, msg) => {
+      // search using `SubscriptionPayload.query` as QueryID
+      // check the client example below for better understanding
+      const hit = queriesStore[msg.payload.query];
+      if (hit) {
+        return {
+          ...hit,
+          variableValues: msg.payload.variables, // use the variables from the client
+        };
+      }
+      // if no hit, execute as usual
+      return {
+        schema,
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.operationName),
+        variableValues: msg.payload.variables,
+      };
+    },
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+```
+
+```typescript
+// 📺 client
+
+import { createClient } from 'graphql-transport-ws';
+
+const client = createClient({
+  url: 'wss://persisted.graphql/queries',
+});
+
+(async () => {
+  const onNext = () => {
+    /**/
+  };
+
+  await new Promise((resolve, reject) => {
+    client.subscribe(
+      {
+        query: 'iWantTheGreetings',
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: resolve,
+      },
+    );
+  });
+
+  expect(onNext).toBeCalledTimes(5); // greetings in 5 languages
+})();
 ```
 
 </details>
