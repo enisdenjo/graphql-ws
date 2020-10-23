@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { parse, buildSchema, execute, subscribe } from 'graphql';
+import { parse, buildSchema, execute, subscribe, GraphQLError } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pong } from './fixtures/simple';
@@ -680,6 +680,52 @@ describe('Subscribe', () => {
       expect(parseMessage(data)).toEqual({
         id: '1',
         type: MessageType.Complete,
+      });
+    });
+
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 30);
+  });
+
+  it('should use the graphql errors returned from `onError`', async () => {
+    await makeServer({
+      onError: (_ctx, _message) => {
+        return [new GraphQLError('Itsa me!'), new GraphQLError('Anda me!')];
+      },
+    });
+
+    const client = await createTClient();
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: `query {
+              nogql
+            }`,
+            variables: {},
+          },
+        }),
+      );
+    });
+
+    // because onnext changed the result
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Error,
+        payload: [{ message: 'Itsa me!' }, { message: 'Anda me!' }],
       });
     });
 
