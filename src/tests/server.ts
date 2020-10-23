@@ -3,7 +3,6 @@ import { parse, buildSchema, execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { startServer, url, schema, pong } from './fixtures/simple';
-import { noop } from './client';
 
 let forgottenDispose: (() => Promise<void>) | undefined;
 async function makeServer(
