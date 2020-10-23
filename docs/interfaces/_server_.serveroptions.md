@@ -94,7 +94,7 @@ ___
 
 ### onConnect
 
-• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean> \| boolean
+• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean \| void> \| boolean \| void
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -102,7 +102,7 @@ through the message `ConnectionInit`. The message
 payload (`connectionParams` on the client) is
 present in the `Context.connectionParams`.
 
-- Returning `true` from the callback will
+- Returning `true` or nothing from the callback will
 allow the client to connect.
 
 - Returning `false` from the callback will
