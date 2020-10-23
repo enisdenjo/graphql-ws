@@ -1,7 +1,13 @@
 import WebSocket from 'ws';
 import { parse, buildSchema, execute, subscribe, GraphQLError } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import { MessageType, parseMessage, stringifyMessage } from '../message';
+import {
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+  SubscribeMessage,
+  SubscribePayload,
+} from '../message';
 import { startServer, url, schema, pong } from './fixtures/simple';
 
 let forgottenDispose: (() => Promise<void>) | undefined;
@@ -573,6 +579,121 @@ describe('Subscribe', () => {
       expect(event.reason).toBe('The GraphQL schema is not provided');
       expect(event.wasClean).toBeTruthy();
     });
+  });
+
+  it('should close the socket with errors thrown from any callback', async () => {
+    const error = new Error('Stop');
+
+    // onConnect
+    let [, dispose] = await makeServer({
+      onConnect: () => {
+        throw error;
+      },
+    });
+    const client = await createTClient();
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4400);
+      expect(event.reason).toBe(error.message);
+      expect(event.wasClean).toBeTruthy();
+    });
+    await dispose();
+
+    async function test(
+      payload: SubscribePayload = {
+        query: `query { getValue }`,
+      },
+    ) {
+      const client = await createTClient();
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+        client.ws.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: '1',
+            type: MessageType.Subscribe,
+            payload,
+          }),
+        );
+      });
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(4400);
+        expect(event.reason).toBe(error.message);
+        expect(event.wasClean).toBeTruthy();
+      });
+    }
+
+    // onSubscribe
+    [, dispose] = await makeServer({
+      onSubscribe: () => {
+        throw error;
+      },
+    });
+    await test();
+    await dispose();
+
+    [, dispose] = await makeServer({
+      onOperation: () => {
+        throw error;
+      },
+    });
+    await test();
+    await dispose();
+
+    // execute
+    [, dispose] = await makeServer({
+      execute: () => {
+        throw error;
+      },
+    });
+    await test();
+    await dispose();
+
+    // subscribe
+    [, dispose] = await makeServer({
+      subscribe: () => {
+        throw error;
+      },
+    });
+    await test({ query: 'subscription { greetings }' });
+    await dispose();
+
+    // onNext
+    [, dispose] = await makeServer({
+      onNext: () => {
+        throw error;
+      },
+    });
+    await test();
+    await dispose();
+
+    // onError
+    [, dispose] = await makeServer({
+      onError: () => {
+        throw error;
+      },
+    });
+    await test({ query: 'query { noExisto }' });
+    await dispose();
+
+    // onComplete
+    [, dispose] = await makeServer({
+      onComplete: () => {
+        throw error;
+      },
+    });
+    await test();
+    await dispose();
   });
 
   it('should directly use the execution arguments returned from `onSubscribe`', async () => {
