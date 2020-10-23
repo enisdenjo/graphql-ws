@@ -156,7 +156,11 @@ export interface ServerOptions {
   onSubscribe?: (
     ctx: Context,
     message: SubscribeMessage,
-  ) => ExecutionArgs | readonly GraphQLError[] | void;
+  ) =>
+    | Promise<ExecutionArgs | readonly GraphQLError[] | void>
+    | ExecutionArgs
+    | readonly GraphQLError[]
+    | void;
   /**
    * Executed after the operation call resolves. For streaming
    * operations, triggering this callback does not necessarely
@@ -191,7 +195,7 @@ export interface ServerOptions {
     ctx: Context,
     message: ErrorMessage,
     errors: readonly GraphQLError[],
-  ) => readonly GraphQLError[] | void;
+  ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
   /**
    * Executed after an operation has emitted a result right before
    * that result has been sent to the client. Results from both
@@ -207,13 +211,13 @@ export interface ServerOptions {
     message: NextMessage,
     args: ExecutionArgs,
     result: ExecutionResult,
-  ) => ExecutionResult | void;
+  ) => Promise<ExecutionResult | void> | ExecutionResult | void;
   /**
    * The complete callback is executed after the
    * operation has completed right before sending
    * the complete message to the client.
    */
-  onComplete?: (ctx: Context, message: CompleteMessage) => void;
+  onComplete?: (ctx: Context, message: CompleteMessage) => Promise<void> | void;
 }
 
 export interface Context {
@@ -464,11 +468,11 @@ export function createServer(
                   payload: errors,
                 };
                 if (onError) {
-                  const maybeErrors = await onError(ctx, errorMessage, errors);
-                  if (maybeErrors) {
+                  const maybeResult = await onError(ctx, errorMessage, errors);
+                  if (maybeResult) {
                     errorMessage = {
                       ...errorMessage,
-                      payload: maybeErrors,
+                      payload: maybeResult,
                     };
                   }
                 }
