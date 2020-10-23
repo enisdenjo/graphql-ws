@@ -493,7 +493,7 @@ export function createServer(
             const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
             if (maybeExecArgsOrErrors) {
               if (areGraphQLErrors(maybeExecArgsOrErrors)) {
-                return emit.error(maybeExecArgsOrErrors);
+                return await emit.error(maybeExecArgsOrErrors);
               }
               execArgs = maybeExecArgsOrErrors as ExecutionArgs; // because not graphql errors
             } else {
@@ -521,7 +521,7 @@ export function createServer(
                 execArgs.document,
               );
               if (validationErrors.length > 0) {
-                return emit.error(validationErrors);
+                return await emit.error(validationErrors);
               }
             }
 
@@ -530,7 +530,7 @@ export function createServer(
               execArgs.operationName,
             );
             if (!operationAST) {
-              return emit.error([
+              return await emit.error([
                 new GraphQLError('Unable to identify operation'),
               ]);
             }
