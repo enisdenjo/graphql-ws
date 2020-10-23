@@ -734,6 +734,58 @@ describe('Subscribe', () => {
     }, 30);
   });
 
+  it('should use the operation result returned from `onOperation`', async () => {
+    await makeServer({
+      onOperation: (_ctx, _message) => {
+        return (async function* () {
+          for (let i = 0; i < 3; i++) {
+            yield { data: { replaced: 'with me' } };
+          }
+        })();
+      },
+    });
+
+    const client = await createTClient();
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: `query {
+              getValue
+            }`,
+            variables: {},
+          },
+        }),
+      );
+    });
+
+    // because onoperation changed the execution result
+
+    for (let i = 0; i < 3; i++) {
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data)).toEqual({
+          id: '1',
+          type: MessageType.Next,
+          payload: { data: { replaced: 'with me' } },
+        });
+      });
+    }
+
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 30);
+  });
+
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
     await makeServer({
       schema,
