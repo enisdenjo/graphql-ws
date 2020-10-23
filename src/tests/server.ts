@@ -5,7 +5,6 @@ import {
   MessageType,
   parseMessage,
   stringifyMessage,
-  SubscribeMessage,
   SubscribePayload,
 } from '../message';
 import { startServer, url, schema, pong } from './fixtures/simple';
