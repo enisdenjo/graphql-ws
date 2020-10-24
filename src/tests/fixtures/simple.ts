@@ -137,7 +137,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
-  waitForClose: (test?: () => void, expire?: number) => Promise<void>;
+  waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
   dispose: (beNice?: boolean) => Promise<void>;
 }
 
@@ -245,7 +245,7 @@ export async function startTServer(
         }
       });
     },
-    waitForClose(test, expire) {
+    waitForClientClose(test, expire) {
       return new Promise((resolve) => {
         function done() {
           pendingCloses--;
