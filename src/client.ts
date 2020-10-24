@@ -417,7 +417,6 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Error: {
             if (message.id === id) {
-              // somehow cacnaer with errror instead of calling twice
               sink.error(message.payload);
 
               // the canceller must be set at this point
@@ -425,19 +424,19 @@ export function createClient(options: ClientOptions): Client {
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               cancellerRef.current!();
+              // TODO-db-201025 calling canceller will complete the sink, meaning that both the `error` and `complete` will be
+              // called neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
             }
             return;
           }
           case MessageType.Complete: {
             if (message.id === id) {
-              // calling canceler will complete
-              sink.complete();
-
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               cancellerRef.current!();
+              // calling canceller will complete the sink
             }
             return;
           }
