@@ -75,7 +75,8 @@ function tsubscribe<T = unknown>(
       return new Promise((resolve) => {
         function done() {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          test?.(results.shift()!);
+          const result = results.shift()!;
+          test?.(result);
           resolve();
         }
         if (results.length > 0) {

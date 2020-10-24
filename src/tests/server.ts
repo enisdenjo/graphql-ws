@@ -64,7 +64,7 @@ function createTClient(
               // the onmessage listener above will be called before our listener, populating the queue
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const next = queue.shift()!;
-              if (test) test(next);
+              test?.(next);
               resolve();
             };
             if (queue.length > 0) {
@@ -85,12 +85,12 @@ function createTClient(
         ) {
           return new Promise((resolve) => {
             if (closeEvent) {
-              if (test) test(closeEvent);
+              test?.(closeEvent);
               return resolve();
             }
             ws.onclose = (event) => {
               closeEvent = event;
-              if (test) test(event);
+              test?.(event);
               resolve();
             };
             if (expire) {
