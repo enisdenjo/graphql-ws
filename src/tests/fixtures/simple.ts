@@ -114,14 +114,16 @@ export const schema = new GraphQLSchema({
   }),
 });
 
+// test server finds an open port starting from this one
+const startPort = 8765;
+
 export async function startTServer(
   options: Partial<ServerOptions> = {},
 ): Promise<TServer> {
-  const port = 8273,
-    path = '/simple';
-
+  const path = '/simple';
   const emitter = new EventEmitter();
 
+  // prepare http server
   const httpServer = http.createServer((_req, res) => {
     res.writeHead(404);
     res.end();
@@ -134,6 +136,7 @@ export async function startTServer(
     httpServer.once('close', () => sockets.delete(socket));
   });
 
+  // create server and hook up for tracking operations
   let pendingOperations = 0;
   const server = await createServer(
     {
@@ -159,7 +162,28 @@ export async function startTServer(
     },
   );
 
-  await new Promise((resolve) => httpServer.listen(port, resolve));
+  // search for open port from the starting port
+  let port = startPort;
+  for (;;) {
+    try {
+      await new Promise((resolve, reject) => {
+        httpServer.once('error', reject);
+        httpServer.once('listening', resolve);
+        httpServer.listen(port);
+      });
+      break; // listening
+    } catch (err) {
+      if ('code' in err && err.code === 'EADDRINUSE') {
+        port++;
+        if (port - startPort > 256) {
+          throw new Error(`Cant find open port, stopping search on ${port}`);
+        }
+        continue; // retry if port is in use
+      } else {
+        throw err; // throw all other errors immediately
+      }
+    }
+  }
 
   // pending websocket clients
   let pendingCloses = 0;
