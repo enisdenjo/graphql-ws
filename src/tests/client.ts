@@ -213,107 +213,56 @@ describe('subscription operation', () => {
   it('should emit results to correct distinct sinks', async () => {
     const client = createClient({ url });
 
-    const nextFnForHappy = jest.fn();
-    const completeFnForHappy = jest.fn();
-    const disposeHappy = client.subscribe(
-      {
-        operationName: 'BecomingHappy',
-        query: `subscription BecomingHappy($secret: String!) {
-          becameHappy(secret: $secret) {
-            name
-          }
-        }`,
-        variables: { secret: 'live life' },
-      },
-      {
-        next: nextFnForHappy,
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: completeFnForHappy,
-      },
-    );
-    await wait(10);
+    const sub1 = tsubscribe(client, {
+      query: `subscription Ping($key: String!) {
+        ping(key: $key)
+      }`,
+      variables: { key: '1' },
+    });
+    await server.waitForOperation();
 
-    const nextFnForBananas = jest.fn();
-    const completeFnForBananas = jest.fn();
-    const disposeBananas = client.subscribe(
-      {
-        query: `subscription {
-          boughtBananas {
-            name
-          }
-        }`,
-      },
-      {
-        next: nextFnForBananas,
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: completeFnForBananas,
-      },
-    );
-    await wait(10);
+    const sub2 = tsubscribe(client, {
+      query: `subscription Ping($key: String!) {
+        ping(key: $key)
+      }`,
+      variables: { key: '2' },
+    });
+    await server.waitForOperation();
 
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'john',
-      },
+    server.pong('1');
+    await sub2.waitForNext(() => {
+      fail('Shouldnt have nexted');
+    }, 10);
+    await sub1.waitForNext((result) => {
+      expect(result).toEqual({
+        data: { ping: 'pong' },
+      });
     });
 
-    pubsub.publish('boughtBananas', {
-      boughtBananas: {
-        name: 'jane',
-      },
+    server.pong('2');
+    await sub1.waitForNext(() => {
+      fail('Shouldnt have nexted');
+    }, 10);
+    await sub2.waitForNext((result) => {
+      expect(result).toEqual({
+        data: { ping: 'pong' },
+      });
     });
 
-    await wait(10);
-
-    expect(nextFnForHappy).toBeCalledTimes(1);
-    expect(nextFnForHappy).toBeCalledWith({
-      data: { becameHappy: { name: 'john' } },
+    const sub3 = tsubscribe(client, {
+      query: 'query { getValue }',
     });
-
-    expect(nextFnForBananas).toBeCalledTimes(1);
-    expect(nextFnForBananas).toBeCalledWith({
-      data: { boughtBananas: { name: 'jane' } },
+    await server.waitForOperation();
+    await sub1.waitForNext(() => {
+      fail('Shouldnt have nexted');
+    }, 10);
+    await sub2.waitForNext(() => {
+      fail('Shouldnt have nexted');
+    }, 10);
+    await sub3.waitForNext((result) => {
+      expect(result).toEqual({ data: { getValue: 'value' } });
     });
-
-    disposeHappy();
-
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'jeff',
-      },
-    });
-
-    pubsub.publish('boughtBananas', {
-      boughtBananas: {
-        name: 'jenny',
-      },
-    });
-
-    await wait(10);
-
-    expect(nextFnForHappy).toHaveBeenCalledTimes(1);
-    expect(completeFnForHappy).toBeCalled();
-
-    expect(nextFnForBananas).toHaveBeenNthCalledWith(2, {
-      data: { boughtBananas: { name: 'jenny' } },
-    });
-
-    disposeBananas();
-
-    pubsub.publish('boughtBananas', {
-      boughtBananas: {
-        name: 'jack',
-      },
-    });
-
-    await wait(10);
-
-    expect(nextFnForBananas).toHaveBeenCalledTimes(2);
-    expect(completeFnForBananas).toBeCalled();
+    await sub3.waitForComplete();
   });
 
   it('should use the provided `generateID` for subscription IDs', async () => {

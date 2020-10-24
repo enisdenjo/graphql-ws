@@ -16,13 +16,14 @@ import { createServer, ServerOptions, Server } from '../../server';
 export const pubsub = new PubSub();
 
 // use for dispatching a `pong` to the `ping` subscription
-let pendingPongs = 0;
-let nextPong: ((done: boolean) => void) | undefined;
-function pong(): void {
-  if (nextPong) {
-    nextPong(false);
+const pendingPongs: Record<string, number | undefined> = {};
+const pongListeners: Record<string, ((done: boolean) => void) | undefined> = {};
+function pong(key = 'global'): void {
+  if (pongListeners[key]) {
+    pongListeners[key]?.(false);
   } else {
-    pendingPongs++;
+    const pending = pendingPongs[key];
+    pendingPongs[key] = pending ? pending + 1 : 1;
   }
 }
 
@@ -57,26 +58,34 @@ export const schema = new GraphQLSchema({
       },
       ping: {
         type: new GraphQLNonNull(GraphQLString),
-        subscribe: function () {
+        args: {
+          key: {
+            type: GraphQLString,
+          },
+        },
+        subscribe: function (_src, args) {
+          const key = args.key ? args.key : 'global';
           return {
             [Symbol.asyncIterator]() {
               return this;
             },
             async next() {
-              if (pendingPongs > 0) {
-                pendingPongs--;
+              if ((pendingPongs[key] ?? 0) > 0) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                pendingPongs[key]!--;
                 return { value: { ping: 'pong' } };
               }
-              const done = await new Promise((resolve) => (nextPong = resolve));
-              if (done) {
+              if (
+                await new Promise((resolve) => (pongListeners[key] = resolve))
+              ) {
                 return { done: true };
               }
               return { value: { ping: 'pong' } };
             },
             async return() {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              nextPong!(true);
-              nextPong = undefined;
+              pongListeners[key]!(true);
+              delete pongListeners[key];
               return { done: true };
             },
             async throw() {
@@ -121,7 +130,7 @@ export const schema = new GraphQLSchema({
 
 export interface TServer {
   server: Server;
-  pong: () => void;
+  pong: (key?: string) => void;
   waitForClient: (
     test?: (client: WebSocket) => void,
     expire?: number,
