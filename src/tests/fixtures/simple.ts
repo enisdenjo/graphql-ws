@@ -12,7 +12,7 @@ import net from 'net';
 import http from 'http';
 import { createServer, ServerOptions, Server } from '../../server';
 
-// distinct server for each test; if you forget to dispose, the fixture doesnt
+// distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
 afterEach(async () => {
   while (leftovers.length > 0) {
@@ -114,7 +114,7 @@ export const schema = new GraphQLSchema({
   }),
 });
 
-// test server finds an open port starting from this one
+// test server finds an open port starting the search from this one
 const startPort = 8765;
 
 export async function startTServer(
@@ -178,7 +178,7 @@ export async function startTServer(
         if (port - startPort > 256) {
           throw new Error(`Cant find open port, stopping search on ${port}`);
         }
-        continue; // retry if port is in use
+        continue; // try another one if this port is in use
       } else {
         throw err; // throw all other errors immediately
       }
@@ -196,6 +196,7 @@ export async function startTServer(
     });
   });
 
+  // disposes of all started servers
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve, reject) => {
       if (!beNice) {
