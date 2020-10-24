@@ -4,32 +4,21 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { url, startTServer, TServer } from './fixtures/simple';
+import { startTServer } from './fixtures/simple';
 import { createClient, Client, EventListener } from '../client';
 import { SubscribePayload } from '../message';
+
+// simulate browser environment for easier client testing
+beforeEach(() => {
+  Object.assign(global, {
+    WebSocket: WebSocket,
+  });
+});
 
 // Just does nothing
 function noop(): void {
   /**/
 }
-
-let server: TServer, forgottenDispose: TServer['dispose'] | undefined;
-beforeEach(async () => {
-  Object.assign(global, { WebSocket: WebSocket });
-  const { dispose, ...rest } = await startTServer();
-  forgottenDispose = dispose;
-  server = {
-    ...rest,
-    dispose: (beNice) =>
-      dispose(beNice).then(() => (forgottenDispose = undefined)),
-  };
-});
-afterEach(async () => {
-  if (forgottenDispose) {
-    await forgottenDispose();
-    forgottenDispose = undefined;
-  }
-});
 
 interface TSubscribe<T> {
   waitForNext: (test?: (value: T) => void, expire?: number) => Promise<void>;
@@ -134,6 +123,8 @@ function tsubscribe<T = unknown>(
  */
 
 it('should use the provided WebSocket implementation', async () => {
+  const { url, ...server } = await startTServer();
+
   Object.assign(global, {
     WebSocket: null,
   });
@@ -148,6 +139,8 @@ it('should use the provided WebSocket implementation', async () => {
 });
 
 it('should not accept invalid WebSocket implementations', async () => {
+  const { url } = await startTServer();
+
   Object.assign(global, {
     WebSocket: null,
   });
@@ -163,6 +156,8 @@ it('should not accept invalid WebSocket implementations', async () => {
 
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
+    const { url } = await startTServer();
+
     const client = createClient({ url });
 
     const sub = tsubscribe(client, {
@@ -179,6 +174,8 @@ describe('query operation', () => {
 
 describe('subscription operation', () => {
   it('should execute and "next" the emitted results until disposed', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({ url });
 
     const sub = tsubscribe(client, {
@@ -208,6 +205,8 @@ describe('subscription operation', () => {
   });
 
   it('should emit results to correct distinct sinks', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({ url });
 
     const sub1 = tsubscribe(client, {
@@ -263,6 +262,8 @@ describe('subscription operation', () => {
   });
 
   it('should use the provided `generateID` for subscription IDs', async () => {
+    const { url, ...server } = await startTServer();
+
     const generateIDFn = jest.fn(() => 'not unique');
 
     const client = createClient({ url, generateID: generateIDFn });
@@ -276,6 +277,8 @@ describe('subscription operation', () => {
   });
 
   it('should dispose of the subscription on complete', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({ url });
 
     const sub = tsubscribe(client, {
@@ -290,6 +293,8 @@ describe('subscription operation', () => {
   });
 
   it('should dispose of the subscription on error', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({ url });
 
     const sub = tsubscribe(client, {
@@ -306,6 +311,8 @@ describe('subscription operation', () => {
 
 describe('"concurrency"', () => {
   it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({ url, retryAttempts: 0 });
 
     const sub1 = tsubscribe(client, {
@@ -336,6 +343,8 @@ describe('"concurrency"', () => {
 
 describe('lazy', () => {
   it('should connect immediately when mode is disabled', async () => {
+    const { url, ...server } = await startTServer();
+
     createClient({
       url,
       lazy: false,
@@ -345,6 +354,8 @@ describe('lazy', () => {
   });
 
   it('should close socket when disposing while mode is disabled', async () => {
+    const { url, ...server } = await startTServer();
+
     // wait for connected
     const client = await new Promise<Client>((resolve) => {
       const client = createClient({
@@ -363,6 +374,8 @@ describe('lazy', () => {
   });
 
   it('should connect on first subscribe when mode is enabled', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({
       url,
       lazy: true, // default
@@ -388,6 +401,8 @@ describe('lazy', () => {
   });
 
   it('should disconnect on last unsubscribe when mode is enabled', async () => {
+    const { url, ...server } = await startTServer();
+
     const client = createClient({
       url,
       lazy: true, // default
@@ -427,6 +442,8 @@ describe('lazy', () => {
 
 describe('reconnecting', () => {
   it('should not reconnect if retry attempts is zero', async () => {
+    const { url, ...server } = await startTServer();
+
     createClient({
       url,
       lazy: false,
@@ -444,6 +461,8 @@ describe('reconnecting', () => {
   });
 
   it('should reconnect silently after socket closes', async () => {
+    const { url, ...server } = await startTServer();
+
     createClient({
       url,
       lazy: false,
@@ -473,6 +492,8 @@ describe('reconnecting', () => {
 
 describe('events', () => {
   it('should emit to relevant listeners with expected arguments', async () => {
+    const { url, ...server } = await startTServer();
+
     const connectingFn = jest.fn(noop as EventListener<'connecting'>);
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);

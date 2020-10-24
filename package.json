@@ -40,7 +40,7 @@
     "gendocs": "typedoc --options typedoc.js src/",
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
-    "test": "jest -i",
+    "test": "jest",
     "build": "tsc -b tsconfig.build.json",
     "release": "semantic-release"
   },

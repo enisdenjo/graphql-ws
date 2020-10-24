@@ -12,6 +12,33 @@ import net from 'net';
 import http from 'http';
 import { createServer, ServerOptions, Server } from '../../server';
 
+// distinct server for each test; if you forget to dispose, the fixture wont
+const leftovers: Dispose[] = [];
+afterEach(async () => {
+  while (leftovers.length > 0) {
+    // if not disposed by test, cleanup
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const dispose = leftovers.pop()!;
+    await dispose();
+  }
+});
+
+export interface TServer {
+  url: string;
+  server: Server;
+  clients: Set<WebSocket>;
+  pong: (key?: string) => void;
+  waitForClient: (
+    test?: (client: WebSocket) => void,
+    expire?: number,
+  ) => Promise<void>;
+  waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
+  waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
+  dispose: Dispose;
+}
+
+type Dispose = (beNice?: boolean) => Promise<void>;
+
 // use for dispatching a `pong` to the `ping` subscription
 const pendingPongs: Record<string, number | undefined> = {};
 const pongListeners: Record<string, ((done: boolean) => void) | undefined> = {};
@@ -87,28 +114,16 @@ export const schema = new GraphQLSchema({
   }),
 });
 
-export interface TServer {
-  server: Server;
-  clients: Set<WebSocket>;
-  pong: (key?: string) => void;
-  waitForClient: (
-    test?: (client: WebSocket) => void,
-    expire?: number,
-  ) => Promise<void>;
-  waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
-  waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
-  dispose: (beNice?: boolean) => Promise<void>;
-}
-
-export const port = 8273,
-  path = '/graphql-simple',
-  url = `ws://localhost:${port}${path}`;
+// test server finds an open port starting the search from this one
+const startPort = 8765;
 
 export async function startTServer(
   options: Partial<ServerOptions> = {},
 ): Promise<TServer> {
+  const path = '/simple';
   const emitter = new EventEmitter();
 
+  // prepare http server
   const httpServer = http.createServer((_req, res) => {
     res.writeHead(404);
     res.end();
@@ -121,6 +136,7 @@ export async function startTServer(
     httpServer.once('close', () => sockets.delete(socket));
   });
 
+  // create server and hook up for tracking operations
   let pendingOperations = 0;
   const server = await createServer(
     {
@@ -146,7 +162,28 @@ export async function startTServer(
     },
   );
 
-  await new Promise((resolve) => httpServer.listen(port, resolve));
+  // search for open port from the starting port
+  let port = startPort;
+  for (;;) {
+    try {
+      await new Promise((resolve, reject) => {
+        httpServer.once('error', reject);
+        httpServer.once('listening', resolve);
+        httpServer.listen(port);
+      });
+      break; // listening
+    } catch (err) {
+      if ('code' in err && err.code === 'EADDRINUSE') {
+        port++;
+        if (port - startPort > 256) {
+          throw new Error(`Cant find open port, stopping search on ${port}`);
+        }
+        continue; // try another one if this port is in use
+      } else {
+        throw err; // throw all other errors immediately
+      }
+    }
+  }
 
   // pending websocket clients
   let pendingCloses = 0;
@@ -159,7 +196,28 @@ export async function startTServer(
     });
   });
 
+  // disposes of all started servers
+  const dispose: Dispose = (beNice) => {
+    return new Promise((resolve, reject) => {
+      if (!beNice) {
+        for (const socket of sockets) {
+          socket.destroy();
+          sockets.delete(socket);
+        }
+      }
+      const disposing = server.dispose() as Promise<void>;
+      disposing.catch(reject).then(() => {
+        httpServer.close(() => {
+          leftovers.splice(leftovers.indexOf(dispose), 1);
+          resolve();
+        });
+      });
+    });
+  };
+  leftovers.push(dispose);
+
   return {
+    url: `ws://localhost:${port}${path}`,
     server,
     get clients() {
       return server.webSocketServer.clients;
@@ -224,19 +282,6 @@ export async function startTServer(
         }
       });
     },
-    dispose(beNice) {
-      return new Promise((resolve, reject) => {
-        if (!beNice) {
-          for (const socket of sockets) {
-            socket.destroy();
-            sockets.delete(socket);
-          }
-        }
-        const disposing = server.dispose() as Promise<void>;
-        disposing.catch(reject).then(() => {
-          httpServer.close(() => resolve());
-        });
-      });
-    },
+    dispose,
   };
 }
