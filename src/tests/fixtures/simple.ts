@@ -130,12 +130,14 @@ export const schema = new GraphQLSchema({
 
 export interface TServer {
   server: Server;
+  clients: Set<WebSocket>;
   pong: (key?: string) => void;
   waitForClient: (
     test?: (client: WebSocket) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
+  waitForClose: (test?: () => void, expire?: number) => Promise<void>;
   dispose: (beNice?: boolean) => Promise<void>;
 }
 
@@ -146,6 +148,8 @@ export const port = 8273,
 export async function startTServer(
   options: Partial<ServerOptions> = {},
 ): Promise<TServer> {
+  const emitter = new EventEmitter();
+
   const httpServer = http.createServer((_req, res) => {
     res.writeHead(404);
     res.end();
@@ -159,7 +163,6 @@ export async function startTServer(
   });
 
   let pendingOperations = 0;
-  const operations = new EventEmitter();
   const server = await createServer(
     {
       schema,
@@ -174,7 +177,7 @@ export async function startTServer(
           args,
           result,
         );
-        operations.emit('operation');
+        emitter.emit('operation');
         return maybeResult;
       },
     },
@@ -187,16 +190,21 @@ export async function startTServer(
   await new Promise((resolve) => httpServer.listen(port, resolve));
 
   // pending websocket clients
+  let pendingCloses = 0;
   const pendingClients: WebSocket[] = [];
   server.webSocketServer.on('connection', (client) => {
     pendingClients.push(client);
-    client.once('close', () =>
-      pendingClients.splice(pendingClients.indexOf(client), 1),
-    );
+    client.once('close', () => {
+      pendingCloses++;
+      emitter.emit('close');
+    });
   });
 
   return {
     server,
+    get clients() {
+      return server.webSocketServer.clients;
+    },
     pong,
     waitForClient(test, expire) {
       return new Promise((resolve) => {
@@ -228,10 +236,29 @@ export async function startTServer(
         if (pendingOperations > 0) {
           return done();
         }
-        operations.once('operation', done);
+        emitter.once('operation', done);
         if (expire) {
           setTimeout(() => {
-            server.webSocketServer.off('operation', done); // expired
+            emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+        }
+      });
+    },
+    waitForClose(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingCloses--;
+          test?.();
+          resolve();
+        }
+        if (pendingCloses > 0) {
+          return done();
+        }
+        emitter.once('close', done);
+        if (expire) {
+          setTimeout(() => {
+            emitter.off('close', done); // expired
             resolve();
           }, expire);
         }
