@@ -4,7 +4,7 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { url, startTServer, TServer, pubsub } from './fixtures/simple';
+import { url, startTServer, TServer } from './fixtures/simple';
 import { createClient, Client, EventListener } from '../client';
 import { SubscribePayload } from '../message';
 
@@ -12,10 +12,6 @@ import { SubscribePayload } from '../message';
 function noop(): void {
   /**/
 }
-
-/** Waits for the specified timeout and then resolves the promise. */
-const wait = (timeout: number) =>
-  new Promise((resolve) => setTimeout(resolve, timeout));
 
 let server: TServer, forgottenDispose: TServer['dispose'] | undefined;
 beforeEach(async () => {
@@ -271,23 +267,10 @@ describe('subscription operation', () => {
 
     const client = createClient({ url, generateID: generateIDFn });
 
-    client.subscribe(
-      {
-        query: `subscription {
-          boughtBananas {
-            name
-          }
-        }`,
-      },
-      {
-        next: noop,
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: noop,
-      },
-    );
-    await wait(10);
+    tsubscribe(client, {
+      query: '{ getValue }',
+    });
+    await server.waitForOperation();
 
     expect(generateIDFn).toBeCalled();
   });
@@ -295,120 +278,59 @@ describe('subscription operation', () => {
   it('should dispose of the subscription on complete', async () => {
     const client = createClient({ url });
 
-    const completeFn = jest.fn();
-    client.subscribe(
-      {
-        query: `{
-          getValue
-        }`,
-      },
-      {
-        next: noop,
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: completeFn,
-      },
-    );
-    await wait(20);
+    const sub = tsubscribe(client, {
+      query: '{ getValue }',
+    });
 
-    expect(completeFn).toBeCalled();
+    await sub.waitForComplete();
 
-    await wait(20);
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    await server.waitForClientClose();
+
+    expect(server.clients.size).toBe(0);
   });
 
   it('should dispose of the subscription on error', async () => {
     const client = createClient({ url });
 
-    const errorFn = jest.fn();
-    client.subscribe(
-      {
-        query: `{
-          iDontExist
-        }`,
-      },
-      {
-        next: noop,
-        error: errorFn,
-        complete: noop,
-      },
-    );
-    await wait(20);
+    const sub = tsubscribe(client, {
+      query: '{ iDontExist }',
+    });
 
-    expect(errorFn).toBeCalled();
+    await sub.waitForError();
 
-    await wait(20);
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    await server.waitForClientClose();
+
+    expect(server.clients.size).toBe(0);
   });
 });
 
 describe('"concurrency"', () => {
   it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async () => {
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
-    const nextFnForHappy = jest.fn();
-    const completeFnForHappy = jest.fn();
-    let disposeOfHappy: () => void;
-    setTimeout(() => {
-      disposeOfHappy = client.subscribe(
-        {
-          operationName: 'BecomingHappy',
-          query: `subscription BecomingHappy($secret: String!) {
-            becameHappy(secret: $secret) {
-              name
-            }
-          }`,
-          variables: { secret: 'there is no secret' },
-        },
-        {
-          next: nextFnForHappy,
-          error: () => {
-            fail(`Unexpected error call`);
-          },
-          complete: completeFnForHappy,
-        },
-      );
+    const sub1 = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    sub1.dispose();
+    const sub2 = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    server.pong();
+
+    await sub2.waitForNext((result) => {
+      expect(result).toEqual({ data: { ping: 'pong' } });
     });
 
-    const nextFnForBananas = jest.fn();
-    const completeFnForBananas = jest.fn();
-    setTimeout(async () => {
-      disposeOfHappy();
+    await sub1.waitForNext(() => {
+      fail('Shouldnt have nexted');
+    }, 10);
+    await sub1.waitForComplete();
 
-      await wait(10);
-
-      client.subscribe(
-        {
-          query: `subscription {
-            boughtBananas {
-              name
-            }
-          }`,
-        },
-        {
-          next: nextFnForBananas,
-          error: () => {
-            fail(`Unexpected error call`);
-          },
-          complete: completeFnForBananas,
-        },
-      );
-
-      await wait(10);
-
-      pubsub.publish('boughtBananas', {
-        boughtBananas: {
-          name: 'john',
-        },
-      });
-    });
-
-    await wait(30);
-
-    expect(nextFnForHappy).not.toBeCalled();
-    expect(completeFnForHappy).toBeCalled();
-    expect(nextFnForBananas).toBeCalled();
+    expect(server.clients.size).toBe(1);
   });
 });
 
@@ -418,43 +340,42 @@ describe('lazy', () => {
       url,
       lazy: false,
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(1);
-    server.server.webSocketServer.clients.forEach((client) => {
-      expect(client.readyState).toBe(WebSocket.OPEN);
-    });
+    await server.waitForClient();
   });
 
   it('should close socket when disposing while mode is disabled', async () => {
-    const client = createClient({
-      url,
-      lazy: false,
+    // wait for connected
+    const client = await new Promise<Client>((resolve) => {
+      const client = createClient({
+        url,
+        lazy: false,
+        retryAttempts: 0,
+        on: {
+          connected: () => resolve(client),
+        },
+      });
     });
-    await wait(10);
 
     client.dispose();
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    await server.waitForClientClose();
   });
 
   it('should connect on first subscribe when mode is enabled', async () => {
     const client = createClient({
       url,
       lazy: true, // default
+      retryAttempts: 0,
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    await server.waitForClient(() => {
+      fail('Client shouldnt have appeared');
+    }, 10);
 
     client.subscribe(
       {
-        query: `subscription {
-          boughtBananas {
-            name
-          }
-        }`,
+        query: '{ getValue }',
       },
       {
         next: noop,
@@ -462,66 +383,45 @@ describe('lazy', () => {
         complete: noop,
       },
     );
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(1);
-    server.server.webSocketServer.clients.forEach((client) => {
-      expect(client.readyState).toBe(WebSocket.OPEN);
-    });
+    await server.waitForClient();
   });
 
   it('should disconnect on last unsubscribe when mode is enabled', async () => {
     const client = createClient({
       url,
       lazy: true, // default
+      retryAttempts: 0,
     });
-    await wait(10);
 
-    const disposeClient1 = client.subscribe(
-      {
-        operationName: 'BoughtBananas',
-        query: `subscription BoughtBananas {
-          boughtBananas {
-            name
-          }
-        }`,
-      },
-      {
-        next: noop,
-        error: noop,
-        complete: noop,
-      },
-    );
-    await wait(10);
+    await server.waitForClient(() => {
+      fail('Client shouldnt have appeared');
+    }, 10);
 
-    const disposeClient2 = client.subscribe(
-      {
-        operationName: 'BecomingHappy',
-        query: `subscription BecomingHappy {
-          becameHappy(secret: "live in the moment") {
-            name
-          }
-        }`,
-        variables: {},
-      },
-      {
-        next: noop,
-        error: noop,
-        complete: noop,
-      },
-    );
-    await wait(10);
+    const sub1 = tsubscribe(client, {
+      operationName: 'PingPlease',
+      query: 'subscription PingPlease { ping }',
+    });
+    await server.waitForOperation();
 
-    disposeClient1();
-    await wait(10);
+    const sub2 = tsubscribe(client, {
+      operationName: 'Pong',
+      query: 'subscription Pong($key: String!) { ping(key: $key) }',
+      variables: { key: '1' },
+    });
+    await server.waitForOperation();
 
-    // still connected
-    expect(server.server.webSocketServer.clients.size).toBe(1);
+    sub1.dispose();
+    await sub1.waitForComplete();
+
+    // still is connected
+    await server.waitForClientClose(() => {
+      fail('Client should have closed');
+    }, 10);
 
     // everyone unsubscribed
-    disposeClient2();
-    await wait(10);
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    sub2.dispose();
+    await server.waitForClientClose();
   });
 });
 
@@ -531,21 +431,16 @@ describe('reconnecting', () => {
       url,
       lazy: false,
       retryAttempts: 0,
-      retryTimeout: 10, // fake timeout
+      retryTimeout: 5, // fake timeout
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(1);
-
-    server.server.webSocketServer.clients.forEach((client) => {
+    await server.waitForClient((client) => {
       client.close();
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(0);
-
-    await wait(20);
-    expect(server.server.webSocketServer.clients.size).toBe(0); // never reconnected
+    await server.waitForClient(() => {
+      fail('Shouldnt have tried again');
+    }, 20);
   });
 
   it('should reconnect silently after socket closes', async () => {
@@ -553,21 +448,22 @@ describe('reconnecting', () => {
       url,
       lazy: false,
       retryAttempts: 1,
-      retryTimeout: 10,
+      retryTimeout: 5,
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(1);
-
-    server.server.webSocketServer.clients.forEach((client) => {
+    await server.waitForClient((client) => {
       client.close();
     });
-    await wait(10);
 
-    expect(server.server.webSocketServer.clients.size).toBe(0);
+    // tried again
+    await server.waitForClient((client) => {
+      client.close();
+    });
 
-    await wait(20);
-    expect(server.server.webSocketServer.clients.size).toBe(1);
+    // never again
+    await server.waitForClient(() => {
+      fail('Shouldnt have tried again');
+    }, 20);
   });
 
   it.todo(
@@ -581,20 +477,25 @@ describe('events', () => {
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);
 
-    const client = createClient({
-      url,
-      lazy: false,
-      retryAttempts: 0,
-      on: {
-        connecting: connectingFn,
-        connected: connectedFn,
-        closed: closedFn,
-      },
+    // wait for connected
+    const client = await new Promise<Client>((resolve) => {
+      const client = createClient({
+        url,
+        lazy: false,
+        retryAttempts: 0,
+        on: {
+          connecting: connectingFn,
+          connected: connectedFn,
+          closed: closedFn,
+        },
+      });
+      client.on('connecting', connectingFn);
+      client.on('connected', (...args) => {
+        connectedFn(...args);
+        resolve(client);
+      });
+      client.on('closed', closedFn);
     });
-    client.on('connecting', connectingFn);
-    client.on('connected', connectedFn);
-    client.on('closed', closedFn);
-    await wait(10);
 
     expect(connectingFn).toBeCalledTimes(1); // only once because `client.on` missed the initial connecting event
     expect(connectingFn.mock.calls[0].length).toBe(0);
@@ -606,10 +507,18 @@ describe('events', () => {
 
     expect(closedFn).not.toBeCalled();
 
-    server.server.webSocketServer.clients.forEach((client) => {
+    server.clients.forEach((client) => {
       client.close();
     });
-    await wait(10);
+
+    if (closedFn.mock.calls.length > 0) {
+      // already closed
+    } else {
+      // wait for close
+      await new Promise((resolve) => {
+        client.on('closed', () => resolve());
+      });
+    }
 
     // retrying is disabled
     expect(connectingFn).toBeCalledTimes(1);
