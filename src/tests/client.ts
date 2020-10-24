@@ -50,17 +50,17 @@ function tsubscribe<T = unknown>(
   payload: SubscribePayload,
 ): TSubscribe<T> {
   const emitter = new EventEmitter();
-  const values: T[] = [];
+  const results: T[] = [];
   let error: unknown,
     completed = false;
   const dispose = client.subscribe<T>(payload, {
     next: (value) => {
-      values.push(value);
+      results.push(value);
       emitter.emit('next');
     },
     error: (err) => {
       error = err;
-      emitter.emit('error');
+      emitter.emit('err');
       emitter.removeAllListeners();
     },
     complete: () => {
@@ -75,10 +75,10 @@ function tsubscribe<T = unknown>(
       return new Promise((resolve) => {
         function done() {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          test?.(values.shift()!);
+          test?.(results.shift()!);
           resolve();
         }
-        if (values.length > 0) {
+        if (results.length > 0) {
           return done();
         }
         emitter.once('next', done);
@@ -97,13 +97,13 @@ function tsubscribe<T = unknown>(
           test?.(error);
           resolve();
         }
-        if (completed) {
+        if (error) {
           return done();
         }
-        emitter.once('error', done);
+        emitter.once('err', done);
         if (expire) {
           setTimeout(() => {
-            emitter.off('error', done); // expired
+            emitter.off('err', done); // expired
             resolve();
           }, expire);
         }
