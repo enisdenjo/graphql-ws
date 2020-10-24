@@ -200,14 +200,13 @@ export async function startTServer(
         if (pendingClients.length > 0) {
           return done();
         }
-        let timeout: number | undefined;
+        server.webSocketServer.once('connection', done);
         if (expire) {
-          timeout = setTimeout(resolve, expire);
+          setTimeout(() => {
+            server.webSocketServer.off('connection', done); // expired
+            resolve();
+          }, expire);
         }
-        server.webSocketServer.once('connection', () => {
-          if (timeout) clearTimeout(timeout);
-          done();
-        });
       });
     },
     waitForOperation(test, expire) {
@@ -220,14 +219,13 @@ export async function startTServer(
         if (pendingOperations > 0) {
           return done();
         }
-        let timeout: number | undefined;
+        operations.once('operation', done);
         if (expire) {
-          timeout = setTimeout(resolve, expire);
+          setTimeout(() => {
+            server.webSocketServer.off('operation', done); // expired
+            resolve();
+          }, expire);
         }
-        operations.once('operation', () => {
-          if (timeout) clearTimeout(timeout);
-          done();
-        });
       });
     },
     dispose(beNice) {

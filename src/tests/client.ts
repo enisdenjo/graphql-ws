@@ -81,14 +81,13 @@ function tsubscribe<T = unknown>(
         if (values.length > 0) {
           return done();
         }
-        let timer: number;
+        emitter.once('next', done);
         if (expire) {
-          timer = setTimeout(resolve, expire);
+          setTimeout(() => {
+            emitter.off('next', done); // expired
+            resolve();
+          }, expire);
         }
-        emitter.once('next', () => {
-          clearTimeout(timer);
-          done();
-        });
       });
     },
     waitForError: (test, expire) => {
@@ -101,14 +100,13 @@ function tsubscribe<T = unknown>(
         if (completed) {
           return done();
         }
-        let timer: number;
+        emitter.once('error', done);
         if (expire) {
-          timer = setTimeout(resolve, expire);
+          setTimeout(() => {
+            emitter.off('error', done); // expired
+            resolve();
+          }, expire);
         }
-        emitter.once('error', () => {
-          clearTimeout(timer);
-          done();
-        });
       });
     },
     waitForComplete: (test, expire) => {
@@ -121,14 +119,13 @@ function tsubscribe<T = unknown>(
         if (completed) {
           return done();
         }
-        let timer: number;
+        emitter.once('compete', done);
         if (expire) {
-          timer = setTimeout(resolve, expire);
+          setTimeout(() => {
+            emitter.off('complete', done); // expired
+            resolve();
+          }, expire);
         }
-        emitter.once('compete', () => {
-          clearTimeout(timer);
-          done();
-        });
       });
     },
     dispose,
