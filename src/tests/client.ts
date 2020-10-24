@@ -2,12 +2,11 @@
  * @jest-environment jsdom
  */
 
-import { url, startTServer, TServer, pubsub } from './fixtures/simple';
-import { createClient, EventListener } from '../client';
 import WebSocket from 'ws';
-
-// for easier client tests
-Object.assign(global, { WebSocket: WebSocket });
+import { EventEmitter } from 'events';
+import { url, startTServer, TServer, pubsub } from './fixtures/simple';
+import { createClient, Client, EventListener } from '../client';
+import { SubscribePayload } from '../message';
 
 // Just does nothing
 function noop(): void {
@@ -20,6 +19,7 @@ const wait = (timeout: number) =>
 
 let server: TServer, forgottenDispose: TServer['dispose'] | undefined;
 beforeEach(async () => {
+  Object.assign(global, { WebSocket: WebSocket });
   const { dispose, ...rest } = await startTServer();
   forgottenDispose = dispose;
   server = {
@@ -34,6 +34,104 @@ afterEach(async () => {
     forgottenDispose = undefined;
   }
 });
+
+interface TSubscribe<T> {
+  waitForNext: (test?: (value: T) => void, expire?: number) => Promise<void>;
+  waitForError: (
+    test?: (error: unknown) => void,
+    expire?: number,
+  ) => Promise<void>;
+  waitForComplete: (test?: () => void, expire?: number) => Promise<void>;
+}
+
+function tsubscribe<T = unknown>(
+  client: Client,
+  payload: SubscribePayload,
+): TSubscribe<T> {
+  const emitter = new EventEmitter();
+  const values: T[] = [];
+  let error: unknown,
+    completed = false;
+  client.subscribe<T>(payload, {
+    next: (value) => {
+      values.push(value);
+      emitter.emit('next');
+    },
+    error: (err) => {
+      error = err;
+      emitter.emit('error');
+      emitter.removeAllListeners();
+    },
+    complete: () => {
+      completed = true;
+      emitter.emit('complete');
+      emitter.removeAllListeners();
+    },
+  });
+
+  return {
+    waitForNext: (test, expire) => {
+      return new Promise((resolve) => {
+        function done() {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          test?.(values.shift()!);
+          resolve();
+        }
+        if (values.length > 0) {
+          return done();
+        }
+        let timer: number;
+        if (expire) {
+          timer = setTimeout(resolve, expire);
+        }
+        emitter.once('next', () => {
+          clearTimeout(timer);
+          done();
+        });
+      });
+    },
+    waitForError: (test, expire) => {
+      return new Promise((resolve) => {
+        function done() {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          test?.(error);
+          resolve();
+        }
+        if (completed) {
+          return done();
+        }
+        let timer: number;
+        if (expire) {
+          timer = setTimeout(resolve, expire);
+        }
+        emitter.once('error', () => {
+          clearTimeout(timer);
+          done();
+        });
+      });
+    },
+    waitForComplete: (test, expire) => {
+      return new Promise((resolve) => {
+        function done() {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          test?.();
+          resolve();
+        }
+        if (completed) {
+          return done();
+        }
+        let timer: number;
+        if (expire) {
+          timer = setTimeout(resolve, expire);
+        }
+        emitter.once('compete', () => {
+          clearTimeout(timer);
+          done();
+        });
+      });
+    },
+  };
+}
 
 /**
  * Tests
@@ -50,9 +148,7 @@ it('should use the provided WebSocket implementation', async () => {
     webSocketImpl: WebSocket,
   });
 
-  await wait(10);
-
-  expect(server.webSocketServer.clients.size).toBe(1);
+  await server.waitForClient();
 });
 
 it('should not accept invalid WebSocket implementations', async () => {
@@ -70,25 +166,18 @@ it('should not accept invalid WebSocket implementations', async () => {
 });
 
 describe('query operation', () => {
-  it('should execute the query, "next" the result and then complete', (done) => {
+  it('should execute the query, "next" the result and then complete', async () => {
     const client = createClient({ url });
 
-    client.subscribe(
-      {
-        query: `query {
-          getValue
-        }`,
-      },
-      {
-        next: (result) => {
-          expect(result).toEqual({ data: { getValue: 'value' } });
-        },
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: done,
-      },
-    );
+    const sub = tsubscribe(client, {
+      query: 'query { getValue }',
+    });
+
+    await sub.waitForNext((result) => {
+      expect(result).toEqual({ data: { getValue: 'value' } });
+    });
+
+    await sub.waitForComplete();
   });
 });
 
