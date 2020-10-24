@@ -12,6 +12,33 @@ import net from 'net';
 import http from 'http';
 import { createServer, ServerOptions, Server } from '../../server';
 
+// distinct server for each test; if you forget to dispose, the fixture doesnt
+const leftovers: Dispose[] = [];
+afterEach(async () => {
+  while (leftovers.length > 0) {
+    // if not disposed by test, cleanup
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const dispose = leftovers.pop()!;
+    await dispose();
+  }
+});
+
+export interface TServer {
+  url: string;
+  server: Server;
+  clients: Set<WebSocket>;
+  pong: (key?: string) => void;
+  waitForClient: (
+    test?: (client: WebSocket) => void,
+    expire?: number,
+  ) => Promise<void>;
+  waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
+  waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
+  dispose: Dispose;
+}
+
+type Dispose = (beNice?: boolean) => Promise<void>;
+
 // use for dispatching a `pong` to the `ping` subscription
 const pendingPongs: Record<string, number | undefined> = {};
 const pongListeners: Record<string, ((done: boolean) => void) | undefined> = {};
@@ -87,26 +114,12 @@ export const schema = new GraphQLSchema({
   }),
 });
 
-export interface TServer {
-  server: Server;
-  clients: Set<WebSocket>;
-  pong: (key?: string) => void;
-  waitForClient: (
-    test?: (client: WebSocket) => void,
-    expire?: number,
-  ) => Promise<void>;
-  waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
-  waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
-  dispose: (beNice?: boolean) => Promise<void>;
-}
-
-export const port = 8273,
-  path = '/graphql-simple',
-  url = `ws://localhost:${port}${path}`;
-
 export async function startTServer(
   options: Partial<ServerOptions> = {},
 ): Promise<TServer> {
+  const port = 8273,
+    path = '/simple';
+
   const emitter = new EventEmitter();
 
   const httpServer = http.createServer((_req, res) => {
@@ -159,7 +172,27 @@ export async function startTServer(
     });
   });
 
+  const dispose: Dispose = (beNice) => {
+    return new Promise((resolve, reject) => {
+      if (!beNice) {
+        for (const socket of sockets) {
+          socket.destroy();
+          sockets.delete(socket);
+        }
+      }
+      const disposing = server.dispose() as Promise<void>;
+      disposing.catch(reject).then(() => {
+        httpServer.close(() => {
+          leftovers.splice(leftovers.indexOf(dispose), 1);
+          resolve();
+        });
+      });
+    });
+  };
+  leftovers.push(dispose);
+
   return {
+    url: `ws://localhost:${port}${path}`,
     server,
     get clients() {
       return server.webSocketServer.clients;
@@ -224,19 +257,6 @@ export async function startTServer(
         }
       });
     },
-    dispose(beNice) {
-      return new Promise((resolve, reject) => {
-        if (!beNice) {
-          for (const socket of sockets) {
-            socket.destroy();
-            sockets.delete(socket);
-          }
-        }
-        const disposing = server.dispose() as Promise<void>;
-        disposing.catch(reject).then(() => {
-          httpServer.close(() => resolve());
-        });
-      });
-    },
+    dispose,
   };
 }

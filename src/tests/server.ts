@@ -14,29 +14,10 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../message';
-import { startTServer, TServer, url, schema } from './fixtures/simple';
-
-let forgottenDispose: TServer['dispose'] | undefined;
-async function makeServer(
-  ...args: Parameters<typeof startTServer>
-): Promise<TServer> {
-  const { dispose, ...rest } = await startTServer(...args);
-  forgottenDispose = dispose;
-  return {
-    ...rest,
-    dispose: (beNice) =>
-      dispose(beNice).then(() => (forgottenDispose = undefined)),
-  };
-}
-afterEach(async () => {
-  if (forgottenDispose) {
-    // if not disposed by test, cleanup
-    await forgottenDispose();
-    forgottenDispose = undefined;
-  }
-});
+import { schema, startTServer } from './fixtures/simple';
 
 function createTClient(
+  url: string,
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
 ) {
   let closeEvent: WebSocket.CloseEvent;
@@ -112,30 +93,33 @@ function createTClient(
  */
 
 it('should allow connections with valid protocols only', async () => {
-  await makeServer();
+  const { url } = await startTServer();
 
-  let client = await createTClient('');
+  let client = await createTClient(url, '');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createTClient(['graphql', 'json']);
+  client = await createTClient(url, ['graphql', 'json']);
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createTClient(GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish');
+  client = await createTClient(
+    url,
+    GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
+  );
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
     expect(event.reason).toBe('Protocol Error');
     expect(event.wasClean).toBeTruthy();
   });
 
-  client = await createTClient(GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   await client.waitForClose(
     () => fail('shouldnt close for valid protocol'),
     30, // should be kicked off within this time
@@ -143,10 +127,10 @@ it('should allow connections with valid protocols only', async () => {
 });
 
 it('should gracefully go away when disposing', async () => {
-  const server = await makeServer();
+  const server = await startTServer();
 
-  const client1 = await createTClient();
-  const client2 = await createTClient();
+  const client1 = await createTClient(server.url);
+  const client2 = await createTClient(server.url);
 
   await server.dispose(true);
 
@@ -164,10 +148,11 @@ it('should gracefully go away when disposing', async () => {
 
 it('should report server errors to clients by closing the connection', async () => {
   const {
+    url,
     server: { webSocketServer },
-  } = await makeServer();
+  } = await startTServer();
 
-  const client = await createTClient();
+  const client = await createTClient(url);
 
   const emittedError = new Error("I'm a teapot");
   webSocketServer.emit('error', emittedError);
@@ -202,12 +187,12 @@ it('should use the provided roots as resolvers', async () => {
     },
   };
 
-  await makeServer({
+  const { url } = await startTServer({
     schema,
     roots,
   });
 
-  const client = await createTClient();
+  const client = await createTClient(url);
   client.ws.send(
     stringifyMessage<MessageType.ConnectionInit>({
       type: MessageType.ConnectionInit,
@@ -272,13 +257,13 @@ it('should pass in the context value from the config', async () => {
   const executeFn = jest.fn((args) => execute(args));
   const subscribeFn = jest.fn((args) => subscribe(args));
 
-  await makeServer({
+  const { url } = await startTServer({
     context,
     execute: executeFn,
     subscribe: subscribeFn,
   });
 
-  const client = await createTClient();
+  const client = await createTClient(url);
   client.ws.send(
     stringifyMessage<MessageType.ConnectionInit>({
       type: MessageType.ConnectionInit,
@@ -335,13 +320,13 @@ it('should pass in the context value from the config', async () => {
 
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       onConnect: () => {
         return false;
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -359,13 +344,13 @@ describe('Connect', () => {
   it('should close socket with error thrown from the callback', async () => {
     const error = new Error("I'm a teapot");
 
-    await makeServer({
+    const { url } = await startTServer({
       onConnect: () => {
         throw error;
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -380,8 +365,8 @@ describe('Connect', () => {
   });
 
   it('should acknowledge connection if not implemented, returning `true` or nothing', async () => {
-    async function test() {
-      const client = await createTClient();
+    async function test(url: string) {
+      const client = await createTClient(url);
       client.ws.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
@@ -393,26 +378,26 @@ describe('Connect', () => {
     }
 
     // no implementation
-    let server = await makeServer();
-    await test();
+    let server = await startTServer();
+    await test(server.url);
     await server.dispose();
 
     // returns true
-    server = await makeServer({
+    server = await startTServer({
       onConnect: () => {
         return true;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
 
     // returns nothing
-    await makeServer({
+    server = await startTServer({
       onConnect: () => {
         /**/
       },
     });
-    await test();
+    await test(server.url);
   });
 
   it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
@@ -422,7 +407,7 @@ describe('Connect', () => {
       number: 10,
     };
 
-    await makeServer({
+    const { url } = await startTServer({
       onConnect: (ctx) => {
         expect(ctx.connectionParams).toEqual(connectionParams);
         expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
@@ -432,7 +417,7 @@ describe('Connect', () => {
       },
     });
 
-    (await createTClient()).ws.send(
+    (await createTClient(url)).ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
         payload: connectionParams,
@@ -441,9 +426,9 @@ describe('Connect', () => {
   });
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
-    await makeServer({ connectionInitWaitTimeout: 10 });
+    const { url } = await startTServer({ connectionInitWaitTimeout: 10 });
 
-    await (await createTClient()).waitForClose((event) => {
+    await (await createTClient(url)).waitForClose((event) => {
       expect(event.code).toBe(4408);
       expect(event.reason).toBe('Connection initialisation timeout');
       expect(event.wasClean).toBeTruthy();
@@ -451,13 +436,13 @@ describe('Connect', () => {
   });
 
   it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
         new Promise((resolve) => setTimeout(() => resolve(true), 20)),
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -474,13 +459,13 @@ describe('Connect', () => {
   });
 
   it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
         new Promise((resolve) => setTimeout(() => resolve(true), 50)),
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -505,9 +490,9 @@ describe('Connect', () => {
   });
 
   it('should close the socket if more than one `ConnectionInit` message is received at any given time', async () => {
-    await makeServer();
+    const { url } = await startTServer();
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -535,9 +520,9 @@ describe('Connect', () => {
 
 describe('Subscribe', () => {
   it('should close the socket on request if connection is not acknowledged', async () => {
-    await makeServer();
+    const { url } = await startTServer();
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.Subscribe>({
@@ -559,11 +544,11 @@ describe('Subscribe', () => {
   });
 
   it('should close the socket on request if schema is left undefined', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema: undefined,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -599,12 +584,12 @@ describe('Subscribe', () => {
     const error = new Error('Stop');
 
     // onConnect
-    let server = await makeServer({
+    let server = await startTServer({
       onConnect: () => {
         throw error;
       },
     });
-    const client = await createTClient();
+    const client = await createTClient(server.url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -618,11 +603,12 @@ describe('Subscribe', () => {
     await server.dispose();
 
     async function test(
+      url: string,
       payload: SubscribePayload = {
         query: `query { getValue }`,
       },
     ) {
-      const client = await createTClient();
+      const client = await createTClient(url);
       client.ws.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
@@ -648,65 +634,65 @@ describe('Subscribe', () => {
     }
 
     // onSubscribe
-    server = await makeServer({
+    server = await startTServer({
       onSubscribe: () => {
         throw error;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
 
-    server = await makeServer({
+    server = await startTServer({
       onOperation: () => {
         throw error;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
 
     // execute
-    server = await makeServer({
+    server = await startTServer({
       execute: () => {
         throw error;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
 
     // subscribe
-    server = await makeServer({
+    server = await startTServer({
       subscribe: () => {
         throw error;
       },
     });
-    await test({ query: 'subscription { greetings }' });
+    await test(server.url, { query: 'subscription { greetings }' });
     await server.dispose();
 
     // onNext
-    server = await makeServer({
+    server = await startTServer({
       onNext: () => {
         throw error;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
 
     // onError
-    server = await makeServer({
+    server = await startTServer({
       onError: () => {
         throw error;
       },
     });
-    await test({ query: 'query { noExisto }' });
+    await test(server.url, { query: 'query { noExisto }' });
     await server.dispose();
 
     // onComplete
-    server = await makeServer({
+    server = await startTServer({
       onComplete: () => {
         throw error;
       },
     });
-    await test();
+    await test(server.url);
     await server.dispose();
   });
 
@@ -716,7 +702,7 @@ describe('Subscribe', () => {
       operationName: 'Nope',
       document: parse(`query Nope { getValue }`),
     };
-    await makeServer({
+    const { url } = await startTServer({
       schema: undefined,
       execute: (args) => {
         expect(args).toBe(nopeArgs);
@@ -727,7 +713,7 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -768,13 +754,13 @@ describe('Subscribe', () => {
   });
 
   it('should report the graphql errors returned from `onSubscribe`', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       onSubscribe: (_ctx, _message) => {
         return [new GraphQLError('Report'), new GraphQLError('Me')];
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -815,7 +801,7 @@ describe('Subscribe', () => {
   });
 
   it('should use the execution result returned from `onNext`', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       onNext: (_ctx, _message) => {
         return {
           data: { hey: 'there' },
@@ -823,7 +809,7 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -871,13 +857,13 @@ describe('Subscribe', () => {
   });
 
   it('should use the graphql errors returned from `onError`', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       onError: (_ctx, _message) => {
         return [new GraphQLError('Itsa me!'), new GraphQLError('Anda me!')];
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -917,7 +903,7 @@ describe('Subscribe', () => {
   });
 
   it('should use the operation result returned from `onOperation`', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       onOperation: (_ctx, _message) => {
         return (async function* () {
           for (let i = 0; i < 3; i++) {
@@ -927,7 +913,7 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
 
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
@@ -969,11 +955,11 @@ describe('Subscribe', () => {
   });
 
   it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1014,7 +1000,7 @@ describe('Subscribe', () => {
   });
 
   it('should execute the live query, "next" multiple results and then "complete"', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema,
       execute: async function* () {
         for (const value of ['Hi', 'Hello', 'Sup']) {
@@ -1027,7 +1013,7 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1084,11 +1070,11 @@ describe('Subscribe', () => {
   });
 
   it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1129,11 +1115,11 @@ describe('Subscribe', () => {
   });
 
   it('should execute the query and "error" out because of validation errors', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1191,11 +1177,11 @@ describe('Subscribe', () => {
   });
 
   it('should execute the subscription and "next" the published payload', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       schema,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1233,11 +1219,11 @@ describe('Subscribe', () => {
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
-    const server = await makeServer({
+    const server = await startTServer({
       schema,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(server.url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1293,9 +1279,9 @@ describe('Subscribe', () => {
   });
 
   it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
-    await makeServer();
+    const { url } = await startTServer();
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1341,7 +1327,7 @@ describe('Subscribe', () => {
       },
     };
 
-    await makeServer({
+    const { url } = await startTServer({
       onSubscribe: (_ctx, msg) => {
         // search using `SubscriptionPayload.query` as QueryID
         // check the client example below for better understanding
@@ -1353,7 +1339,7 @@ describe('Subscribe', () => {
       },
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1385,11 +1371,11 @@ describe('Subscribe', () => {
 
 describe('Keep-Alive', () => {
   it('should dispatch pings after the timeout has passed', async (done) => {
-    await makeServer({
+    const { url } = await startTServer({
       keepAlive: 50,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1400,11 +1386,11 @@ describe('Keep-Alive', () => {
   });
 
   it('should not dispatch pings if disabled with nullish timeout', async (done) => {
-    await makeServer({
+    const { url } = await startTServer({
       keepAlive: 0,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
@@ -1417,11 +1403,11 @@ describe('Keep-Alive', () => {
   });
 
   it('should terminate the socket if no pong is sent in response to a ping', async () => {
-    await makeServer({
+    const { url } = await startTServer({
       keepAlive: 50,
     });
 
-    const client = await createTClient();
+    const client = await createTClient(url);
     client.ws.send(
       stringifyMessage<MessageType.ConnectionInit>({
         type: MessageType.ConnectionInit,
