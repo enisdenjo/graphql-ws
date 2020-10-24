@@ -5,6 +5,27 @@
 
 * **server:** More callbacks, clearer differences and higher extensibility ([#40](https://github.com/enisdenjo/graphql-transport-ws/issues/40)) ([507a222](https://github.com/enisdenjo/graphql-transport-ws/commit/507a2226719efacf6180705beb8bb9d88f80d7f3))
 
+
+### BREAKING CHANGES
+
+_Should've been a major release but `semantic-release` didn't detect the breaking changes of the [507a222](https://github.com/enisdenjo/graphql-transport-ws/commit/507a2226719efacf6180705beb8bb9d88f80d7f3) commit, so here we are..._
+
+This time we come with a few breaking changes that will open doors for all sorts of enhancements. Check the linked PR for more details.
+
+#### Server option `onSubscribe`
+- Now executes _before_ any other subscribe message processing
+- Now takes 2 arguments, the `Context` and the `SubscribeMessage`
+- Now returns nothing,`ExecutionArgs` or an array of `GraphQLError`s
+  - Returning `void` (or nothing) will leave the execution args preparation and validation to the library
+  - Returned `ExecutionArgs` will be used **directly** for the GraphQL operation execution (preparations and validation should be done by you in this case)
+  - Returned array of `GraphQLError`s will be reported to the client through the `ErrorMessage`
+
+#### Server option `validationRules`
+Dropped in favour of applying custom validation rules in the `onSubscribe` callback. Find the recipe in the readme!
+
+#### Server option `formatExecutionResult`
+Dropped in favour of using the return value of `onNext` callback.
+
 ## [1.8.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.1...v1.8.2) (2020-10-22)
 
 
