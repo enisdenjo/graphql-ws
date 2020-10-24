@@ -42,6 +42,7 @@ interface TSubscribe<T> {
     expire?: number,
   ) => Promise<void>;
   waitForComplete: (test?: () => void, expire?: number) => Promise<void>;
+  dispose: () => void;
 }
 
 function tsubscribe<T = unknown>(
@@ -52,7 +53,7 @@ function tsubscribe<T = unknown>(
   const values: T[] = [];
   let error: unknown,
     completed = false;
-  client.subscribe<T>(payload, {
+  const dispose = client.subscribe<T>(payload, {
     next: (value) => {
       values.push(value);
       emitter.emit('next');
@@ -130,6 +131,7 @@ function tsubscribe<T = unknown>(
         });
       });
     },
+    dispose,
   };
 }
 
@@ -185,64 +187,30 @@ describe('subscription operation', () => {
   it('should execute and "next" the emitted results until disposed', async () => {
     const client = createClient({ url });
 
-    const nextFn = jest.fn();
-    const completeFn = jest.fn();
+    const sub = tsubscribe(client, {
+      query: 'subscription Ping { ping }',
+    });
+    await server.waitForOperation();
 
-    const dispose = client.subscribe(
-      {
-        query: `subscription Ping {
-          ping
-        }`,
-      },
-      {
-        next: nextFn,
-        error: () => {
-          fail(`Unexpected error call`);
-        },
-        complete: completeFn,
-      },
-    );
+    server.pong();
+    server.pong();
 
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'john',
-      },
+    await sub.waitForNext((result) => {
+      expect(result).toEqual({ data: { ping: 'pong' } });
+    });
+    await sub.waitForNext((result) => {
+      expect(result).toEqual({ data: { ping: 'pong' } });
     });
 
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'jane',
-      },
-    });
+    sub.dispose();
 
-    await wait(10);
+    server.pong();
+    server.pong();
 
-    expect(nextFn).toHaveBeenNthCalledWith(1, {
-      data: { becameHappy: { name: 'john' } },
-    });
-    expect(nextFn).toHaveBeenNthCalledWith(2, {
-      data: { becameHappy: { name: 'jane' } },
-    });
-    expect(completeFn).not.toBeCalled();
-
-    dispose();
-
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'jeff',
-      },
-    });
-
-    pubsub.publish('becameHappy', {
-      becameHappy: {
-        name: 'jenny',
-      },
-    });
-
-    await wait(10);
-
-    expect(nextFn).toBeCalledTimes(2);
-    expect(completeFn).toBeCalled();
+    await sub.waitForNext(() => {
+      fail('Next shouldnt have been called');
+    }, 10);
+    await sub.waitForComplete();
   });
 
   it('should emit results to correct distinct sinks', async () => {
