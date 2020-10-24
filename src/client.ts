@@ -417,7 +417,9 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Error: {
             if (message.id === id) {
+              // somehow cacnaer with errror instead of calling twice
               sink.error(message.payload);
+
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection
@@ -428,7 +430,9 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Complete: {
             if (message.id === id) {
+              // calling canceler will complete
               sink.complete();
+
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection

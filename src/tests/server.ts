@@ -1309,11 +1309,7 @@ describe('Subscribe', () => {
           id: 'not-unique',
           type: MessageType.Subscribe,
           payload: {
-            query: `subscription {
-              boughtBananas {
-                name
-              }
-            }`,
+            query: 'subscription { ping }',
           },
         }),
       );
@@ -1325,9 +1321,7 @@ describe('Subscribe', () => {
         id: 'not-unique',
         type: MessageType.Subscribe,
         payload: {
-          query: `subscription {
-            greetings
-          }`,
+          query: 'subscription { greetings }',
         },
       }),
     );

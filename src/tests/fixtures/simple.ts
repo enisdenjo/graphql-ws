@@ -10,10 +10,7 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
-import { PubSub } from 'graphql-subscriptions';
 import { createServer, ServerOptions, Server } from '../../server';
-
-export const pubsub = new PubSub();
 
 // use for dispatching a `pong` to the `ping` subscription
 const pendingPongs: Record<string, number | undefined> = {};
@@ -26,14 +23,6 @@ function pong(key = 'global'): void {
     pendingPongs[key] = pending ? pending + 1 : 1;
   }
 }
-
-const personType = new GraphQLObjectType({
-  name: 'Person',
-  fields: {
-    id: { type: new GraphQLNonNull(GraphQLString) },
-    name: { type: new GraphQLNonNull(GraphQLString) },
-  },
-});
 
 export const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -92,36 +81,6 @@ export const schema = new GraphQLSchema({
               throw new Error('Ping no gusta');
             },
           };
-        },
-      },
-      // TODO-db-201022 testing `graphql-subscriptions` is not necessary. refactor the client and rely on the ping/pong above
-      becameHappy: {
-        type: personType,
-        args: {
-          secret: {
-            type: new GraphQLNonNull(GraphQLString),
-          },
-        },
-        resolve: (source) => {
-          if (source instanceof Error) {
-            throw source;
-          }
-          return source.becameHappy;
-        },
-        subscribe: () => {
-          return pubsub.asyncIterator('becameHappy');
-        },
-      },
-      boughtBananas: {
-        type: personType,
-        resolve: (source) => {
-          if (source instanceof Error) {
-            throw source;
-          }
-          return source.boughtBananas;
-        },
-        subscribe: () => {
-          return pubsub.asyncIterator('boughtBananas');
         },
       },
     },
