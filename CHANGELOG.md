@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
+
+
+### Features
+
+* **server:** More callbacks, clearer differences and higher extensibility ([#40](https://github.com/enisdenjo/graphql-transport-ws/issues/40)) ([507a222](https://github.com/enisdenjo/graphql-transport-ws/commit/507a2226719efacf6180705beb8bb9d88f80d7f3))
+
 ## [1.8.2](https://github.com/enisdenjo/graphql-transport-ws/compare/v1.8.1...v1.8.2) (2020-10-22)
 
 
