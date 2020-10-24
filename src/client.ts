@@ -425,7 +425,7 @@ export function createClient(options: ClientOptions): Client {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               cancellerRef.current!();
               // TODO-db-201025 calling canceller will complete the sink, meaning that both the `error` and `complete` will be
-              // called neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
+              // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
             }
             return;
           }
