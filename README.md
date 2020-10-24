@@ -562,6 +562,9 @@ import { parse, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-transport-ws';
 import { schema } from 'my-graphql-schema';
 
+// a unique GraphQL execution ID used for representing
+// a query in the persisted queries store. when subscribing
+// you should use the `SubscriptionPayload.query` to transmit the id
 type QueryID = string;
 
 const queriesStore: Record<QueryID, ExecutionArgs> = {
@@ -576,21 +579,14 @@ createServer(
     execute,
     subscribe,
     onSubscribe: (_ctx, msg) => {
-      // search using `SubscriptionPayload.query` as QueryID
-      // check the client example below for better understanding
-      const hit = queriesStore[msg.payload.query];
-      if (hit) {
-        return {
-          ...hit,
-          variableValues: msg.payload.variables, // use the variables from the client
-        };
+      const query = queriesStore[msg.payload.query];
+      if (!query) {
+        // for extra security you only allow the queries from the store
+        throw new Error('404: Query Not Found');
       }
-      // if no hit, execute as usual
       return {
-        schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.operationName),
-        variableValues: msg.payload.variables,
+        ...query,
+        variableValues: msg.payload.variables, // use the variables from the client
       };
     },
   },
