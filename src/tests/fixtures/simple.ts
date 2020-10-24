@@ -6,6 +6,7 @@ import {
   subscribe,
   GraphQLNonNull,
 } from 'graphql';
+import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
@@ -17,7 +18,7 @@ export const pubsub = new PubSub();
 // use for dispatching a `pong` to the `ping` subscription
 let pendingPongs = 0;
 let nextPong: ((done: boolean) => void) | undefined;
-export function pong(): void {
+function pong(): void {
   if (nextPong) {
     nextPong(false);
   } else {
@@ -120,10 +121,12 @@ export const schema = new GraphQLSchema({
 
 export interface TServer {
   server: Server;
+  pong: () => void;
   waitForClient: (
     test?: (client: WebSocket) => void,
     expire?: number,
   ) => Promise<void>;
+  waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
   dispose: (beNice?: boolean) => Promise<void>;
 }
 
@@ -146,12 +149,25 @@ export async function startTServer(
     httpServer.once('close', () => sockets.delete(socket));
   });
 
+  let pendingOperations = 0;
+  const operations = new EventEmitter();
   const server = await createServer(
     {
       schema,
       execute,
       subscribe,
       ...options,
+      onOperation: async (ctx, msg, args, result) => {
+        pendingOperations++;
+        const maybeResult = await options?.onOperation?.(
+          ctx,
+          msg,
+          args,
+          result,
+        );
+        operations.emit('operation');
+        return maybeResult;
+      },
     },
     {
       server: httpServer,
@@ -172,6 +188,7 @@ export async function startTServer(
 
   return {
     server,
+    pong,
     waitForClient(test, expire) {
       return new Promise((resolve) => {
         function done() {
@@ -188,6 +205,26 @@ export async function startTServer(
           timeout = setTimeout(resolve, expire);
         }
         server.webSocketServer.once('connection', () => {
+          if (timeout) clearTimeout(timeout);
+          done();
+        });
+      });
+    },
+    waitForOperation(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingOperations--;
+          test?.();
+          resolve();
+        }
+        if (pendingOperations > 0) {
+          return done();
+        }
+        let timeout: number | undefined;
+        if (expire) {
+          timeout = setTimeout(resolve, expire);
+        }
+        operations.once('operation', () => {
           if (timeout) clearTimeout(timeout);
           done();
         });

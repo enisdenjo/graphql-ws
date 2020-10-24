@@ -14,7 +14,7 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../message';
-import { startTServer, TServer, url, schema, pong } from './fixtures/simple';
+import { startTServer, TServer, url, schema } from './fixtures/simple';
 
 let forgottenDispose: TServer['dispose'] | undefined;
 async function makeServer(
@@ -1233,7 +1233,7 @@ describe('Subscribe', () => {
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
-    await makeServer({
+    const server = await makeServer({
       schema,
     });
 
@@ -1257,7 +1257,7 @@ describe('Subscribe', () => {
       );
     });
 
-    pong();
+    server.pong();
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
@@ -1283,9 +1283,9 @@ describe('Subscribe', () => {
       });
     });
 
-    pong();
-    pong();
-    pong();
+    server.pong();
+    server.pong();
+    server.pong();
 
     await client.waitForMessage(() => {
       fail('Shouldnt have received a message');
