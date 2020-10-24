@@ -168,7 +168,7 @@ export function createClient(options: ClientOptions): Client {
     socket: null as WebSocket | null,
     acknowledged: false,
     locks: 0,
-    retries: 0,
+    tries: 0,
   };
   async function connect(
     cancellerRef: CancellerRef,
@@ -251,7 +251,7 @@ export function createClient(options: ClientOptions): Client {
       ...state,
       acknowledged: false,
       socket,
-      retries: state.retries + 1,
+      tries: state.tries + 1,
     };
     emitter.emit('connecting');
 
@@ -294,7 +294,7 @@ export function createClient(options: ClientOptions): Client {
           }
 
           clearTimeout(tooLong);
-          state = { ...state, acknowledged: true, socket, retries: 0 };
+          state = { ...state, acknowledged: true, socket, tries: 0 };
           emitter.emit('connected', socket); // connected = socket opened + acknowledged
           return resolve();
         } catch (err) {
@@ -376,8 +376,8 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // retries expired, close for good
-          if (state.retries >= retryAttempts) {
+          // retries are not allowed or we tried to many times, close for good
+          if (!retryAttempts || state.tries > retryAttempts) {
             return;
           }
 
@@ -489,8 +489,8 @@ export function createClient(options: ClientOptions): Client {
               return;
             }
 
-            // retries expired, throw
-            if (state.retries >= retryAttempts) {
+            // retries are not allowed or we tried to many times, close for good
+            if (!retryAttempts || state.tries > retryAttempts) {
               throw errOrCloseEvent;
             }
 
