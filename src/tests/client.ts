@@ -119,7 +119,7 @@ function tsubscribe<T = unknown>(
         if (completed) {
           return done();
         }
-        emitter.once('compete', done);
+        emitter.once('complete', done);
         if (expire) {
           setTimeout(() => {
             emitter.off('complete', done); // expired
