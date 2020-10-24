@@ -2,10 +2,12 @@
  * @jest-environment jsdom
  */
 
-import WebSocket from 'ws';
-import { url, startServer, pubsub } from './fixtures/simple';
-import { Server } from '../server';
+import { url, startTServer, TServer, pubsub } from './fixtures/simple';
 import { createClient, EventListener } from '../client';
+import WebSocket from 'ws';
+
+// for easier client tests
+Object.assign(global, { WebSocket: WebSocket });
 
 // Just does nothing
 function noop(): void {
@@ -16,20 +18,26 @@ function noop(): void {
 const wait = (timeout: number) =>
   new Promise((resolve) => setTimeout(resolve, timeout));
 
-let server: Server, dispose: (() => Promise<void>) | undefined;
+let server: TServer, forgottenDispose: TServer['dispose'] | undefined;
 beforeEach(async () => {
-  Object.assign(global, {
-    WebSocket: WebSocket,
-  });
-
-  [server, dispose] = await startServer();
+  const { dispose, ...rest } = await startTServer();
+  forgottenDispose = dispose;
+  server = {
+    ...rest,
+    dispose: (beNice) =>
+      dispose(beNice).then(() => (forgottenDispose = undefined)),
+  };
 });
 afterEach(async () => {
-  if (dispose) {
-    await dispose();
+  if (forgottenDispose) {
+    await forgottenDispose();
+    forgottenDispose = undefined;
   }
-  dispose = undefined;
 });
+
+/**
+ * Tests
+ */
 
 it('should use the provided WebSocket implementation', async () => {
   Object.assign(global, {
@@ -93,13 +101,9 @@ describe('subscription operation', () => {
 
     const dispose = client.subscribe(
       {
-        operationName: 'BecomingHappy',
-        query: `subscription BecomingHappy($secret: String!) {
-          becameHappy(secret: $secret) {
-            name
-          }
+        query: `subscription Ping {
+          ping
         }`,
-        variables: { secret: 'drink water' },
       },
       {
         next: nextFn,
@@ -109,8 +113,6 @@ describe('subscription operation', () => {
         complete: completeFn,
       },
     );
-
-    await wait(10);
 
     pubsub.publish('becameHappy', {
       becameHappy: {
@@ -309,7 +311,7 @@ describe('subscription operation', () => {
     expect(completeFn).toBeCalled();
 
     await wait(20);
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
   });
 
   it('should dispose of the subscription on error', async () => {
@@ -333,7 +335,7 @@ describe('subscription operation', () => {
     expect(errorFn).toBeCalled();
 
     await wait(20);
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
   });
 });
 
@@ -414,8 +416,8 @@ describe('lazy', () => {
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(1);
-    server.webSocketServer.clients.forEach((client) => {
+    expect(server.server.webSocketServer.clients.size).toBe(1);
+    server.server.webSocketServer.clients.forEach((client) => {
       expect(client.readyState).toBe(WebSocket.OPEN);
     });
   });
@@ -430,7 +432,7 @@ describe('lazy', () => {
     client.dispose();
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
   });
 
   it('should connect on first subscribe when mode is enabled', async () => {
@@ -440,7 +442,7 @@ describe('lazy', () => {
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
 
     client.subscribe(
       {
@@ -458,8 +460,8 @@ describe('lazy', () => {
     );
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(1);
-    server.webSocketServer.clients.forEach((client) => {
+    expect(server.server.webSocketServer.clients.size).toBe(1);
+    server.server.webSocketServer.clients.forEach((client) => {
       expect(client.readyState).toBe(WebSocket.OPEN);
     });
   });
@@ -510,12 +512,12 @@ describe('lazy', () => {
     await wait(10);
 
     // still connected
-    expect(server.webSocketServer.clients.size).toBe(1);
+    expect(server.server.webSocketServer.clients.size).toBe(1);
 
     // everyone unsubscribed
     disposeClient2();
     await wait(10);
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
   });
 });
 
@@ -529,17 +531,17 @@ describe('reconnecting', () => {
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(1);
+    expect(server.server.webSocketServer.clients.size).toBe(1);
 
-    server.webSocketServer.clients.forEach((client) => {
+    server.server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
 
     await wait(20);
-    expect(server.webSocketServer.clients.size).toBe(0); // never reconnected
+    expect(server.server.webSocketServer.clients.size).toBe(0); // never reconnected
   });
 
   it('should reconnect silently after socket closes', async () => {
@@ -551,17 +553,17 @@ describe('reconnecting', () => {
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(1);
+    expect(server.server.webSocketServer.clients.size).toBe(1);
 
-    server.webSocketServer.clients.forEach((client) => {
+    server.server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
     await wait(10);
 
-    expect(server.webSocketServer.clients.size).toBe(0);
+    expect(server.server.webSocketServer.clients.size).toBe(0);
 
     await wait(20);
-    expect(server.webSocketServer.clients.size).toBe(1);
+    expect(server.server.webSocketServer.clients.size).toBe(1);
   });
 
   it.todo(
@@ -600,7 +602,7 @@ describe('events', () => {
 
     expect(closedFn).not.toBeCalled();
 
-    server.webSocketServer.clients.forEach((client) => {
+    server.server.webSocketServer.clients.forEach((client) => {
       client.close();
     });
     await wait(10);

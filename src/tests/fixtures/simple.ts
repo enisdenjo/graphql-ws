@@ -6,6 +6,7 @@ import {
   subscribe,
   GraphQLNonNull,
 } from 'graphql';
+import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
 import { PubSub } from 'graphql-subscriptions';
@@ -117,19 +118,28 @@ export const schema = new GraphQLSchema({
   }),
 });
 
+export interface TServer {
+  server: Server;
+  waitForClient: (
+    test?: (client: WebSocket) => void,
+    expire?: number,
+  ) => Promise<void>;
+  dispose: (beNice?: boolean) => Promise<void>;
+}
+
 export const port = 8273,
   path = '/graphql-simple',
   url = `ws://localhost:${port}${path}`;
 
-export async function startServer(
+export async function startTServer(
   options: Partial<ServerOptions> = {},
-): Promise<[Server, (beNice?: boolean) => Promise<void>]> {
+): Promise<TServer> {
   const httpServer = http.createServer((_req, res) => {
     res.writeHead(404);
     res.end();
   });
 
-  // sockets to kick off on teardown
+  // http sockets to kick off on teardown
   const sockets = new Set<net.Socket>();
   httpServer.on('connection', (socket) => {
     sockets.add(socket);
@@ -151,21 +161,51 @@ export async function startServer(
 
   await new Promise((resolve) => httpServer.listen(port, resolve));
 
-  return [
+  // pending websocket clients
+  const pendingClients: WebSocket[] = [];
+  server.webSocketServer.on('connection', (client) => {
+    pendingClients.push(client);
+    client.once('close', () =>
+      pendingClients.splice(pendingClients.indexOf(client), 1),
+    );
+  });
+
+  return {
     server,
-    (beNice) =>
-      new Promise((resolve, reject) => {
+    waitForClient(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          test?.(pendingClients.shift()!);
+          resolve();
+        }
+        if (pendingClients.length > 0) {
+          return done();
+        }
+        let timeout: number | undefined;
+        if (expire) {
+          timeout = setTimeout(resolve, expire);
+        }
+        server.webSocketServer.once('connection', () => {
+          if (timeout) clearTimeout(timeout);
+          done();
+        });
+      });
+    },
+    dispose(beNice) {
+      return new Promise((resolve, reject) => {
         if (!beNice) {
           for (const socket of sockets) {
             socket.destroy();
             sockets.delete(socket);
           }
         }
-
         const disposing = server.dispose() as Promise<void>;
         disposing.catch(reject).then(() => {
           httpServer.close(() => resolve());
         });
-      }),
-  ];
+      });
+    },
+  };
 }

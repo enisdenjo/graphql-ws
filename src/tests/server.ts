@@ -14,25 +14,23 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../message';
-import { startServer, url, schema, pong } from './fixtures/simple';
+import { startTServer, TServer, url, schema, pong } from './fixtures/simple';
 
-let forgottenDispose: (() => Promise<void>) | undefined;
+let forgottenDispose: TServer['dispose'] | undefined;
 async function makeServer(
-  ...args: Parameters<typeof startServer>
-): ReturnType<typeof startServer> {
-  const [server, dispose] = await startServer(...args);
+  ...args: Parameters<typeof startTServer>
+): Promise<TServer> {
+  const { dispose, ...rest } = await startTServer(...args);
   forgottenDispose = dispose;
-  return [
-    server,
-    async (beNice) => {
-      await dispose(beNice);
-      forgottenDispose = undefined;
-    },
-  ];
+  return {
+    ...rest,
+    dispose: (beNice) =>
+      dispose(beNice).then(() => (forgottenDispose = undefined)),
+  };
 }
 afterEach(async () => {
-  // if not disposed manually
   if (forgottenDispose) {
+    // if not disposed by test, cleanup
     await forgottenDispose();
     forgottenDispose = undefined;
   }
@@ -145,12 +143,12 @@ it('should allow connections with valid protocols only', async () => {
 });
 
 it('should gracefully go away when disposing', async () => {
-  const [, dispose] = await makeServer();
+  const server = await makeServer();
 
   const client1 = await createTClient();
   const client2 = await createTClient();
 
-  await dispose(true);
+  await server.dispose(true);
 
   await client1.waitForClose((event) => {
     expect(event.code).toBe(1001);
@@ -165,7 +163,9 @@ it('should gracefully go away when disposing', async () => {
 });
 
 it('should report server errors to clients by closing the connection', async () => {
-  const [{ webSocketServer }] = await makeServer();
+  const {
+    server: { webSocketServer },
+  } = await makeServer();
 
   const client = await createTClient();
 
@@ -393,18 +393,18 @@ describe('Connect', () => {
     }
 
     // no implementation
-    let [, dispose] = await makeServer();
+    let server = await makeServer();
     await test();
-    await dispose();
+    await server.dispose();
 
     // returns true
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onConnect: () => {
         return true;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
 
     // returns nothing
     await makeServer({
@@ -599,7 +599,7 @@ describe('Subscribe', () => {
     const error = new Error('Stop');
 
     // onConnect
-    let [, dispose] = await makeServer({
+    let server = await makeServer({
       onConnect: () => {
         throw error;
       },
@@ -615,7 +615,7 @@ describe('Subscribe', () => {
       expect(event.reason).toBe(error.message);
       expect(event.wasClean).toBeTruthy();
     });
-    await dispose();
+    await server.dispose();
 
     async function test(
       payload: SubscribePayload = {
@@ -648,66 +648,66 @@ describe('Subscribe', () => {
     }
 
     // onSubscribe
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onSubscribe: () => {
         throw error;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
 
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onOperation: () => {
         throw error;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
 
     // execute
-    [, dispose] = await makeServer({
+    server = await makeServer({
       execute: () => {
         throw error;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
 
     // subscribe
-    [, dispose] = await makeServer({
+    server = await makeServer({
       subscribe: () => {
         throw error;
       },
     });
     await test({ query: 'subscription { greetings }' });
-    await dispose();
+    await server.dispose();
 
     // onNext
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onNext: () => {
         throw error;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
 
     // onError
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onError: () => {
         throw error;
       },
     });
     await test({ query: 'query { noExisto }' });
-    await dispose();
+    await server.dispose();
 
     // onComplete
-    [, dispose] = await makeServer({
+    server = await makeServer({
       onComplete: () => {
         throw error;
       },
     });
     await test();
-    await dispose();
+    await server.dispose();
   });
 
   it('should directly use the execution arguments returned from `onSubscribe`', async () => {
