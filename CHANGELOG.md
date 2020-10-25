@@ -1,4 +1,4 @@
-# [1.9.1](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
+## [1.9.1](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-25)
 
 
 ### Features
