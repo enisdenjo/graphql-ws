@@ -7,6 +7,9 @@
 
 # [1.9.0](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
@@ -35,6 +38,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.8.2](https://github.com/enisdenjo/graphql-ws/compare/v1.8.1...v1.8.2) (2020-10-22)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -42,6 +48,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.8.1](https://github.com/enisdenjo/graphql-ws/compare/v1.8.0...v1.8.1) (2020-10-22)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -50,6 +59,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.8.0](https://github.com/enisdenjo/graphql-ws/compare/v1.7.0...v1.8.0) (2020-10-19)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
@@ -57,6 +69,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.7.0](https://github.com/enisdenjo/graphql-ws/compare/v1.6.0...v1.7.0) (2020-10-01)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -70,6 +85,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.6.0](https://github.com/enisdenjo/graphql-ws/compare/v1.5.0...v1.6.0) (2020-09-28)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
@@ -77,6 +95,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.5.0](https://github.com/enisdenjo/graphql-ws/compare/v1.4.2...v1.5.0) (2020-09-18)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -89,6 +110,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.4.2](https://github.com/enisdenjo/graphql-ws/compare/v1.4.1...v1.4.2) (2020-09-16)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -96,6 +120,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.4.1](https://github.com/enisdenjo/graphql-ws/compare/v1.4.0...v1.4.1) (2020-09-11)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Performance Improvements
 
@@ -103,6 +130,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.4.0](https://github.com/enisdenjo/graphql-ws/compare/v1.3.0...v1.4.0) (2020-09-10)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -115,6 +145,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.3.0](https://github.com/enisdenjo/graphql-ws/compare/v1.2.0...v1.3.0) (2020-09-10)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
@@ -125,6 +158,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.2.0](https://github.com/enisdenjo/graphql-ws/compare/v1.1.1...v1.2.0) (2020-09-04)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
@@ -132,6 +168,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.1.1](https://github.com/enisdenjo/graphql-ws/compare/v1.1.0...v1.1.1) (2020-08-28)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -140,6 +179,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.1.0](https://github.com/enisdenjo/graphql-ws/compare/v1.0.2...v1.1.0) (2020-08-28)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -153,6 +195,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.0.2](https://github.com/enisdenjo/graphql-ws/compare/v1.0.1...v1.0.2) (2020-08-26)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -160,6 +205,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ## [1.0.1](https://github.com/enisdenjo/graphql-ws/compare/v1.0.0...v1.0.1) (2020-08-26)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Bug Fixes
 
@@ -174,6 +222,9 @@ Dropped in favour of using the return value of `onNext` callback.
 
 # [1.0.0](https://github.com/enisdenjo/graphql-ws/compare/v0.0.2...v1.0.0) (2020-08-17)
 
+### ⚠️ Deprecated
+
+Package has been renamed from [`graphql-transport-ws`](https://www.npmjs.com/package/graphql-transport-ws) to [`graphql-ws`](https://www.npmjs.com/package/graphql-ws).
 
 ### Features
 
