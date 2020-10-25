@@ -215,9 +215,7 @@ export function createClient(options: ClientOptions): Client {
                 }
 
                 cancellerRef.current = () => {
-                  if (cleanup) {
-                    cleanup();
-                  }
+                  cleanup?.();
                   state.locks--;
                   if (!state.locks) {
                     state.socket?.close(1000, 'Normal Closure');
@@ -340,9 +338,7 @@ export function createClient(options: ClientOptions): Client {
           }
 
           cancellerRef.current = () => {
-            if (cleanup) {
-              cleanup();
-            }
+            cleanup?.();
             state.locks--;
             if (!state.locks) {
               socket.close(1000, 'Normal Closure');
@@ -507,15 +503,11 @@ export function createClient(options: ClientOptions): Client {
         .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
 
       return () => {
-        if (cancellerRef.current) {
-          cancellerRef.current();
-        }
+        cancellerRef.current?.();
       };
     },
     dispose() {
-      if (state.socket) {
-        state.socket.close(1000, 'Normal Closure');
-      }
+      state.socket?.close(1000, 'Normal Closure');
       emitter.reset();
     },
   };

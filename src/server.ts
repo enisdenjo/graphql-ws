@@ -469,11 +469,11 @@ export function createServer(
                   payload: errors,
                 };
                 if (onError) {
-                  const maybeResult = await onError(ctx, errorMessage, errors);
-                  if (maybeResult) {
+                  const maybeErrors = await onError(ctx, errorMessage, errors);
+                  if (maybeErrors) {
                     errorMessage = {
                       ...errorMessage,
-                      payload: maybeResult,
+                      payload: maybeErrors,
                     };
                   }
                 }
@@ -575,7 +575,6 @@ export function createServer(
               }
               ctx.subscriptions[message.id] = operationResult;
 
-              // only case where this might fail is if the socket is broken
               for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
