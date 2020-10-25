@@ -1,4 +1,4 @@
-# Contributing to `graphql-transport-ws`
+# Contributing to `graphql-ws`
 
 ## Reporting Issues
 

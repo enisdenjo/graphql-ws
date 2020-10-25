@@ -5,7 +5,7 @@
 
   <h6>Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client.</h6>
 
-[![Continuous integration](https://github.com/enisdenjo/graphql-transport-ws/workflows/Continuous%20integration/badge.svg)](https://github.com/enisdenjo/graphql-transport-ws/actions?query=workflow%3A%22Continuous+integration%22) [![graphql-transport-ws](https://img.shields.io/npm/v/graphql-transport-ws.svg?label=graphql-transport-ws&logo=npm)](https://www.npmjs.com/package/graphql-transport-ws)
+[![Continuous integration](https://github.com/enisdenjo/graphql-ws/workflows/Continuous%20integration/badge.svg)](https://github.com/enisdenjo/graphql-ws/actions?query=workflow%3A%22Continuous+integration%22) [![graphql-ws](https://img.shields.io/npm/v/graphql-ws.svg?label=graphql-ws&logo=npm)](https://www.npmjs.com/package/graphql-ws)
 
   <br />
 </div>
@@ -15,7 +15,7 @@
 #### Install
 
 ```shell
-$ yarn add graphql-transport-ws
+$ yarn add graphql-ws
 ```
 
 #### Create a GraphQL schema
@@ -53,7 +53,7 @@ const roots = {
 ```ts
 import https from 'https';
 import { execute, subscribe } from 'graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
@@ -79,7 +79,7 @@ server.listen(443);
 #### Use the client
 
 ```ts
-import { createClient } from 'graphql-transport-ws';
+import { createClient } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://welcomer.com/graphql',
@@ -133,7 +133,7 @@ const client = createClient({
 <summary>Client usage with Promise</summary>
 
 ```ts
-import { createClient, SubscribePayload } from 'graphql-transport-ws';
+import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://hey.there/graphql',
@@ -212,7 +212,7 @@ import {
   RequestParameters,
   Variables,
 } from 'relay-runtime';
-import { createClient } from 'graphql-transport-ws';
+import { createClient } from 'graphql-ws';
 
 const subscriptionsClient = createClient({
   url: 'wss://i.love/graphql',
@@ -272,7 +272,7 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
-import { createClient, Config, Client } from 'graphql-transport-ws';
+import { createClient, Config, Client } from 'graphql-ws';
 
 class WebSocketLink extends ApolloLink {
   private client: Client;
@@ -329,7 +329,7 @@ const link = new WebSocketLink({
 ```ts
 const WebSocket = require('ws'); // yarn add ws
 const Crypto = require('crypto');
-const { createClient } = require('graphql-transport-ws');
+const { createClient } = require('graphql-ws');
 
 const client = createClient({
   url: 'wss://no.browser/graphql',
@@ -356,7 +356,7 @@ const client = createClient({
 import https from 'https';
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 import { execute, subscribe } from 'graphql';
 import { schema } from 'my-graphql-schema';
 
@@ -390,7 +390,7 @@ server.listen(443, () => {
 ```typescript
 import https from 'https';
 import { execute, subscribe } from 'graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
@@ -435,7 +435,7 @@ import https from 'https';
 import WebSocket from 'ws';
 import url from 'url';
 import { execute, subscribe } from 'graphql';
-import { createServer, createClient } from 'graphql-transport-ws';
+import { createServer, createClient } from 'graphql-ws';
 import { schema } from 'my-graphql-schema';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
@@ -493,7 +493,7 @@ server.listen(443);
 
 ```typescript
 import { validate, execute, subscribe } from 'graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 import { schema, roots, getStaticContext } from 'my-graphql';
 
 createServer(
@@ -518,7 +518,7 @@ createServer(
 
 ```typescript
 import { parse, validate, execute, subscribe } from 'graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 import { schema, getDynamicContext, myValidationRules } from 'my-graphql';
 
 createServer(
@@ -559,7 +559,7 @@ createServer(
 // 🛸 server
 
 import { parse, execute, subscribe } from 'graphql';
-import { createServer } from 'graphql-transport-ws';
+import { createServer } from 'graphql-ws';
 import { schema } from 'my-graphql-schema';
 
 // a unique GraphQL execution ID used for representing
@@ -600,7 +600,7 @@ createServer(
 ```typescript
 // 📺 client
 
-import { createClient } from 'graphql-transport-ws';
+import { createClient } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://persisted.graphql/queries',
