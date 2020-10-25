@@ -1,4 +1,4 @@
-**[graphql-transport-ws](../README.md)**
+**[graphql-ws](../README.md)**
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / Context
 
