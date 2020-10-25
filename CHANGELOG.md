@@ -3,6 +3,8 @@
 
 ### Features
 
+* Package rename `graphql-transport-ws` 👉 `graphql-ws`. ([#43](https://github.com/enisdenjo/graphql-ws/pull/43))
+
 * **server:** More callbacks, clearer differences and higher extensibility ([#40](https://github.com/enisdenjo/graphql-ws/issues/40)) ([507a222](https://github.com/enisdenjo/graphql-ws/commit/507a2226719efacf6180705beb8bb9d88f80d7f3))
 
 
@@ -121,7 +123,7 @@ Dropped in favour of using the return value of `onNext` callback.
 
 ### Features
 
-* Package rename `@enisdenjo/graphql-ws` 👉 `graphql-ws`. ([494f676](https://github.com/enisdenjo/graphql-ws/commit/494f6766279325769e81f52ce7b4b442c85f9476))
+* Package rename `@enisdenjo/graphql-transport-ws` 👉 `graphql-transport-ws`. ([494f676](https://github.com/enisdenjo/graphql-ws/commit/494f6766279325769e81f52ce7b4b442c85f9476))
 
 ## [1.1.1](https://github.com/enisdenjo/graphql-ws/compare/v1.1.0...v1.1.1) (2020-08-28)
 
