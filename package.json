@@ -1,5 +1,5 @@
 {
-  "name": "graphql-transport-ws",
+  "name": "graphql-ws",
   "version": "1.9.0",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "keywords": [
@@ -16,10 +16,10 @@
     "apollo"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/enisdenjo/graphql-transport-ws#readme",
+  "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enisdenjo/graphql-transport-ws.git"
+    "url": "git+https://github.com/enisdenjo/graphql-ws.git"
   },
   "main": "lib/index.js",
   "browser": "lib/client.js",

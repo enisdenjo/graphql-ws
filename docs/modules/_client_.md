@@ -1,4 +1,4 @@
-**[graphql-transport-ws](../README.md)**
+**[graphql-ws](../README.md)**
 
 > [Globals](../README.md) / "client"
 

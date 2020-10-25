@@ -1,8 +1,8 @@
-**[graphql-transport-ws](README.md)**
+**[graphql-ws](README.md)**
 
 > Globals
 
-# graphql-transport-ws
+# graphql-ws
 
 ## Index
 
