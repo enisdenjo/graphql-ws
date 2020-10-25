@@ -1,9 +1,14 @@
-# [1.9.0](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
+# [1.9.1](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
 
 
 ### Features
 
 * Package rename `graphql-transport-ws` 👉 `graphql-ws`. ([#43](https://github.com/enisdenjo/graphql-ws/pull/43))
+
+# [1.9.0](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-24)
+
+
+### Features
 
 * **server:** More callbacks, clearer differences and higher extensibility ([#40](https://github.com/enisdenjo/graphql-ws/issues/40)) ([507a222](https://github.com/enisdenjo/graphql-ws/commit/507a2226719efacf6180705beb8bb9d88f80d7f3))
 
