@@ -1,3 +1,12 @@
+## [1.9.2](https://github.com/enisdenjo/graphql-ws/compare/v1.9.1...v1.9.2) (2020-10-31)
+
+
+### Bug Fixes
+
+* **server:** Make sure to use `onSubscribe` result exclusively ([51fdb7c](https://github.com/enisdenjo/graphql-ws/commit/51fdb7c75487c399267f04a4ea2146f2e964d4cf))
+* Export useful types ([e4cc4d4](https://github.com/enisdenjo/graphql-ws/commit/e4cc4d4df8efb77aed14053a32af3464dc2a95db))
+* **client:** Accept nullish values for `operationName` and `variables` ([2d60dda](https://github.com/enisdenjo/graphql-ws/commit/2d60dda93c09b0c8d7b69241833174f991d7b450))
+
 ## [1.9.1](https://github.com/enisdenjo/graphql-ws/compare/v1.8.2...v1.9.0) (2020-10-25)
 
 
