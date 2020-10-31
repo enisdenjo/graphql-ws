@@ -563,9 +563,8 @@ export function createServer(
               ]);
             }
 
-            // if you've provided your own root through
-            // `onSubscribe`, prefer that over the root's root
-            if (!execArgs.rootValue) {
+            // if onsubscribe didnt return anything, inject roots
+            if (!maybeExecArgsOrErrors) {
               execArgs.rootValue = roots?.[operationAST.operation];
             }
 

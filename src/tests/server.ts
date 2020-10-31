@@ -704,8 +704,14 @@ describe('Subscribe', () => {
     };
     const { url } = await startTServer({
       schema: undefined,
+      roots: {
+        query: { not: 'me' },
+      },
       execute: (args) => {
-        expect(args).toBe(nopeArgs);
+        expect(args.schema).toBe(nopeArgs.schema); // schema from nopeArgs
+        expect(args.rootValue).toBeUndefined(); // nopeArgs didnt provide any root value
+        expect(args.operationName).toBe('Nope');
+        expect(args.variableValues).toBeUndefined(); // nopeArgs didnt provide variables
         return execute(args);
       },
       onSubscribe: (_ctx, _message) => {
