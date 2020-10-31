@@ -236,7 +236,8 @@ _The client and the server has already gone through [successful connection initi
 
 1. - _Client_ stops the subscription by dispatching a `Complete` message
    - _Server_ completes the source stream
+   - _Server_ triggers the `onComplete` callback, if specified
      <br>_or_
+   - _Server_ triggers the `onComplete` callback, if specified
    - _Server_ dispatches the `Complete` message indicating that the source stream has completed
    - _Client_ completes the stream observer
-1. _Server_ triggers the `onComplete` callback, if specified
