@@ -1,3 +1,11 @@
+## [1.9.3](https://github.com/enisdenjo/graphql-ws/compare/v1.9.2...v1.9.3) (2020-10-31)
+
+
+### Bug Fixes
+
+* Drop TypeScript DOM lib dependency ([a81e8c1](https://github.com/enisdenjo/graphql-ws/commit/a81e8c1ea080984ddd6d5e58c154b866ee44c14c))
+* Support more Node versions by not using `globalThis` ([79c2ed2](https://github.com/enisdenjo/graphql-ws/commit/79c2ed2056b69bd9b56984947d78897e36594b80))
+
 ## [1.9.2](https://github.com/enisdenjo/graphql-ws/compare/v1.9.1...v1.9.2) (2020-10-31)
 
 
