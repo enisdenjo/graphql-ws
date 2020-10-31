@@ -101,10 +101,14 @@ export function isMessage(val: unknown): val is Message {
           hasOwnStringProperty(val, 'id') &&
           hasOwnObjectProperty(val, 'payload') &&
           (!hasOwnProperty(val.payload, 'operationName') ||
-            hasOwnStringProperty(val.payload, 'operationName')) &&
+            val.payload.operationName === undefined ||
+            val.payload.operationName === null ||
+            typeof val.payload.operationName === 'string') &&
           (hasOwnStringProperty(val.payload, 'query') || // string query or persisted query id
             hasOwnObjectProperty(val.payload, 'query')) && // document node query
           (!hasOwnProperty(val.payload, 'variables') ||
+            val.payload.variables === undefined ||
+            val.payload.variables === null ||
             hasOwnObjectProperty(val.payload, 'variables'))
         );
       case MessageType.Next:

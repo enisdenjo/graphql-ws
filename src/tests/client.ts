@@ -170,6 +170,31 @@ describe('query operation', () => {
 
     await sub.waitForComplete();
   });
+
+  it('should accept nullish value for `operationName` and `variables`', async () => {
+    const { url } = await startTServer();
+
+    const client = createClient({ url });
+
+    // nothing
+    await tsubscribe(client, {
+      query: 'query { getValue }',
+    }).waitForComplete();
+
+    // undefined
+    await tsubscribe(client, {
+      operationName: undefined,
+      query: 'query { getValue }',
+      variables: undefined,
+    }).waitForComplete();
+
+    // null
+    await tsubscribe(client, {
+      operationName: null,
+      query: 'query { getValue }',
+      variables: null,
+    }).waitForComplete();
+  });
 });
 
 describe('subscription operation', () => {
