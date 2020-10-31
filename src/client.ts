@@ -133,11 +133,11 @@ export function createClient(options: ClientOptions): Client {
   } else if (typeof WebSocket !== 'undefined') {
     ws = WebSocket;
   } else if (typeof global !== 'undefined') {
-    ws = global.WebSocket;
+    // @ts-expect-error: Support more browsers
+    ws = global.WebSocket || global.MozWebSocket;
   } else if (typeof window !== 'undefined') {
-    ws = window.WebSocket;
-  } else if (typeof self !== 'undefined') {
-    ws = self.WebSocket;
+    // @ts-expect-error: Support more browsers
+    ws = window.WebSocket || window.MozWebSocket;
   }
   if (!ws) {
     throw new Error('WebSocket implementation missing');
