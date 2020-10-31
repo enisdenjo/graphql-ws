@@ -15,8 +15,11 @@
 
 * [Event](_client_.md#event)
 * [EventClosed](_client_.md#eventclosed)
+* [EventClosedListener](_client_.md#eventclosedlistener)
 * [EventConnected](_client_.md#eventconnected)
+* [EventConnectedListener](_client_.md#eventconnectedlistener)
 * [EventConnecting](_client_.md#eventconnecting)
+* [EventConnectingListener](_client_.md#eventconnectinglistener)
 * [EventListener](_client_.md#eventlistener)
 
 ### Functions
@@ -37,9 +40,29 @@ ___
 
 ___
 
+### EventClosedListener
+
+Ƭ  **EventClosedListener**: (event: unknown) => void
+
+The argument is actually the websocket `CloseEvent`, but to avoid
+bundling DOM typings because the client can run in Node env too,
+you should assert the websocket type during implementation.
+
+___
+
 ### EventConnected
 
 Ƭ  **EventConnected**: \"connected\"
+
+___
+
+### EventConnectedListener
+
+Ƭ  **EventConnectedListener**: (socket: unknown) => void
+
+The argument is actually the `WebSocket`, but to avoid bundling DOM typings
+because the client can run in Node env too, you should assert
+the websocket type during implementation.
 
 ___
 
@@ -49,9 +72,15 @@ ___
 
 ___
 
+### EventConnectingListener
+
+Ƭ  **EventConnectingListener**: () => void
+
+___
+
 ### EventListener
 
-Ƭ  **EventListener**\<E>: E *extends* EventConnecting ? () => void : E *extends* EventConnected ? (socket: WebSocket) => void : E *extends* EventClosed ? (event: CloseEvent) => void : never
+Ƭ  **EventListener**\<E>: E *extends* EventConnecting ? EventConnectingListener : E *extends* EventConnected ? EventConnectedListener : E *extends* EventClosed ? EventClosedListener : never
 
 #### Type parameters:
 

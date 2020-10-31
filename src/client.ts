@@ -25,23 +25,23 @@ export type Event = EventConnecting | EventConnected | EventClosed;
  * because the client can run in Node env too, you should assert
  * the websocket type during implementation.
  */
-export type EventConnectedHandler = (socket: unknown) => void;
+export type EventConnectedListener = (socket: unknown) => void;
 
-export type EventConnectingHandler = () => void;
+export type EventConnectingListener = () => void;
 
 /**
  * The argument is actually the websocket `CloseEvent`, but to avoid
  * bundling DOM typings because the client can run in Node env too,
  * you should assert the websocket type during implementation.
  */
-export type EventClosedHandler = (event: unknown) => void;
+export type EventClosedListener = (event: unknown) => void;
 
 export type EventListener<E extends Event> = E extends EventConnecting
-  ? EventConnectingHandler
+  ? EventConnectingListener
   : E extends EventConnected
-  ? EventConnectedHandler
+  ? EventConnectedListener
   : E extends EventClosed
-  ? EventClosedHandler
+  ? EventClosedListener
   : never;
 
 type CancellerRef = { current: (() => void) | null };
@@ -429,7 +429,7 @@ export function createClient(options: ClientOptions): Client {
       const id = generateID();
       const cancellerRef: CancellerRef = { current: null };
 
-      const messageHandler = ({ data }: MessageEvent) => {
+      const messageListener = ({ data }: MessageEvent) => {
         const message = memoParseMessage(data);
         switch (message.type) {
           case MessageType.Next: {
@@ -473,7 +473,7 @@ export function createClient(options: ClientOptions): Client {
             const [socket, throwOnCloseOrWaitForCancel] = await connect(
               cancellerRef,
             );
-            socket.addEventListener('message', messageHandler);
+            socket.addEventListener('message', messageListener);
 
             socket.send(
               stringifyMessage<MessageType.Subscribe>({
@@ -495,7 +495,7 @@ export function createClient(options: ClientOptions): Client {
               );
             });
 
-            socket.removeEventListener('message', messageHandler);
+            socket.removeEventListener('message', messageListener);
 
             // cancelled, shouldnt try again
             return;

@@ -40,9 +40,12 @@ ___
 • `Optional` **generateID**: undefined \| () => [ID](../modules/_types_.md#id)
 
 A custom ID generator for identifying subscriptions.
-The default uses the `crypto` module in the global scope
-which is present for modern browsers. However, if
-it can't be found, `Math.random` would be used instead.
+
+The default generates a v4 UUID to be used as the ID using `Math`
+as the random number generator. Supply your own generator
+in case you need more uniqueness.
+
+Reference: https://stackoverflow.com/a/2117523/709884
 
 ___
 

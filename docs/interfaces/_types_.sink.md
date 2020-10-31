@@ -38,15 +38,18 @@ ___
 
 ### error
 
-▸ **error**(`error`: Error \| CloseEvent \| readonly GraphQLError[]): void
+▸ **error**(`error`: Error \| readonly GraphQLError[] \| unknown): void
 
 An error that has occured. Calling this function "closes" the sink.
+The error can be also `CloseEvent`, but to avoid bundling DOM typings
+because the client can run in Node env too, you should assert
+the close event type during implementation.
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
-`error` | Error \| CloseEvent \| readonly GraphQLError[] |
+`error` | Error \| readonly GraphQLError[] \| unknown |
 
 **Returns:** void
 
