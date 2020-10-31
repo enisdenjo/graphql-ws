@@ -20,12 +20,28 @@ export type EventConnected = 'connected'; // connected = socket opened + acknowl
 export type EventClosed = 'closed';
 export type Event = EventConnecting | EventConnected | EventClosed;
 
+/**
+ * The argument is actually the `WebSocket`, but to avoid bundling DOM typings
+ * because the client can run in Node env too, you should assert
+ * the websocket type during implementation.
+ */
+export type EventConnectedHandler = (socket: unknown) => void;
+
+export type EventConnectingHandler = () => void;
+
+/**
+ * The argument is actually the websocket `CloseEvent`, but to avoid
+ * bundling DOM typings because the client can run in Node env too,
+ * you should assert the websocket type during implementation.
+ */
+export type EventClosedHandler = (event: unknown) => void;
+
 export type EventListener<E extends Event> = E extends EventConnecting
-  ? () => void
+  ? EventConnectingHandler
   : E extends EventConnected
-  ? (socket: WebSocket) => void
+  ? EventConnectedHandler
   : E extends EventClosed
-  ? (event: CloseEvent) => void
+  ? EventClosedHandler
   : never;
 
 type CancellerRef = { current: (() => void) | null };

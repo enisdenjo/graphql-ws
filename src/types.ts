@@ -24,8 +24,13 @@ export interface Disposable {
 export interface Sink<T = unknown> {
   /** Next value arriving. */
   next(value: T): void;
-  /** An error that has occured. Calling this function "closes" the sink. */
-  error(error: Error | CloseEvent | readonly GraphQLError[]): void;
+  /**
+   * An error that has occured. Calling this function "closes" the sink.
+   * The error can be also `CloseEvent`, but to avoid bundling DOM typings
+   * because the client can run in Node env too, you should assert
+   * the close event type during implementation.
+   */
+  error(error: Error | readonly GraphQLError[] | unknown): void;
   /** The sink has completed. This function "closes" the sink. */
   complete(): void;
 }
