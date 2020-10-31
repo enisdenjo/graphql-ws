@@ -32,10 +32,10 @@
 
 • `Optional` **connectionInitWaitTimeout**: undefined \| number
 
-The amount of time for which the
-server will wait for `ConnectionInit` message.
+The amount of time for which the server will wait
+for `ConnectionInit` message.
 
-Set the value to `Infinity`, '', 0, null or undefined to skip waiting.
+Set the value to `Infinity`, `''`, `0`, `null` or `undefined` to skip waiting.
 
 If the wait timeout has passed and the client
 has not sent the `ConnectionInit` message,
@@ -67,6 +67,10 @@ ___
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
 
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
+
 ___
 
 ### keepAlive
@@ -76,6 +80,7 @@ ___
 The timout between dispatched keep-alive messages. Internally the lib
 uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
 the clients and the server is operating and to prevent the link from being broken due to idling.
+
 Set to nullish value to disable.
 
 **`default`** 12 * 1000 (12 seconds)
@@ -90,6 +95,10 @@ The complete callback is executed after the
 operation has completed right before sending
 the complete message to the client.
 
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
+
 ___
 
 ### onConnect
@@ -98,9 +107,10 @@ ___
 
 Is the connection callback called when the
 client requests the connection initialisation
-through the message `ConnectionInit`. The message
-payload (`connectionParams` on the client) is
-present in the `Context.connectionParams`.
+through the message `ConnectionInit`.
+
+The message payload (`connectionParams` from the
+client) is present in the `Context.connectionParams`.
 
 - Returning `true` or nothing from the callback will
 allow the client to connect.
@@ -109,11 +119,9 @@ allow the client to connect.
 terminate the socket by dispatching the
 close event `4403: Forbidden`.
 
-- Throwing an error from the callback will
-terminate the socket by dispatching the
-close event `4400: <error-message>`, where
-the `<error-message>` is the message of the
-thrown `Error`.
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
 
 ___
 
@@ -128,6 +136,10 @@ Use this callback to format the outgoing GraphQL
 errors before they reach the client.
 
 Returned result will be injected in the error message payload.
+
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
 
 ___
 
@@ -144,6 +156,10 @@ before it reaches the client.
 
 Returned result will be injected in the next message payload.
 
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
+
 ___
 
 ### onOperation
@@ -157,13 +173,17 @@ that the subscription process for the stream has resolved
 and that the client is now subscribed.
 
 The `OperationResult` argument is the result of operation
-execution. It can be an iterator or already value.
+execution. It can be an iterator or already a value.
 
 If you want the single result and the events from a streaming
 operation, use the `onNext` callback.
 
 Use this callback to listen for subscribe operation and
 execution result manipulation.
+
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
 
 ___
 
@@ -190,6 +210,10 @@ following a custom logic. A typical use case are
 persisted queries, you can identify the query from
 the subscribe message and create the GraphQL operation
 execution args which are then returned by the function.
+
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
 
 ___
 
@@ -226,3 +250,7 @@ ___
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
+
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.

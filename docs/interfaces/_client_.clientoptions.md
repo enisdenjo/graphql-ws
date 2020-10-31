@@ -29,7 +29,9 @@ Configuration used for the `create` client function.
 
 • `Optional` **connectionParams**: Record\<string, unknown> \| () => Record\<string, unknown>
 
-Optional parameters that the client specifies when establishing a connection with the server.
+Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
+that the client specifies when establishing a connection with the server. You can use this
+for securely passing arguments for authentication.
 
 ___
 
@@ -61,6 +63,7 @@ ___
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
+
 The listeners passed in will **always** be the first ones
 to get the emitted event before other registered listeners.
 
@@ -90,7 +93,7 @@ ___
 
 •  **url**: string
 
-URL of the GraphQL server to connect.
+URL of the GraphQL over WebSocket Protocol compliant server to connect.
 
 ___
 

@@ -32,29 +32,37 @@ type CancellerRef = { current: (() => void) | null };
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
-  /** URL of the GraphQL server to connect. */
+  /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
   url: string;
-  /** Optional parameters that the client specifies when establishing a connection with the server. */
+  /**
+   * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
+   * that the client specifies when establishing a connection with the server. You can use this
+   * for securely passing arguments for authentication.
+   */
   connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
   /**
    * Should the connection be established immediately and persisted
    * or after the first listener subscribed.
+   *
    * @default true
    */
   lazy?: boolean;
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
+   *
    * @default 5
    */
   retryAttempts?: number;
   /**
    * How long should the client wait until attempting to retry.
+   *
    * @default 3 * 1000 (3 seconds)
    */
   retryTimeout?: number;
   /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
+   *
    * The listeners passed in will **always** be the first ones
    * to get the emitted event before other registered listeners.
    */
@@ -133,6 +141,7 @@ export function createClient(options: ClientOptions): Client {
     throw new Error('WebSocket implementation missing');
   }
 
+  // websocket status emitter, subscriptions are handled differently
   const emitter = (() => {
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
@@ -467,7 +476,6 @@ export function createClient(options: ClientOptions): Client {
               );
             });
 
-            // TODO-db-200909 wont be removed on throw, but should it? the socket is closed on throw
             socket.removeEventListener('message', messageHandler);
 
             // cancelled, shouldnt try again
