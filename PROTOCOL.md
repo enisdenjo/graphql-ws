@@ -36,8 +36,6 @@ Direction: **Client -> Server**
 
 Indicates that the client wants to establish a connection within the existing socket. This connection is **not** the actual WebSocket communication channel, but is rather a frame within it asking the server to allow future operation requests.
 
-The client can specify additional `connectionParams` which are sent through the `payload` field in the outgoing message.
-
 The server must receive the connection initialisation message within the allowed waiting time specified in the `connectionInitWaitTimeout` parameter during the server setup. If the client does not request a connection within the allowed timeout, the server will close the socket with the event: `4408: Connection initialisation timeout`.
 
 If the server receives more than one `ConnectionInit` message at any given time, the server will close the socket with the event `4429: Too many initialisation requests`.
@@ -45,7 +43,7 @@ If the server receives more than one `ConnectionInit` message at any given time,
 ```typescript
 interface ConnectionInitMessage {
   type: 'connection_init';
-  payload?: Record<string, unknown>; // connectionParams
+  payload?: Record<string, unknown>;
 }
 ```
 
@@ -154,7 +152,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Client_ immediately dispatches a `ConnectionInit` message optionally providing a payload as agreed with the server
 1. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
 1. _Client_ has received the acknowledgement message and is now ready to request operation executions
 
@@ -162,7 +160,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Client_ immediately dispatches a `ConnectionInit` message optionally providing a payload as agreed with the server
 1. _Server_ validates the connection initialisation request and decides that the client is not allowed to establish a connection
 1. _Server_ closes the socket by dispatching the event `4403: Forbidden`
 1. _Client_ reports an error using the close event reason (which is `Forbidden`)
@@ -171,7 +169,7 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
 1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-1. _Client_ immediately dispatches a `ConnectionInit` message setting the `connectionParams` according to the server implementation
+1. _Client_ immediately dispatches a `ConnectionInit` message optionally providing a payload as agreed with the server
 1. _Server_ tries validating the connection initialisation request but an error `I'm a teapot` is thrown
 1. _Server_ closes the socket by dispatching the event `4400: I'm a teapot`
 1. _Client_ reports an error using the close event reason (which is `I'm a teapot`)

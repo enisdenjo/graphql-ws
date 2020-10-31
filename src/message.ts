@@ -26,7 +26,7 @@ export enum MessageType {
 
 export interface ConnectionInitMessage {
   readonly type: MessageType.ConnectionInit;
-  readonly payload?: Record<string, unknown>; // connectionParams
+  readonly payload?: Record<string, unknown>;
 }
 
 export interface ConnectionAckMessage {
@@ -88,7 +88,7 @@ export function isMessage(val: unknown): val is Message {
     // validate other properties depending on the `type`
     switch (val.type) {
       case MessageType.ConnectionInit:
-        // the connection init message can have optional object `connectionParams` in the payload
+        // the connection init message can have optional payload object
         return (
           !hasOwnProperty(val, 'payload') ||
           val.payload === undefined ||
