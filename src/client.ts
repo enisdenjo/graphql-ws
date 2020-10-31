@@ -75,9 +75,12 @@ export interface ClientOptions {
   webSocketImpl?: unknown;
   /**
    * A custom ID generator for identifying subscriptions.
-   * The default uses the `crypto` module in the global scope
-   * which is present for modern browsers. However, if
-   * it can't be found, `Math.random` would be used instead.
+   *
+   * The default generates a v4 UUID to be used as the ID using `Math`
+   * as the random number generator. Supply your own generator
+   * in case you need more uniqueness.
+   *
+   * Reference: https://stackoverflow.com/a/2117523/709884
    */
   generateID?: () => ID;
 }
@@ -106,22 +109,13 @@ export function createClient(options: ClientOptions): Client {
     on,
     webSocketImpl,
     /**
-     * Generates a v4 UUID to be used as the ID.
+     * Generates a v4 UUID to be used as the ID using `Math`
+     * as the random number generator. Supply your own generator
+     * in case you need more uniqueness.
+     *
      * Reference: https://stackoverflow.com/a/2117523/709884
      */
     generateID = function generateUUID() {
-      if (globalThis.crypto) {
-        return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (s) => {
-          const c = Number.parseInt(s, 10);
-          return (
-            c ^
-            (globalThis.crypto.getRandomValues(new Uint8Array(1))[0] &
-              (15 >> (c / 4)))
-          ).toString(16);
-        });
-      }
-
-      // use Math.random when crypto is not available
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
         const r = (Math.random() * 16) | 0,
           v = c == 'x' ? r : (r & 0x3) | 0x8;
@@ -130,16 +124,25 @@ export function createClient(options: ClientOptions): Client {
     },
   } = options;
 
-  let WebSocketImpl = globalThis.WebSocket;
+  let ws;
   if (webSocketImpl) {
     if (!isWebSocket(webSocketImpl)) {
       throw new Error('Invalid WebSocket implementation provided');
     }
-    WebSocketImpl = webSocketImpl;
+    ws = webSocketImpl;
+  } else if (typeof WebSocket !== 'undefined') {
+    ws = WebSocket;
+  } else if (typeof global !== 'undefined') {
+    ws = global.WebSocket;
+  } else if (typeof window !== 'undefined') {
+    ws = window.WebSocket;
+  } else if (typeof self !== 'undefined') {
+    ws = self.WebSocket;
   }
-  if (!WebSocketImpl) {
+  if (!ws) {
     throw new Error('WebSocket implementation missing');
   }
+  const WebSocketImpl = ws;
 
   // websocket status emitter, subscriptions are handled differently
   const emitter = (() => {

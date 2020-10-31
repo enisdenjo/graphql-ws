@@ -33,9 +33,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "engines": {
-    "node": ">=12"
-  },
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/",
     "lint": "eslint 'src'",
