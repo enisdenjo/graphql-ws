@@ -51,9 +51,9 @@ interface ConnectionInitMessage {
 
 The server will respond by either:
 
-- Dispatching a `ConnectionAck` message acknowledging that the connection has been successfully established. The server does not implement the `onConnect` callback or the implemented callback has returned `true`.
-- Closing the socket with a close event `4403: Forbidden` indicating that the connection request has been denied because of access control. The server has returned `false` in the `onConnect` callback.
-- Closing the socket with a close event `4400: <error-message>` indicating that the connection request has been denied because of an implementation specific error. The server has thrown an error in the `onConnect` callback, the thrown error's message is the `<error-message>` in the close event.
+- Dispatching a `ConnectionAck` message acknowledging that the connection has been successfully established.
+- Closing the socket with a close event `4403: Forbidden` indicating that the connection request has been denied because of access control.
+- Closing the socket with a close event `4400: <error-message>` indicating that the connection request has been denied because of an implementation specific error.
 
 ### `ConnectionAck`
 
@@ -195,18 +195,8 @@ _The client and the server has already gone through [successful connection initi
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
    <br>_All future communication is linked through this unique ID_
-1. _Server_ triggers the `onSubscribe` callback
-
-   - If `ExecutionArgs` are **not** returned, the arguments will be formed and validated using the payload
-   - If `ExecutionArgs` are returned, they will be used directly
-
-1. _Server_ executes the single result GraphQL operation using the arguments provided above
-1. _Server_ triggers the `onNext` callback
-
-   - If `ExecutionResult` is **not** returned, the direct result from the operation will be dispatched with the `Next` message
-   - If `ExecutionResult` is returned, it will be dispatched with the `Next` message
-
-1. _Server_ triggers the `onComplete` callback
+1. _Server_ executes the single result GraphQL operation
+1. _Server_ dispatches the result with the `Next` message
 1. _Server_ dispatches the `Complete` message indicating that the execution has completed
 
 ### Streaming operation
@@ -218,26 +208,15 @@ _The client and the server has already gone through [successful connection initi
 1. _Client_ generates a unique ID for the following operation
 1. _Client_ dispatches the `Subscribe` message with the generated ID through the `id` field and the requested operation passed through the `payload` field
    <br>_All future communication is linked through this unique ID_
-1. _Server_ triggers the `onSubscribe` callback
-
-   - If `ExecutionArgs` are **not** returned, the arguments will be formed and validated using the payload
-   - If `ExecutionArgs` are returned, they will be used directly
-
-1. _Server_ executes the streaming GraphQL operation using the arguments provided above
+1. _Server_ executes the streaming GraphQL operation
 1. _Server_ checks if the generated ID is unique across active streaming subscriptions
 
    - If **not** unique, the _server_ will close the socket with the event `4409: Subscriber for <generated-id> already exists`
    - If unique, continue...
 
-1. _Server_ triggers the `onNext` callback
-
-   - If `ExecutionResult` is **not** returned, the direct events from the source stream will be dispatched with the `Next` message
-   - If `ExecutionResult` is returned, it will be dispatched with the `Next` message instead of every event from the source stram
-
+1. _Server_ dispatches results over time with the `Next` message
 1. - _Client_ stops the subscription by dispatching a `Complete` message
    - _Server_ completes the source stream
-   - _Server_ triggers the `onComplete` callback, if specified
      <br>_or_
-   - _Server_ triggers the `onComplete` callback, if specified
    - _Server_ dispatches the `Complete` message indicating that the source stream has completed
    - _Client_ completes the stream observer
