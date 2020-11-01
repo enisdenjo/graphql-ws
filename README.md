@@ -391,6 +391,7 @@ server.listen(443, () => {
 import https from 'https';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-ws';
+import { schema } from 'my-graphql-schema';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
