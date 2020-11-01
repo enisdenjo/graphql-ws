@@ -62,14 +62,12 @@ Requests an operation specified in the message `payload`. This message provides 
 If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future events.
 
 ```typescript
-import { DocumentNode } from 'graphql';
-
 interface SubscribeMessage {
   id: '<unique-operation-id>';
   type: 'subscribe';
   payload: {
     operationName?: string | null;
-    query: string | DocumentNode;
+    query: string;
     variables?: Record<string, unknown> | null;
   };
 }
