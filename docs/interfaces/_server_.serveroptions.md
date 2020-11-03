@@ -56,8 +56,12 @@ logged in user, or access to a database.
 
 If you return from `onSubscribe`, and the returned value is
 missing the `contextValue` field, this context will be used
-instead. The returned value will be passed through as the
-execution arguments, if you use the function signature.
+instead.
+
+If you use the function signature, the final execution arguments
+will be passed in (also the returned value from `onSubscribe`).
+Since the context is injected on every subscribe, the `SubscribeMessage`
+with the regular `Context` will be passed in through the arguments too.
 
 ___
 
