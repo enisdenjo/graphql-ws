@@ -174,7 +174,10 @@ export interface ServerOptions {
    * it will be used instead of trying to build one
    * internally. In this case, you are responsible
    * for providing a ready set of arguments which will
-   * be directly plugged in the operation execution.
+   * be directly plugged in the operation execution. Beware,
+   * the `context` server option is an exception. Only if you
+   * dont provide a context alongside the returned value
+   * here, the `context` server option will be used instead.
    *
    * To report GraphQL errors simply return an array
    * of them from the callback, they will be reported
