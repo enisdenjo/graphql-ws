@@ -15,7 +15,7 @@ export function isAsyncIterable<T = unknown>(
   return typeof Object(val)[Symbol.asyncIterator] === 'function';
 }
 
-export function areGraphQLErrors(obj: unknown): obj is GraphQLError[] {
+export function areGraphQLErrors(obj: unknown): obj is readonly GraphQLError[] {
   return (
     Array.isArray(obj) &&
     // must be at least one error

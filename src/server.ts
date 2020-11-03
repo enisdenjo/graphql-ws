@@ -523,7 +523,8 @@ export function createServer(
               if (areGraphQLErrors(maybeExecArgsOrErrors)) {
                 return await emit.error(maybeExecArgsOrErrors);
               }
-              execArgs = maybeExecArgsOrErrors as ExecutionArgs; // because not graphql errors
+              // not errors, is exec args
+              execArgs = maybeExecArgsOrErrors;
             } else {
               if (!schema) {
                 // you either provide a schema dynamically through
