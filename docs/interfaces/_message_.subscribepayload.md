@@ -26,7 +26,7 @@ ___
 
 ### query
 
-• `Readonly` **query**: string \| DocumentNode
+• `Readonly` **query**: string
 
 ___
 
