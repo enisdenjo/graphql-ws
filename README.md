@@ -490,7 +490,7 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with custom GraphQL context value</summary>
+<summary>Server usage with custom context value</summary>
 
 ```typescript
 import { validate, execute, subscribe } from 'graphql';
