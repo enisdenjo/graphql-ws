@@ -594,6 +594,11 @@ export function createServer(
               ]);
             }
 
+            // if onsubscribe didnt return anything, inject roots
+            if (!maybeExecArgsOrErrors) {
+              execArgs.rootValue = roots?.[operationAST.operation];
+            }
+
             // inject the context, if provided, before the operation.
             // but, only if the `onSubscribe` didnt provide one already
             if (context !== undefined && !execArgs.contextValue) {
@@ -601,11 +606,6 @@ export function createServer(
                 typeof context === 'function'
                   ? context(ctx, message, execArgs)
                   : context;
-            }
-
-            // if onsubscribe didnt return anything, inject roots
-            if (!maybeExecArgsOrErrors) {
-              execArgs.rootValue = roots?.[operationAST.operation];
             }
 
             // the execution arguments have been prepared
