@@ -567,11 +567,10 @@ export function createServer(
               }
 
               const { operationName, query, variables } = message.payload;
-              const document = typeof query === 'string' ? parse(query) : query;
               execArgs = {
                 schema,
                 operationName,
-                document,
+                document: parse(query),
                 variableValues: variables,
               };
 

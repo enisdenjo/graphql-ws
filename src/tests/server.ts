@@ -1164,51 +1164,6 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should execute the query of `DocumentNode` type, "next" the result and then "complete"', async () => {
-    const { url } = await startTServer({
-      schema,
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-      client.ws.send(
-        stringifyMessage<MessageType.Subscribe>({
-          id: '1',
-          type: MessageType.Subscribe,
-          payload: {
-            operationName: 'TestString',
-            query: parse(`query TestString {
-              getValue
-            }`),
-            variables: {},
-          },
-        }),
-      );
-    });
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data)).toEqual({
-        id: '1',
-        type: MessageType.Next,
-        payload: { data: { getValue: 'value' } },
-      });
-    });
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data)).toEqual({
-        id: '1',
-        type: MessageType.Complete,
-      });
-    });
-  });
-
   it('should execute the query and "error" out because of validation errors', async () => {
     const { url } = await startTServer({
       schema,

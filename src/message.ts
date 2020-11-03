@@ -4,7 +4,7 @@
  *
  */
 
-import { GraphQLError, ExecutionResult, DocumentNode } from 'graphql';
+import { GraphQLError, ExecutionResult } from 'graphql';
 import {
   isObject,
   areGraphQLErrors,
@@ -41,7 +41,7 @@ export interface SubscribeMessage {
 
 export interface SubscribePayload {
   readonly operationName?: string | null;
-  readonly query: string | DocumentNode;
+  readonly query: string;
   readonly variables?: Record<string, unknown> | null;
 }
 
@@ -104,8 +104,7 @@ export function isMessage(val: unknown): val is Message {
             val.payload.operationName === undefined ||
             val.payload.operationName === null ||
             typeof val.payload.operationName === 'string') &&
-          (hasOwnStringProperty(val.payload, 'query') || // string query or persisted query id
-            hasOwnObjectProperty(val.payload, 'query')) && // document node query
+          hasOwnStringProperty(val.payload, 'query') &&
           (!hasOwnProperty(val.payload, 'variables') ||
             val.payload.variables === undefined ||
             val.payload.variables === null ||

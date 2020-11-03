@@ -272,6 +272,7 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
+import { print } from 'graphql';
 import { createClient, Config, Client } from 'graphql-ws';
 
 class WebSocketLink extends ApolloLink {
@@ -284,25 +285,30 @@ class WebSocketLink extends ApolloLink {
 
   public request(operation: Operation): Observable<FetchResult> {
     return new Observable((sink) => {
-      return this.client.subscribe<FetchResult>(operation, {
-        ...sink,
-        error: (err) => {
-          if (err instanceof Error) {
-            sink.error(err);
-          } else if (err instanceof CloseEvent) {
-            sink.error(
-              new Error(
-                `Socket closed with event ${err.code}` + err.reason
-                  ? `: ${err.reason}` // reason will be available on clean closes
-                  : '',
-              ),
-            );
-          } else {
-            // GraphQLError[]
-            sink.error(new Error(err.map(({ message }) => message).join(', ')));
-          }
+      return this.client.subscribe<FetchResult>(
+        { ...operation, query: print(operation.query) },
+        {
+          ...sink,
+          error: (err) => {
+            if (err instanceof Error) {
+              sink.error(err);
+            } else if (err instanceof CloseEvent) {
+              sink.error(
+                new Error(
+                  `Socket closed with event ${err.code}` + err.reason
+                    ? `: ${err.reason}` // reason will be available on clean closes
+                    : '',
+                ),
+              );
+            } else {
+              // GraphQLError[]
+              sink.error(
+                new Error(err.map(({ message }) => message).join(', ')),
+              );
+            }
+          },
         },
-      });
+      );
     });
   }
 }
