@@ -14,6 +14,7 @@
 
 ### Type aliases
 
+* [GraphQLExecutionContextValue](_server_.md#graphqlexecutioncontextvalue)
 * [OperationResult](_server_.md#operationresult)
 
 ### Functions
@@ -21,6 +22,19 @@
 * [createServer](_server_.md#createserver)
 
 ## Type aliases
+
+### GraphQLExecutionContextValue
+
+Ƭ  **GraphQLExecutionContextValue**: object \| symbol \| number \| string \| boolean \| null \| undefined
+
+A concrete GraphQL execution context value type.
+
+Mainly used because TypeScript collapes unions
+with `any` or `unknown` to `any` or `unknown`. So,
+we use a custom type to allow definitions such as
+the `context` server option.
+
+___
 
 ### OperationResult
 
