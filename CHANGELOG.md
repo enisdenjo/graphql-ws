@@ -1,3 +1,11 @@
+# [1.10.0](https://github.com/enisdenjo/graphql-ws/compare/v1.9.3...v1.10.0) (2020-11-03)
+
+
+### Features
+
+* Subscribe message `query` must be a string ([#45](https://github.com/enisdenjo/graphql-ws/issues/45)) ([60d9cd5](https://github.com/enisdenjo/graphql-ws/commit/60d9cd5509d1b989f3ca6a9370850ce0aae41522))
+* **server:** For dynamic usage, `context` option can be a function too ([#46](https://github.com/enisdenjo/graphql-ws/issues/46)) ([149b582](https://github.com/enisdenjo/graphql-ws/commit/149b58266859d6f275c186581f71c3aff52cb4a3))
+
 ## [1.9.3](https://github.com/enisdenjo/graphql-ws/compare/v1.9.2...v1.9.3) (2020-10-31)
 
 
