@@ -531,7 +531,7 @@ createServer(
         schema,
         contextValue: getDynamicContext(ctx, msg),
         operationName: msg.payload.operationName,
-        document: parse(msg.payload.operationName),
+        document: parse(msg.payload.query),
         variableValues: msg.payload.variables,
       };
 
