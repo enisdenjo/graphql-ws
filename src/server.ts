@@ -58,8 +58,7 @@ export type GraphQLExecutionContextValue =
   | number
   | string
   | boolean
-  | null
-  | undefined;
+  | null;
 
 export interface ServerOptions {
   /**
@@ -597,7 +596,7 @@ export function createServer(
 
             // inject the context, if provided, before the operation.
             // but, only if the `onSubscribe` didnt provide one already
-            if (context && !execArgs.contextValue) {
+            if (context !== undefined && !execArgs.contextValue) {
               execArgs.contextValue =
                 typeof context === 'function'
                   ? context(ctx, message, execArgs)
