@@ -1461,6 +1461,45 @@ describe('Subscribe', () => {
       }),
     );
   });
+
+  it('should call `onComplete` callback even if socket terminates abruptly', async (done) => {
+    const server = await startTServer({
+      onComplete: () => {
+        done();
+      },
+    });
+
+    const client = await createTClient(server.url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { ping }',
+        },
+      }),
+    );
+    await server.waitForOperation();
+
+    // just to make sure we're streaming
+    server.pong();
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.Next);
+    });
+
+    // terminate socket abruptly
+    client.ws.terminate();
+  });
 });
 
 describe('Keep-Alive', () => {
