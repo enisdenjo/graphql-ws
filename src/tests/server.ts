@@ -364,9 +364,48 @@ it('should pass the `onSubscribe` exec args to the `context` option and use it',
   );
 });
 
-it.todo(
-  'should prefer the `onSubscribe` context value even if `context` option is set',
-);
+it('should prefer the `onSubscribe` context value even if `context` option is set', async (done) => {
+  const context = 'not-me';
+  const execArgs = {
+    contextValue: 'me-me', // my custom context
+    schema,
+    document: parse(`query { getValue }`),
+  };
+
+  const { url } = await startTServer({
+    onSubscribe: () => {
+      return execArgs;
+    },
+    context, // should be ignored because there is one in `execArgs`
+    execute: (args) => {
+      expect(args).toBe(execArgs); // from `onSubscribe`
+      expect(args.contextValue).not.toBe(context); // from `onSubscribe`
+      done();
+      return execute(args);
+    },
+    subscribe,
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+});
 
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
