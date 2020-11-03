@@ -43,6 +43,24 @@ export type OperationResult =
   | AsyncIterableIterator<ExecutionResult>
   | ExecutionResult;
 
+/**
+ * A concrete GraphQL execution context value type.
+ *
+ * Mainly used because TypeScript collapes unions
+ * with `any` or `unknown` to `any` or `unknown`. So,
+ * we use a custom type to allow definitions such as
+ * the `context` server option.
+ */
+export type GraphQLExecutionContextValue =
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | object // you can literally pass "any" JS object as the context value
+  | symbol
+  | number
+  | string
+  | boolean
+  | null
+  | undefined;
+
 export interface ServerOptions {
   /**
    * The GraphQL schema on which the operations
@@ -64,12 +82,12 @@ export interface ServerOptions {
    * execution arguments, if you use the function signature.
    */
   context?:
-    | unknown
+    | GraphQLExecutionContextValue
     | ((
         ctx: Context,
         message: SubscribeMessage,
         args: ExecutionArgs,
-      ) => unknown);
+      ) => GraphQLExecutionContextValue);
   /**
    * The GraphQL root fields or resolvers to go
    * alongside the schema. Learn more about them
