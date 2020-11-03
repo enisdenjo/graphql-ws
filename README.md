@@ -490,16 +490,18 @@ server.listen(443);
 </details>
 
 <details>
-<summary>Server usage with custom static GraphQL arguments</summary>
+<summary>Server usage with custom context value</summary>
 
 ```typescript
 import { validate, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-ws';
-import { schema, roots, getStaticContext } from 'my-graphql';
+import { schema, roots, getDynamicContext } from 'my-graphql';
 
 createServer(
   {
-    context: getStaticContext(),
+    context: (ctx, msg, args) => {
+      return getDynamicContext(ctx, msg, args);
+    }, // or static context by supplying the value direcly
     schema,
     roots,
     execute,
@@ -515,12 +517,12 @@ createServer(
 </details>
 
 <details>
-<summary>Server usage with custom dynamic GraphQL arguments and validation</summary>
+<summary>Server usage with custom execution arguments and validation</summary>
 
 ```typescript
 import { parse, validate, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-ws';
-import { schema, getDynamicContext, myValidationRules } from 'my-graphql';
+import { schema, myValidationRules } from 'my-graphql';
 
 createServer(
   {
@@ -529,7 +531,6 @@ createServer(
     onSubscribe: (ctx, msg) => {
       const args = {
         schema,
-        contextValue: getDynamicContext(ctx, msg),
         operationName: msg.payload.operationName,
         document: parse(msg.payload.query),
         variableValues: msg.payload.variables,

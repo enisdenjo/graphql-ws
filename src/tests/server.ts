@@ -318,6 +318,95 @@ it('should pass in the context value from the config', async () => {
   expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
 });
 
+it('should pass the `onSubscribe` exec args to the `context` option and use it', async (done) => {
+  const context = {};
+  const execArgs = {
+    // no context here
+    schema,
+    document: parse(`query { getValue }`),
+  };
+
+  const { url } = await startTServer({
+    onSubscribe: () => {
+      return execArgs;
+    },
+    context: (_ctx, _msg, args) => {
+      expect(args).toBe(args); // from `onSubscribe`
+      return context; // will be injected
+    },
+    execute: (args) => {
+      expect(args).toBe(execArgs); // from `onSubscribe`
+      expect(args.contextValue).toBe(context); // injected by `context`
+      done();
+      return execute(args);
+    },
+    subscribe,
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+});
+
+it('should prefer the `onSubscribe` context value even if `context` option is set', async (done) => {
+  const context = 'not-me';
+  const execArgs = {
+    contextValue: 'me-me', // my custom context
+    schema,
+    document: parse(`query { getValue }`),
+  };
+
+  const { url } = await startTServer({
+    onSubscribe: () => {
+      return execArgs;
+    },
+    context, // should be ignored because there is one in `execArgs`
+    execute: (args) => {
+      expect(args).toBe(execArgs); // from `onSubscribe`
+      expect(args.contextValue).not.toBe(context); // from `onSubscribe`
+      done();
+      return execute(args);
+    },
+    subscribe,
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+});
+
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     const { url } = await startTServer({

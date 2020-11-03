@@ -43,6 +43,23 @@ export type OperationResult =
   | AsyncIterableIterator<ExecutionResult>
   | ExecutionResult;
 
+/**
+ * A concrete GraphQL execution context value type.
+ *
+ * Mainly used because TypeScript collapes unions
+ * with `any` or `unknown` to `any` or `unknown`. So,
+ * we use a custom type to allow definitions such as
+ * the `context` server option.
+ */
+export type GraphQLExecutionContextValue =
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | object // you can literally pass "any" JS object as the context value
+  | symbol
+  | number
+  | string
+  | boolean
+  | null;
+
 export interface ServerOptions {
   /**
    * The GraphQL schema on which the operations
@@ -58,11 +75,22 @@ export interface ServerOptions {
    * important contextual information like the currently
    * logged in user, or access to a database.
    *
-   * If you return from the `onSubscribe` callback, this
-   * context value will NOT be injected. You should add it
-   * in the returned `ExecutionArgs` from the callback.
+   * If you return from `onSubscribe`, and the returned value is
+   * missing the `contextValue` field, this context will be used
+   * instead.
+   *
+   * If you use the function signature, the final execution arguments
+   * will be passed in (also the returned value from `onSubscribe`).
+   * Since the context is injected on every subscribe, the `SubscribeMessage`
+   * with the regular `Context` will be passed in through the arguments too.
    */
-  context?: unknown;
+  context?:
+    | GraphQLExecutionContextValue
+    | ((
+        ctx: Context,
+        message: SubscribeMessage,
+        args: ExecutionArgs,
+      ) => GraphQLExecutionContextValue);
   /**
    * The GraphQL root fields or resolvers to go
    * alongside the schema. Learn more about them
@@ -149,7 +177,10 @@ export interface ServerOptions {
    * it will be used instead of trying to build one
    * internally. In this case, you are responsible
    * for providing a ready set of arguments which will
-   * be directly plugged in the operation execution.
+   * be directly plugged in the operation execution. Beware,
+   * the `context` server option is an exception. Only if you
+   * dont provide a context alongside the returned value
+   * here, the `context` server option will be used instead.
    *
    * To report GraphQL errors simply return an array
    * of them from the callback, they will be reported
@@ -538,7 +569,6 @@ export function createServer(
               const { operationName, query, variables } = message.payload;
               const document = typeof query === 'string' ? parse(query) : query;
               execArgs = {
-                contextValue: context,
                 schema,
                 operationName,
                 document,
@@ -567,6 +597,15 @@ export function createServer(
             // if onsubscribe didnt return anything, inject roots
             if (!maybeExecArgsOrErrors) {
               execArgs.rootValue = roots?.[operationAST.operation];
+            }
+
+            // inject the context, if provided, before the operation.
+            // but, only if the `onSubscribe` didnt provide one already
+            if (context !== undefined && !execArgs.contextValue) {
+              execArgs.contextValue =
+                typeof context === 'function'
+                  ? context(ctx, message, execArgs)
+                  : context;
             }
 
             // the execution arguments have been prepared

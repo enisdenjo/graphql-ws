@@ -48,15 +48,20 @@ ___
 
 ### context
 
-• `Optional` **context**: unknown
+• `Optional` **context**: [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue) \| (ctx: [Context](_server_.context.md), message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs) => [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
 logged in user, or access to a database.
 
-If you return from the `onSubscribe` callback, this
-context value will NOT be injected. You should add it
-in the returned `ExecutionArgs` from the callback.
+If you return from `onSubscribe`, and the returned value is
+missing the `contextValue` field, this context will be used
+instead.
+
+If you use the function signature, the final execution arguments
+will be passed in (also the returned value from `onSubscribe`).
+Since the context is injected on every subscribe, the `SubscribeMessage`
+with the regular `Context` will be passed in through the arguments too.
 
 ___
 
@@ -199,7 +204,10 @@ If you return `ExecutionArgs` from the callback,
 it will be used instead of trying to build one
 internally. In this case, you are responsible
 for providing a ready set of arguments which will
-be directly plugged in the operation execution.
+be directly plugged in the operation execution. Beware,
+the `context` server option is an exception. Only if you
+dont provide a context alongside the returned value
+here, the `context` server option will be used instead.
 
 To report GraphQL errors simply return an array
 of them from the callback, they will be reported
