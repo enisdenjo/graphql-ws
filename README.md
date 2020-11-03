@@ -515,12 +515,12 @@ createServer(
 </details>
 
 <details>
-<summary>Server usage with custom dynamic GraphQL arguments and validation</summary>
+<summary>Server usage with custom execution arguments and validation</summary>
 
 ```typescript
 import { parse, validate, execute, subscribe } from 'graphql';
 import { createServer } from 'graphql-ws';
-import { schema, getDynamicContext, myValidationRules } from 'my-graphql';
+import { schema, myValidationRules } from 'my-graphql';
 
 createServer(
   {
@@ -529,7 +529,6 @@ createServer(
     onSubscribe: (ctx, msg) => {
       const args = {
         schema,
-        contextValue: getDynamicContext(ctx, msg),
         operationName: msg.payload.operationName,
         document: parse(msg.payload.query),
         variableValues: msg.payload.variables,
