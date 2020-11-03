@@ -58,11 +58,18 @@ export interface ServerOptions {
    * important contextual information like the currently
    * logged in user, or access to a database.
    *
-   * If you return from the `onSubscribe` callback, this
-   * context value will NOT be injected. You should add it
-   * in the returned `ExecutionArgs` from the callback.
+   * If you return from `onSubscribe`, and the returned value is
+   * missing the `contextValue` field, this context will be used
+   * instead. The returned value will be passed through as the
+   * execution arguments, if you use the function signature.
    */
-  context?: unknown;
+  context?:
+    | unknown
+    | ((
+        ctx: Context,
+        message: SubscribeMessage,
+        args: ExecutionArgs,
+      ) => unknown);
   /**
    * The GraphQL root fields or resolvers to go
    * alongside the schema. Learn more about them
@@ -538,7 +545,6 @@ export function createServer(
               const { operationName, query, variables } = message.payload;
               const document = typeof query === 'string' ? parse(query) : query;
               execArgs = {
-                contextValue: context,
                 schema,
                 operationName,
                 document,
@@ -562,6 +568,15 @@ export function createServer(
               return await emit.error([
                 new GraphQLError('Unable to identify operation'),
               ]);
+            }
+
+            // inject the context, if provided, before the operation.
+            // but, only if the `onSubscribe` didnt provide one already
+            if (context && !execArgs.contextValue) {
+              execArgs.contextValue =
+                typeof context === 'function'
+                  ? context(ctx, message, execArgs)
+                  : context;
             }
 
             // if onsubscribe didnt return anything, inject roots
