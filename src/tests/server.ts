@@ -941,6 +941,44 @@ describe('Subscribe', () => {
     }, 30);
   });
 
+  it('should close the socket on empty arrays returned from `onSubscribe`', async () => {
+    const { url } = await startTServer({
+      onSubscribe: () => {
+        return [];
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { ping }',
+        },
+      }),
+    );
+
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4400);
+      expect(event.reason).toBe(
+        'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
+      );
+      expect(event.wasClean).toBeTruthy();
+    });
+  });
+
   it('should use the execution result returned from `onNext`', async () => {
     const { url } = await startTServer({
       onNext: (_ctx, _message) => {
