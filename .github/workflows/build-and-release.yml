@@ -61,5 +61,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lib
-      - name: List
-        run: ls -a
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: yarn release
