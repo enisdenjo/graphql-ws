@@ -552,6 +552,12 @@ export function createServer(
             if (maybeExecArgsOrErrors) {
               if (areGraphQLErrors(maybeExecArgsOrErrors)) {
                 return await emit.error(maybeExecArgsOrErrors);
+              } else if (Array.isArray(maybeExecArgsOrErrors)) {
+                return await emit.error([
+                  new GraphQLError(
+                    'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
+                  ),
+                ]);
               }
               // not errors, is exec args
               execArgs = maybeExecArgsOrErrors;
