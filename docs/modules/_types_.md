@@ -4,6 +4,8 @@
 
 # Module: "types"
 
+types
+
 ## Index
 
 ### Interfaces
