@@ -430,11 +430,9 @@ export function createServer(
         );
       }
 
-      Object.entries(ctxRef.current.subscriptions).forEach(
-        ([, subscription]) => {
-          subscription.return?.();
-        },
-      );
+      Object.values(ctxRef.current.subscriptions).forEach((subscription) => {
+        subscription.return?.();
+      });
     }
 
     socket.onerror = errorOrCloseHandler;
