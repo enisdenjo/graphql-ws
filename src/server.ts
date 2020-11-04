@@ -278,6 +278,10 @@ export interface ServerOptions {
    * Throwing an error from within this function will
    * close the socket with the `Error` message
    * in the close event reason.
+   *
+   * Since the library makes sure to complete streaming
+   * operations even after an abrupt closure, this callback
+   * will still be called.
    */
   onComplete?: (ctx: Context, message: CompleteMessage) => Promise<void> | void;
 }
