@@ -790,7 +790,7 @@ describe('Subscribe', () => {
       schema,
       operationName: 'Nope',
       document: parse(`query Nope { getValue }`),
-      rootValue: undefined,
+      rootValue: null,
     };
     const { url } = await startTServer({
       schema: undefined,
@@ -799,7 +799,7 @@ describe('Subscribe', () => {
       },
       execute: (args) => {
         expect(args.schema).toBe(nopeArgs.schema); // schema from nopeArgs
-        expect(args.rootValue).toBeUndefined(); // nopeArgs didnt provide any root value
+        expect(args.rootValue).toBeNull(); // nopeArgs provided rootValue: null, so don't overwrite
         expect(args.operationName).toBe('Nope');
         expect(args.variableValues).toBeUndefined(); // nopeArgs didnt provide variables
         return execute(args);
