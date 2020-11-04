@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "es2015",
+    "outDir": "./esm"
+  },
+  "exclude": ["src/tests", "cjs", "esm"]
+}

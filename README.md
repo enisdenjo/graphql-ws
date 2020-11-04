@@ -331,6 +331,36 @@ const link = new WebSocketLink({
 </details>
 
 <details>
+<summary>Client usage in browser</summary>
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>GraphQL over WebSocket</title>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/graphql-ws/umd/graphql-ws.min.js"
+    ></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      (function () {
+        const client = graphqlWs.createClient({
+          url: 'wss://umdfor.the/win/graphql',
+        });
+
+        // consider other recipes for usage inspiration
+      })();
+    </script>
+  </body>
+</html>
+```
+
+</details>
+
+<details>
 <summary>Client usage in Node</summary>
 
 ```ts

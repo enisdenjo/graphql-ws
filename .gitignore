@@ -1,6 +1,8 @@
 **/.DS_Store
 node_modules
-lib
+cjs
+esm
+umd
 dist
 .vscode
 .yarn/*
