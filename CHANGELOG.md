@@ -1,3 +1,25 @@
+# [1.11.0](https://github.com/enisdenjo/graphql-ws/compare/v1.10.0...v1.11.0) (2020-11-04)
+
+
+### Bug Fixes
+
+* Node 10 is the min supported version ([19844d7](https://github.com/enisdenjo/graphql-ws/commit/19844d72f4638f9f7126870f9d9a744cdb4814c4))
+* Support more `graphql` versions ([de69b4e](https://github.com/enisdenjo/graphql-ws/commit/de69b4ea39905f9b3343711e9defe68c6746b842))
+* **server:** Close socket if `onSubscribe` returns invalid array ([#53](https://github.com/enisdenjo/graphql-ws/issues/53)) ([0464a54](https://github.com/enisdenjo/graphql-ws/commit/0464a54eee09dfdf66d65bf539a4d8f596be2697))
+* **server:** Consistently set `rootValue` and `contextValue`, if not overridden ([#49](https://github.com/enisdenjo/graphql-ws/issues/49)) ([7aa3bcd](https://github.com/enisdenjo/graphql-ws/commit/7aa3bcdd38d40e83306f867a5b6b1bd612ec5fe3))
+* **server:** Distribute server error to all clients even if one error listener throws ([#56](https://github.com/enisdenjo/graphql-ws/issues/56)) ([b96dbb9](https://github.com/enisdenjo/graphql-ws/commit/b96dbb98bb6f71956321ce1202af0af50df4e40e))
+* **server:** Don't surface bad request error details in production ([#55](https://github.com/enisdenjo/graphql-ws/issues/55)) ([70317b2](https://github.com/enisdenjo/graphql-ws/commit/70317b2619b7729e5d5556b4e5388f142414b082))
+
+
+### Features
+
+* `cjs`, `esm` and `umd` builds with minification and compression for the browser ([#58](https://github.com/enisdenjo/graphql-ws/issues/58)) ([ebb8dfe](https://github.com/enisdenjo/graphql-ws/commit/ebb8dfe8a1e50507bcc2b0929600d755ddd98b1d))
+
+
+### Performance Improvements
+
+* Reduce runtime prototype traversal for hasOwnProperty ([#52](https://github.com/enisdenjo/graphql-ws/issues/52)) ([1bb9218](https://github.com/enisdenjo/graphql-ws/commit/1bb9218ad3ee9442442122c1d10910d51951b763))
+
 # [1.10.0](https://github.com/enisdenjo/graphql-ws/compare/v1.9.3...v1.10.0) (2020-11-03)
 
 
