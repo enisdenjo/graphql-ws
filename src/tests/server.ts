@@ -407,6 +407,41 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
   );
 });
 
+it('should handle errors thrown from client error listeners', async () => {
+  const { server, url } = await startTServer();
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  const surpriseErr1 = new Error('Well hello there!');
+  const surpriseErr2 = new Error('I wont be thrown!'); // first to throw stops emission
+  for (const client of server.webSocketServer.clients) {
+    client.on('error', () => {
+      throw surpriseErr1;
+    });
+    client.on('error', () => {
+      throw surpriseErr2;
+    });
+  }
+
+  expect(() => {
+    server.webSocketServer.emit('error', new Error('I am a nice error'));
+  }).toThrowError(surpriseErr1);
+
+  await client.waitForClose((event) => {
+    expect(event.code).toBe(1011);
+    expect(event.reason).toBe('I am a nice error');
+    expect(event.wasClean).toBeTruthy();
+  });
+});
+
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     const { url } = await startTServer({
