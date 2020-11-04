@@ -364,6 +364,51 @@ it('should pass the `onSubscribe` exec args to the `context` option and use it',
   );
 });
 
+it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async (done) => {
+  const rootValue = {};
+  const execArgs = {
+    // no rootValue here
+    schema,
+    document: parse(`query { getValue }`),
+  };
+
+  const { url } = await startTServer({
+    roots: {
+      query: rootValue,
+    },
+    onSubscribe: () => {
+      return execArgs;
+    },
+    execute: (args) => {
+      expect(args).toBe(execArgs); // from `onSubscribe`
+      expect(args.rootValue).toBe(rootValue); // injected by `roots`
+      done();
+      return execute(args);
+    },
+    subscribe,
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: `{ getValue }`,
+      },
+    }),
+  );
+});
+
 it('should prefer the `onSubscribe` context value even if `context` option is set', async (done) => {
   const context = 'not-me';
   const execArgs = {
