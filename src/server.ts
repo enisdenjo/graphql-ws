@@ -357,6 +357,7 @@ export function createServer(
     ? websocketOptionsOrServer
     : new WebSocket.Server(websocketOptionsOrServer);
 
+  webSocketServer.on('connection', handleConnection);
   function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
     if (
       Array.isArray(socket.protocol)
@@ -445,7 +446,7 @@ export function createServer(
     socket.onclose = errorOrCloseHandler;
     socket.onmessage = makeOnMessage(ctxRef.current);
   }
-  webSocketServer.on('connection', handleConnection);
+
   webSocketServer.on('error', (err) => {
     // catch the first thrown error and re-throw it once all clients have been notified
     let firstErr: Error | null = null;
