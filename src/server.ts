@@ -443,9 +443,20 @@ export function createServer(
   }
   webSocketServer.on('connection', handleConnection);
   webSocketServer.on('error', (err) => {
+    // catch the first thrown error and re-throw it once all clients have been notified
+    let firstErr: Error | null = null;
+
+    // report server errors by erroring out all clients with the same error
     for (const client of webSocketServer.clients) {
-      // report server errors by erroring out all clients with the same error
-      client.emit('error', err);
+      try {
+        client.emit('error', err);
+      } catch (err) {
+        firstErr = firstErr ?? err;
+      }
+    }
+
+    if (firstErr) {
+      throw firstErr;
     }
   });
 
