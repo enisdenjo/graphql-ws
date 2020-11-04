@@ -445,7 +445,11 @@ export function createServer(
   webSocketServer.on('error', (err) => {
     for (const client of webSocketServer.clients) {
       // report server errors by erroring out all clients with the same error
-      client.emit('error', err);
+      try {
+        client.emit('error', err);
+      } catch (e) {
+        /* noop */
+      }
     }
   });
 
