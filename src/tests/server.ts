@@ -790,6 +790,7 @@ describe('Subscribe', () => {
       schema,
       operationName: 'Nope',
       document: parse(`query Nope { getValue }`),
+      rootValue: undefined,
     };
     const { url } = await startTServer({
       schema: undefined,
