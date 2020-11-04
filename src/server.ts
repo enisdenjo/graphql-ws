@@ -58,6 +58,7 @@ export type GraphQLExecutionContextValue =
   | number
   | string
   | boolean
+  | undefined
   | null;
 
 export interface ServerOptions {
@@ -96,9 +97,9 @@ export interface ServerOptions {
    * alongside the schema. Learn more about them
    * here: https://graphql.org/learn/execution/#root-fields-resolvers.
    *
-   * If you return from the `onSubscribe` callback, the
-   * root field value will NOT be injected. You should add it
-   * in the returned `ExecutionArgs` from the callback.
+   * If you return from `onSubscribe`, and the returned value is
+   * missing the `rootValue` field, the relevant operation root
+   * will be used instead.
    */
   roots?: {
     [operation in OperationTypeNode]?: Record<
@@ -177,10 +178,11 @@ export interface ServerOptions {
    * it will be used instead of trying to build one
    * internally. In this case, you are responsible
    * for providing a ready set of arguments which will
-   * be directly plugged in the operation execution. Beware,
-   * the `context` server option is an exception. Only if you
-   * dont provide a context alongside the returned value
-   * here, the `context` server option will be used instead.
+   * be directly plugged in the operation execution.
+   *
+   * Omitting the fields `contextValue` or `rootValue`
+   * from the returned value will have the provided server
+   * options fill in the gaps.
    *
    * To report GraphQL errors simply return an array
    * of them from the callback, they will be reported
