@@ -206,6 +206,7 @@ subscription.unsubscribe();
 <summary>Client usage with <a href="https://relay.dev">Relay</a></summary>
 
 ```ts
+import { GraphQLError } from 'graphql';
 import {
   Network,
   Observable,
@@ -253,8 +254,13 @@ function fetchOrSubscribe(operation: RequestParameters, variables: Variables) {
               ),
             );
           } else {
-            // GraphQLError[]
-            sink.error(new Error(err.map(({ message }) => message).join(', ')));
+            sink.error(
+              new Error(
+                (err as GraphQLError[])
+                  .map(({ message }) => message)
+                  .join(', '),
+              ),
+            );
           }
         },
       },
@@ -272,7 +278,7 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
-import { print } from 'graphql';
+import { print, GraphQLError } from 'graphql';
 import { createClient, ClientOptions, Client } from 'graphql-ws';
 
 class WebSocketLink extends ApolloLink {
@@ -302,9 +308,12 @@ class WebSocketLink extends ApolloLink {
                 ),
               );
             } else {
-              // GraphQLError[]
               sink.error(
-                new Error(err.map(({ message }) => message).join(', ')),
+                new Error(
+                  (err as GraphQLError[])
+                    .map(({ message }) => message)
+                    .join(', '),
+                ),
               );
             }
           },
