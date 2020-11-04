@@ -273,14 +273,14 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
 import { print } from 'graphql';
-import { createClient, Config, Client } from 'graphql-ws';
+import { createClient, ClientOptions, Client } from 'graphql-ws';
 
 class WebSocketLink extends ApolloLink {
   private client: Client;
 
-  constructor(config: Config) {
+  constructor(options: ClientOptions) {
     super();
-    this.client = createClient(config);
+    this.client = createClient(options);
   }
 
   public request(operation: Operation): Observable<FetchResult> {
@@ -288,7 +288,8 @@ class WebSocketLink extends ApolloLink {
       return this.client.subscribe<FetchResult>(
         { ...operation, query: print(operation.query) },
         {
-          ...sink,
+          next: sink.next,
+          complete: sink.complete,
           error: (err) => {
             if (err instanceof Error) {
               sink.error(err);

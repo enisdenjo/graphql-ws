@@ -353,10 +353,9 @@ export function createServer(
 
   function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
     if (
-      socket.protocol === undefined ||
-      socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL ||
-      (Array.isArray(socket.protocol) &&
-        socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1)
+      Array.isArray(socket.protocol)
+        ? socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1
+        : socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL
     ) {
       return socket.close(1002, 'Protocol Error');
     }
@@ -374,42 +373,42 @@ export function createServer(
     // kick the client off (close socket) if the connection has
     // not been initialised after the specified wait timeout
     const connectionInitWait =
-      connectionInitWaitTimeout && // even 0 disables it
-      connectionInitWaitTimeout !== Infinity &&
-      setTimeout(() => {
-        if (!ctxRef.current.connectionInitReceived) {
-          ctxRef.current.socket.close(
-            4408,
-            'Connection initialisation timeout',
-          );
-        }
-      }, connectionInitWaitTimeout);
+      connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
+        ? setTimeout(() => {
+            if (!ctxRef.current.connectionInitReceived) {
+              ctxRef.current.socket.close(
+                4408,
+                'Connection initialisation timeout',
+              );
+            }
+          }, connectionInitWaitTimeout)
+        : null;
 
     // keep alive through ping-pong messages
     // read more about the websocket heartbeat here: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets
-    let pongWait: NodeJS.Timeout | null;
+    let pongWait: NodeJS.Timeout | null = null;
     const pingInterval =
-      keepAlive && // even 0 disables it
-      keepAlive !== Infinity &&
-      setInterval(() => {
-        // ping pong on open sockets only
-        if (socket.readyState === WebSocket.OPEN) {
-          // terminate the connection after pong wait has passed because the client is idle
-          pongWait = setTimeout(() => {
-            socket.terminate();
-          }, keepAlive);
+      keepAlive > 0 && isFinite(keepAlive)
+        ? setInterval(() => {
+            // ping pong on open sockets only
+            if (socket.readyState === WebSocket.OPEN) {
+              // terminate the connection after pong wait has passed because the client is idle
+              pongWait = setTimeout(() => {
+                socket.terminate();
+              }, keepAlive);
 
-          // listen for client's pong and stop socket termination
-          socket.once('pong', () => {
-            if (pongWait) {
-              clearTimeout(pongWait);
-              pongWait = null;
+              // listen for client's pong and stop socket termination
+              socket.once('pong', () => {
+                if (pongWait) {
+                  clearTimeout(pongWait);
+                  pongWait = null;
+                }
+              });
+
+              socket.ping();
             }
-          });
-
-          socket.ping();
-        }
-      }, keepAlive);
+          }, keepAlive)
+        : null;
 
     function errorOrCloseHandler(
       errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
@@ -431,11 +430,9 @@ export function createServer(
         );
       }
 
-      Object.entries(ctxRef.current.subscriptions).forEach(
-        ([, subscription]) => {
-          subscription.return?.();
-        },
-      );
+      Object.values(ctxRef.current.subscriptions).forEach((subscription) => {
+        subscription.return?.();
+      });
     }
 
     socket.onerror = errorOrCloseHandler;
