@@ -25,7 +25,7 @@
 
 ### GraphQLExecutionContextValue
 
-Ƭ  **GraphQLExecutionContextValue**: object \| symbol \| number \| string \| boolean \| null
+Ƭ  **GraphQLExecutionContextValue**: object \| symbol \| number \| string \| boolean \| undefined \| null
 
 A concrete GraphQL execution context value type.
 
