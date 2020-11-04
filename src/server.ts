@@ -664,7 +664,7 @@ export function createServer(
         }
       } catch (err) {
         // TODO-db-201031 we perceive this as a client bad request error, but is it always?
-        ctx.socket.close(4400, err.message);
+        ctx.socket.close(4400, isProd ? 'Bad Request Error' : err.message);
       }
     };
   }
