@@ -640,11 +640,16 @@ export function createServer(
               }
               ctx.subscriptions[message.id] = operationResult;
 
-              for await (const result of operationResult) {
-                await emit.next(result, execArgs);
+              try {
+                for await (const result of operationResult) {
+                  await emit.next(result, execArgs);
+                }
+                await emit.complete();
+              } catch (err) {
+                await emit.error(err);
+              } finally {
+                delete ctx.subscriptions[message.id];
               }
-              await emit.complete();
-              delete ctx.subscriptions[message.id];
             } else {
               /** single emitted result */
 
