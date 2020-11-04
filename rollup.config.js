@@ -1,15 +1,15 @@
 import { terser } from 'rollup-plugin-terser';
 
 export default {
-  input: './lib/esm/client.js',
+  input: './esm/client.js',
   output: [
     {
-      file: './lib/umd/graphql-ws.js',
+      file: './umd/graphql-ws.js',
       format: 'umd',
       name: 'graphqlWs',
     },
     {
-      file: './lib/umd/graphql-ws.min.js',
+      file: './umd/graphql-ws.min.js',
       format: 'umd',
       name: 'graphqlWs',
       plugins: [terser()],
