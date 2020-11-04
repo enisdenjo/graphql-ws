@@ -353,10 +353,9 @@ export function createServer(
 
   function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
     if (
-      socket.protocol === undefined ||
-      socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL ||
-      (Array.isArray(socket.protocol) &&
-        socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1)
+      Array.isArray(socket.protocol)
+        ? socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1
+        : socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL
     ) {
       return socket.close(1002, 'Protocol Error');
     }
