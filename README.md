@@ -274,6 +274,46 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 </details>
 
 <details>
+<summary>Client usage with <a href="https://formidable.com/open-source/urql/">urql</a></summary>
+
+```ts
+import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
+import { createClient as createGraphqlWsClient } from 'graphql-ws';
+
+const wsClient = createGraphqlWsClient({
+  url: 'wss://localhost/graphql',
+});
+
+const client = createClient({
+  url: '/graphql',
+  exchanges: [
+    ...defaultExchanges,
+    subscriptionExchange({
+      forwardSubscription({ query, variables }) {
+        return {
+          subscribe: (sink) => {
+            const dispose = wsClient.subscribe(
+              {
+                query,
+                variables: variables as Record<string, unknown>,
+              },
+              sink,
+            );
+
+            return {
+              unsubscribe: dispose,
+            };
+          },
+        };
+      },
+    }),
+  ],
+});
+```
+
+</details>
+
+<details>
 <summary>Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
