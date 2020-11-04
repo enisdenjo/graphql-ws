@@ -28,7 +28,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: lib
-          path: lib
+          path: |
+            cjs
+            esm
+            umd
 
   release:
     name: Release
@@ -58,7 +61,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lib
-          path: lib
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
