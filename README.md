@@ -176,7 +176,7 @@ const client = createClient({
   url: 'wss://iterators.ftw/graphql',
 });
 
-function subscribe<T>(payload: SubscribePayload): AsyncIterable<T> {
+function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
   let deferred: {
     resolve: (done: boolean) => void;
     reject: (err: unknown) => void;
@@ -200,35 +200,37 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterable<T> {
   });
   return {
     [Symbol.asyncIterator]() {
-      return {
-        async next() {
-          if (done) return { done: true, value: undefined };
-          if (throwMe) throw throwMe;
-          if (pending.length) return { value: pending.shift()! };
-          return (await new Promise<boolean>(
-            (resolve, reject) => (deferred = { resolve, reject }),
-          ))
-            ? { done: true, value: undefined }
-            : { value: pending.shift()! };
-        },
-        async throw(err) {
-          dispose();
-          throw err;
-        },
-        async return() {
-          dispose();
-          return { done: true, value: undefined };
-        },
-      };
+      return this;
+    },
+    async next() {
+      if (done) return { done: true, value: undefined };
+      if (throwMe) throw throwMe;
+      if (pending.length) return { value: pending.shift()! };
+      return (await new Promise<boolean>(
+        (resolve, reject) => (deferred = { resolve, reject }),
+      ))
+        ? { done: true, value: undefined }
+        : { value: pending.shift()! };
+    },
+    async throw(err) {
+      dispose();
+      throw err;
+    },
+    async return() {
+      dispose();
+      return { done: true, value: undefined };
     },
   };
 }
 
-// use
 (async () => {
-  for await (const result of subscribe<string>({
+  const subscription = subscribe<string>({
     query: 'subscription { greetings }',
-  })) {
+  });
+  // subscription.throw(err) to throw
+  // subscription.return() to cancel
+
+  for await (const result of subscription) {
     // next = result = { data: { greetings: 5x } }
   }
   // complete
