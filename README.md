@@ -140,7 +140,7 @@ const client = createClient({
 });
 
 async function execute<T>(payload: SubscribePayload) {
-  return new Promise((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     let result: T;
     client.subscribe<T>(payload, {
       next: (data) => (result = data),
