@@ -395,13 +395,11 @@ const link = new WebSocketLink({
   </head>
   <body>
     <script type="text/javascript">
-      (function () {
-        const client = graphqlWs.createClient({
-          url: 'wss://umdfor.the/win/graphql',
-        });
+      const client = graphqlWs.createClient({
+        url: 'wss://umdfor.the/win/graphql',
+      });
 
-        // consider other recipes for usage inspiration
-      })();
+      // consider other recipes for usage inspiration
     </script>
   </body>
 </html>
