@@ -220,7 +220,7 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
 }
 
 (async () => {
-  const subscription = subscribe<string>({
+  const subscription = subscribe({
     query: 'subscription { greetings }',
   });
   // subscription.return() to dispose
