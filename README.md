@@ -167,6 +167,77 @@ async function execute<T>(payload: SubscribePayload) {
 </details>
 
 <details>
+<summary>Client usage with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator">AsyncIterator</a></summary>
+
+```ts
+import { createClient, SubscribePayload } from 'graphql-ws';
+
+const client = createClient({
+  url: 'wss://iterators.ftw/graphql',
+});
+
+function subscribe<T>(payload: SubscribePayload): AsyncIterable<T> {
+  let deferred: {
+    resolve: (done: boolean) => void;
+    reject: (err: unknown) => void;
+  } | null = null;
+  const pending: T[] = [];
+  let throwMe: unknown = null,
+    done = false;
+  const dispose = client.subscribe<T>(payload, {
+    next: (data) => {
+      pending.push(data);
+      deferred?.resolve(false);
+    },
+    error: (err) => {
+      throwMe = err;
+      deferred?.reject(throwMe);
+    },
+    complete: () => {
+      done = true;
+      deferred?.resolve(true);
+    },
+  });
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        async next() {
+          if (done) return { done: true, value: undefined };
+          if (throwMe) throw throwMe;
+          if (pending.length) return { value: pending.shift()! };
+          return (await new Promise<boolean>(
+            (resolve, reject) => (deferred = { resolve, reject }),
+          ))
+            ? { done: true, value: undefined }
+            : { value: pending.shift()! };
+        },
+        async throw(err) {
+          dispose();
+          throw err;
+        },
+        async return() {
+          dispose();
+          return { done: true, value: undefined };
+        },
+      };
+    },
+  };
+}
+
+// use
+(async () => {
+  for await (const result of subscribe<string>({
+    query: 'subscription { greetings }',
+  })) {
+    // next = result = { data: { greetings: 5x } }
+  }
+  // complete
+})();
+```
+
+</details>
+
+<details>
 <summary>Client usage with <a href="https://github.com/tc39/proposal-observable">Observable</a></summary>
 
 ```ts
