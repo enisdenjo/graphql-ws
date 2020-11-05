@@ -278,10 +278,10 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 ```ts
 import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
-import { createClient as createGraphqlWsClient } from 'graphql-ws';
+import { createClient as createWSClient } from 'graphql-ws';
 
-const wsClient = createGraphqlWsClient({
-  url: 'wss://localhost/graphql',
+const wsClient = createWSClient({
+  url: 'wss://its.urql/graphql',
 });
 
 const client = createClient({
@@ -289,17 +289,10 @@ const client = createClient({
   exchanges: [
     ...defaultExchanges,
     subscriptionExchange({
-      forwardSubscription({ query, variables }) {
+      forwardSubscription(operation) {
         return {
           subscribe: (sink) => {
-            const dispose = wsClient.subscribe(
-              {
-                query,
-                variables: variables as Record<string, unknown>,
-              },
-              sink,
-            );
-
+            const dispose = wsClient.subscribe(operation, sink);
             return {
               unsubscribe: dispose,
             };
