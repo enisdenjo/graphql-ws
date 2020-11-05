@@ -212,10 +212,6 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
         ? { done: true, value: undefined }
         : { value: pending.shift()! };
     },
-    async throw(err) {
-      dispose();
-      throw err;
-    },
     async return() {
       dispose();
       return { done: true, value: undefined };
@@ -227,8 +223,7 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
   const subscription = subscribe<string>({
     query: 'subscription { greetings }',
   });
-  // subscription.throw(err) to throw
-  // subscription.return() to cancel
+  // subscription.return() to dispose
 
   for await (const result of subscription) {
     // next = result = { data: { greetings: 5x } }
