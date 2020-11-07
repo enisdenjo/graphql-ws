@@ -330,7 +330,10 @@ export function createClient(options: ClientOptions): Client {
           emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
           return resolve();
         } catch (err) {
-          socket.close(4400, err);
+          socket.close(
+            4400,
+            err instanceof Error ? err.message : new Error(err).message,
+          );
         }
       };
 

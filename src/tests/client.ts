@@ -175,6 +175,33 @@ it('should recieve optional connection ack payload in event handler', async (don
   });
 });
 
+it('should close with error message during connecting issues', async () => {
+  const { url } = await startTServer();
+
+  const someerr = new Error('Welcome');
+  const client = createClient({
+    url,
+    retryAttempts: 0,
+    on: {
+      connected: () => {
+        // the `connected` listener is called right before successful connection
+        throw someerr;
+      },
+    },
+  });
+
+  const sub = tsubscribe(client, {
+    query: 'query { getValue }',
+  });
+
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('Welcome');
+    expect(event.wasClean).toBeTruthy();
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
