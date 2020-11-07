@@ -45,9 +45,12 @@ Direction: **Server -> Client**
 
 Expected response to the `ConnectionInit` message from the client acknowledging a successful connection with the server.
 
+The server can use the optional `payload` field to transfer additional details about the connection.
+
 ```typescript
 interface ConnectionAckMessage {
   type: 'connection_ack';
+  payload?: Record<string, unknown>;
 }
 ```
 

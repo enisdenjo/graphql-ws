@@ -31,6 +31,7 @@ export interface ConnectionInitMessage {
 
 export interface ConnectionAckMessage {
   readonly type: MessageType.ConnectionAck;
+  readonly payload?: Record<string, unknown>;
 }
 
 export interface SubscribeMessage {
@@ -95,7 +96,12 @@ export function isMessage(val: unknown): val is Message {
           isObject(val.payload)
         );
       case MessageType.ConnectionAck:
-        return true;
+        // the connection ack message can have optional payload object too
+        return (
+          !hasOwnProperty(val, 'payload') ||
+          val.payload === undefined ||
+          isObject(val.payload)
+        );
       case MessageType.Subscribe:
         return (
           hasOwnStringProperty(val, 'id') &&

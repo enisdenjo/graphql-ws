@@ -12,9 +12,16 @@
 
 ### Properties
 
+* [payload](_message_.connectionackmessage.md#payload)
 * [type](_message_.connectionackmessage.md#type)
 
 ## Properties
+
+### payload
+
+• `Optional` `Readonly` **payload**: Record\<string, unknown>
+
+___
 
 ### type
 
