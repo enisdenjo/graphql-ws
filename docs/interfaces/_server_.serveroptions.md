@@ -112,7 +112,7 @@ ___
 
 ### onConnect
 
-• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<boolean \| void> \| boolean \| void
+• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)) => Promise\<Record\<string, unknown> \| boolean \| void> \| Record\<string, unknown> \| boolean \| void
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -127,6 +127,11 @@ allow the client to connect.
 - Returning `false` from the callback will
 terminate the socket by dispatching the
 close event `4403: Forbidden`.
+
+- Returning a `Record` from the callback will
+allow the client to connect and pass the returned
+value to the client through the optional `payload`
+field in the `ConnectionAck` message.
 
 Throwing an error from within this function will
 close the socket with the `Error` message

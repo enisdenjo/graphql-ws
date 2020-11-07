@@ -58,11 +58,14 @@ ___
 
 ### EventConnectedListener
 
-Ƭ  **EventConnectedListener**: (socket: unknown) => void
+Ƭ  **EventConnectedListener**: (socket: unknown, payload?: Record\<string, unknown>) => void
 
-The argument is actually the `WebSocket`, but to avoid bundling DOM typings
-because the client can run in Node env too, you should assert
-the websocket type during implementation.
+The first argument is actually the `WebSocket`, but to avoid
+bundling DOM typings because the client can run in Node env too,
+you should assert the websocket type during implementation.
+
+Also, the second argument is the optional payload that the server may
+send through the `ConnectionAck` message.
 
 ___
 

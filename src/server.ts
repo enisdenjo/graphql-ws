@@ -164,11 +164,22 @@ export interface ServerOptions {
    * terminate the socket by dispatching the
    * close event `4403: Forbidden`.
    *
+   * - Returning a `Record` from the callback will
+   * allow the client to connect and pass the returned
+   * value to the client through the optional `payload`
+   * field in the `ConnectionAck` message.
+   *
    * Throwing an error from within this function will
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onConnect?: (ctx: Context) => Promise<boolean | void> | boolean | void;
+  onConnect?: (
+    ctx: Context,
+  ) =>
+    | Promise<Record<string, unknown> | boolean | void>
+    | Record<string, unknown>
+    | boolean
+    | void;
   /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
@@ -494,16 +505,23 @@ export function createServer(
               ctx.connectionParams = message.payload;
             }
 
-            if (onConnect) {
-              const permitted = await onConnect(ctx);
-              if (permitted === false) {
-                return ctx.socket.close(4403, 'Forbidden');
-              }
+            const permittedOrPayload = await onConnect?.(ctx);
+            if (permittedOrPayload === false) {
+              return ctx.socket.close(4403, 'Forbidden');
             }
 
-            await sendMessage<MessageType.ConnectionAck>(ctx, {
-              type: MessageType.ConnectionAck,
-            });
+            await sendMessage<MessageType.ConnectionAck>(
+              ctx,
+              isObject(permittedOrPayload)
+                ? {
+                    type: MessageType.ConnectionAck,
+                    payload: permittedOrPayload,
+                  }
+                : {
+                    type: MessageType.ConnectionAck,
+                    // payload is completely absent if not provided
+                  },
+            );
 
             ctx.acknowledged = true;
             break;
