@@ -21,11 +21,17 @@ export type EventClosed = 'closed';
 export type Event = EventConnecting | EventConnected | EventClosed;
 
 /**
- * The argument is actually the `WebSocket`, but to avoid bundling DOM typings
- * because the client can run in Node env too, you should assert
- * the websocket type during implementation.
+ * The first argument is actually the `WebSocket`, but to avoid
+ * bundling DOM typings because the client can run in Node env too,
+ * you should assert the websocket type during implementation.
+ *
+ * Also, the second argument is the optional payload that the server may
+ * send through the `ConnectionAck` message.
  */
-export type EventConnectedListener = (socket: unknown) => void;
+export type EventConnectedListener = (
+  socket: unknown,
+  payload?: Record<string, unknown>,
+) => void;
 
 export type EventConnectingListener = () => void;
 
@@ -321,7 +327,7 @@ export function createClient(options: ClientOptions): Client {
 
           clearTimeout(tooLong);
           state = { ...state, acknowledged: true, socket, tries: 0 };
-          emitter.emit('connected', socket); // connected = socket opened + acknowledged
+          emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
           return resolve();
         } catch (err) {
           socket.close(4400, err);
