@@ -569,6 +569,30 @@ describe('Connect', () => {
     await test(server.url);
   });
 
+  it('should send optional payload with connection ack message', async () => {
+    const { url } = await startTServer({
+      onConnect: () => {
+        return {
+          itsa: 'me',
+        };
+      },
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.ConnectionAck,
+        payload: { itsa: 'me' },
+      });
+    });
+  });
+
   it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
     const connectionParams = {
       some: 'string',
