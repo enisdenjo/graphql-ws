@@ -183,10 +183,10 @@ export function createClient(options: ClientOptions): Client {
         };
       },
       emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
-        (listeners[event] as EventListener<E>[]).forEach((listener) => {
+        for (const listener of listeners[event]) {
           // @ts-expect-error: The args should fit
           listener(...args);
-        });
+        }
       },
       reset() {
         (Object.keys(listeners) as (keyof typeof listeners)[]).forEach(
