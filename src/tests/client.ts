@@ -154,6 +154,27 @@ it('should not accept invalid WebSocket implementations', async () => {
   ).toThrow();
 });
 
+it('should recieve optional connection ack payload in event handler', async (done) => {
+  const { url } = await startTServer({
+    onConnect: () => ({ itsa: 'me' }),
+  });
+
+  createClient({
+    url,
+    lazy: false,
+    on: {
+      connected: (_socket, payload) => {
+        try {
+          expect(payload).toEqual({ itsa: 'me' });
+        } catch (err) {
+          fail(err);
+        }
+        done();
+      },
+    },
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
