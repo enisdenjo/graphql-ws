@@ -1,3 +1,15 @@
+# [1.12.0](https://github.com/enisdenjo/graphql-ws/compare/v1.11.0...v1.12.0) (2020-11-07)
+
+
+### Bug Fixes
+
+* **client:** Close with error message during connecting issues ([f8ecdd7](https://github.com/enisdenjo/graphql-ws/commit/f8ecdd78e200a6a752ec1e72fb14d83e6103dd02))
+
+
+### Features
+
+* Send optional payload with the `ConnectionAck` message ([#60](https://github.com/enisdenjo/graphql-ws/issues/60)) ([1327e77](https://github.com/enisdenjo/graphql-ws/commit/1327e7735fc52f8318644b0f4cec86d3288a0e68))
+
 # [1.11.0](https://github.com/enisdenjo/graphql-ws/compare/v1.10.0...v1.11.0) (2020-11-04)
 
 
