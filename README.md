@@ -546,7 +546,7 @@ const app = express();
 // create apollo server
 const apolloServer = new ApolloServer({
     schema,
-    subscriptions: false // this is important
+    subscriptions: false, // disable subscriptions-transport-ws
 });
 
 // apply middleware
