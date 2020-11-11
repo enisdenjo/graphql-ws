@@ -1,14 +1,13 @@
-import { Server as WebSocketServer } from 'ws';
 import { Server } from '../server';
+import { Server as WebSocketServer } from 'ws';
 
 const keepAlive = 12 * 1000; // 12 seconds
 
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.
  */
-export function useServer(server: Server): WebSocketServer {
-  const wsServer = new WebSocketServer();
-  wsServer.on('connection', (socket) => {
+export function useServer(server: Server, ws: WebSocketServer): void {
+  ws.on('connection', (socket) => {
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
     const pingInterval = setInterval(() => {
@@ -51,5 +50,4 @@ export function useServer(server: Server): WebSocketServer {
       waitForClose: () => waitForClose,
     });
   });
-  return wsServer;
 }
