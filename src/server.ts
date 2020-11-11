@@ -344,11 +344,9 @@ export interface WebSocket {
    */
   onMessage(cb: (data: string) => Promise<void>): void;
   /**
-   * Waits for the socket to close, by whatever reason.
-   * If the socket was already closed, the promise should
-   * resolve immediately.
+   * The socket has closed, by whatever reason.
    */
-  waitForClose(): Promise<void>;
+  onClose(cb: () => void): void;
 }
 
 /**
@@ -627,11 +625,12 @@ export function makeServer(options: ServerOptions): Server {
       });
 
       // wait for close and cleanup
-      await socket.waitForClose();
-      if (connectionInitWait) clearTimeout(connectionInitWait);
-      for (const sub of Object.values(ctx.subscriptions)) {
-        sub.return?.();
-      }
+      socket.onClose(() => {
+        if (connectionInitWait) clearTimeout(connectionInitWait);
+        for (const sub of Object.values(ctx.subscriptions)) {
+          sub.return?.();
+        }
+      });
     },
   };
 }
