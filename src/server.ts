@@ -4,8 +4,6 @@
  *
  */
 
-import * as http from 'http';
-import * as WebSocket from 'ws';
 import {
   OperationTypeNode,
   GraphQLSchema,
@@ -17,10 +15,8 @@ import {
   SubscriptionArgs,
   ExecutionResult,
 } from 'graphql';
-import { Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
-  Message,
   MessageType,
   stringifyMessage,
   parseMessage,
@@ -29,13 +25,7 @@ import {
   ErrorMessage,
   CompleteMessage,
 } from './message';
-import {
-  isObject,
-  isAsyncIterable,
-  hasOwnObjectProperty,
-  hasOwnStringProperty,
-  areGraphQLErrors,
-} from './utils';
+import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
 import { ID } from './types';
 
 export type OperationResult =
@@ -139,16 +129,6 @@ export interface ServerOptions {
    * @default 3 * 1000 (3 seconds)
    */
   connectionInitWaitTimeout?: number;
-  /**
-   * The timout between dispatched keep-alive messages. Internally the lib
-   * uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
-   * the clients and the server is operating and to prevent the link from being broken due to idling.
-   *
-   * Set to nullish value to disable.
-   *
-   * @default 12 * 1000 (12 seconds)
-   */
-  keepAlive?: number;
   /**
    * Is the connection callback called when the
    * client requests the connection initialisation
@@ -303,11 +283,6 @@ export interface Context {
    */
   readonly socket: WebSocket;
   /**
-   * The initial HTTP request before the actual
-   * socket and connection is established.
-   */
-  readonly request: http.IncomingMessage;
-  /**
    * Indicates that the `ConnectionInit` message
    * has been received by the server. If this is
    * `true`, the client wont be kicked off after
@@ -330,25 +305,60 @@ export interface Context {
   subscriptions: Record<ID, AsyncIterator<unknown>>;
 }
 
-export interface Server extends Disposable {
-  webSocketServer: WebSocket.Server;
+export interface Server {
+  /**
+   * New socket has beeen established offering the provided
+   * sub-protocols. The lib will validate the protocols
+   * and use the socket accordingly. Returned promise will
+   * resolve after the socket closes.
+   */
+  opened(socket: WebSocket): Promise<void>;
 }
 
-// for documentation gen only
-type WebSocketServerOptions = WebSocket.ServerOptions;
-type WebSocketServer = WebSocket.Server;
+export interface WebSocket {
+  /**
+   * The subprotocol of the WS. Will be used
+   * to validate agains the supported ones.
+   */
+  readonly protocol: string;
+  /**
+   * Sends a message through the socket. Will always
+   * provide a `string` message.
+   *
+   * The returned promise is used to control the flow of data
+   * (like handling backpressure).
+   */
+  send(data: string): Promise<void> | void;
+  /**
+   * Closes the socket gracefully. Will always provide
+   * the appropriate code and the close reason.
+   *
+   * The returned promise is used to control the graceful
+   * closure.
+   */
+  close(code: number, reason: string): Promise<void> | void;
+  /**
+   * Called when message is received. The library requires the data
+   * to be a `string`. Callback's promise will resolve once the message
+   * handling has completed.
+   */
+  onMessage(cb: (data: string) => Promise<void>): void;
+  /**
+   * Waits for the socket to close, by whatever reason.
+   * If the socket was already closed, the promise should
+   * resolve immediately.
+   */
+  waitForClose(): Promise<void>;
+}
 
 /**
- * Creates a protocol complient WebSocket GraphQL
- * subscription server. Read more about the protocol
- * in the PROTOCOL.md documentation file.
+ * Makes a protocol complient WebSocket GraphQL server. The server
+ * is actually an API which is to be used with your favourite WebSocket
+ * server library!
+ *
+ * Read more about the protocol in the PROTOCOL.md documentation file.
  */
-export function createServer(
-  options: ServerOptions,
-  websocketOptionsOrServer: WebSocketServerOptions | WebSocketServer,
-): Server {
-  const isProd = process.env.NODE_ENV === 'production';
-
+export function makeServer(options: ServerOptions): Server {
   const {
     schema,
     context,
@@ -356,7 +366,6 @@ export function createServer(
     execute,
     subscribe,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
-    keepAlive = 12 * 1000, // 12 seconds
     onConnect,
     onSubscribe,
     onOperation,
@@ -364,373 +373,288 @@ export function createServer(
     onError,
     onComplete,
   } = options;
-  const webSocketServer = isWebSocketServer(websocketOptionsOrServer)
-    ? websocketOptionsOrServer
-    : new WebSocket.Server(websocketOptionsOrServer);
+  const isProd = process.env.NODE_ENV === 'production';
 
-  webSocketServer.on('connection', handleConnection);
-  function handleConnection(socket: WebSocket, request: http.IncomingMessage) {
-    if (
-      Array.isArray(socket.protocol)
-        ? socket.protocol.indexOf(GRAPHQL_TRANSPORT_WS_PROTOCOL) === -1
-        : socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL
-    ) {
-      return socket.close(1002, 'Protocol Error');
-    }
+  return {
+    async opened(socket) {
+      if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
+        return socket.close(1002, 'Protocol Error');
+      }
 
-    const ctxRef: { current: Context } = {
-      current: {
+      const ctx: Context = {
         socket,
-        request,
         connectionInitReceived: false,
         acknowledged: false,
         subscriptions: {},
-      },
-    };
+      };
 
-    // kick the client off (close socket) if the connection has
-    // not been initialised after the specified wait timeout
-    const connectionInitWait =
-      connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
-        ? setTimeout(() => {
-            if (!ctxRef.current.connectionInitReceived) {
-              ctxRef.current.socket.close(
-                4408,
-                'Connection initialisation timeout',
+      // kick the client off (close socket) if the connection has
+      // not been initialised after the specified wait timeout
+      const connectionInitWait =
+        connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
+          ? setTimeout(() => {
+              if (!ctx.connectionInitReceived) {
+                socket.close(4408, 'Connection initialisation timeout');
+              }
+            }, connectionInitWaitTimeout)
+          : null;
+
+      socket.onMessage(async function onMessage(data) {
+        try {
+          const message = parseMessage(data);
+          switch (message.type) {
+            case MessageType.ConnectionInit: {
+              if (ctx.connectionInitReceived) {
+                return ctx.socket.close(
+                  4429,
+                  'Too many initialisation requests',
+                );
+              }
+              ctx.connectionInitReceived = true;
+
+              if (isObject(message.payload)) {
+                ctx.connectionParams = message.payload;
+              }
+
+              const permittedOrPayload = await onConnect?.(ctx);
+              if (permittedOrPayload === false) {
+                return ctx.socket.close(4403, 'Forbidden');
+              }
+
+              await socket.send(
+                stringifyMessage<MessageType.ConnectionAck>(
+                  isObject(permittedOrPayload)
+                    ? {
+                        type: MessageType.ConnectionAck,
+                        payload: permittedOrPayload,
+                      }
+                    : {
+                        type: MessageType.ConnectionAck,
+                        // payload is completely absent if not provided
+                      },
+                ),
               );
+
+              ctx.acknowledged = true;
+              break;
             }
-          }, connectionInitWaitTimeout)
-        : null;
+            case MessageType.Subscribe: {
+              if (!ctx.acknowledged) {
+                return socket.close(4401, 'Unauthorized');
+              }
 
-    // keep alive through ping-pong messages
-    // read more about the websocket heartbeat here: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets
-    let pongWait: NodeJS.Timeout | null = null;
-    const pingInterval =
-      keepAlive > 0 && isFinite(keepAlive)
-        ? setInterval(() => {
-            // ping pong on open sockets only
-            if (socket.readyState === WebSocket.OPEN) {
-              // terminate the connection after pong wait has passed because the client is idle
-              pongWait = setTimeout(() => {
-                socket.terminate();
-              }, keepAlive);
-
-              // listen for client's pong and stop socket termination
-              socket.once('pong', () => {
-                if (pongWait) {
-                  clearTimeout(pongWait);
-                  pongWait = null;
-                }
-              });
-
-              socket.ping();
-            }
-          }, keepAlive)
-        : null;
-
-    function errorOrCloseHandler(
-      errorOrClose: WebSocket.ErrorEvent | WebSocket.CloseEvent,
-    ) {
-      if (connectionInitWait) {
-        clearTimeout(connectionInitWait);
-      }
-      if (pongWait) {
-        clearTimeout(pongWait);
-      }
-      if (pingInterval) {
-        clearInterval(pingInterval);
-      }
-
-      if (isErrorEvent(errorOrClose)) {
-        ctxRef.current.socket.close(
-          1011,
-          isProd ? 'Internal Error' : errorOrClose.message,
-        );
-      }
-
-      Object.values(ctxRef.current.subscriptions).forEach((subscription) => {
-        subscription.return?.();
-      });
-    }
-
-    socket.onerror = errorOrCloseHandler;
-    socket.onclose = errorOrCloseHandler;
-    socket.onmessage = makeOnMessage(ctxRef.current);
-  }
-
-  webSocketServer.on('error', (err) => {
-    // catch the first thrown error and re-throw it once all clients have been notified
-    let firstErr: Error | null = null;
-
-    // report server errors by erroring out all clients with the same error
-    for (const client of webSocketServer.clients) {
-      try {
-        client.emit('error', err);
-      } catch (err) {
-        firstErr = firstErr ?? err;
-      }
-    }
-
-    if (firstErr) {
-      throw firstErr;
-    }
-  });
-
-  // Sends through a message only if the socket is open.
-  async function sendMessage<T extends MessageType>(
-    ctx: Context,
-    message: Message<T>,
-  ) {
-    if (ctx.socket.readyState === WebSocket.OPEN) {
-      return new Promise((resolve, reject) => {
-        ctx.socket.send(stringifyMessage<T>(message), (err) =>
-          err ? reject(err) : resolve(),
-        );
-      });
-    }
-  }
-
-  function makeOnMessage(ctx: Context) {
-    return async function onMessage(event: WebSocket.MessageEvent) {
-      try {
-        const message = parseMessage(event.data);
-        switch (message.type) {
-          case MessageType.ConnectionInit: {
-            if (ctx.connectionInitReceived) {
-              return ctx.socket.close(4429, 'Too many initialisation requests');
-            }
-            ctx.connectionInitReceived = true;
-
-            if (isObject(message.payload)) {
-              ctx.connectionParams = message.payload;
-            }
-
-            const permittedOrPayload = await onConnect?.(ctx);
-            if (permittedOrPayload === false) {
-              return ctx.socket.close(4403, 'Forbidden');
-            }
-
-            await sendMessage<MessageType.ConnectionAck>(
-              ctx,
-              isObject(permittedOrPayload)
-                ? {
-                    type: MessageType.ConnectionAck,
-                    payload: permittedOrPayload,
+              const emit = {
+                next: async (result: ExecutionResult, args: ExecutionArgs) => {
+                  let nextMessage: NextMessage = {
+                    id: message.id,
+                    type: MessageType.Next,
+                    payload: result,
+                  };
+                  if (onNext) {
+                    const maybeResult = await onNext(
+                      ctx,
+                      nextMessage,
+                      args,
+                      result,
+                    );
+                    if (maybeResult) {
+                      nextMessage = {
+                        ...nextMessage,
+                        payload: maybeResult,
+                      };
+                    }
                   }
-                : {
-                    type: MessageType.ConnectionAck,
-                    // payload is completely absent if not provided
-                  },
-            );
-
-            ctx.acknowledged = true;
-            break;
-          }
-          case MessageType.Subscribe: {
-            if (!ctx.acknowledged) {
-              return ctx.socket.close(4401, 'Unauthorized');
-            }
-
-            const emit = {
-              next: async (result: ExecutionResult, args: ExecutionArgs) => {
-                let nextMessage: NextMessage = {
-                  id: message.id,
-                  type: MessageType.Next,
-                  payload: result,
-                };
-                if (onNext) {
-                  const maybeResult = await onNext(
-                    ctx,
-                    nextMessage,
-                    args,
-                    result,
+                  await socket.send(
+                    stringifyMessage<MessageType.Next>(nextMessage),
                   );
-                  if (maybeResult) {
-                    nextMessage = {
-                      ...nextMessage,
-                      payload: maybeResult,
-                    };
+                },
+                error: async (errors: readonly GraphQLError[]) => {
+                  let errorMessage: ErrorMessage = {
+                    id: message.id,
+                    type: MessageType.Error,
+                    payload: errors,
+                  };
+                  if (onError) {
+                    const maybeErrors = await onError(
+                      ctx,
+                      errorMessage,
+                      errors,
+                    );
+                    if (maybeErrors) {
+                      errorMessage = {
+                        ...errorMessage,
+                        payload: maybeErrors,
+                      };
+                    }
                   }
-                }
-                await sendMessage<MessageType.Next>(ctx, nextMessage);
-              },
-              error: async (errors: readonly GraphQLError[]) => {
-                let errorMessage: ErrorMessage = {
-                  id: message.id,
-                  type: MessageType.Error,
-                  payload: errors,
-                };
-                if (onError) {
-                  const maybeErrors = await onError(ctx, errorMessage, errors);
-                  if (maybeErrors) {
-                    errorMessage = {
-                      ...errorMessage,
-                      payload: maybeErrors,
-                    };
-                  }
-                }
-                await sendMessage<MessageType.Error>(ctx, errorMessage);
-              },
-              complete: async () => {
-                const completeMessage: CompleteMessage = {
-                  id: message.id,
-                  type: MessageType.Complete,
-                };
-                await onComplete?.(ctx, completeMessage);
-                await sendMessage<MessageType.Complete>(ctx, completeMessage);
-              },
-            };
-
-            let execArgs: ExecutionArgs;
-            const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
-            if (maybeExecArgsOrErrors) {
-              if (areGraphQLErrors(maybeExecArgsOrErrors)) {
-                return await emit.error(maybeExecArgsOrErrors);
-              } else if (Array.isArray(maybeExecArgsOrErrors)) {
-                throw new Error(
-                  'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
-                );
-              }
-              // not errors, is exec args
-              execArgs = maybeExecArgsOrErrors;
-            } else {
-              if (!schema) {
-                // you either provide a schema dynamically through
-                // `onSubscribe` or you set one up during the server setup
-                return webSocketServer.emit(
-                  'error',
-                  new Error('The GraphQL schema is not provided'),
-                );
-              }
-
-              const { operationName, query, variables } = message.payload;
-              execArgs = {
-                schema,
-                operationName,
-                document: parse(query),
-                variableValues: variables,
+                  await socket.send(
+                    stringifyMessage<MessageType.Error>(errorMessage),
+                  );
+                },
+                complete: async () => {
+                  const completeMessage: CompleteMessage = {
+                    id: message.id,
+                    type: MessageType.Complete,
+                  };
+                  await onComplete?.(ctx, completeMessage);
+                  await socket.send(
+                    stringifyMessage<MessageType.Complete>(completeMessage),
+                  );
+                },
               };
 
-              const validationErrors = validate(
-                execArgs.schema,
-                execArgs.document,
-              );
-              if (validationErrors.length > 0) {
-                return await emit.error(validationErrors);
-              }
-            }
+              let execArgs: ExecutionArgs;
+              const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
+              if (maybeExecArgsOrErrors) {
+                if (areGraphQLErrors(maybeExecArgsOrErrors)) {
+                  return await emit.error(maybeExecArgsOrErrors);
+                } else if (Array.isArray(maybeExecArgsOrErrors)) {
+                  throw new Error(
+                    'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
+                  );
+                }
+                // not errors, is exec args
+                execArgs = maybeExecArgsOrErrors;
+              } else {
+                if (!schema) {
+                  // you either provide a schema dynamically through
+                  // `onSubscribe` or you set one up during the server setup
+                  // how to handle?
+                  throw new Error('The GraphQL schema is not provided');
+                }
 
-            const operationAST = getOperationAST(
-              execArgs.document,
-              execArgs.operationName,
-            );
-            if (!operationAST) {
-              return await emit.error([
-                new GraphQLError('Unable to identify operation'),
-              ]);
-            }
+                const { operationName, query, variables } = message.payload;
+                execArgs = {
+                  schema,
+                  operationName,
+                  document: parse(query),
+                  variableValues: variables,
+                };
 
-            // if `onSubscribe` didnt specify a rootValue, inject one
-            if (!('rootValue' in execArgs)) {
-              execArgs.rootValue = roots?.[operationAST.operation];
-            }
-
-            // if `onSubscribe` didn't specify a context, inject one
-            if (!('contextValue' in execArgs)) {
-              execArgs.contextValue =
-                typeof context === 'function'
-                  ? context(ctx, message, execArgs)
-                  : context;
-            }
-
-            // the execution arguments have been prepared
-            // perform the operation and act accordingly
-            let operationResult;
-            if (operationAST.operation === 'subscription') {
-              operationResult = await subscribe(execArgs);
-            } else {
-              // operation === 'query' || 'mutation'
-              operationResult = await execute(execArgs);
-            }
-
-            if (onOperation) {
-              const maybeResult = await onOperation(
-                ctx,
-                message,
-                execArgs,
-                operationResult,
-              );
-              if (maybeResult) {
-                operationResult = maybeResult;
-              }
-            }
-
-            if (isAsyncIterable(operationResult)) {
-              /** multiple emitted results */
-
-              // iterable subscriptions are distinct on ID
-              if (ctx.subscriptions[message.id]) {
-                return ctx.socket.close(
-                  4409,
-                  `Subscriber for ${message.id} already exists`,
+                const validationErrors = validate(
+                  execArgs.schema,
+                  execArgs.document,
                 );
+                if (validationErrors.length > 0) {
+                  return await emit.error(validationErrors);
+                }
               }
-              ctx.subscriptions[message.id] = operationResult;
 
-              for await (const result of operationResult) {
-                await emit.next(result, execArgs);
+              const operationAST = getOperationAST(
+                execArgs.document,
+                execArgs.operationName,
+              );
+              if (!operationAST) {
+                return await emit.error([
+                  new GraphQLError('Unable to identify operation'),
+                ]);
               }
-              await emit.complete();
-              delete ctx.subscriptions[message.id];
-            } else {
-              /** single emitted result */
 
-              await emit.next(operationResult, execArgs);
-              await emit.complete();
+              // if `onSubscribe` didnt specify a rootValue, inject one
+              if (!('rootValue' in execArgs)) {
+                execArgs.rootValue = roots?.[operationAST.operation];
+              }
+
+              // if `onSubscribe` didn't specify a context, inject one
+              if (!('contextValue' in execArgs)) {
+                execArgs.contextValue =
+                  typeof context === 'function'
+                    ? context(ctx, message, execArgs)
+                    : context;
+              }
+
+              // the execution arguments have been prepared
+              // perform the operation and act accordingly
+              let operationResult;
+              if (operationAST.operation === 'subscription') {
+                operationResult = await subscribe(execArgs);
+              } else {
+                // operation === 'query' || 'mutation'
+                operationResult = await execute(execArgs);
+              }
+
+              if (onOperation) {
+                const maybeResult = await onOperation(
+                  ctx,
+                  message,
+                  execArgs,
+                  operationResult,
+                );
+                if (maybeResult) {
+                  operationResult = maybeResult;
+                }
+              }
+
+              if (isAsyncIterable(operationResult)) {
+                /** multiple emitted results */
+
+                // iterable subscriptions are distinct on ID
+                if (ctx.subscriptions[message.id]) {
+                  return ctx.socket.close(
+                    4409,
+                    `Subscriber for ${message.id} already exists`,
+                  );
+                }
+                ctx.subscriptions[message.id] = operationResult;
+
+                for await (const result of operationResult) {
+                  await emit.next(result, execArgs);
+                }
+                await emit.complete();
+                delete ctx.subscriptions[message.id];
+              } else {
+                /** single emitted result */
+
+                await emit.next(operationResult, execArgs);
+                await emit.complete();
+              }
+              break;
             }
-            break;
+            case MessageType.Complete: {
+              await ctx.subscriptions[message.id]?.return?.();
+              break;
+            }
+            default:
+              throw new Error(
+                `Unexpected message of type ${message.type} received`,
+              );
           }
-          case MessageType.Complete: {
-            await ctx.subscriptions[message.id]?.return?.();
-            break;
-          }
-          default:
-            throw new Error(
-              `Unexpected message of type ${message.type} received`,
-            );
+        } catch (err) {
+          // TODO-db-201112 hmm, maybe not catch some thrown errors?
+          // TODO-db-201031 we perceive this as a client bad request error, but is it always?
+          ctx.socket.close(4400, isProd ? 'Bad Request' : err.message);
         }
-      } catch (err) {
-        // TODO-db-201031 we perceive this as a client bad request error, but is it always?
-        ctx.socket.close(4400, isProd ? 'Bad Request' : err.message);
+      });
+
+      // wait for close and cleanup
+      await socket.waitForClose();
+      if (connectionInitWait) clearTimeout(connectionInitWait);
+      for (const sub of Object.values(ctx.subscriptions)) {
+        sub.return?.();
       }
-    };
-  }
-
-  return {
-    webSocketServer,
-    dispose: async () => {
-      for (const client of webSocketServer.clients) {
-        client.close(1001, 'Going away');
-      }
-
-      webSocketServer.removeAllListeners();
-
-      await new Promise((resolve, reject) =>
-        webSocketServer.close((err) => (err ? reject(err) : resolve())),
-      );
     },
   };
 }
 
-function isErrorEvent(obj: unknown): obj is WebSocket.ErrorEvent {
-  return (
-    isObject(obj) &&
-    hasOwnObjectProperty(obj, 'error') &&
-    hasOwnStringProperty(obj, 'message') &&
-    hasOwnStringProperty(obj, 'type')
-  );
-}
+// handle internal server errors however you want
+// if (isErrorEvent(errorOrClose)) {
+//   socket.close(
+//     1011,
+//     isProd ? 'Internal Error' : errorOrClose.message,
+//   );
+// }
 
-function isWebSocketServer(obj: unknown): obj is WebSocketServer {
-  return isObject(obj) && typeof obj.on === 'function';
-}
+// is OPEN check necessary for safe message sends?
+// // Sends through a message only if the socket is open.
+// async function sendMessage<T extends MessageType>(
+//   ctx: Context,
+//   message: Message<T>,
+// ) {
+//   if (ctx.socket.readyState === WebSocket.OPEN) {
+//     return new Promise((resolve, reject) => {
+//       ctx.socket.send(stringifyMessage<T>(message), (err) =>
+//         err ? reject(err) : resolve(),
+//       );
+//     });
+//   }
+// }
