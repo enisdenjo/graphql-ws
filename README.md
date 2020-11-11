@@ -530,6 +530,49 @@ server.listen(443, () => {
 </details>
 
 <details>
+<summary>Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
+
+```typescript
+import https from 'https';
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import { createServer } from 'graphql-ws';
+import { execute, subscribe } from 'graphql';
+import { schema } from 'my-graphql-schema';
+
+// create express
+const app = express();
+
+// create apollo server
+const apolloServer = new ApolloServer({
+    schema,
+    subscriptions: false, // disable subscriptions-transport-ws
+});
+
+// apply middleware
+apolloServer.applyMiddleware({ app })
+
+// create a http server using express
+const server = https.createServer(app);
+
+server.listen(443, () => {
+  createServer(
+    {
+      schema,
+      execute,
+      subscribe,
+    },
+    {
+      server,
+      path: '/graphql', // you can use the same path too, just use the `ws` schema
+    },
+  );
+});
+```
+
+</details>
+
+<details>
 <summary>Server usage with console logging</summary>
 
 ```typescript
