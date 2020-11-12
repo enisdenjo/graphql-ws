@@ -1446,7 +1446,7 @@ describe('Subscribe', () => {
       });
     });
 
-    // complete
+    // send complete
     client.ws.send(
       stringifyMessage<MessageType.Complete>({
         id: '1',
@@ -1454,8 +1454,7 @@ describe('Subscribe', () => {
       }),
     );
 
-    // wait for complete event to be processed
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await server.waitForComplete();
 
     server.pong();
     server.pong();
