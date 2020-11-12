@@ -204,7 +204,7 @@ it('should close with error message during connecting issues', async () => {
 
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
-    const { url, ...server } = await startTServer();
+    const { url } = await startTServer();
 
     const client = createClient({ url });
 
@@ -217,8 +217,6 @@ describe('query operation', () => {
     });
 
     await sub.waitForComplete();
-
-    await server.waitForClientClose();
   });
 
   it('should accept nullish value for `operationName` and `variables`', async () => {
