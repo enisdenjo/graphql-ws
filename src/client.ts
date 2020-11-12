@@ -376,10 +376,10 @@ export function createClient(options: ClientOptions): Client {
                     socket.close(1000, 'Normal Closure');
                   }
                 }, keepAlive);
+              } else {
+                // otherwise close immediately
+                socket.close(1000, 'Normal Closure');
               }
-            } else {
-              // otherwise close immediately
-              socket.close(1000, 'Normal Closure');
             }
             socket.removeEventListener('close', listener);
             return resolve();
