@@ -535,6 +535,38 @@ describe('lazy', () => {
     sub2.dispose();
     await server.waitForClientClose();
   });
+
+  it('should disconnect after the keepAlive has passed after last unsubscribe', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // default
+      keepAlive: 20,
+      retryAttempts: 0,
+    });
+
+    const sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    // still is connected
+    await server.waitForClientClose(() => {
+      fail("Client shouldn't have closed");
+    }, 10);
+
+    // everyone unsubscribed
+    sub.dispose();
+
+    // still connected because of the keepAlive
+    await server.waitForClientClose(() => {
+      fail("Client shouldn't have closed");
+    }, 10);
+
+    // but will close eventually
+    await server.waitForClientClose();
+  });
 });
 
 describe('reconnecting', () => {
