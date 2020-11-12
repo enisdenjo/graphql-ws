@@ -571,13 +571,15 @@ export function createServer(
                 }
                 await sendMessage<MessageType.Error>(ctx, errorMessage);
               },
-              complete: async () => {
+              complete: async (notifyClient: boolean) => {
                 const completeMessage: CompleteMessage = {
                   id: message.id,
                   type: MessageType.Complete,
                 };
                 await onComplete?.(ctx, completeMessage);
-                await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                if (notifyClient) {
+                  await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                }
               },
             };
 
@@ -680,18 +682,28 @@ export function createServer(
               for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
-              await emit.complete();
-              delete ctx.subscriptions[message.id];
+
+              if (ctx.subscriptions[message.id]) {
+                await emit.complete(true);
+                delete ctx.subscriptions[message.id];
+              } else {
+                await emit.complete(false);
+              }
             } else {
               /** single emitted result */
 
               await emit.next(operationResult, execArgs);
-              await emit.complete();
+              await emit.complete(true);
             }
             break;
           }
           case MessageType.Complete: {
-            await ctx.subscriptions[message.id]?.return?.();
+            const subscription = ctx.subscriptions[message.id];
+            if (subscription) {
+              // Delete the subscription so the server doesn't try to send another "Complete" message to the client
+              delete ctx.subscriptions[message.id];
+              await subscription.return?.();
+            }
             break;
           }
           default:

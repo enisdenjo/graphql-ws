@@ -1454,20 +1454,15 @@ describe('Subscribe', () => {
       }),
     );
 
-    // confirm complete
+    // wait for complete event to be processed
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    server.pong();
+    server.pong();
+    server.pong();
+
     await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data)).toEqual({
-        id: '1',
-        type: MessageType.Complete,
-      });
-    });
-
-    server.pong();
-    server.pong();
-    server.pong();
-
-    await client.waitForMessage(() => {
-      fail('Shouldnt have received a message');
+      fail(`Shouldn't have received message ${data}`);
     }, 30);
   });
 
