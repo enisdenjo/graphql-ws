@@ -683,12 +683,10 @@ export function createServer(
                 await emit.next(result, execArgs);
               }
 
-              if (ctx.subscriptions[message.id]) {
-                await emit.complete(true);
-                delete ctx.subscriptions[message.id];
-              } else {
-                await emit.complete(false);
-              }
+              // lack of subscription at this point indicates that the client
+              // completed the stream, he doesnt need to be remembered
+              await emit.complete(Boolean(ctx.subscriptions[message.id]));
+              delete ctx.subscriptions[message.id];
             } else {
               /** single emitted result */
 
@@ -698,12 +696,8 @@ export function createServer(
             break;
           }
           case MessageType.Complete: {
-            const subscription = ctx.subscriptions[message.id];
-            if (subscription) {
-              // Delete the subscription so the server doesn't try to send another "Complete" message to the client
-              delete ctx.subscriptions[message.id];
-              await subscription.return?.();
-            }
+            await ctx.subscriptions[message.id]?.return?.();
+            delete ctx.subscriptions[message.id]; // deleting the subscription means no further action
             break;
           }
           default:
