@@ -16,6 +16,7 @@ Configuration used for the `create` client function.
 
 * [connectionParams](_client_.clientoptions.md#connectionparams)
 * [generateID](_client_.clientoptions.md#generateid)
+* [keepAlive](_client_.clientoptions.md#keepalive)
 * [lazy](_client_.clientoptions.md#lazy)
 * [on](_client_.clientoptions.md#on)
 * [retryAttempts](_client_.clientoptions.md#retryattempts)
@@ -46,6 +47,18 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://stackoverflow.com/a/2117523/709884
+
+___
+
+### keepAlive
+
+• `Optional` **keepAlive**: undefined \| number
+
+How long should the client wait before closing the socket after the last oparation has
+completed. This is meant to be used in combination with `lazy`. You might want to have
+a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
+
+**`default`** 0 // close immediately
 
 ___
 
