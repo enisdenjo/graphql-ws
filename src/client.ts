@@ -70,6 +70,14 @@ export interface ClientOptions {
    */
   lazy?: boolean;
   /**
+   * How long should the client wait before closing the socket after the last oparation has
+   * completed. This is meant to be used in combination with `lazy`. You might want to have
+   * a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
+   *
+   * @default 0 // close immediately
+   */
+  keepAlive?: number;
+  /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
    * @default 5
@@ -126,6 +134,7 @@ export function createClient(options: ClientOptions): Client {
     url,
     connectionParams,
     lazy = true,
+    keepAlive = 0,
     retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
     on,
@@ -358,7 +367,19 @@ export function createClient(options: ClientOptions): Client {
             cleanup?.();
             state.locks--;
             if (!state.locks) {
-              socket.close(1000, 'Normal Closure');
+              if (keepAlive > 0 && isFinite(keepAlive)) {
+                // if the keepalive is set, allow for the specified calmdown
+                // time and then close. but only if no lock got created in the
+                // meantime and if the socket is still open
+                setTimeout(() => {
+                  if (!state.locks && socket.OPEN) {
+                    socket.close(1000, 'Normal Closure');
+                  }
+                }, keepAlive);
+              } else {
+                // otherwise close immediately
+                socket.close(1000, 'Normal Closure');
+              }
             }
             socket.removeEventListener('close', listener);
             return resolve();
@@ -394,7 +415,7 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // otherwize, wait a bit and retry
+          // otherwise, wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
         }
       }
@@ -513,7 +534,7 @@ export function createClient(options: ClientOptions): Client {
               throw errOrCloseEvent;
             }
 
-            // otherwize, wait a bit and retry
+            // otherwise, wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
           }
         }
