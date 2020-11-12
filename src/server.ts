@@ -684,7 +684,7 @@ export function createServer(
               }
 
               // lack of subscription at this point indicates that the client
-              // completed the stream, he doesnt need to be remembered
+              // completed the stream, he doesnt need to be reminded
               await emit.complete(Boolean(ctx.subscriptions[message.id]));
               delete ctx.subscriptions[message.id];
             } else {
