@@ -204,15 +204,17 @@ export function createClient(options: ClientOptions): Client {
     locks: 0,
     tries: 0,
   };
-  async function connect(
-    cancellerRef: CancellerRef,
-    callDepth = 0,
-  ): Promise<
+
+  type ConnectReturn = Promise<
     [
       socket: WebSocket,
       throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
     ]
-  > {
+  >;
+  async function connect(
+    cancellerRef: CancellerRef,
+    callDepth = 0,
+  ): ConnectReturn {
     // prevents too many recursive calls when reavaluating/re-connecting
     if (callDepth > 10) {
       throw new Error('Kept trying to connect but the socket never settled.');
@@ -228,39 +230,7 @@ export function createClient(options: ClientOptions): Client {
             return connect(cancellerRef, callDepth + 1);
           }
 
-          return [
-            state.socket,
-            (cleanup) =>
-              new Promise((resolve, reject) => {
-                if (!state.socket) {
-                  return reject(new Error('Socket closed unexpectedly'));
-                }
-                if (state.socket.readyState === WebSocketImpl.CLOSED) {
-                  return reject(new Error('Socket has already been closed'));
-                }
-
-                state.locks++;
-
-                state.socket.addEventListener('close', listener);
-                function listener(event: CloseEvent) {
-                  cancellerRef.current = null;
-                  state.locks--;
-                  state.socket?.removeEventListener('close', listener);
-                  return reject(event);
-                }
-
-                cancellerRef.current = () => {
-                  cancellerRef.current = null;
-                  cleanup?.();
-                  state.locks--;
-                  if (!state.locks) {
-                    state.socket?.close(1000, 'Normal Closure');
-                  }
-                  state.socket?.removeEventListener('close', listener);
-                  return resolve();
-                };
-              }),
-          ];
+          return makeConnectReturn(state.socket, cancellerRef);
         }
         case WebSocketImpl.CONNECTING: {
           // if the socket is in the connecting phase, wait a bit and reavaluate
@@ -359,6 +329,12 @@ export function createClient(options: ClientOptions): Client {
       };
     });
 
+    return makeConnectReturn(socket, cancellerRef);
+  }
+  async function makeConnectReturn(
+    socket: WebSocket,
+    cancellerRef: CancellerRef,
+  ): ConnectReturn {
     return [
       socket,
       (cleanup) =>
