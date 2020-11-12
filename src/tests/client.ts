@@ -380,6 +380,30 @@ describe('subscription operation', () => {
 
     expect(server.clients.size).toBe(0);
   });
+
+  it('should stop dispatching messages after completing a subscription', async () => {
+    const {
+      url,
+      server,
+      waitForOperation,
+      waitForComplete,
+    } = await startTServer();
+
+    const sub = tsubscribe(createClient({ url }), {
+      query: 'subscription { greetings }',
+    });
+    await waitForOperation();
+
+    for (const client of server.webSocketServer.clients) {
+      client.once('message', () => {
+        // no more messages from the client
+        fail("Shouldn't have dispatched a message");
+      });
+    }
+
+    await waitForComplete();
+    await sub.waitForComplete();
+  });
 });
 
 describe('"concurrency"', () => {
