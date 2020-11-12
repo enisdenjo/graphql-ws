@@ -367,10 +367,10 @@ export function createClient(options: ClientOptions): Client {
             cleanup?.();
             state.locks--;
             if (!state.locks) {
-              // if the keepalive is set, allow for the specified calmdown
-              // time and then close, but only if no lock got created in the
-              // meantime, or if the socket is simply not open anymore
               if (keepAlive > 0 && isFinite(keepAlive)) {
+                // if the keepalive is set, allow for the specified calmdown
+                // time and then close, but only if no lock got created in the
+                // meantime, or if the socket is simply not open anymore
                 setTimeout(() => {
                   if (!state.locks && socket.OPEN) {
                     socket.close(1000, 'Normal Closure');
