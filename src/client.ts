@@ -438,6 +438,7 @@ export function createClient(options: ClientOptions): Client {
     on: emitter.on,
     subscribe(payload, sink) {
       const id = generateID();
+      let completed = false;
       const cancellerRef: CancellerRef = { current: null };
 
       const messageListener = ({ data }: MessageEvent) => {
@@ -466,6 +467,7 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Complete: {
             if (message.id === id) {
+              completed = true;
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection
@@ -497,13 +499,15 @@ export function createClient(options: ClientOptions): Client {
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
             await throwOnCloseOrWaitForCancel(() => {
-              // send complete message to server on cancel
-              socket.send(
-                stringifyMessage<MessageType.Complete>({
-                  id: id,
-                  type: MessageType.Complete,
-                }),
-              );
+              // if not completed already, send complete message to server on cancel
+              if (!completed) {
+                socket.send(
+                  stringifyMessage<MessageType.Complete>({
+                    id: id,
+                    type: MessageType.Complete,
+                  }),
+                );
+              }
             });
 
             socket.removeEventListener('message', messageListener);

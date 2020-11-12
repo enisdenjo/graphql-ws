@@ -571,13 +571,15 @@ export function createServer(
                 }
                 await sendMessage<MessageType.Error>(ctx, errorMessage);
               },
-              complete: async () => {
+              complete: async (notifyClient: boolean) => {
                 const completeMessage: CompleteMessage = {
                   id: message.id,
                   type: MessageType.Complete,
                 };
                 await onComplete?.(ctx, completeMessage);
-                await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                if (notifyClient) {
+                  await sendMessage<MessageType.Complete>(ctx, completeMessage);
+                }
               },
             };
 
@@ -680,18 +682,22 @@ export function createServer(
               for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
-              await emit.complete();
+
+              // lack of subscription at this point indicates that the client
+              // completed the stream, he doesnt need to be reminded
+              await emit.complete(Boolean(ctx.subscriptions[message.id]));
               delete ctx.subscriptions[message.id];
             } else {
               /** single emitted result */
 
               await emit.next(operationResult, execArgs);
-              await emit.complete();
+              await emit.complete(true);
             }
             break;
           }
           case MessageType.Complete: {
             await ctx.subscriptions[message.id]?.return?.();
+            delete ctx.subscriptions[message.id]; // deleting the subscription means no further action
             break;
           }
           default:
