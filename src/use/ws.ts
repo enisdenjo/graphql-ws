@@ -1,5 +1,5 @@
+import type { Server as WebSocketServer } from 'ws';
 import { Server } from '../server';
-import { Server as WebSocketServer } from 'ws';
 
 const keepAlive = 12 * 1000; // 12 seconds
 
@@ -30,15 +30,6 @@ export function useServer(server: Server, ws: WebSocketServer): void {
       }
     }, keepAlive);
 
-    // server calls `waitForClose` later, it will resolve immediately
-    const waitForClose = new Promise<void>(
-      (resolve) =>
-        (socket.onclose = () => {
-          clearInterval(pingInterval);
-          resolve();
-        }),
-    );
-
     server.opened({
       protocol: socket.protocol,
       send: (data) =>
@@ -47,7 +38,11 @@ export function useServer(server: Server, ws: WebSocketServer): void {
         }),
       close: (code, reason) => socket.close(code, reason),
       onMessage: (cb) => socket.on('message', (event) => cb(event.toString())),
-      waitForClose: () => waitForClose,
+      onClose: (cb) =>
+        socket.on('close', () => {
+          clearInterval(pingInterval);
+          cb();
+        }),
     });
   });
 }
