@@ -544,10 +544,7 @@ import { schema } from 'my-graphql-schema';
 const app = express();
 
 // create apollo server
-const apolloServer = new ApolloServer({
-  schema,
-  subscriptions: false, // disable subscriptions-transport-ws
-});
+const apolloServer = new ApolloServer({ schema });
 
 // apply middleware
 apolloServer.applyMiddleware({ app });
