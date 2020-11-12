@@ -249,6 +249,7 @@ export function createClient(options: ClientOptions): Client {
                 }
 
                 cancellerRef.current = () => {
+                  cancellerRef.current = null;
                   cleanup?.();
                   state.locks--;
                   if (!state.locks) {
@@ -375,6 +376,7 @@ export function createClient(options: ClientOptions): Client {
           }
 
           cancellerRef.current = () => {
+            cancellerRef.current = null;
             cleanup?.();
             state.locks--;
             if (!state.locks) {
