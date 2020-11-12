@@ -235,6 +235,40 @@ it('should pass the `connectionParams` through', async () => {
   });
 });
 
+it('should close the socket if the `connectionParams` rejects or throws', async () => {
+  const server = await startTServer();
+
+  let client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => {
+      throw new Error('No auth?');
+    },
+  });
+
+  let sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+
+  client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => Promise.reject(new Error('No auth?')),
+  });
+
+  sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();

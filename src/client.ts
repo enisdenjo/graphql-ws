@@ -332,26 +332,25 @@ export function createClient(options: ClientOptions): Client {
           return;
         }
 
-        Promise.resolve(
-          typeof connectionParams === 'function'
-            ? connectionParams()
-            : connectionParams,
-        )
-          .then((params) =>
+        (async () => {
+          try {
             socket.send(
               stringifyMessage<MessageType.ConnectionInit>({
                 type: MessageType.ConnectionInit,
-                payload: params,
+                payload:
+                  typeof connectionParams === 'function'
+                    ? await connectionParams()
+                    : connectionParams,
               }),
-            ),
-          )
-          .catch((err) =>
+            );
+          } catch (err) {
             // even if not open, call close again to report error
             socket.close(
               4400,
               err instanceof Error ? err.message : new Error(err).message,
-            ),
-          );
+            );
+          }
+        })();
       };
     });
 
