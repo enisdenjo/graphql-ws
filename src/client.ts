@@ -394,7 +394,7 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // otherwize, wait a bit and retry
+          // otherwise, wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
         }
       }
@@ -513,7 +513,7 @@ export function createClient(options: ClientOptions): Client {
               throw errOrCloseEvent;
             }
 
-            // otherwize, wait a bit and retry
+            // otherwise, wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
           }
         }
