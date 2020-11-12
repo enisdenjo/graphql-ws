@@ -50,7 +50,7 @@ export type EventListener<E extends Event> = E extends EventConnecting
   ? EventClosedListener
   : never;
 
-type CancellerRef = { current: (() => void) | null };
+type CancellerRef = { current: ((completed: boolean) => void) | null };
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
@@ -210,7 +210,9 @@ export function createClient(options: ClientOptions): Client {
   ): Promise<
     [
       socket: WebSocket,
-      throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
+      throwOnCloseOrWaitForCancel: (
+        cleanup?: (completed: boolean) => void,
+      ) => Promise<void>,
     ]
   > {
     // prevents too many recursive calls when reavaluating/re-connecting
@@ -248,8 +250,8 @@ export function createClient(options: ClientOptions): Client {
                   return reject(event);
                 }
 
-                cancellerRef.current = () => {
-                  cleanup?.();
+                cancellerRef.current = (completed: boolean) => {
+                  cleanup?.(completed);
                   state.locks--;
                   if (!state.locks) {
                     state.socket?.close(1000, 'Normal Closure');
@@ -374,8 +376,8 @@ export function createClient(options: ClientOptions): Client {
             return reject(event);
           }
 
-          cancellerRef.current = () => {
-            cleanup?.();
+          cancellerRef.current = (completed: boolean) => {
+            cleanup?.(completed);
             state.locks--;
             if (!state.locks) {
               socket.close(1000, 'Normal Closure');
@@ -456,7 +458,7 @@ export function createClient(options: ClientOptions): Client {
               // because you cannot receive a message
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!();
+              cancellerRef.current!(false);
               // TODO-db-201025 calling canceller will complete the sink, meaning that both the `error` and `complete` will be
               // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
             }
@@ -468,7 +470,7 @@ export function createClient(options: ClientOptions): Client {
               // because you cannot receive a message
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!();
+              cancellerRef.current!(true);
               // calling canceller will complete the sink
             }
             return;
@@ -494,14 +496,16 @@ export function createClient(options: ClientOptions): Client {
 
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
-            await throwOnCloseOrWaitForCancel(() => {
-              // send complete message to server on cancel
-              socket.send(
-                stringifyMessage<MessageType.Complete>({
-                  id: id,
-                  type: MessageType.Complete,
-                }),
-              );
+            await throwOnCloseOrWaitForCancel((completed: boolean) => {
+              if (!completed) {
+                // send complete message to server on cancel
+                socket.send(
+                  stringifyMessage<MessageType.Complete>({
+                    id: id,
+                    type: MessageType.Complete,
+                  }),
+                );
+              }
             });
 
             socket.removeEventListener('message', messageListener);
@@ -539,7 +543,7 @@ export function createClient(options: ClientOptions): Client {
         .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
 
       return () => {
-        cancellerRef.current?.();
+        cancellerRef.current?.(false);
       };
     },
     dispose() {
