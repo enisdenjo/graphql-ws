@@ -203,8 +203,9 @@ it('should close with error message during connecting issues', async () => {
 });
 
 it('should pass the `connectionParams` through', async () => {
-  let server = await startTServer();
-  createClient({
+  const server = await startTServer();
+
+  let client = createClient({
     url: server.url,
     lazy: false,
     connectionParams: { auth: 'token' },
@@ -212,10 +213,9 @@ it('should pass the `connectionParams` through', async () => {
   await server.waitForConnect((ctx) => {
     expect(ctx.connectionParams).toEqual({ auth: 'token' });
   });
-  await server.dispose();
+  await client.dispose();
 
-  server = await startTServer();
-  createClient({
+  client = createClient({
     url: server.url,
     lazy: false,
     connectionParams: () => ({ from: 'func' }),
@@ -223,10 +223,9 @@ it('should pass the `connectionParams` through', async () => {
   await server.waitForConnect((ctx) => {
     expect(ctx.connectionParams).toEqual({ from: 'func' });
   });
-  await server.dispose();
+  await client.dispose();
 
-  server = await startTServer();
-  createClient({
+  client = createClient({
     url: server.url,
     lazy: false,
     connectionParams: () => Promise.resolve({ from: 'promise' }),
@@ -234,7 +233,6 @@ it('should pass the `connectionParams` through', async () => {
   await server.waitForConnect((ctx) => {
     expect(ctx.connectionParams).toEqual({ from: 'promise' });
   });
-  await server.dispose();
 });
 
 describe('query operation', () => {
