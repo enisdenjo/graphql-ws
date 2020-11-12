@@ -1446,7 +1446,7 @@ describe('Subscribe', () => {
       });
     });
 
-    // complete
+    // send complete
     client.ws.send(
       stringifyMessage<MessageType.Complete>({
         id: '1',
@@ -1454,20 +1454,14 @@ describe('Subscribe', () => {
       }),
     );
 
-    // confirm complete
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data)).toEqual({
-        id: '1',
-        type: MessageType.Complete,
-      });
-    });
+    await server.waitForComplete();
 
     server.pong();
     server.pong();
     server.pong();
 
     await client.waitForMessage(() => {
-      fail('Shouldnt have received a message');
+      fail("Shouldn't have received a message");
     }, 30);
   });
 

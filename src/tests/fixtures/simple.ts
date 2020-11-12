@@ -33,6 +33,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
+  waitForComplete: (test?: () => void, expire?: number) => Promise<void>;
   waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
   dispose: Dispose;
 }
@@ -137,7 +138,8 @@ export async function startTServer(
   });
 
   // create server and hook up for tracking operations
-  let pendingOperations = 0;
+  let pendingOperations = 0,
+    pendingCompletes = 0;
   const server = await createServer(
     {
       schema,
@@ -154,6 +156,11 @@ export async function startTServer(
         );
         emitter.emit('operation');
         return maybeResult;
+      },
+      onComplete: async (...args) => {
+        pendingCompletes++;
+        await options?.onComplete?.(...args);
+        emitter.emit('compl');
       },
     },
     {
@@ -258,6 +265,25 @@ export async function startTServer(
         if (expire) {
           setTimeout(() => {
             emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+        }
+      });
+    },
+    waitForComplete(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingCompletes--;
+          test?.();
+          resolve();
+        }
+        if (pendingCompletes > 0) {
+          return done();
+        }
+        emitter.once('compl', done);
+        if (expire) {
+          setTimeout(() => {
+            emitter.off('compl', done); // expired
             resolve();
           }, expire);
         }
