@@ -243,6 +243,7 @@ export function createClient(options: ClientOptions): Client {
 
                 state.socket.addEventListener('close', listener);
                 function listener(event: CloseEvent) {
+                  cancellerRef.current = null;
                   state.locks--;
                   state.socket?.removeEventListener('close', listener);
                   return reject(event);
@@ -370,6 +371,7 @@ export function createClient(options: ClientOptions): Client {
 
           socket.addEventListener('close', listener);
           function listener(event: CloseEvent) {
+            cancellerRef.current = null;
             state.locks--;
             socket.removeEventListener('close', listener);
             return reject(event);
@@ -499,7 +501,6 @@ export function createClient(options: ClientOptions): Client {
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
             await throwOnCloseOrWaitForCancel(() => {
-              cancellerRef.current = null;
               // if not completed already, send complete message to server on cancel
               if (!completed) {
                 socket.send(
