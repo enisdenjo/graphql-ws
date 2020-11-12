@@ -4,7 +4,7 @@
 
 # Interface: ClientOptions
 
-Configuration used for the `create` client function.
+Configuration used for the GraphQL over WebSocket client.
 
 ## Hierarchy
 
@@ -28,11 +28,17 @@ Configuration used for the `create` client function.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: Record\<string, unknown> \| () => Record\<string, unknown>
+• `Optional` **connectionParams**: Record\<string, unknown> \| () => Promise\<Record\<string, unknown>> \| Record\<string, unknown>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
 for securely passing arguments for authentication.
+
+If you decide to return a promise, keep in mind that the server might kick you off if it
+takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
+
+Throwing an error from within this function will close the socket with the `Error` message
+in the close event reason.
 
 ___
 

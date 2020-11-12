@@ -52,7 +52,7 @@ export type EventListener<E extends Event> = E extends EventConnecting
 
 type CancellerRef = { current: (() => void) | null };
 
-/** Configuration used for the `create` client function. */
+/** Configuration used for the GraphQL over WebSocket client. */
 export interface ClientOptions {
   /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
   url: string;
@@ -60,8 +60,16 @@ export interface ClientOptions {
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
    * for securely passing arguments for authentication.
+   *
+   * If you decide to return a promise, keep in mind that the server might kick you off if it
+   * takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
+   *
+   * Throwing an error from within this function will close the socket with the `Error` message
+   * in the close event reason.
    */
-  connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
+  connectionParams?:
+    | Record<string, unknown>
+    | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
   /**
    * Should the connection be established immediately and persisted
    * or after the first listener subscribed.
@@ -128,7 +136,7 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** Creates a disposable GraphQL subscriptions client. */
+/** Creates a disposable GraphQL over WebSocket client. */
 export function createClient(options: ClientOptions): Client {
   const {
     url,
@@ -318,7 +326,8 @@ export function createClient(options: ClientOptions): Client {
         }
       };
 
-      // as soon as the socket opens, send the connection initalisation request
+      // as soon as the socket opens and the connectionParams
+      // resolve, send the connection initalisation request
       socket.onopen = () => {
         socket.onopen = null;
         if (cancelled) {
@@ -326,15 +335,25 @@ export function createClient(options: ClientOptions): Client {
           return;
         }
 
-        socket.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-            payload:
-              typeof connectionParams === 'function'
-                ? connectionParams()
-                : connectionParams,
-          }),
-        );
+        (async () => {
+          try {
+            socket.send(
+              stringifyMessage<MessageType.ConnectionInit>({
+                type: MessageType.ConnectionInit,
+                payload:
+                  typeof connectionParams === 'function'
+                    ? await connectionParams()
+                    : connectionParams,
+              }),
+            );
+          } catch (err) {
+            // even if not open, call close again to report error
+            socket.close(
+              4400,
+              err instanceof Error ? err.message : new Error(err).message,
+            );
+          }
+        })();
       };
     });
 

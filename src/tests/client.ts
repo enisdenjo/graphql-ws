@@ -202,6 +202,73 @@ it('should close with error message during connecting issues', async () => {
   });
 });
 
+it('should pass the `connectionParams` through', async () => {
+  const server = await startTServer();
+
+  let client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: { auth: 'token' },
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ auth: 'token' });
+  });
+  await client.dispose();
+
+  client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: () => ({ from: 'func' }),
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ from: 'func' });
+  });
+  await client.dispose();
+
+  client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: () => Promise.resolve({ from: 'promise' }),
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ from: 'promise' });
+  });
+});
+
+it('should close the socket if the `connectionParams` rejects or throws', async () => {
+  const server = await startTServer();
+
+  let client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => {
+      throw new Error('No auth?');
+    },
+  });
+
+  let sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+
+  client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => Promise.reject(new Error('No auth?')),
+  });
+
+  sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();

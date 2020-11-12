@@ -10,7 +10,7 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
-import { createServer, ServerOptions, Server } from '../../server';
+import { createServer, ServerOptions, Server, Context } from '../../server';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -30,6 +30,10 @@ export interface TServer {
   pong: (key?: string) => void;
   waitForClient: (
     test?: (client: WebSocket) => void,
+    expire?: number,
+  ) => Promise<void>;
+  waitForConnect: (
+    test?: (ctx: Context) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -138,6 +142,7 @@ export async function startTServer(
   });
 
   // create server and hook up for tracking operations
+  const pendingConnections: Context[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
   const server = await createServer(
@@ -146,6 +151,12 @@ export async function startTServer(
       execute,
       subscribe,
       ...options,
+      onConnect: async (...args) => {
+        pendingConnections.push(args[0]);
+        const permitted = await options?.onConnect?.(...args);
+        emitter.emit('conn');
+        return permitted;
+      },
       onOperation: async (ctx, msg, args, result) => {
         pendingOperations++;
         const maybeResult = await options?.onOperation?.(
@@ -246,6 +257,27 @@ export async function startTServer(
         if (expire) {
           setTimeout(() => {
             server.webSocketServer.off('connection', done); // expired
+            resolve();
+          }, expire);
+        }
+      });
+    },
+    waitForConnect(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const ctx = pendingConnections.shift()!;
+          test?.(ctx);
+          resolve();
+        }
+        if (pendingConnections.length > 0) {
+          return done();
+        }
+        emitter.once('conn', done);
+        if (expire) {
+          setTimeout(() => {
+            emitter.off('conn', done); // expired
             resolve();
           }, expire);
         }
