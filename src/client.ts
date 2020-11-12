@@ -243,12 +243,14 @@ export function createClient(options: ClientOptions): Client {
 
                 state.socket.addEventListener('close', listener);
                 function listener(event: CloseEvent) {
+                  cancellerRef.current = null;
                   state.locks--;
                   state.socket?.removeEventListener('close', listener);
                   return reject(event);
                 }
 
                 cancellerRef.current = () => {
+                  cancellerRef.current = null;
                   cleanup?.();
                   state.locks--;
                   if (!state.locks) {
@@ -369,12 +371,14 @@ export function createClient(options: ClientOptions): Client {
 
           socket.addEventListener('close', listener);
           function listener(event: CloseEvent) {
+            cancellerRef.current = null;
             state.locks--;
             socket.removeEventListener('close', listener);
             return reject(event);
           }
 
           cancellerRef.current = () => {
+            cancellerRef.current = null;
             cleanup?.();
             state.locks--;
             if (!state.locks) {
@@ -539,8 +543,7 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete) // resolves on cancel or normal closure
-        .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
+        .then(sink.complete); // resolves on cancel or normal closure
 
       return () => {
         cancellerRef.current?.();
