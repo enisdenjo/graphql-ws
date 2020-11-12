@@ -497,8 +497,8 @@ export function createClient(options: ClientOptions): Client {
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
             await throwOnCloseOrWaitForCancel(() => {
+              // if not completed already, send complete message to server on cancel
               if (!completed) {
-                // send complete message to server on cancel
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
                     id: id,
