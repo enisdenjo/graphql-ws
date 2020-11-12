@@ -499,6 +499,7 @@ export function createClient(options: ClientOptions): Client {
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
             await throwOnCloseOrWaitForCancel(() => {
+              cancellerRef.current = null;
               // if not completed already, send complete message to server on cancel
               if (!completed) {
                 socket.send(
@@ -541,8 +542,7 @@ export function createClient(options: ClientOptions): Client {
         }
       })()
         .catch(sink.error)
-        .then(sink.complete) // resolves on cancel or normal closure
-        .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
+        .then(sink.complete); // resolves on cancel or normal closure
 
       return () => {
         cancellerRef.current?.();
