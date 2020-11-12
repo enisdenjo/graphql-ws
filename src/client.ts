@@ -52,7 +52,7 @@ export type EventListener<E extends Event> = E extends EventConnecting
 
 type CancellerRef = { current: (() => void) | null };
 
-/** Configuration used for the `create` client function. */
+/** Configuration used for the GraphQL over WebSocket client. */
 export interface ClientOptions {
   /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
   url: string;
@@ -63,6 +63,9 @@ export interface ClientOptions {
    *
    * If you decide to return a promise, keep in mind that the server might kick you off if it
    * takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
+   *
+   * Throwing an error from within this function will close the socket with the `Error` message
+   * in the close event reason.
    */
   connectionParams?:
     | Record<string, unknown>
@@ -133,7 +136,7 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** Creates a disposable GraphQL subscriptions client. */
+/** Creates a disposable GraphQL over WebSocket client. */
 export function createClient(options: ClientOptions): Client {
   const {
     url,
