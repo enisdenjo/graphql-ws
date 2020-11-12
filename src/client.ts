@@ -60,8 +60,13 @@ export interface ClientOptions {
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
    * for securely passing arguments for authentication.
+   *
+   * If you decide to return a promise, keep in mind that the server might kick you off if it
+   * takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
    */
-  connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
+  connectionParams?:
+    | Record<string, unknown>
+    | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
   /**
    * Should the connection be established immediately and persisted
    * or after the first listener subscribed.
@@ -318,7 +323,8 @@ export function createClient(options: ClientOptions): Client {
         }
       };
 
-      // as soon as the socket opens, send the connection initalisation request
+      // as soon as the socket opens and the connectionParams
+      // resolve, send the connection initalisation request
       socket.onopen = () => {
         socket.onopen = null;
         if (cancelled) {
@@ -326,15 +332,26 @@ export function createClient(options: ClientOptions): Client {
           return;
         }
 
-        socket.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-            payload:
-              typeof connectionParams === 'function'
-                ? connectionParams()
-                : connectionParams,
-          }),
-        );
+        Promise.resolve(
+          typeof connectionParams === 'function'
+            ? connectionParams()
+            : connectionParams,
+        )
+          .then((params) =>
+            socket.send(
+              stringifyMessage<MessageType.ConnectionInit>({
+                type: MessageType.ConnectionInit,
+                payload: params,
+              }),
+            ),
+          )
+          .catch((err) =>
+            // even if not open, call close again to report error
+            socket.close(
+              4400,
+              err instanceof Error ? err.message : new Error(err).message,
+            ),
+          );
       };
     });
 
