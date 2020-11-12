@@ -545,12 +545,12 @@ const app = express();
 
 // create apollo server
 const apolloServer = new ApolloServer({
-    schema,
-    subscriptions: false, // disable subscriptions-transport-ws
+  schema,
+  subscriptions: false, // disable subscriptions-transport-ws
 });
 
 // apply middleware
-apolloServer.applyMiddleware({ app })
+apolloServer.applyMiddleware({ app });
 
 // create a http server using express
 const server = https.createServer(app);
