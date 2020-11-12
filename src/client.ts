@@ -50,7 +50,7 @@ export type EventListener<E extends Event> = E extends EventConnecting
   ? EventClosedListener
   : never;
 
-type CancellerRef = { current: ((completed: boolean) => void) | null };
+type CancellerRef = { current: (() => void) | null };
 
 /** Configuration used for the `create` client function. */
 export interface ClientOptions {
@@ -210,9 +210,7 @@ export function createClient(options: ClientOptions): Client {
   ): Promise<
     [
       socket: WebSocket,
-      throwOnCloseOrWaitForCancel: (
-        cleanup?: (completed: boolean) => void,
-      ) => Promise<void>,
+      throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
     ]
   > {
     // prevents too many recursive calls when reavaluating/re-connecting
@@ -250,8 +248,8 @@ export function createClient(options: ClientOptions): Client {
                   return reject(event);
                 }
 
-                cancellerRef.current = (completed: boolean) => {
-                  cleanup?.(completed);
+                cancellerRef.current = () => {
+                  cleanup?.();
                   state.locks--;
                   if (!state.locks) {
                     state.socket?.close(1000, 'Normal Closure');
@@ -376,8 +374,8 @@ export function createClient(options: ClientOptions): Client {
             return reject(event);
           }
 
-          cancellerRef.current = (completed: boolean) => {
-            cleanup?.(completed);
+          cancellerRef.current = () => {
+            cleanup?.();
             state.locks--;
             if (!state.locks) {
               socket.close(1000, 'Normal Closure');
@@ -438,6 +436,7 @@ export function createClient(options: ClientOptions): Client {
     on: emitter.on,
     subscribe(payload, sink) {
       const id = generateID();
+      let completed = false;
       const cancellerRef: CancellerRef = { current: null };
 
       const messageListener = ({ data }: MessageEvent) => {
@@ -458,7 +457,7 @@ export function createClient(options: ClientOptions): Client {
               // because you cannot receive a message
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!(false);
+              cancellerRef.current!();
               // TODO-db-201025 calling canceller will complete the sink, meaning that both the `error` and `complete` will be
               // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
             }
@@ -466,11 +465,12 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Complete: {
             if (message.id === id) {
+              completed = true;
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!(true);
+              cancellerRef.current!();
               // calling canceller will complete the sink
             }
             return;
@@ -496,8 +496,8 @@ export function createClient(options: ClientOptions): Client {
 
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
-            await throwOnCloseOrWaitForCancel((completed: boolean) => {
-              if (!completed) {
+            await throwOnCloseOrWaitForCancel(() => {
+              if (!completed && socket.readyState === WebSocketImpl.OPEN) {
                 // send complete message to server on cancel
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
@@ -543,7 +543,7 @@ export function createClient(options: ClientOptions): Client {
         .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
 
       return () => {
-        cancellerRef.current?.(false);
+        cancellerRef.current?.();
       };
     },
     dispose() {
