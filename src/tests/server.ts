@@ -1461,8 +1461,8 @@ describe('Subscribe', () => {
     server.pong();
     server.pong();
 
-    await client.waitForMessage(({ data }) => {
-      fail(`Shouldn't have received message ${data}`);
+    await client.waitForMessage(() => {
+      fail("Shouldn't have received a message");
     }, 30);
   });
 
