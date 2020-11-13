@@ -184,7 +184,7 @@ export async function startTServer(
         httpServer.once('error', reject);
         httpServer.once('listening', resolve);
         try {
-          httpServer.listen(0, resolve);
+          httpServer.listen(0);
         } catch (err) {
           reject(err);
         }
