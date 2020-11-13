@@ -40,28 +40,32 @@ export function useServer(
    */
   keepAlive = 12 * 1000,
 ): void {
+  const isProd = process.env.NODE_ENV === 'production';
   ws.on('connection', (socket) => {
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
-    const pingInterval = setInterval(() => {
-      // ping pong on open sockets only
-      if (socket.readyState === socket.OPEN) {
-        // terminate the connection after pong wait has passed because the client is idle
-        pongWait = setTimeout(() => {
-          socket.terminate();
-        }, keepAlive);
+    const pingInterval =
+      keepAlive > 0 && isFinite(keepAlive)
+        ? setInterval(() => {
+            // ping pong on open sockets only
+            if (socket.readyState === socket.OPEN) {
+              // terminate the connection after pong wait has passed because the client is idle
+              pongWait = setTimeout(() => {
+                socket.terminate();
+              }, keepAlive);
 
-        // listen for client's pong and stop socket termination
-        socket.once('pong', () => {
-          if (pongWait) {
-            clearTimeout(pongWait);
-            pongWait = null;
-          }
-        });
+              // listen for client's pong and stop socket termination
+              socket.once('pong', () => {
+                if (pongWait) {
+                  clearTimeout(pongWait);
+                  pongWait = null;
+                }
+              });
 
-        socket.ping();
-      }
-    }, keepAlive);
+              socket.ping();
+            }
+          }, keepAlive)
+        : null;
 
     ws.on('error', (err) => {
       // catch the first thrown error and re-throw it once all clients have been notified
@@ -93,12 +97,12 @@ export function useServer(
           try {
             await cb(event.toString());
           } catch (err) {
-            socket.close(1011, 'Internal Error');
+            socket.close(1011, isProd ? 'Internal Error' : err.message);
           }
         }),
       onClose: (cb) =>
         socket.on('close', () => {
-          clearInterval(pingInterval);
+          if (pingInterval) clearInterval(pingInterval);
           cb();
         }),
     });
