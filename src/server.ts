@@ -277,34 +277,6 @@ export interface ServerOptions {
   onComplete?: (ctx: Context, message: CompleteMessage) => Promise<void> | void;
 }
 
-export interface Context {
-  /**
-   * The actual WebSocket connection between the server and the client.
-   */
-  readonly socket: WebSocket;
-  /**
-   * Indicates that the `ConnectionInit` message
-   * has been received by the server. If this is
-   * `true`, the client wont be kicked off after
-   * the wait timeout has passed.
-   */
-  connectionInitReceived: boolean;
-  /**
-   * Indicates that the connection was acknowledged
-   * by having dispatched the `ConnectionAck` message
-   * to the related client.
-   */
-  acknowledged: boolean;
-  /** The parameters passed during the connection initialisation. */
-  connectionParams?: Readonly<Record<string, unknown>>;
-  /**
-   * Holds the active subscriptions for this context.
-   * Subscriptions are for **streaming operations only**,
-   * those that resolve once wont be added here.
-   */
-  subscriptions: Record<ID, AsyncIterator<unknown>>;
-}
-
 export interface Server {
   /**
    * New socket has beeen established offering the provided
@@ -349,12 +321,40 @@ export interface WebSocket {
   onClose(cb: () => void): void;
 }
 
+export interface Context {
+  /**
+   * The actual WebSocket connection between the server and the client.
+   */
+  readonly socket: WebSocket;
+  /**
+   * Indicates that the `ConnectionInit` message
+   * has been received by the server. If this is
+   * `true`, the client wont be kicked off after
+   * the wait timeout has passed.
+   */
+  connectionInitReceived: boolean;
+  /**
+   * Indicates that the connection was acknowledged
+   * by having dispatched the `ConnectionAck` message
+   * to the related client.
+   */
+  acknowledged: boolean;
+  /** The parameters passed during the connection initialisation. */
+  connectionParams?: Readonly<Record<string, unknown>>;
+  /**
+   * Holds the active subscriptions for this context.
+   * Subscriptions are for **streaming operations only**,
+   * those that resolve once wont be added here.
+   */
+  subscriptions: Record<ID, AsyncIterator<unknown>>;
+}
+
 /**
- * Makes a protocol complient WebSocket GraphQL server. The server
+ * Makes a Protocol complient WebSocket GraphQL server. The server
  * is actually an API which is to be used with your favourite WebSocket
  * server library!
  *
- * Read more about the protocol in the PROTOCOL.md documentation file.
+ * Read more about the Protocol in the PROTOCOL.md documentation file.
  */
 export function makeServer(options: ServerOptions): Server {
   const {
