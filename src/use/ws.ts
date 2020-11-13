@@ -18,6 +18,7 @@ export function createServer(
       for (const client of ws.clients) {
         client.close(1001, 'Going away');
       }
+      ws.removeAllListeners();
       await new Promise((resolve, reject) =>
         ws.close((err) => (err ? reject(err) : resolve())),
       );
@@ -103,6 +104,7 @@ export function useServer(
         }),
       onClose: (cb) =>
         socket.on('close', () => {
+          if (pongWait) clearTimeout(pongWait);
           if (pingInterval) clearInterval(pingInterval);
           cb();
         }),
