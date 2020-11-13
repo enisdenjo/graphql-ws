@@ -1,4 +1,3 @@
-import WebSocket from 'ws';
 import {
   parse,
   buildSchema,
@@ -8,86 +7,9 @@ import {
   ExecutionArgs,
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import {
-  MessageType,
-  parseMessage,
-  stringifyMessage,
-  SubscribePayload,
-} from '../message';
+import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { schema, startTServer } from './fixtures/simple';
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function createTClient(
-  url: string,
-  protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
-) {
-  let closeEvent: WebSocket.CloseEvent;
-  const queue: WebSocket.MessageEvent[] = [];
-  return new Promise<{
-    ws: WebSocket;
-    waitForMessage: (
-      test?: (data: WebSocket.MessageEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-    waitForClose: (
-      test?: (event: WebSocket.CloseEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-  }>((resolve) => {
-    const ws = new WebSocket(url, protocols);
-    ws.onclose = (event) => (closeEvent = event); // just so that none are missed
-    ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
-    ws.once('open', () =>
-      resolve({
-        ws,
-        async waitForMessage(test, expire) {
-          return new Promise((resolve) => {
-            const done = () => {
-              // the onmessage listener above will be called before our listener, populating the queue
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const next = queue.shift()!;
-              test?.(next);
-              resolve();
-            };
-            if (queue.length > 0) {
-              return done();
-            }
-            ws.once('message', done);
-            if (expire) {
-              setTimeout(() => {
-                ws.removeListener('message', done); // expired
-                resolve();
-              }, expire);
-            }
-          });
-        },
-        async waitForClose(
-          test?: (event: WebSocket.CloseEvent) => void,
-          expire?: number,
-        ) {
-          return new Promise((resolve) => {
-            if (closeEvent) {
-              test?.(closeEvent);
-              return resolve();
-            }
-            ws.onclose = (event) => {
-              closeEvent = event;
-              test?.(event);
-              resolve();
-            };
-            if (expire) {
-              setTimeout(() => {
-                // @ts-expect-error: its ok
-                ws.onclose = null; // expired
-                resolve();
-              }, expire);
-            }
-          });
-        },
-      }),
-    );
-  });
-}
+import { createTClient } from './utils';
 
 /**
  * Tests
@@ -125,26 +47,6 @@ it('should allow connections with valid protocols only', async () => {
     () => fail('shouldnt close for valid protocol'),
     30, // should be kicked off within this time
   );
-});
-
-it('should gracefully go away when disposing', async () => {
-  const server = await startTServer();
-
-  const client1 = await createTClient(server.url);
-  const client2 = await createTClient(server.url);
-
-  await server.dispose(true);
-
-  await client1.waitForClose((event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  });
-  await client2.waitForClose((event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  });
 });
 
 // TODO-db-201113 do we really need this test?
@@ -513,29 +415,6 @@ describe('Connect', () => {
     });
   });
 
-  it('should close socket with error thrown from the callback', async () => {
-    const error = new Error("I'm a teapot");
-
-    const { url } = await startTServer({
-      onConnect: () => {
-        throw error;
-      },
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(error.message);
-      expect(event.wasClean).toBeTruthy();
-    });
-  });
-
   it('should acknowledge connection if not implemented, returning `true` or nothing', async () => {
     async function test(url: string) {
       const client = await createTClient(url);
@@ -739,159 +618,6 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should close the socket on request if schema is left undefined', async () => {
-    const { url } = await startTServer({
-      schema: undefined,
-    });
-
-    const client = await createTClient(url);
-
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-      client.ws.send(
-        stringifyMessage<MessageType.Subscribe>({
-          id: '1',
-          type: MessageType.Subscribe,
-          payload: {
-            operationName: 'TestString',
-            query: `query TestString {
-              getValue
-            }`,
-            variables: {},
-          },
-        }),
-      );
-    });
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(1011);
-      expect(event.reason).toBe('The GraphQL schema is not provided');
-      expect(event.wasClean).toBeTruthy();
-    });
-  });
-
-  it('should close the socket with errors thrown from any callback', async () => {
-    const error = new Error('Stop');
-
-    // onConnect
-    let server = await startTServer({
-      onConnect: () => {
-        throw error;
-      },
-    });
-    const client = await createTClient(server.url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(error.message);
-      expect(event.wasClean).toBeTruthy();
-    });
-    await server.dispose();
-
-    async function test(
-      url: string,
-      payload: SubscribePayload = {
-        query: `query { getValue }`,
-      },
-    ) {
-      const client = await createTClient(url);
-      client.ws.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-
-      await client.waitForMessage(({ data }) => {
-        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload,
-          }),
-        );
-      });
-
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(4400);
-        expect(event.reason).toBe(error.message);
-        expect(event.wasClean).toBeTruthy();
-      });
-    }
-
-    // onSubscribe
-    server = await startTServer({
-      onSubscribe: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    server = await startTServer({
-      onOperation: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // execute
-    server = await startTServer({
-      execute: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // subscribe
-    server = await startTServer({
-      subscribe: () => {
-        throw error;
-      },
-    });
-    await test(server.url, { query: 'subscription { greetings }' });
-    await server.dispose();
-
-    // onNext
-    server = await startTServer({
-      onNext: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // onError
-    server = await startTServer({
-      onError: () => {
-        throw error;
-      },
-    });
-    await test(server.url, { query: 'query { noExisto }' });
-    await server.dispose();
-
-    // onComplete
-    server = await startTServer({
-      onComplete: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-  });
-
   it('should directly use the execution arguments returned from `onSubscribe`', async () => {
     const nopeArgs = {
       schema,
@@ -1001,44 +727,6 @@ describe('Subscribe', () => {
     await client.waitForClose(() => {
       fail('Shouldt have closed');
     }, 30);
-  });
-
-  it('should close the socket on empty arrays returned from `onSubscribe`', async () => {
-    const { url } = await startTServer({
-      onSubscribe: () => {
-        return [];
-      },
-    });
-
-    const client = await createTClient(url);
-
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-    });
-
-    client.ws.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: 'subscription { ping }',
-        },
-      }),
-    );
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(
-        'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
-      );
-      expect(event.wasClean).toBeTruthy();
-    });
   });
 
   it('should use the execution result returned from `onNext`', async () => {
@@ -1474,46 +1162,46 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
-    const { url } = await startTServer();
+  // it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
+  //   const { url } = await startTServer();
 
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
+  //   const client = await createTClient(url);
+  //   client.ws.send(
+  //     stringifyMessage<MessageType.ConnectionInit>({
+  //       type: MessageType.ConnectionInit,
+  //     }),
+  //   );
 
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-      client.ws.send(
-        stringifyMessage<MessageType.Subscribe>({
-          id: 'not-unique',
-          type: MessageType.Subscribe,
-          payload: {
-            query: 'subscription { ping }',
-          },
-        }),
-      );
-    });
+  //   await client.waitForMessage(({ data }) => {
+  //     expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  //     client.ws.send(
+  //       stringifyMessage<MessageType.Subscribe>({
+  //         id: 'not-unique',
+  //         type: MessageType.Subscribe,
+  //         payload: {
+  //           query: 'subscription { ping }',
+  //         },
+  //       }),
+  //     );
+  //   });
 
-    // try subscribing with a live subscription id
-    client.ws.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: 'not-unique',
-        type: MessageType.Subscribe,
-        payload: {
-          query: 'subscription { greetings }',
-        },
-      }),
-    );
+  //   // try subscribing with a live subscription id
+  //   client.ws.send(
+  //     stringifyMessage<MessageType.Subscribe>({
+  //       id: 'not-unique',
+  //       type: MessageType.Subscribe,
+  //       payload: {
+  //         query: 'subscription { greetings }',
+  //       },
+  //     }),
+  //   );
 
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4409);
-      expect(event.reason).toBe('Subscriber for not-unique already exists');
-      expect(event.wasClean).toBeTruthy();
-    });
-  });
+  //   await client.waitForClose((event) => {
+  //     expect(event.code).toBe(4409);
+  //     expect(event.reason).toBe('Subscriber for not-unique already exists');
+  //     expect(event.wasClean).toBeTruthy();
+  //   });
+  // });
 
   it('should support persisted queries', async () => {
     const queriesStore: Record<string, ExecutionArgs> = {
