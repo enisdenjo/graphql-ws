@@ -41,6 +41,25 @@ export function useServer(
   keepAlive = 12 * 1000,
 ): void {
   const isProd = process.env.NODE_ENV === 'production';
+
+  ws.on('error', (err) => {
+    // catch the first thrown error and re-throw it once all clients have been notified
+    let firstErr: Error | null = null;
+
+    // report server errors by erroring out all clients with the same error
+    for (const client of ws.clients) {
+      try {
+        client.close(1011, isProd ? 'Internal Error' : err.message);
+      } catch (err) {
+        firstErr = firstErr ?? err;
+      }
+    }
+
+    if (firstErr) {
+      throw firstErr;
+    }
+  });
+
   ws.on('connection', (socket) => {
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
@@ -66,24 +85,6 @@ export function useServer(
             }
           }, keepAlive)
         : null;
-
-    ws.on('error', (err) => {
-      // catch the first thrown error and re-throw it once all clients have been notified
-      let firstErr: Error | null = null;
-
-      // report server errors by erroring out all clients with the same error
-      for (const client of ws.clients) {
-        try {
-          client.emit('error', err);
-        } catch (err) {
-          firstErr = firstErr ?? err;
-        }
-      }
-
-      if (firstErr) {
-        throw firstErr;
-      }
-    });
 
     server.opened({
       protocol: socket.protocol,

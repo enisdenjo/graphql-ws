@@ -49,25 +49,6 @@ it('should allow connections with valid protocols only', async () => {
   );
 });
 
-// TODO-db-201113 do we really need this test?
-// it('should report server errors to clients by closing the connection', async () => {
-//   const {
-//     url,
-//     server: { webSocketServer },
-//   } = await startTServer();
-
-//   const client = await createTClient(url);
-
-//   const emittedError = new Error("I'm a teapot");
-//   webSocketServer.emit('error', emittedError);
-
-//   await client.waitForClose((event) => {
-//     expect(event.code).toBe(1011); // 1011: Internal Error
-//     expect(event.reason).toBe(emittedError.message);
-//     expect(event.wasClean).toBeTruthy(); // because the server reported the error
-//   });
-// });
-
 it('should use the provided roots as resolvers', async () => {
   const schema = buildSchema(`
     type Query {
@@ -355,42 +336,6 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
     }),
   );
 });
-
-// TODO-db-201113 test internals maybe? dont test ws
-// it('should handle errors thrown from client error listeners', async () => {
-//   const { server, url } = await startTServer();
-
-//   const client = await createTClient(url);
-//   client.ws.send(
-//     stringifyMessage<MessageType.ConnectionInit>({
-//       type: MessageType.ConnectionInit,
-//     }),
-//   );
-//   await client.waitForMessage(({ data }) => {
-//     expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-//   });
-
-//   const surpriseErr1 = new Error('Well hello there!');
-//   const surpriseErr2 = new Error('I wont be thrown!'); // first to throw stops emission
-//   for (const client of server.webSocketServer.clients) {
-//     client.on('error', () => {
-//       throw surpriseErr1;
-//     });
-//     client.on('error', () => {
-//       throw surpriseErr2;
-//     });
-//   }
-
-//   expect(() => {
-//     server.webSocketServer.emit('error', new Error('I am a nice error'));
-//   }).toThrowError(surpriseErr1);
-
-//   await client.waitForClose((event) => {
-//     expect(event.code).toBe(1011);
-//     expect(event.reason).toBe('I am a nice error');
-//     expect(event.wasClean).toBeTruthy();
-//   });
-// });
 
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {

@@ -241,6 +241,21 @@ it('should close socket with error thrown from the callback', async () => {
   });
 });
 
+it('should report server errors to clients by closing the connection', async () => {
+  const { url, ws } = await startTServer();
+
+  const client = await createTClient(url);
+
+  const emittedError = new Error("I'm a teapot");
+  ws.emit('error', emittedError);
+
+  await client.waitForClose((event) => {
+    expect(event.code).toBe(1011); // 1011: Internal Error
+    expect(event.reason).toBe(emittedError.message);
+    expect(event.wasClean).toBeTruthy(); // because the server reported the error
+  });
+});
+
 describe('Keep-Alive', () => {
   it('should dispatch pings after the timeout has passed', async (done) => {
     const { url } = await startTServer(undefined, 50);

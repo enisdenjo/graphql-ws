@@ -26,6 +26,7 @@ afterEach(async () => {
 
 export interface TServer {
   url: string;
+  ws: WebSocket.Server;
   clients: Set<WebSocket>;
   pong: (key?: string) => void;
   waitForClient: (
@@ -246,6 +247,7 @@ export async function startTServer(
 
   return {
     url: `ws://localhost:${addr.port}${path}`,
+    ws,
     get clients() {
       return ws.clients;
     },
