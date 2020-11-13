@@ -16,7 +16,8 @@ import {
 } from '../message';
 import { schema, startTServer } from './fixtures/simple';
 
-function createTClient(
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function createTClient(
   url: string,
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
 ) {

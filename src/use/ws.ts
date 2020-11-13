@@ -2,8 +2,6 @@ import type { Server as WebSocketServer } from 'ws';
 import { makeServer, Server, ServerOptions } from '../server';
 import { Disposable } from '../types';
 
-const keepAlive = 12 * 1000; // 12 seconds
-
 /**
  * Creates a Protocol complient WebSocket GraphQL on
  * a [ws](https://github.com/websockets/ws) WebSocket server.
@@ -11,8 +9,10 @@ const keepAlive = 12 * 1000; // 12 seconds
 export function createServer(
   options: ServerOptions,
   ws: WebSocketServer,
+  /** Read documentation on `useServer`. */
+  keepAlive?: number,
 ): Disposable {
-  useServer(makeServer(options), ws);
+  useServer(makeServer(options), ws, keepAlive);
   return {
     dispose: async () => {
       for (const client of ws.clients) {
@@ -28,7 +28,18 @@ export function createServer(
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.
  */
-export function useServer(server: Server, ws: WebSocketServer): void {
+export function useServer(
+  server: Server,
+  ws: WebSocketServer,
+  /**
+   * The timout between dispatched keep-alive messages. Internally uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets))
+   * to check that the link between the clients and the server is operating and to prevent the link
+   * from being broken due to idling.
+   *
+   * @default 12 * 1000 // 12 seconds
+   */
+  keepAlive = 12 * 1000,
+): void {
   ws.on('connection', (socket) => {
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
@@ -52,6 +63,24 @@ export function useServer(server: Server, ws: WebSocketServer): void {
       }
     }, keepAlive);
 
+    ws.on('error', (err) => {
+      // catch the first thrown error and re-throw it once all clients have been notified
+      let firstErr: Error | null = null;
+
+      // report server errors by erroring out all clients with the same error
+      for (const client of ws.clients) {
+        try {
+          client.emit('error', err);
+        } catch (err) {
+          firstErr = firstErr ?? err;
+        }
+      }
+
+      if (firstErr) {
+        throw firstErr;
+      }
+    });
+
     server.opened({
       protocol: socket.protocol,
       send: (data) =>
@@ -59,7 +88,14 @@ export function useServer(server: Server, ws: WebSocketServer): void {
           socket.send(data, (err) => (err ? reject(err) : resolve()));
         }),
       close: (code, reason) => socket.close(code, reason),
-      onMessage: (cb) => socket.on('message', (event) => cb(event.toString())),
+      onMessage: (cb) =>
+        socket.on('message', async (event) => {
+          try {
+            await cb(event.toString());
+          } catch (err) {
+            socket.close(1011, 'Internal Error');
+          }
+        }),
       onClose: (cb) =>
         socket.on('close', () => {
           clearInterval(pingInterval);

@@ -119,6 +119,7 @@ const startPort = 8765;
 
 export async function startTServer(
   options: Partial<ServerOptions> = {},
+  keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
@@ -161,6 +162,7 @@ export async function startTServer(
       },
     },
     ws,
+    keepAlive,
   );
 
   // search for open port from the starting port
