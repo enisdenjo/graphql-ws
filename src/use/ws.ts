@@ -45,7 +45,7 @@ export function useServer(
     let pongWait: NodeJS.Timeout | null = null;
     const pingInterval = setInterval(() => {
       // ping pong on open sockets only
-      if (socket.readyState === WebSocket.OPEN) {
+      if (socket.readyState === socket.OPEN) {
         // terminate the connection after pong wait has passed because the client is idle
         pongWait = setTimeout(() => {
           socket.terminate();
