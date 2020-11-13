@@ -1,7 +1,29 @@
 import type { Server as WebSocketServer } from 'ws';
-import { Server } from '../server';
+import { makeServer, Server, ServerOptions } from '../server';
+import { Disposable } from '../types';
 
 const keepAlive = 12 * 1000; // 12 seconds
+
+/**
+ * Creates a Protocol complient WebSocket GraphQL on
+ * a [ws](https://github.com/websockets/ws) WebSocket server.
+ */
+export function createServer(
+  options: ServerOptions,
+  ws: WebSocketServer,
+): Disposable {
+  useServer(makeServer(options), ws);
+  return {
+    dispose: async () => {
+      for (const client of ws.clients) {
+        client.close(1001, 'Going away');
+      }
+      await new Promise((resolve, reject) =>
+        ws.close((err) => (err ? reject(err) : resolve())),
+      );
+    },
+  };
+}
 
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.

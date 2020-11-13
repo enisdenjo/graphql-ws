@@ -10,7 +10,8 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
-import { createServer, ServerOptions, Server } from '../../server';
+import { ServerOptions } from '../../server';
+import { createServer } from '../../use/ws';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -25,7 +26,6 @@ afterEach(async () => {
 
 export interface TServer {
   url: string;
-  server: Server;
   clients: Set<WebSocket>;
   pong: (key?: string) => void;
   waitForClient: (
@@ -138,6 +138,10 @@ export async function startTServer(
 
   // create server and hook up for tracking operations
   let pendingOperations = 0;
+  const ws = new WebSocket.Server({
+    server: httpServer,
+    path,
+  });
   const server = await createServer(
     {
       schema,
@@ -156,10 +160,7 @@ export async function startTServer(
         return maybeResult;
       },
     },
-    {
-      server: httpServer,
-      path,
-    },
+    ws,
   );
 
   // search for open port from the starting port
@@ -188,7 +189,7 @@ export async function startTServer(
   // pending websocket clients
   let pendingCloses = 0;
   const pendingClients: WebSocket[] = [];
-  server.webSocketServer.on('connection', (client) => {
+  ws.on('connection', (client) => {
     pendingClients.push(client);
     client.once('close', () => {
       pendingCloses++;
@@ -218,9 +219,8 @@ export async function startTServer(
 
   return {
     url: `ws://localhost:${port}${path}`,
-    server,
     get clients() {
-      return server.webSocketServer.clients;
+      return ws.clients;
     },
     pong,
     waitForClient(test, expire) {
@@ -235,10 +235,10 @@ export async function startTServer(
         if (pendingClients.length > 0) {
           return done();
         }
-        server.webSocketServer.once('connection', done);
+        ws.once('connection', done);
         if (expire) {
           setTimeout(() => {
-            server.webSocketServer.off('connection', done); // expired
+            ws.off('connection', done); // expired
             resolve();
           }, expire);
         }
