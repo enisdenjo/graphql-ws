@@ -104,8 +104,7 @@ export const schema = new GraphQLSchema({
               return { value: { ping: 'pong' } };
             },
             async return() {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              pongListeners[key]!(true);
+              pongListeners[key]?.(true);
               delete pongListeners[key];
               return { done: true };
             },
@@ -118,9 +117,6 @@ export const schema = new GraphQLSchema({
     },
   }),
 });
-
-// test server finds an open port starting the search from this one
-const startPort = 8765;
 
 export async function startTServer(
   options: Partial<ServerOptions> = {},
@@ -181,20 +177,26 @@ export async function startTServer(
   );
 
   // search for open port from the starting port
-  let port = startPort;
+  let tried = 0;
   for (;;) {
     try {
       await new Promise((resolve, reject) => {
         httpServer.once('error', reject);
         httpServer.once('listening', resolve);
-        httpServer.listen(port);
+        try {
+          httpServer.listen(0, resolve);
+        } catch (err) {
+          reject(err);
+        }
       });
       break; // listening
     } catch (err) {
       if ('code' in err && err.code === 'EADDRINUSE') {
-        port++;
-        if (port - startPort > 256) {
-          throw new Error(`Cant find open port, stopping search on ${port}`);
+        tried++;
+        if (tried > 10) {
+          throw new Error(
+            `Cant find open port, stopping search after ${tried} tries`,
+          );
         }
         continue; // try another one if this port is in use
       } else {
@@ -234,8 +236,13 @@ export async function startTServer(
   };
   leftovers.push(dispose);
 
+  const addr = httpServer.address();
+  if (!addr || typeof addr !== 'object') {
+    throw new Error(`Unexpected http server address ${addr}`);
+  }
+
   return {
-    url: `ws://localhost:${port}${path}`,
+    url: `ws://localhost:${addr.port}${path}`,
     server,
     get clients() {
       return server.webSocketServer.clients;
