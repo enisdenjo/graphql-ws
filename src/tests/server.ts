@@ -1101,46 +1101,46 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  // it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
-  //   const { url } = await startTServer();
+  it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
+    const { url } = await startTServer();
 
-  //   const client = await createTClient(url);
-  //   client.ws.send(
-  //     stringifyMessage<MessageType.ConnectionInit>({
-  //       type: MessageType.ConnectionInit,
-  //     }),
-  //   );
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
 
-  //   await client.waitForMessage(({ data }) => {
-  //     expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-  //     client.ws.send(
-  //       stringifyMessage<MessageType.Subscribe>({
-  //         id: 'not-unique',
-  //         type: MessageType.Subscribe,
-  //         payload: {
-  //           query: 'subscription { ping }',
-  //         },
-  //       }),
-  //     );
-  //   });
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: 'not-unique',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'subscription { ping }',
+          },
+        }),
+      );
+    });
 
-  //   // try subscribing with a live subscription id
-  //   client.ws.send(
-  //     stringifyMessage<MessageType.Subscribe>({
-  //       id: 'not-unique',
-  //       type: MessageType.Subscribe,
-  //       payload: {
-  //         query: 'subscription { greetings }',
-  //       },
-  //     }),
-  //   );
+    // try subscribing with a live subscription id
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: 'not-unique',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { greetings }',
+        },
+      }),
+    );
 
-  //   await client.waitForClose((event) => {
-  //     expect(event.code).toBe(4409);
-  //     expect(event.reason).toBe('Subscriber for not-unique already exists');
-  //     expect(event.wasClean).toBeTruthy();
-  //   });
-  // });
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4409);
+      expect(event.reason).toBe('Subscriber for not-unique already exists');
+      expect(event.wasClean).toBeTruthy();
+    });
+  });
 
   it('should support persisted queries', async () => {
     const queriesStore: Record<string, ExecutionArgs> = {
