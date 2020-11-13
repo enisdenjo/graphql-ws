@@ -17,6 +17,7 @@ import {
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
+  Message,
   MessageType,
   stringifyMessage,
   parseMessage,
@@ -311,8 +312,16 @@ export interface WebSocket {
   close(code: number, reason: string): Promise<void> | void;
   /**
    * Called when message is received. The library requires the data
-   * to be a `string`. Callback's promise will resolve once the message
-   * handling has completed.
+   * to be a `string`.
+   *
+   * All operations requested from the client will be blocking until
+   * completed, this means that the callback's promise will not resolve
+   * until all subscription events have been emitter (or until the client
+   * completes the stream), or until the query/mutation resolves.
+   *
+   * Exceptions raised during any phase of operation processing will
+   * reject the callback's promise, catch them and communicate them
+   * to your clients however you wish.
    */
   onMessage(cb: (data: string) => Promise<void>): void;
   /**
@@ -371,7 +380,6 @@ export function makeServer(options: ServerOptions): Server {
     onError,
     onComplete,
   } = options;
-  const isProd = process.env.NODE_ENV === 'production';
 
   return {
     async opened(socket) {
@@ -398,229 +406,220 @@ export function makeServer(options: ServerOptions): Server {
           : null;
 
       socket.onMessage(async function onMessage(data) {
+        let message: Message;
         try {
-          const message = parseMessage(data);
-          switch (message.type) {
-            case MessageType.ConnectionInit: {
-              if (ctx.connectionInitReceived) {
-                return ctx.socket.close(
-                  4429,
-                  'Too many initialisation requests',
-                );
-              }
-              ctx.connectionInitReceived = true;
-
-              if (isObject(message.payload)) {
-                ctx.connectionParams = message.payload;
-              }
-
-              const permittedOrPayload = await onConnect?.(ctx);
-              if (permittedOrPayload === false) {
-                return ctx.socket.close(4403, 'Forbidden');
-              }
-
-              await socket.send(
-                stringifyMessage<MessageType.ConnectionAck>(
-                  isObject(permittedOrPayload)
-                    ? {
-                        type: MessageType.ConnectionAck,
-                        payload: permittedOrPayload,
-                      }
-                    : {
-                        type: MessageType.ConnectionAck,
-                        // payload is completely absent if not provided
-                      },
-                ),
-              );
-
-              ctx.acknowledged = true;
-              break;
-            }
-            case MessageType.Subscribe: {
-              if (!ctx.acknowledged) {
-                return socket.close(4401, 'Unauthorized');
-              }
-
-              const emit = {
-                next: async (result: ExecutionResult, args: ExecutionArgs) => {
-                  let nextMessage: NextMessage = {
-                    id: message.id,
-                    type: MessageType.Next,
-                    payload: result,
-                  };
-                  if (onNext) {
-                    const maybeResult = await onNext(
-                      ctx,
-                      nextMessage,
-                      args,
-                      result,
-                    );
-                    if (maybeResult) {
-                      nextMessage = {
-                        ...nextMessage,
-                        payload: maybeResult,
-                      };
-                    }
-                  }
-                  await socket.send(
-                    stringifyMessage<MessageType.Next>(nextMessage),
-                  );
-                },
-                error: async (errors: readonly GraphQLError[]) => {
-                  let errorMessage: ErrorMessage = {
-                    id: message.id,
-                    type: MessageType.Error,
-                    payload: errors,
-                  };
-                  if (onError) {
-                    const maybeErrors = await onError(
-                      ctx,
-                      errorMessage,
-                      errors,
-                    );
-                    if (maybeErrors) {
-                      errorMessage = {
-                        ...errorMessage,
-                        payload: maybeErrors,
-                      };
-                    }
-                  }
-                  await socket.send(
-                    stringifyMessage<MessageType.Error>(errorMessage),
-                  );
-                },
-                complete: async () => {
-                  const completeMessage: CompleteMessage = {
-                    id: message.id,
-                    type: MessageType.Complete,
-                  };
-                  await onComplete?.(ctx, completeMessage);
-                  await socket.send(
-                    stringifyMessage<MessageType.Complete>(completeMessage),
-                  );
-                },
-              };
-
-              let execArgs: ExecutionArgs;
-              const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
-              if (maybeExecArgsOrErrors) {
-                if (areGraphQLErrors(maybeExecArgsOrErrors)) {
-                  return await emit.error(maybeExecArgsOrErrors);
-                } else if (Array.isArray(maybeExecArgsOrErrors)) {
-                  throw new Error(
-                    'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
-                  );
-                }
-                // not errors, is exec args
-                execArgs = maybeExecArgsOrErrors;
-              } else {
-                if (!schema) {
-                  // you either provide a schema dynamically through
-                  // `onSubscribe` or you set one up during the server setup
-                  // how to handle?
-                  throw new Error('The GraphQL schema is not provided');
-                }
-
-                const { operationName, query, variables } = message.payload;
-                execArgs = {
-                  schema,
-                  operationName,
-                  document: parse(query),
-                  variableValues: variables,
-                };
-
-                const validationErrors = validate(
-                  execArgs.schema,
-                  execArgs.document,
-                );
-                if (validationErrors.length > 0) {
-                  return await emit.error(validationErrors);
-                }
-              }
-
-              const operationAST = getOperationAST(
-                execArgs.document,
-                execArgs.operationName,
-              );
-              if (!operationAST) {
-                return await emit.error([
-                  new GraphQLError('Unable to identify operation'),
-                ]);
-              }
-
-              // if `onSubscribe` didnt specify a rootValue, inject one
-              if (!('rootValue' in execArgs)) {
-                execArgs.rootValue = roots?.[operationAST.operation];
-              }
-
-              // if `onSubscribe` didn't specify a context, inject one
-              if (!('contextValue' in execArgs)) {
-                execArgs.contextValue =
-                  typeof context === 'function'
-                    ? context(ctx, message, execArgs)
-                    : context;
-              }
-
-              // the execution arguments have been prepared
-              // perform the operation and act accordingly
-              let operationResult;
-              if (operationAST.operation === 'subscription') {
-                operationResult = await subscribe(execArgs);
-              } else {
-                // operation === 'query' || 'mutation'
-                operationResult = await execute(execArgs);
-              }
-
-              if (onOperation) {
-                const maybeResult = await onOperation(
-                  ctx,
-                  message,
-                  execArgs,
-                  operationResult,
-                );
-                if (maybeResult) {
-                  operationResult = maybeResult;
-                }
-              }
-
-              if (isAsyncIterable(operationResult)) {
-                /** multiple emitted results */
-
-                // iterable subscriptions are distinct on ID
-                if (ctx.subscriptions[message.id]) {
-                  return ctx.socket.close(
-                    4409,
-                    `Subscriber for ${message.id} already exists`,
-                  );
-                }
-                ctx.subscriptions[message.id] = operationResult;
-
-                for await (const result of operationResult) {
-                  await emit.next(result, execArgs);
-                }
-                await emit.complete();
-                delete ctx.subscriptions[message.id];
-              } else {
-                /** single emitted result */
-
-                await emit.next(operationResult, execArgs);
-                await emit.complete();
-              }
-              break;
-            }
-            case MessageType.Complete: {
-              await ctx.subscriptions[message.id]?.return?.();
-              break;
-            }
-            default:
-              throw new Error(
-                `Unexpected message of type ${message.type} received`,
-              );
-          }
+          message = parseMessage(data);
         } catch (err) {
-          // TODO-db-201112 hmm, maybe not catch some thrown errors?
-          // TODO-db-201031 we perceive this as a client bad request error, but is it always?
-          ctx.socket.close(4400, isProd ? 'Bad Request' : err.message);
+          return socket.close(4400, 'Invalid message received');
+        }
+        switch (message.type) {
+          case MessageType.ConnectionInit: {
+            if (ctx.connectionInitReceived) {
+              return ctx.socket.close(4429, 'Too many initialisation requests');
+            }
+            ctx.connectionInitReceived = true;
+
+            if (isObject(message.payload)) {
+              ctx.connectionParams = message.payload;
+            }
+
+            const permittedOrPayload = await onConnect?.(ctx);
+            if (permittedOrPayload === false) {
+              return ctx.socket.close(4403, 'Forbidden');
+            }
+
+            await socket.send(
+              stringifyMessage<MessageType.ConnectionAck>(
+                isObject(permittedOrPayload)
+                  ? {
+                      type: MessageType.ConnectionAck,
+                      payload: permittedOrPayload,
+                    }
+                  : {
+                      type: MessageType.ConnectionAck,
+                      // payload is completely absent if not provided
+                    },
+              ),
+            );
+
+            ctx.acknowledged = true;
+            break;
+          }
+          case MessageType.Subscribe: {
+            if (!ctx.acknowledged) {
+              return socket.close(4401, 'Unauthorized');
+            }
+
+            const id = message.id;
+            const emit = {
+              next: async (result: ExecutionResult, args: ExecutionArgs) => {
+                let nextMessage: NextMessage = {
+                  id,
+                  type: MessageType.Next,
+                  payload: result,
+                };
+                if (onNext) {
+                  const maybeResult = await onNext(
+                    ctx,
+                    nextMessage,
+                    args,
+                    result,
+                  );
+                  if (maybeResult) {
+                    nextMessage = {
+                      ...nextMessage,
+                      payload: maybeResult,
+                    };
+                  }
+                }
+                await socket.send(
+                  stringifyMessage<MessageType.Next>(nextMessage),
+                );
+              },
+              error: async (errors: readonly GraphQLError[]) => {
+                let errorMessage: ErrorMessage = {
+                  id,
+                  type: MessageType.Error,
+                  payload: errors,
+                };
+                if (onError) {
+                  const maybeErrors = await onError(ctx, errorMessage, errors);
+                  if (maybeErrors) {
+                    errorMessage = {
+                      ...errorMessage,
+                      payload: maybeErrors,
+                    };
+                  }
+                }
+                await socket.send(
+                  stringifyMessage<MessageType.Error>(errorMessage),
+                );
+              },
+              complete: async () => {
+                const completeMessage: CompleteMessage = {
+                  id,
+                  type: MessageType.Complete,
+                };
+                await onComplete?.(ctx, completeMessage);
+                await socket.send(
+                  stringifyMessage<MessageType.Complete>(completeMessage),
+                );
+              },
+            };
+
+            let execArgs: ExecutionArgs;
+            const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
+            if (maybeExecArgsOrErrors) {
+              if (areGraphQLErrors(maybeExecArgsOrErrors)) {
+                return await emit.error(maybeExecArgsOrErrors);
+              } else if (Array.isArray(maybeExecArgsOrErrors)) {
+                throw new Error(
+                  'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
+                );
+              }
+              // not errors, is exec args
+              execArgs = maybeExecArgsOrErrors;
+            } else {
+              if (!schema) {
+                // you either provide a schema dynamically through
+                // `onSubscribe` or you set one up during the server setup
+                throw new Error('The GraphQL schema is not provided');
+              }
+
+              const { operationName, query, variables } = message.payload;
+              execArgs = {
+                schema,
+                operationName,
+                document: parse(query),
+                variableValues: variables,
+              };
+              const validationErrors = validate(
+                execArgs.schema,
+                execArgs.document,
+              );
+              if (validationErrors.length > 0) {
+                return await emit.error(validationErrors);
+              }
+            }
+
+            const operationAST = getOperationAST(
+              execArgs.document,
+              execArgs.operationName,
+            );
+            if (!operationAST) {
+              return await emit.error([
+                new GraphQLError('Unable to identify operation'),
+              ]);
+            }
+
+            // if `onSubscribe` didnt specify a rootValue, inject one
+            if (!('rootValue' in execArgs)) {
+              execArgs.rootValue = roots?.[operationAST.operation];
+            }
+
+            // if `onSubscribe` didn't specify a context, inject one
+            if (!('contextValue' in execArgs)) {
+              execArgs.contextValue =
+                typeof context === 'function'
+                  ? context(ctx, message, execArgs)
+                  : context;
+            }
+
+            // the execution arguments have been prepared
+            // perform the operation and act accordingly
+            let operationResult;
+            if (operationAST.operation === 'subscription') {
+              operationResult = await subscribe(execArgs);
+            } else {
+              // operation === 'query' || 'mutation'
+              operationResult = await execute(execArgs);
+            }
+
+            if (onOperation) {
+              const maybeResult = await onOperation(
+                ctx,
+                message,
+                execArgs,
+                operationResult,
+              );
+              if (maybeResult) {
+                operationResult = maybeResult;
+              }
+            }
+
+            if (isAsyncIterable(operationResult)) {
+              /** multiple emitted results */
+
+              // iterable subscriptions are distinct on ID
+              if (ctx.subscriptions[id]) {
+                return ctx.socket.close(
+                  4409,
+                  `Subscriber for ${id} already exists`,
+                );
+              }
+              ctx.subscriptions[id] = operationResult;
+
+              for await (const result of operationResult) {
+                await emit.next(result, execArgs);
+              }
+              await emit.complete();
+              delete ctx.subscriptions[id];
+            } else {
+              /** single emitted result */
+
+              await emit.next(operationResult, execArgs);
+              await emit.complete();
+            }
+            break;
+          }
+          case MessageType.Complete: {
+            await ctx.subscriptions[message.id]?.return?.();
+            break;
+          }
+          default:
+            throw new Error(
+              `Unexpected message of type ${message.type} received`,
+            );
         }
       });
 
