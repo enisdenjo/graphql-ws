@@ -202,6 +202,73 @@ it('should close with error message during connecting issues', async () => {
   });
 });
 
+it('should pass the `connectionParams` through', async () => {
+  const server = await startTServer();
+
+  let client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: { auth: 'token' },
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ auth: 'token' });
+  });
+  await client.dispose();
+
+  client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: () => ({ from: 'func' }),
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ from: 'func' });
+  });
+  await client.dispose();
+
+  client = createClient({
+    url: server.url,
+    lazy: false,
+    connectionParams: () => Promise.resolve({ from: 'promise' }),
+  });
+  await server.waitForConnect((ctx) => {
+    expect(ctx.connectionParams).toEqual({ from: 'promise' });
+  });
+});
+
+it('should close the socket if the `connectionParams` rejects or throws', async () => {
+  const server = await startTServer();
+
+  let client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => {
+      throw new Error('No auth?');
+    },
+  });
+
+  let sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+
+  client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () => Promise.reject(new Error('No auth?')),
+  });
+
+  sub = tsubscribe(client, { query: '{ getValue }' });
+  await sub.waitForError((err) => {
+    const event = err as CloseEvent;
+    expect(event.code).toBe(4400);
+    expect(event.reason).toBe('No auth?');
+    expect(event.wasClean).toBeTruthy();
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
@@ -380,6 +447,30 @@ describe('subscription operation', () => {
 
     expect(server.clients.size).toBe(0);
   });
+
+  it('should stop dispatching messages after completing a subscription', async () => {
+    const {
+      url,
+      server,
+      waitForOperation,
+      waitForComplete,
+    } = await startTServer();
+
+    const sub = tsubscribe(createClient({ url }), {
+      query: 'subscription { greetings }',
+    });
+    await waitForOperation();
+
+    for (const client of server.webSocketServer.clients) {
+      client.once('message', () => {
+        // no more messages from the client
+        fail("Shouldn't have dispatched a message");
+      });
+    }
+
+    await waitForComplete();
+    await sub.waitForComplete();
+  });
 });
 
 describe('"concurrency"', () => {
@@ -509,6 +600,38 @@ describe('lazy', () => {
 
     // everyone unsubscribed
     sub2.dispose();
+    await server.waitForClientClose();
+  });
+
+  it('should disconnect after the keepAlive has passed after last unsubscribe', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // default
+      keepAlive: 20,
+      retryAttempts: 0,
+    });
+
+    const sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    // still is connected
+    await server.waitForClientClose(() => {
+      fail("Client shouldn't have closed");
+    }, 10);
+
+    // everyone unsubscribed
+    sub.dispose();
+
+    // still connected because of the keepAlive
+    await server.waitForClientClose(() => {
+      fail("Client shouldn't have closed");
+    }, 10);
+
+    // but will close eventually
     await server.waitForClientClose();
   });
 });

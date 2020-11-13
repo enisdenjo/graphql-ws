@@ -5,6 +5,7 @@
  */
 
 import { GraphQLError, ExecutionResult } from 'graphql';
+import { ID } from './types';
 import {
   isObject,
   areGraphQLErrors,
@@ -35,7 +36,7 @@ export interface ConnectionAckMessage {
 }
 
 export interface SubscribeMessage {
-  readonly id: string;
+  readonly id: ID;
   readonly type: MessageType.Subscribe;
   readonly payload: SubscribePayload;
 }
@@ -47,19 +48,19 @@ export interface SubscribePayload {
 }
 
 export interface NextMessage {
-  readonly id: string;
+  readonly id: ID;
   readonly type: MessageType.Next;
   readonly payload: ExecutionResult;
 }
 
 export interface ErrorMessage {
-  readonly id: string;
+  readonly id: ID;
   readonly type: MessageType.Error;
   readonly payload: readonly GraphQLError[];
 }
 
 export interface CompleteMessage {
-  readonly id: string;
+  readonly id: ID;
   readonly type: MessageType.Complete;
 }
 

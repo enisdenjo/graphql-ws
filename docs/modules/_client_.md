@@ -97,7 +97,7 @@ Name | Type |
 
 ▸ **createClient**(`options`: [ClientOptions](../interfaces/_client_.clientoptions.md)): [Client](../interfaces/_client_.client.md)
 
-Creates a disposable GraphQL subscriptions client.
+Creates a disposable GraphQL over WebSocket client.
 
 #### Parameters:
 

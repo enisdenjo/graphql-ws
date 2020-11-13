@@ -52,7 +52,7 @@ export type EventListener<E extends Event> = E extends EventConnecting
 
 type CancellerRef = { current: (() => void) | null };
 
-/** Configuration used for the `create` client function. */
+/** Configuration used for the GraphQL over WebSocket client. */
 export interface ClientOptions {
   /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
   url: string;
@@ -60,8 +60,16 @@ export interface ClientOptions {
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
    * for securely passing arguments for authentication.
+   *
+   * If you decide to return a promise, keep in mind that the server might kick you off if it
+   * takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
+   *
+   * Throwing an error from within this function will close the socket with the `Error` message
+   * in the close event reason.
    */
-  connectionParams?: Record<string, unknown> | (() => Record<string, unknown>);
+  connectionParams?:
+    | Record<string, unknown>
+    | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
   /**
    * Should the connection be established immediately and persisted
    * or after the first listener subscribed.
@@ -69,6 +77,14 @@ export interface ClientOptions {
    * @default true
    */
   lazy?: boolean;
+  /**
+   * How long should the client wait before closing the socket after the last oparation has
+   * completed. This is meant to be used in combination with `lazy`. You might want to have
+   * a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
+   *
+   * @default 0 // close immediately
+   */
+  keepAlive?: number;
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
@@ -120,12 +136,13 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** Creates a disposable GraphQL subscriptions client. */
+/** Creates a disposable GraphQL over WebSocket client. */
 export function createClient(options: ClientOptions): Client {
   const {
     url,
     connectionParams,
     lazy = true,
+    keepAlive = 0,
     retryAttempts = 5,
     retryTimeout = 3 * 1000, // 3 seconds
     on,
@@ -204,15 +221,17 @@ export function createClient(options: ClientOptions): Client {
     locks: 0,
     tries: 0,
   };
-  async function connect(
-    cancellerRef: CancellerRef,
-    callDepth = 0,
-  ): Promise<
+
+  type ConnectReturn = Promise<
     [
       socket: WebSocket,
       throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
     ]
-  > {
+  >;
+  async function connect(
+    cancellerRef: CancellerRef,
+    callDepth = 0,
+  ): ConnectReturn {
     // prevents too many recursive calls when reavaluating/re-connecting
     if (callDepth > 10) {
       throw new Error('Kept trying to connect but the socket never settled.');
@@ -228,37 +247,7 @@ export function createClient(options: ClientOptions): Client {
             return connect(cancellerRef, callDepth + 1);
           }
 
-          return [
-            state.socket,
-            (cleanup) =>
-              new Promise((resolve, reject) => {
-                if (!state.socket) {
-                  return reject(new Error('Socket closed unexpectedly'));
-                }
-                if (state.socket.readyState === WebSocketImpl.CLOSED) {
-                  return reject(new Error('Socket has already been closed'));
-                }
-
-                state.locks++;
-
-                state.socket.addEventListener('close', listener);
-                function listener(event: CloseEvent) {
-                  state.locks--;
-                  state.socket?.removeEventListener('close', listener);
-                  return reject(event);
-                }
-
-                cancellerRef.current = () => {
-                  cleanup?.();
-                  state.locks--;
-                  if (!state.locks) {
-                    state.socket?.close(1000, 'Normal Closure');
-                  }
-                  state.socket?.removeEventListener('close', listener);
-                  return resolve();
-                };
-              }),
-          ];
+          return makeConnectReturn(state.socket, cancellerRef);
         }
         case WebSocketImpl.CONNECTING: {
           // if the socket is in the connecting phase, wait a bit and reavaluate
@@ -337,7 +326,8 @@ export function createClient(options: ClientOptions): Client {
         }
       };
 
-      // as soon as the socket opens, send the connection initalisation request
+      // as soon as the socket opens and the connectionParams
+      // resolve, send the connection initalisation request
       socket.onopen = () => {
         socket.onopen = null;
         if (cancelled) {
@@ -345,18 +335,34 @@ export function createClient(options: ClientOptions): Client {
           return;
         }
 
-        socket.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-            payload:
-              typeof connectionParams === 'function'
-                ? connectionParams()
-                : connectionParams,
-          }),
-        );
+        (async () => {
+          try {
+            socket.send(
+              stringifyMessage<MessageType.ConnectionInit>({
+                type: MessageType.ConnectionInit,
+                payload:
+                  typeof connectionParams === 'function'
+                    ? await connectionParams()
+                    : connectionParams,
+              }),
+            );
+          } catch (err) {
+            // even if not open, call close again to report error
+            socket.close(
+              4400,
+              err instanceof Error ? err.message : new Error(err).message,
+            );
+          }
+        })();
       };
     });
 
+    return makeConnectReturn(socket, cancellerRef);
+  }
+  async function makeConnectReturn(
+    socket: WebSocket,
+    cancellerRef: CancellerRef,
+  ): ConnectReturn {
     return [
       socket,
       (cleanup) =>
@@ -369,16 +375,30 @@ export function createClient(options: ClientOptions): Client {
 
           socket.addEventListener('close', listener);
           function listener(event: CloseEvent) {
+            cancellerRef.current = null;
             state.locks--;
             socket.removeEventListener('close', listener);
             return reject(event);
           }
 
           cancellerRef.current = () => {
+            cancellerRef.current = null;
             cleanup?.();
             state.locks--;
             if (!state.locks) {
-              socket.close(1000, 'Normal Closure');
+              if (keepAlive > 0 && isFinite(keepAlive)) {
+                // if the keepalive is set, allow for the specified calmdown
+                // time and then close. but only if no lock got created in the
+                // meantime and if the socket is still open
+                setTimeout(() => {
+                  if (!state.locks && socket.OPEN) {
+                    socket.close(1000, 'Normal Closure');
+                  }
+                }, keepAlive);
+              } else {
+                // otherwise close immediately
+                socket.close(1000, 'Normal Closure');
+              }
             }
             socket.removeEventListener('close', listener);
             return resolve();
@@ -414,7 +434,7 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
 
-          // otherwize, wait a bit and retry
+          // otherwise, wait a bit and retry
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
         }
       }
@@ -436,6 +456,7 @@ export function createClient(options: ClientOptions): Client {
     on: emitter.on,
     subscribe(payload, sink) {
       const id = generateID();
+      let completed = false;
       const cancellerRef: CancellerRef = { current: null };
 
       const messageListener = ({ data }: MessageEvent) => {
@@ -464,6 +485,7 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Complete: {
             if (message.id === id) {
+              completed = true;
               // the canceller must be set at this point
               // because you cannot receive a message
               // if there is no existing connection
@@ -495,13 +517,15 @@ export function createClient(options: ClientOptions): Client {
             // either the canceller will be called and the promise resolved
             // or the socket closed and the promise rejected
             await throwOnCloseOrWaitForCancel(() => {
-              // send complete message to server on cancel
-              socket.send(
-                stringifyMessage<MessageType.Complete>({
-                  id: id,
-                  type: MessageType.Complete,
-                }),
-              );
+              // if not completed already, send complete message to server on cancel
+              if (!completed) {
+                socket.send(
+                  stringifyMessage<MessageType.Complete>({
+                    id: id,
+                    type: MessageType.Complete,
+                  }),
+                );
+              }
             });
 
             socket.removeEventListener('message', messageListener);
@@ -529,14 +553,13 @@ export function createClient(options: ClientOptions): Client {
               throw errOrCloseEvent;
             }
 
-            // otherwize, wait a bit and retry
+            // otherwise, wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
           }
         }
       })()
         .catch(sink.error)
-        .then(sink.complete) // resolves on cancel or normal closure
-        .finally(() => (cancellerRef.current = null)); // when this promise settles there is nothing to cancel
+        .then(sink.complete); // resolves on cancel or normal closure
 
       return () => {
         cancellerRef.current?.();

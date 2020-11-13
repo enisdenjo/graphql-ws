@@ -495,15 +495,17 @@ export function makeServer(options: ServerOptions): Server {
                   stringifyMessage<MessageType.Error>(errorMessage),
                 );
               },
-              complete: async () => {
+              complete: async (notifyClient: boolean) => {
                 const completeMessage: CompleteMessage = {
                   id,
                   type: MessageType.Complete,
                 };
                 await onComplete?.(ctx, completeMessage);
-                await socket.send(
-                  stringifyMessage<MessageType.Complete>(completeMessage),
-                );
+                if (notifyClient) {
+                  await socket.send(
+                    stringifyMessage<MessageType.Complete>(completeMessage),
+                  );
+                }
               },
             };
 
@@ -602,18 +604,22 @@ export function makeServer(options: ServerOptions): Server {
               for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
-              await emit.complete();
+
+              // lack of subscription at this point indicates that the client
+              // completed the stream, he doesnt need to be reminded
+              await emit.complete(Boolean(ctx.subscriptions[id]));
               delete ctx.subscriptions[id];
             } else {
               /** single emitted result */
 
               await emit.next(operationResult, execArgs);
-              await emit.complete();
+              await emit.complete(true);
             }
             break;
           }
           case MessageType.Complete: {
             await ctx.subscriptions[message.id]?.return?.();
+            delete ctx.subscriptions[message.id]; // deleting the subscription means no further action
             break;
           }
           default:

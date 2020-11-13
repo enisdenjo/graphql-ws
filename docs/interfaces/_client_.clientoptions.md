@@ -4,7 +4,7 @@
 
 # Interface: ClientOptions
 
-Configuration used for the `create` client function.
+Configuration used for the GraphQL over WebSocket client.
 
 ## Hierarchy
 
@@ -16,6 +16,7 @@ Configuration used for the `create` client function.
 
 * [connectionParams](_client_.clientoptions.md#connectionparams)
 * [generateID](_client_.clientoptions.md#generateid)
+* [keepAlive](_client_.clientoptions.md#keepalive)
 * [lazy](_client_.clientoptions.md#lazy)
 * [on](_client_.clientoptions.md#on)
 * [retryAttempts](_client_.clientoptions.md#retryattempts)
@@ -27,11 +28,17 @@ Configuration used for the `create` client function.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: Record\<string, unknown> \| () => Record\<string, unknown>
+• `Optional` **connectionParams**: Record\<string, unknown> \| () => Promise\<Record\<string, unknown>> \| Record\<string, unknown>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
 for securely passing arguments for authentication.
+
+If you decide to return a promise, keep in mind that the server might kick you off if it
+takes too long to resolve! Check the `connectionInitWaitTimeout` on the server for more info.
+
+Throwing an error from within this function will close the socket with the `Error` message
+in the close event reason.
 
 ___
 
@@ -46,6 +53,18 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://stackoverflow.com/a/2117523/709884
+
+___
+
+### keepAlive
+
+• `Optional` **keepAlive**: undefined \| number
+
+How long should the client wait before closing the socket after the last oparation has
+completed. This is meant to be used in combination with `lazy`. You might want to have
+a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
+
+**`default`** 0 // close immediately
 
 ___
 

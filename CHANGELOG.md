@@ -1,3 +1,17 @@
+# [1.13.0](https://github.com/enisdenjo/graphql-ws/compare/v1.12.0...v1.13.0) (2020-11-12)
+
+
+### Bug Fixes
+
+* **client:** One cleanup per subscription ([#67](https://github.com/enisdenjo/graphql-ws/issues/67)) ([5a5ae4d](https://github.com/enisdenjo/graphql-ws/commit/5a5ae4d01afd0c9aa51090342d7f699daf4fbafc))
+* Stop sending messages after receiving complete ([#65](https://github.com/enisdenjo/graphql-ws/issues/65)) ([3f4f836](https://github.com/enisdenjo/graphql-ws/commit/3f4f836c395139617a268082131084c4f992ba5f))
+
+
+### Features
+
+* **client:** `connectionParams` may return a promise ([#71](https://github.com/enisdenjo/graphql-ws/issues/71)) ([33f210c](https://github.com/enisdenjo/graphql-ws/commit/33f210ce3796f3b961fa5ca03af938cfd899c9b9))
+* **client:** Allow keeping the connection alive for some time before lazy closing ([#69](https://github.com/enisdenjo/graphql-ws/issues/69)) ([555c2c3](https://github.com/enisdenjo/graphql-ws/commit/555c2c35b84a864ac5732976e704eed9fcacd08c))
+
 # [1.12.0](https://github.com/enisdenjo/graphql-ws/compare/v1.11.0...v1.12.0) (2020-11-07)
 
 

@@ -10,7 +10,7 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
-import { ServerOptions } from '../../server';
+import { ServerOptions, Context } from '../../server';
 import { createServer } from '../../use/ws';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
@@ -32,7 +32,12 @@ export interface TServer {
     test?: (client: WebSocket) => void,
     expire?: number,
   ) => Promise<void>;
+  waitForConnect: (
+    test?: (ctx: Context) => void,
+    expire?: number,
+  ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
+  waitForComplete: (test?: () => void, expire?: number) => Promise<void>;
   waitForClientClose: (test?: () => void, expire?: number) => Promise<void>;
   dispose: Dispose;
 }
@@ -99,8 +104,7 @@ export const schema = new GraphQLSchema({
               return { value: { ping: 'pong' } };
             },
             async return() {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              pongListeners[key]!(true);
+              pongListeners[key]?.(true);
               delete pongListeners[key];
               return { done: true };
             },
@@ -113,9 +117,6 @@ export const schema = new GraphQLSchema({
     },
   }),
 });
-
-// test server finds an open port starting the search from this one
-const startPort = 8765;
 
 export async function startTServer(
   options: Partial<ServerOptions> = {},
@@ -138,7 +139,9 @@ export async function startTServer(
   });
 
   // create server and hook up for tracking operations
-  let pendingOperations = 0;
+  const pendingConnections: Context[] = [];
+  let pendingOperations = 0,
+    pendingCompletes = 0;
   const ws = new WebSocket.Server({
     server: httpServer,
     path,
@@ -149,6 +152,12 @@ export async function startTServer(
       execute,
       subscribe,
       ...options,
+      onConnect: async (...args) => {
+        pendingConnections.push(args[0]);
+        const permitted = await options?.onConnect?.(...args);
+        emitter.emit('conn');
+        return permitted;
+      },
       onOperation: async (ctx, msg, args, result) => {
         pendingOperations++;
         const maybeResult = await options?.onOperation?.(
@@ -160,26 +169,37 @@ export async function startTServer(
         emitter.emit('operation');
         return maybeResult;
       },
+      onComplete: async (...args) => {
+        pendingCompletes++;
+        await options?.onComplete?.(...args);
+        emitter.emit('compl');
+      },
     },
     ws,
     keepAlive,
   );
 
   // search for open port from the starting port
-  let port = startPort;
+  let tried = 0;
   for (;;) {
     try {
       await new Promise((resolve, reject) => {
         httpServer.once('error', reject);
         httpServer.once('listening', resolve);
-        httpServer.listen(port);
+        try {
+          httpServer.listen(0, resolve);
+        } catch (err) {
+          reject(err);
+        }
       });
       break; // listening
     } catch (err) {
       if ('code' in err && err.code === 'EADDRINUSE') {
-        port++;
-        if (port - startPort > 256) {
-          throw new Error(`Cant find open port, stopping search on ${port}`);
+        tried++;
+        if (tried > 10) {
+          throw new Error(
+            `Cant find open port, stopping search after ${tried} tries`,
+          );
         }
         continue; // try another one if this port is in use
       } else {
@@ -219,8 +239,13 @@ export async function startTServer(
   };
   leftovers.push(dispose);
 
+  const addr = httpServer.address();
+  if (!addr || typeof addr !== 'object') {
+    throw new Error(`Unexpected http server address ${addr}`);
+  }
+
   return {
-    url: `ws://localhost:${port}${path}`,
+    url: `ws://localhost:${addr.port}${path}`,
     get clients() {
       return ws.clients;
     },
@@ -246,6 +271,27 @@ export async function startTServer(
         }
       });
     },
+    waitForConnect(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const ctx = pendingConnections.shift()!;
+          test?.(ctx);
+          resolve();
+        }
+        if (pendingConnections.length > 0) {
+          return done();
+        }
+        emitter.once('conn', done);
+        if (expire) {
+          setTimeout(() => {
+            emitter.off('conn', done); // expired
+            resolve();
+          }, expire);
+        }
+      });
+    },
     waitForOperation(test, expire) {
       return new Promise((resolve) => {
         function done() {
@@ -260,6 +306,25 @@ export async function startTServer(
         if (expire) {
           setTimeout(() => {
             emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+        }
+      });
+    },
+    waitForComplete(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingCompletes--;
+          test?.();
+          resolve();
+        }
+        if (pendingCompletes > 0) {
+          return done();
+        }
+        emitter.once('compl', done);
+        if (expire) {
+          setTimeout(() => {
+            emitter.off('compl', done); // expired
             resolve();
           }, expire);
         }
