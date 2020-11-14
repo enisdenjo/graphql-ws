@@ -20,7 +20,7 @@
 
 ### id
 
-• `Readonly` **id**: string
+• `Readonly` **id**: [ID](../modules/_types_.md#id)
 
 ___
 
