@@ -24,10 +24,10 @@ jobs:
         run: yarn install --immutable
       - name: Build
         run: yarn build
-      - name: Upload artifact
+      - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: dist
+          name: build
           path: |
             lib
             umd
@@ -56,10 +56,10 @@ jobs:
             ${{ runner.os }}-yarn-cache-
       - name: Install
         run: yarn install --immutable
-      - name: Download artifact
+      - name: Download build
         uses: actions/download-artifact@v2
         with:
-          name: dist
+          name: build
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
