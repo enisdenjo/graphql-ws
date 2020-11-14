@@ -27,10 +27,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: lib
+          name: dist
           path: |
-            cjs
-            esm
+            lib
             umd
 
   release:
@@ -60,7 +59,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: lib
+          name: dist
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
