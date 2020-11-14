@@ -95,6 +95,7 @@ export interface ClientOptions {
    * - `4401: Unauthorized` _tried subscribing before connect ack_
    * - `4409: Subscriber for <id> already exists` _distinction is very important_
    * - `4429: Too many initialisation requests`
+   *
    * These events are reported immediately and the client will not reconnect.
    *
    * @default 5
