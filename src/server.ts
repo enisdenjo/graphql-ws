@@ -91,7 +91,9 @@ export interface ServerOptions {
         ctx: Context,
         message: SubscribeMessage,
         args: ExecutionArgs,
-      ) => GraphQLExecutionContextValue);
+      ) =>
+        | Promise<GraphQLExecutionContextValue>
+        | GraphQLExecutionContextValue);
   /**
    * The GraphQL root fields or resolvers to go
    * alongside the schema. Learn more about them
@@ -641,7 +643,7 @@ export function createServer(
             if (!('contextValue' in execArgs)) {
               execArgs.contextValue =
                 typeof context === 'function'
-                  ? context(ctx, message, execArgs)
+                  ? await context(ctx, message, execArgs)
                   : context;
             }
 
