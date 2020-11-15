@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/enisdenjo/graphql-ws/compare/v1.13.1...v1.14.0) (2020-11-15)
+
+
+### Features
+
+* **server:** `context` may return a promise ([cd5c2f8](https://github.com/enisdenjo/graphql-ws/commit/cd5c2f8d0f9d11889052601c0fabdb8c6ed607fa)), closes [#74](https://github.com/enisdenjo/graphql-ws/issues/74)
+
 ## [1.13.1](https://github.com/enisdenjo/graphql-ws/compare/v1.13.0...v1.13.1) (2020-11-14)
 
 
