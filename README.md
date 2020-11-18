@@ -129,7 +129,7 @@ const client = createClient({
 
 ## Recipes
 
-<details>
+<details id="promise">
 <summary>Client usage with Promise</summary>
 
 ```ts
@@ -166,7 +166,7 @@ async function execute<T>(payload: SubscribePayload) {
 
 </details>
 
-<details>
+<details id="async-iterator">
 <summary>Client usage with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator">AsyncIterator</a></summary>
 
 ```ts
@@ -234,7 +234,7 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
 
 </details>
 
-<details>
+<details id="observable">
 <summary>Client usage with <a href="https://github.com/tc39/proposal-observable">Observable</a></summary>
 
 ```ts
@@ -270,7 +270,7 @@ subscription.unsubscribe();
 
 </details>
 
-<details>
+<details id="relay">
 <summary>Client usage with <a href="https://relay.dev">Relay</a></summary>
 
 ```ts
@@ -341,7 +341,7 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 </details>
 
-<details>
+<details id="urql">
 <summary>Client usage with <a href="https://formidable.com/open-source/urql/">urql</a></summary>
 
 ```ts
@@ -374,7 +374,7 @@ const client = createClient({
 
 </details>
 
-<details>
+<details id="apollo-client">
 <summary>Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
@@ -440,7 +440,7 @@ const link = new WebSocketLink({
 
 </details>
 
-<details>
+<details id="browser">
 <summary>Client usage in browser</summary>
 
 ```html
@@ -468,7 +468,7 @@ const link = new WebSocketLink({
 
 </details>
 
-<details>
+<details id="node-client">
 <summary>Client usage in Node</summary>
 
 ```ts
@@ -494,7 +494,7 @@ const client = createClient({
 
 </details>
 
-<details>
+<details id="express">
 <summary>Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
 ```typescript
@@ -529,7 +529,7 @@ server.listen(443, () => {
 
 </details>
 
-<details>
+<details id="apollo-server-express">
 <summary>Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
 
 ```typescript
@@ -569,7 +569,7 @@ server.listen(443, () => {
 
 </details>
 
-<details>
+<details id="logging">
 <summary>Server usage with console logging</summary>
 
 ```typescript
@@ -613,7 +613,7 @@ server.listen(443);
 
 </details>
 
-<details>
+<details id="multi-ws">
 <summary>Server usage on a multi WebSocket server</summary>
 
 ```typescript
@@ -674,7 +674,7 @@ server.listen(443);
 
 </details>
 
-<details>
+<details id="context">
 <summary>Server usage with custom context value</summary>
 
 ```typescript
@@ -701,7 +701,7 @@ createServer(
 
 </details>
 
-<details>
+<details id="custom-exec">
 <summary>Server usage with custom execution arguments and validation</summary>
 
 ```typescript
@@ -739,7 +739,7 @@ createServer(
 
 </details>
 
-<details>
+<details id="persisted">
 <summary>Server and client usage with persisted queries</summary>
 
 ```typescript
