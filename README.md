@@ -129,8 +129,8 @@ const client = createClient({
 
 ## Recipes
 
-<details>
-<summary>Client usage with Promise</summary>
+<details id="promise">
+<summary><a href="#promise">🔗</a> Client usage with Promise</summary>
 
 ```ts
 import { createClient, SubscribePayload } from 'graphql-ws';
@@ -166,8 +166,8 @@ async function execute<T>(payload: SubscribePayload) {
 
 </details>
 
-<details>
-<summary>Client usage with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator">AsyncIterator</a></summary>
+<details id="async-iterator">
+<summary><a href="#async-iterator">🔗</a> Client usage with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator">AsyncIterator</a></summary>
 
 ```ts
 import { createClient, SubscribePayload } from 'graphql-ws';
@@ -234,8 +234,8 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
 
 </details>
 
-<details>
-<summary>Client usage with <a href="https://github.com/tc39/proposal-observable">Observable</a></summary>
+<details id="observable">
+<summary><a href="#observable">🔗</a> Client usage with <a href="https://github.com/tc39/proposal-observable">Observable</a></summary>
 
 ```ts
 import { Observable } from 'relay-runtime';
@@ -270,8 +270,8 @@ subscription.unsubscribe();
 
 </details>
 
-<details>
-<summary>Client usage with <a href="https://relay.dev">Relay</a></summary>
+<details id="relay">
+<summary><a href="#relay">🔗</a> Client usage with <a href="https://relay.dev">Relay</a></summary>
 
 ```ts
 import { GraphQLError } from 'graphql';
@@ -341,8 +341,8 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 </details>
 
-<details>
-<summary>Client usage with <a href="https://formidable.com/open-source/urql/">urql</a></summary>
+<details id="urql">
+<summary><a href="#urql">🔗</a> Client usage with <a href="https://formidable.com/open-source/urql/">urql</a></summary>
 
 ```ts
 import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
@@ -374,8 +374,8 @@ const client = createClient({
 
 </details>
 
-<details>
-<summary>Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
+<details id="apollo-client">
+<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
@@ -440,8 +440,8 @@ const link = new WebSocketLink({
 
 </details>
 
-<details>
-<summary>Client usage in browser</summary>
+<details id="browser">
+<summary><a href="#browser">🔗</a> Client usage in browser</summary>
 
 ```html
 <!DOCTYPE html>
@@ -468,8 +468,8 @@ const link = new WebSocketLink({
 
 </details>
 
-<details>
-<summary>Client usage in Node</summary>
+<details id="node-client">
+<summary><a href="#node-client">🔗</a> Client usage in Node</summary>
 
 ```ts
 const WebSocket = require('ws'); // yarn add ws
@@ -494,8 +494,8 @@ const client = createClient({
 
 </details>
 
-<details>
-<summary>Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
+<details id="express">
+<summary><a href="#express">🔗</a> Server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
 ```typescript
 import https from 'https';
@@ -529,8 +529,8 @@ server.listen(443, () => {
 
 </details>
 
-<details>
-<summary>Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
+<details id="apollo-server-express">
+<summary><a href="#apollo-server-express">🔗</a> Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
 
 ```typescript
 import https from 'https';
@@ -569,8 +569,8 @@ server.listen(443, () => {
 
 </details>
 
-<details>
-<summary>Server usage with console logging</summary>
+<details id="logging">
+<summary><a href="#logging">🔗</a> Server usage with console logging</summary>
 
 ```typescript
 import https from 'https';
@@ -613,8 +613,8 @@ server.listen(443);
 
 </details>
 
-<details>
-<summary>Server usage on a multi WebSocket server</summary>
+<details id="multi-ws">
+<summary><a href="#multi-ws">🔗</a> Server usage on a multi WebSocket server</summary>
 
 ```typescript
 import https from 'https';
@@ -674,8 +674,8 @@ server.listen(443);
 
 </details>
 
-<details>
-<summary>Server usage with custom context value</summary>
+<details id="context">
+<summary><a href="#context">🔗</a> Server usage with custom context value</summary>
 
 ```typescript
 import { validate, execute, subscribe } from 'graphql';
@@ -701,8 +701,8 @@ createServer(
 
 </details>
 
-<details>
-<summary>Server usage with custom execution arguments and validation</summary>
+<details id="custom-exec">
+<summary><a href="#custom-exec">🔗</a> Server usage with custom execution arguments and validation</summary>
 
 ```typescript
 import { parse, validate, execute, subscribe } from 'graphql';
@@ -739,8 +739,8 @@ createServer(
 
 </details>
 
-<details>
-<summary>Server and client usage with persisted queries</summary>
+<details id="persisted">
+<summary><a href="#persisted">🔗</a> Server and client usage with persisted queries</summary>
 
 ```typescript
 // 🛸 server
