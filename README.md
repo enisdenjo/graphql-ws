@@ -530,7 +530,7 @@ server.listen(443, () => {
 </details>
 
 <details id="apollo-server-express">
-<summary><a href="#apollo-server-express">🔗apollo-server-expressa> Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
+<summary><a href="#apollo-server-express">🔗</a> Server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
 
 ```typescript
 import https from 'https';
