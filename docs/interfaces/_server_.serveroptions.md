@@ -15,7 +15,6 @@
 * [connectionInitWaitTimeout](_server_.serveroptions.md#connectioninitwaittimeout)
 * [context](_server_.serveroptions.md#context)
 * [execute](_server_.serveroptions.md#execute)
-* [keepAlive](_server_.serveroptions.md#keepalive)
 * [onComplete](_server_.serveroptions.md#oncomplete)
 * [onConnect](_server_.serveroptions.md#onconnect)
 * [onError](_server_.serveroptions.md#onerror)
@@ -75,20 +74,6 @@ used to execute the query and mutation operations.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-___
-
-### keepAlive
-
-• `Optional` **keepAlive**: undefined \| number
-
-The timout between dispatched keep-alive messages. Internally the lib
-uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets)) to check that the link between
-the clients and the server is operating and to prevent the link from being broken due to idling.
-
-Set to nullish value to disable.
-
-**`default`** 12 * 1000 (12 seconds)
 
 ___
 

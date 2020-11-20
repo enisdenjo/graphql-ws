@@ -4,6 +4,7 @@ import { Disposable } from '../types';
 
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.
+ * This is a basic starter, feel free to copy the code over and adjust it to your needs
  */
 export function useServer(
   options: ServerOptions,

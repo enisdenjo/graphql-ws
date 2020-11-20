@@ -280,22 +280,20 @@ export interface ServerOptions {
 
 export interface Server {
   /**
-   * New socket has beeen established offering the provided
-   * sub-protocols. The lib will validate the protocols
-   * and use the socket accordingly. Returned promise will
-   * resolve after the socket closes.
+   * New socket has beeen established. The lib will validate
+   * the protocol and use the socket accordingly. Returned promise
+   * will resolve after the socket closes.
    *
-   * Returns a function that should be called when the exact
-   * same socket has been closed, for whatever reason. The
-   * returned promise will resolve once the internal cleanup
-   * is complete.
+   * Returns a function that should be called when the same socket
+   * has been closed, for whatever reason. The returned promise will
+   * resolve once the internal cleanup is complete.
    */
-  opened(socket: WebSocket): () => Promise<void>;
+  opened(socket: WebSocket): () => Promise<void>; // closed
 }
 
 export interface WebSocket {
   /**
-   * The subprotocol of the WS. Will be used
+   * The subprotocol of the WebSocket. Will be used
    * to validate agains the supported ones.
    */
   readonly protocol: string;
@@ -303,13 +301,17 @@ export interface WebSocket {
    * Sends a message through the socket. Will always
    * provide a `string` message.
    *
+   * Please take care that the send is ready. Meaning,
+   * only provide a truly OPEN socket through the `opened`
+   * method of the `Server`.
+   *
    * The returned promise is used to control the flow of data
    * (like handling backpressure).
    */
   send(data: string): Promise<void> | void;
   /**
    * Closes the socket gracefully. Will always provide
-   * the appropriate code and the close reason.
+   * the appropriate code and close reason.
    *
    * The returned promise is used to control the graceful
    * closure.
@@ -319,10 +321,10 @@ export interface WebSocket {
    * Called when message is received. The library requires the data
    * to be a `string`.
    *
-   * All operations requested from the client will be blocking until
-   * completed, this means that the callback's promise will not resolve
-   * until all subscription events have been emitter (or until the client
-   * completes the stream), or until the query/mutation resolves.
+   * All operations requested from the client will block the promise until
+   * completed, this means that the callback will not resolve until all
+   * subscription events have been emittet (or until the client has completed
+   * the stream), or until the query/mutation resolves.
    *
    * Exceptions raised during any phase of operation processing will
    * reject the callback's promise, catch them and communicate them
@@ -333,30 +335,26 @@ export interface WebSocket {
 
 export interface Context {
   /**
-   * The actual WebSocket connection between the server and the client.
-   */
-  readonly socket: WebSocket;
-  /**
    * Indicates that the `ConnectionInit` message
    * has been received by the server. If this is
    * `true`, the client wont be kicked off after
    * the wait timeout has passed.
    */
-  connectionInitReceived: boolean;
+  readonly connectionInitReceived: boolean;
   /**
    * Indicates that the connection was acknowledged
    * by having dispatched the `ConnectionAck` message
    * to the related client.
    */
-  acknowledged: boolean;
+  readonly acknowledged: boolean;
   /** The parameters passed during the connection initialisation. */
-  connectionParams?: Readonly<Record<string, unknown>>;
+  readonly connectionParams?: Readonly<Record<string, unknown>>;
   /**
    * Holds the active subscriptions for this context.
    * Subscriptions are for **streaming operations only**,
    * those that resolve once wont be added here.
    */
-  subscriptions: Record<ID, AsyncIterator<unknown>>;
+  readonly subscriptions: Record<ID, AsyncIterator<unknown>>;
 }
 
 /**
@@ -392,7 +390,6 @@ export function makeServer(options: ServerOptions): Server {
       }
 
       const ctx: Context = {
-        socket,
         connectionInitReceived: false,
         acknowledged: false,
         subscriptions: {},
@@ -421,9 +418,11 @@ export function makeServer(options: ServerOptions): Server {
             if (ctx.connectionInitReceived) {
               return socket.close(4429, 'Too many initialisation requests');
             }
+            // @ts-expect-error: I can write
             ctx.connectionInitReceived = true;
 
             if (isObject(message.payload)) {
+              // @ts-expect-error: I can write
               ctx.connectionParams = message.payload;
             }
 
@@ -446,6 +445,7 @@ export function makeServer(options: ServerOptions): Server {
               ),
             );
 
+            // @ts-expect-error: I can write
             ctx.acknowledged = true;
             break;
           }
@@ -643,26 +643,3 @@ export function makeServer(options: ServerOptions): Server {
     },
   };
 }
-
-// handle internal server errors however you want
-// if (isErrorEvent(errorOrClose)) {
-//   socket.close(
-//     1011,
-//     isProd ? 'Internal Error' : errorOrClose.message,
-//   );
-// }
-
-// is OPEN check necessary for safe message sends?
-// // Sends through a message only if the socket is open.
-// async function sendMessage<T extends MessageType>(
-//   ctx: Context,
-//   message: Message<T>,
-// ) {
-//   if (ctx.socket.readyState === WebSocket.OPEN) {
-//     return new Promise((resolve, reject) => {
-//       ctx.socket.send(stringifyMessage<T>(message), (err) =>
-//         err ? reject(err) : resolve(),
-//       );
-//     });
-//   }
-// }
