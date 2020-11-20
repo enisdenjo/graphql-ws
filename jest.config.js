@@ -2,5 +2,5 @@ module.exports = {
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js'],
   testRegex: '/tests/.+.ts$',
-  testPathIgnorePatterns: ['/node_modules/', '/fixtures/'],
+  testPathIgnorePatterns: ['/node_modules/', '/fixtures/', '/utils/'],
 };

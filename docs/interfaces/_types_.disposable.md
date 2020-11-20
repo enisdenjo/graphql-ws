@@ -10,8 +10,6 @@
 
   ↳ [Client](_client_.client.md)
 
-  ↳ [Server](_server_.server.md)
-
 ## Index
 
 ### Properties

@@ -10,7 +10,8 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
-import { createServer, ServerOptions, Server, Context } from '../../server';
+import { ServerOptions, Context } from '../../server';
+import { useServer, Extra } from '../../use/ws';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -25,7 +26,7 @@ afterEach(async () => {
 
 export interface TServer {
   url: string;
-  server: Server;
+  ws: WebSocket.Server;
   clients: Set<WebSocket>;
   pong: (key?: string) => void;
   waitForClient: (
@@ -33,7 +34,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context) => void,
+    test?: (ctx: Context<Extra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -119,7 +120,8 @@ export const schema = new GraphQLSchema({
 });
 
 export async function startTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions<Extra>> = {},
+  keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
@@ -138,10 +140,14 @@ export async function startTServer(
   });
 
   // create server and hook up for tracking operations
-  const pendingConnections: Context[] = [];
+  const pendingConnections: Context<Extra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
-  const server = await createServer(
+  const ws = new WebSocket.Server({
+    server: httpServer,
+    path,
+  });
+  const server = await useServer(
     {
       schema,
       execute,
@@ -170,10 +176,8 @@ export async function startTServer(
         emitter.emit('compl');
       },
     },
-    {
-      server: httpServer,
-      path,
-    },
+    ws,
+    keepAlive,
   );
 
   // search for open port from the starting port
@@ -208,7 +212,7 @@ export async function startTServer(
   // pending websocket clients
   let pendingCloses = 0;
   const pendingClients: WebSocket[] = [];
-  server.webSocketServer.on('connection', (client) => {
+  ws.on('connection', (client) => {
     pendingClients.push(client);
     client.once('close', () => {
       pendingCloses++;
@@ -243,9 +247,9 @@ export async function startTServer(
 
   return {
     url: `ws://localhost:${addr.port}${path}`,
-    server,
+    ws,
     get clients() {
-      return server.webSocketServer.clients;
+      return ws.clients;
     },
     pong,
     waitForClient(test, expire) {
@@ -260,10 +264,10 @@ export async function startTServer(
         if (pendingClients.length > 0) {
           return done();
         }
-        server.webSocketServer.once('connection', done);
+        ws.once('connection', done);
         if (expire) {
           setTimeout(() => {
-            server.webSocketServer.off('connection', done); // expired
+            ws.off('connection', done); // expired
             resolve();
           }, expire);
         }

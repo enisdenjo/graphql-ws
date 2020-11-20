@@ -1,4 +1,3 @@
-import WebSocket from 'ws';
 import {
   parse,
   buildSchema,
@@ -8,85 +7,9 @@ import {
   ExecutionArgs,
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import {
-  MessageType,
-  parseMessage,
-  stringifyMessage,
-  SubscribePayload,
-} from '../message';
+import { MessageType, parseMessage, stringifyMessage } from '../message';
 import { schema, startTServer } from './fixtures/simple';
-
-function createTClient(
-  url: string,
-  protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
-) {
-  let closeEvent: WebSocket.CloseEvent;
-  const queue: WebSocket.MessageEvent[] = [];
-  return new Promise<{
-    ws: WebSocket;
-    waitForMessage: (
-      test?: (data: WebSocket.MessageEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-    waitForClose: (
-      test?: (event: WebSocket.CloseEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-  }>((resolve) => {
-    const ws = new WebSocket(url, protocols);
-    ws.onclose = (event) => (closeEvent = event); // just so that none are missed
-    ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
-    ws.once('open', () =>
-      resolve({
-        ws,
-        async waitForMessage(test, expire) {
-          return new Promise((resolve) => {
-            const done = () => {
-              // the onmessage listener above will be called before our listener, populating the queue
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const next = queue.shift()!;
-              test?.(next);
-              resolve();
-            };
-            if (queue.length > 0) {
-              return done();
-            }
-            ws.once('message', done);
-            if (expire) {
-              setTimeout(() => {
-                ws.removeListener('message', done); // expired
-                resolve();
-              }, expire);
-            }
-          });
-        },
-        async waitForClose(
-          test?: (event: WebSocket.CloseEvent) => void,
-          expire?: number,
-        ) {
-          return new Promise((resolve) => {
-            if (closeEvent) {
-              test?.(closeEvent);
-              return resolve();
-            }
-            ws.onclose = (event) => {
-              closeEvent = event;
-              test?.(event);
-              resolve();
-            };
-            if (expire) {
-              setTimeout(() => {
-                // @ts-expect-error: its ok
-                ws.onclose = null; // expired
-                resolve();
-              }, expire);
-            }
-          });
-        },
-      }),
-    );
-  });
-}
+import { createTClient } from './utils';
 
 /**
  * Tests
@@ -124,44 +47,6 @@ it('should allow connections with valid protocols only', async () => {
     () => fail('shouldnt close for valid protocol'),
     30, // should be kicked off within this time
   );
-});
-
-it('should gracefully go away when disposing', async () => {
-  const server = await startTServer();
-
-  const client1 = await createTClient(server.url);
-  const client2 = await createTClient(server.url);
-
-  await server.dispose(true);
-
-  await client1.waitForClose((event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  });
-  await client2.waitForClose((event) => {
-    expect(event.code).toBe(1001);
-    expect(event.reason).toBe('Going away');
-    expect(event.wasClean).toBeTruthy();
-  });
-});
-
-it('should report server errors to clients by closing the connection', async () => {
-  const {
-    url,
-    server: { webSocketServer },
-  } = await startTServer();
-
-  const client = await createTClient(url);
-
-  const emittedError = new Error("I'm a teapot");
-  webSocketServer.emit('error', emittedError);
-
-  await client.waitForClose((event) => {
-    expect(event.code).toBe(1011); // 1011: Internal Error
-    expect(event.reason).toBe(emittedError.message);
-    expect(event.wasClean).toBeTruthy(); // because the server reported the error
-  });
 });
 
 it('should use the provided roots as resolvers', async () => {
@@ -452,41 +337,6 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
   );
 });
 
-it('should handle errors thrown from client error listeners', async () => {
-  const { server, url } = await startTServer();
-
-  const client = await createTClient(url);
-  client.ws.send(
-    stringifyMessage<MessageType.ConnectionInit>({
-      type: MessageType.ConnectionInit,
-    }),
-  );
-  await client.waitForMessage(({ data }) => {
-    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-  });
-
-  const surpriseErr1 = new Error('Well hello there!');
-  const surpriseErr2 = new Error('I wont be thrown!'); // first to throw stops emission
-  for (const client of server.webSocketServer.clients) {
-    client.on('error', () => {
-      throw surpriseErr1;
-    });
-    client.on('error', () => {
-      throw surpriseErr2;
-    });
-  }
-
-  expect(() => {
-    server.webSocketServer.emit('error', new Error('I am a nice error'));
-  }).toThrowError(surpriseErr1);
-
-  await client.waitForClose((event) => {
-    expect(event.code).toBe(1011);
-    expect(event.reason).toBe('I am a nice error');
-    expect(event.wasClean).toBeTruthy();
-  });
-});
-
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     const { url } = await startTServer({
@@ -506,29 +356,6 @@ describe('Connect', () => {
     await client.waitForClose((event) => {
       expect(event.code).toBe(4403);
       expect(event.reason).toBe('Forbidden');
-      expect(event.wasClean).toBeTruthy();
-    });
-  });
-
-  it('should close socket with error thrown from the callback', async () => {
-    const error = new Error("I'm a teapot");
-
-    const { url } = await startTServer({
-      onConnect: () => {
-        throw error;
-      },
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(error.message);
       expect(event.wasClean).toBeTruthy();
     });
   });
@@ -736,159 +563,6 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should close the socket on request if schema is left undefined', async () => {
-    const { url } = await startTServer({
-      schema: undefined,
-    });
-
-    const client = await createTClient(url);
-
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-      client.ws.send(
-        stringifyMessage<MessageType.Subscribe>({
-          id: '1',
-          type: MessageType.Subscribe,
-          payload: {
-            operationName: 'TestString',
-            query: `query TestString {
-              getValue
-            }`,
-            variables: {},
-          },
-        }),
-      );
-    });
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(1011);
-      expect(event.reason).toBe('The GraphQL schema is not provided');
-      expect(event.wasClean).toBeTruthy();
-    });
-  });
-
-  it('should close the socket with errors thrown from any callback', async () => {
-    const error = new Error('Stop');
-
-    // onConnect
-    let server = await startTServer({
-      onConnect: () => {
-        throw error;
-      },
-    });
-    const client = await createTClient(server.url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(error.message);
-      expect(event.wasClean).toBeTruthy();
-    });
-    await server.dispose();
-
-    async function test(
-      url: string,
-      payload: SubscribePayload = {
-        query: `query { getValue }`,
-      },
-    ) {
-      const client = await createTClient(url);
-      client.ws.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
-
-      await client.waitForMessage(({ data }) => {
-        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-        client.ws.send(
-          stringifyMessage<MessageType.Subscribe>({
-            id: '1',
-            type: MessageType.Subscribe,
-            payload,
-          }),
-        );
-      });
-
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(4400);
-        expect(event.reason).toBe(error.message);
-        expect(event.wasClean).toBeTruthy();
-      });
-    }
-
-    // onSubscribe
-    server = await startTServer({
-      onSubscribe: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    server = await startTServer({
-      onOperation: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // execute
-    server = await startTServer({
-      execute: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // subscribe
-    server = await startTServer({
-      subscribe: () => {
-        throw error;
-      },
-    });
-    await test(server.url, { query: 'subscription { greetings }' });
-    await server.dispose();
-
-    // onNext
-    server = await startTServer({
-      onNext: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-
-    // onError
-    server = await startTServer({
-      onError: () => {
-        throw error;
-      },
-    });
-    await test(server.url, { query: 'query { noExisto }' });
-    await server.dispose();
-
-    // onComplete
-    server = await startTServer({
-      onComplete: () => {
-        throw error;
-      },
-    });
-    await test(server.url);
-    await server.dispose();
-  });
-
   it('should directly use the execution arguments returned from `onSubscribe`', async () => {
     const nopeArgs = {
       schema,
@@ -998,44 +672,6 @@ describe('Subscribe', () => {
     await client.waitForClose(() => {
       fail('Shouldt have closed');
     }, 30);
-  });
-
-  it('should close the socket on empty arrays returned from `onSubscribe`', async () => {
-    const { url } = await startTServer({
-      onSubscribe: () => {
-        return [];
-      },
-    });
-
-    const client = await createTClient(url);
-
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-    });
-
-    client.ws.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: 'subscription { ping }',
-        },
-      }),
-    );
-
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(4400);
-      expect(event.reason).toBe(
-        'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
-      );
-      expect(event.wasClean).toBeTruthy();
-    });
   });
 
   it('should use the execution result returned from `onNext`', async () => {
@@ -1636,66 +1272,5 @@ describe('Subscribe', () => {
 
     // terminate socket abruptly
     client.ws.terminate();
-  });
-});
-
-describe('Keep-Alive', () => {
-  it('should dispatch pings after the timeout has passed', async (done) => {
-    const { url } = await startTServer({
-      keepAlive: 50,
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    client.ws.once('ping', () => done());
-  });
-
-  it('should not dispatch pings if disabled with nullish timeout', async (done) => {
-    const { url } = await startTServer({
-      keepAlive: 0,
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    client.ws.once('ping', () => fail('Shouldnt have pinged'));
-
-    setTimeout(done, 50);
-  });
-
-  it('should terminate the socket if no pong is sent in response to a ping', async () => {
-    const { url } = await startTServer({
-      keepAlive: 50,
-    });
-
-    const client = await createTClient(url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    // disable pong
-    client.ws.pong = () => {
-      /**/
-    };
-
-    // ping is received
-    await new Promise((resolve) => client.ws.once('ping', resolve));
-
-    // termination is not graceful or clean
-    await client.waitForClose((event) => {
-      expect(event.code).toBe(1006);
-      expect(event.wasClean).toBeFalsy();
-    });
   });
 });

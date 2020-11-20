@@ -13,3 +13,4 @@
 * ["protocol"](modules/_protocol_.md)
 * ["server"](modules/_server_.md)
 * ["types"](modules/_types_.md)
+* ["use/ws"](modules/_use_ws_.md)

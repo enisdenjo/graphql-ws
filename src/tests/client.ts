@@ -451,7 +451,7 @@ describe('subscription operation', () => {
   it('should stop dispatching messages after completing a subscription', async () => {
     const {
       url,
-      server,
+      clients,
       waitForOperation,
       waitForComplete,
     } = await startTServer();
@@ -461,7 +461,7 @@ describe('subscription operation', () => {
     });
     await waitForOperation();
 
-    for (const client of server.webSocketServer.clients) {
+    for (const client of clients) {
       client.once('message', () => {
         // no more messages from the client
         fail("Shouldn't have dispatched a message");

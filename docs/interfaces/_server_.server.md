@@ -2,33 +2,47 @@
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / Server
 
-# Interface: Server
+# Interface: Server\<E>
+
+## Type parameters
+
+Name | Default |
+------ | ------ |
+`E` | undefined |
 
 ## Hierarchy
 
-* [Disposable](_types_.disposable.md)
-
-  ↳ **Server**
+* **Server**
 
 ## Index
 
-### Properties
+### Methods
 
-* [dispose](_server_.server.md#dispose)
-* [webSocketServer](_server_.server.md#websocketserver)
+* [opened](_server_.server.md#opened)
 
-## Properties
+## Methods
 
-### dispose
+### opened
 
-•  **dispose**: () => void \| Promise\<void>
+▸ **opened**(`socket`: [WebSocket](_server_.websocket.md), `ctxExtra`: E): function
 
-*Inherited from [Disposable](_types_.disposable.md).[dispose](_types_.disposable.md#dispose)*
+New socket has beeen established. The lib will validate
+the protocol and use the socket accordingly. Returned promise
+will resolve after the socket closes.
 
-Dispose of the instance and clear up resources.
+The second argument will be passed in the `extra` field
+of the `Context`. You may pass the initial request or the
+original WebSocket, if you need it down the road.
 
-___
+Returns a function that should be called when the same socket
+has been closed, for whatever reason. The returned promise will
+resolve once the internal cleanup is complete.
 
-### webSocketServer
+#### Parameters:
 
-•  **webSocketServer**: Server
+Name | Type |
+------ | ------ |
+`socket` | [WebSocket](_server_.websocket.md) |
+`ctxExtra` | E |
+
+**Returns:** function
