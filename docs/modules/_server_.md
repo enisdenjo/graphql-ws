@@ -45,7 +45,7 @@ ___
 
 ### makeServer
 
-▸ **makeServer**(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md)): [Server](../interfaces/_server_.server.md)
+▸ **makeServer**\<E>(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md)\<E>): [Server](../interfaces/_server_.server.md)\<E>
 
 Makes a Protocol complient WebSocket GraphQL server. The server
 is actually an API which is to be used with your favourite WebSocket
@@ -53,10 +53,16 @@ server library!
 
 Read more about the Protocol in the PROTOCOL.md documentation file.
 
+#### Type parameters:
+
+Name | Default |
+------ | ------ |
+`E` | unknown |
+
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
-`options` | [ServerOptions](../interfaces/_server_.serveroptions.md) |
+`options` | [ServerOptions](../interfaces/_server_.serveroptions.md)\<E> |
 
-**Returns:** [Server](../interfaces/_server_.server.md)
+**Returns:** [Server](../interfaces/_server_.server.md)\<E>

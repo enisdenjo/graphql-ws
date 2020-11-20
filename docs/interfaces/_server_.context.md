@@ -2,7 +2,13 @@
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / Context
 
-# Interface: Context
+# Interface: Context\<E>
+
+## Type parameters
+
+Name | Default |
+------ | ------ |
+`E` | unknown |
 
 ## Hierarchy
 
@@ -15,6 +21,7 @@
 * [acknowledged](_server_.context.md#acknowledged)
 * [connectionInitReceived](_server_.context.md#connectioninitreceived)
 * [connectionParams](_server_.context.md#connectionparams)
+* [extra](_server_.context.md#extra)
 * [subscriptions](_server_.context.md#subscriptions)
 
 ## Properties
@@ -45,6 +52,15 @@ ___
 • `Optional` `Readonly` **connectionParams**: Readonly\<Record\<string, unknown>>
 
 The parameters passed during the connection initialisation.
+
+___
+
+### extra
+
+•  **extra**: E
+
+An extra field where you can store your own context values
+to pass between callbacks.
 
 ___
 

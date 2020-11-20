@@ -1,16 +1,36 @@
-import type { Server as WebSocketServer } from 'ws';
+import type * as http from 'http';
+import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
 import { Disposable } from '../types';
 
+// for nicer documentation
+type WebSocket = typeof ws.prototype;
+type WebSocketServer = ws.Server;
+
 /**
- * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.
+ * The extra that will be put in the `Context`.
+ */
+export interface Extra {
+  /**
+   * The actual socket connection between the server and the client.
+   */
+  readonly socket: WebSocket;
+  /**
+   * The initial HTTP request before the actual
+   * socket and connection is established.
+   */
+  readonly request: http.IncomingMessage;
+}
+
+/**
+ * Use the server on a [ws](https://github.com/websockets/ws) ws server.
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
  */
 export function useServer(
-  options: ServerOptions,
+  options: ServerOptions<Extra>,
   ws: WebSocketServer,
   /**
-   * The timout between dispatched keep-alive messages. Internally uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets))
+   * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
    * to check that the link between the clients and the server is operating and to prevent the link
    * from being broken due to idling.
    *
@@ -19,7 +39,7 @@ export function useServer(
   keepAlive = 12 * 1000,
 ): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
-  const server = makeServer(options);
+  const server = makeServer<Extra>(options);
 
   ws.on('error', (err) => {
     // catch the first thrown error and re-throw it once all clients have been notified
@@ -39,7 +59,7 @@ export function useServer(
     }
   });
 
-  ws.on('connection', (socket) => {
+  ws.on('connection', (socket, request) => {
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
     const pingInterval =
@@ -65,22 +85,25 @@ export function useServer(
           }, keepAlive)
         : null;
 
-    const closed = server.opened({
-      protocol: socket.protocol,
-      send: (data) =>
-        new Promise((resolve, reject) => {
-          socket.send(data, (err) => (err ? reject(err) : resolve()));
-        }),
-      close: (code, reason) => socket.close(code, reason),
-      onMessage: (cb) =>
-        socket.on('message', async (event) => {
-          try {
-            await cb(event.toString());
-          } catch (err) {
-            socket.close(1011, isProd ? 'Internal Error' : err.message);
-          }
-        }),
-    });
+    const closed = server.opened(
+      {
+        protocol: socket.protocol,
+        send: (data) =>
+          new Promise((resolve, reject) => {
+            socket.send(data, (err) => (err ? reject(err) : resolve()));
+          }),
+        close: (code, reason) => socket.close(code, reason),
+        onMessage: (cb) =>
+          socket.on('message', async (event) => {
+            try {
+              await cb(event.toString());
+            } catch (err) {
+              socket.close(1011, isProd ? 'Internal Error' : err.message);
+            }
+          }),
+      },
+      { socket, request },
+    );
 
     socket.once('close', () => {
       if (pongWait) clearTimeout(pongWait);

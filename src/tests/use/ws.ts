@@ -1,3 +1,5 @@
+import WebSocket from 'ws';
+import http from 'http';
 import {
   MessageType,
   stringifyMessage,
@@ -25,6 +27,24 @@ it('should gracefully go away when disposing', async () => {
     expect(event.reason).toBe('Going away');
     expect(event.wasClean).toBeTruthy();
   });
+});
+
+it('should add the initial request and websocket in the context extra', async (done) => {
+  const server = await startTServer({
+    onConnect: (ctx) => {
+      expect(ctx.extra.socket).toBeInstanceOf(WebSocket);
+      expect(ctx.extra.request).toBeInstanceOf(http.IncomingMessage);
+      done();
+      return false; // reject client for sake of test
+    },
+  });
+
+  const client = await createTClient(server.url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
 });
 
 it('should close the socket with errors thrown from any callback', async () => {

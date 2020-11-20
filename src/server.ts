@@ -52,7 +52,7 @@ export type GraphQLExecutionContextValue =
   | undefined
   | null;
 
-export interface ServerOptions {
+export interface ServerOptions<E = unknown> {
   /**
    * The GraphQL schema on which the operations
    * will be executed and validated against.
@@ -79,7 +79,7 @@ export interface ServerOptions {
   context?:
     | GraphQLExecutionContextValue
     | ((
-        ctx: Context,
+        ctx: Context<E>,
         message: SubscribeMessage,
         args: ExecutionArgs,
       ) =>
@@ -157,7 +157,7 @@ export interface ServerOptions {
    * in the close event reason.
    */
   onConnect?: (
-    ctx: Context,
+    ctx: Context<E>,
   ) =>
     | Promise<Record<string, unknown> | boolean | void>
     | Record<string, unknown>
@@ -193,7 +193,7 @@ export interface ServerOptions {
    * in the close event reason.
    */
   onSubscribe?: (
-    ctx: Context,
+    ctx: Context<E>,
     message: SubscribeMessage,
   ) =>
     | Promise<ExecutionArgs | readonly GraphQLError[] | void>
@@ -221,7 +221,7 @@ export interface ServerOptions {
    * in the close event reason.
    */
   onOperation?: (
-    ctx: Context,
+    ctx: Context<E>,
     message: SubscribeMessage,
     args: ExecutionArgs,
     result: OperationResult,
@@ -240,7 +240,7 @@ export interface ServerOptions {
    * in the close event reason.
    */
   onError?: (
-    ctx: Context,
+    ctx: Context<E>,
     message: ErrorMessage,
     errors: readonly GraphQLError[],
   ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
@@ -259,7 +259,7 @@ export interface ServerOptions {
    * in the close event reason.
    */
   onNext?: (
-    ctx: Context,
+    ctx: Context<E>,
     message: NextMessage,
     args: ExecutionArgs,
     result: ExecutionResult,
@@ -277,20 +277,27 @@ export interface ServerOptions {
    * operations even after an abrupt closure, this callback
    * will still be called.
    */
-  onComplete?: (ctx: Context, message: CompleteMessage) => Promise<void> | void;
+  onComplete?: (
+    ctx: Context<E>,
+    message: CompleteMessage,
+  ) => Promise<void> | void;
 }
 
-export interface Server {
+export interface Server<E = undefined> {
   /**
    * New socket has beeen established. The lib will validate
    * the protocol and use the socket accordingly. Returned promise
    * will resolve after the socket closes.
    *
+   * The second argument will be passed in the `extra` field
+   * of the `Context`. You may pass the initial request or the
+   * original WebSocket, if you need it down the road.
+   *
    * Returns a function that should be called when the same socket
    * has been closed, for whatever reason. The returned promise will
    * resolve once the internal cleanup is complete.
    */
-  opened(socket: WebSocket): () => Promise<void>; // closed
+  opened(socket: WebSocket, ctxExtra: E): () => Promise<void>; // closed
 }
 
 export interface WebSocket {
@@ -335,7 +342,7 @@ export interface WebSocket {
   onMessage(cb: (data: string) => Promise<void>): void;
 }
 
-export interface Context {
+export interface Context<E = unknown> {
   /**
    * Indicates that the `ConnectionInit` message
    * has been received by the server. If this is
@@ -357,6 +364,11 @@ export interface Context {
    * those that resolve once wont be added here.
    */
   readonly subscriptions: Record<ID, AsyncIterator<unknown>>;
+  /**
+   * An extra field where you can store your own context values
+   * to pass between callbacks.
+   */
+  extra: E;
 }
 
 /**
@@ -366,7 +378,7 @@ export interface Context {
  *
  * Read more about the Protocol in the PROTOCOL.md documentation file.
  */
-export function makeServer(options: ServerOptions): Server {
+export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
   const {
     schema,
     context,
@@ -383,7 +395,7 @@ export function makeServer(options: ServerOptions): Server {
   } = options;
 
   return {
-    opened(socket) {
+    opened(socket, extra) {
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
         socket.close(1002, 'Protocol Error');
         return async () => {
@@ -391,10 +403,11 @@ export function makeServer(options: ServerOptions): Server {
         };
       }
 
-      const ctx: Context = {
+      const ctx: Context<E> = {
         connectionInitReceived: false,
         acknowledged: false,
         subscriptions: {},
+        extra,
       };
 
       // kick the client off (close socket) if the connection has

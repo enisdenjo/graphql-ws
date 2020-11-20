@@ -11,7 +11,7 @@ import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
 import { ServerOptions, Context } from '../../server';
-import { useServer } from '../../use/ws';
+import { useServer, Extra } from '../../use/ws';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -34,7 +34,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context) => void,
+    test?: (ctx: Context<Extra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -120,7 +120,7 @@ export const schema = new GraphQLSchema({
 });
 
 export async function startTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions<Extra>> = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
@@ -140,7 +140,7 @@ export async function startTServer(
   });
 
   // create server and hook up for tracking operations
-  const pendingConnections: Context[] = [];
+  const pendingConnections: Context<Extra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
   const ws = new WebSocket.Server({
