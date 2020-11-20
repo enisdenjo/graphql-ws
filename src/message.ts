@@ -120,10 +120,7 @@ export function isMessage(val: unknown): val is Message {
       case MessageType.Next:
         return (
           hasOwnStringProperty(val, 'id') &&
-          hasOwnObjectProperty(val, 'payload') &&
-          // ExecutionResult
-          (hasOwnObjectProperty(val.payload, 'data') ||
-            hasOwnObjectProperty(val.payload, 'errors'))
+          hasOwnObjectProperty(val, 'payload')
         );
       case MessageType.Error:
         return hasOwnStringProperty(val, 'id') && areGraphQLErrors(val.payload);

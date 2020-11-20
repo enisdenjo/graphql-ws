@@ -88,6 +88,16 @@ export interface ClientOptions {
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
+   * The library classifies the following close events as fatal:
+   * - `1002: Protocol Error`
+   * - `1011: Internal Error`
+   * - `4400: Bad Request`
+   * - `4401: Unauthorized` _tried subscribing before connect ack_
+   * - `4409: Subscriber for <id> already exists` _distinction is very important_
+   * - `4429: Too many initialisation requests`
+   *
+   * These events are reported immediately and the client will not reconnect.
+   *
    * @default 5
    */
   retryAttempts?: number;
@@ -406,6 +416,48 @@ export function createClient(options: ClientOptions): Client {
         }),
     ];
   }
+  /**
+   * Checks the `connect` problem and evaluates if the client should
+   * retry. If the problem is worth throwing, it will be thrown immediately.
+   */
+  function shouldRetryConnectOrThrow(errOrCloseEvent: unknown): boolean {
+    // throw non `CloseEvent`s immediately, something else is wrong
+    if (!isCloseEvent(errOrCloseEvent)) {
+      throw errOrCloseEvent;
+    }
+
+    // some close codes are worth reporting immediately
+    if (
+      [
+        1002, // Protocol Error
+        1011, // Internal Error
+        4400, // Bad Request
+        4401, // Unauthorized (tried subscribing before connect ack)
+        4409, // Subscriber for <id> already exists (distinction is very important)
+        4429, // Too many initialisation requests
+      ].includes(errOrCloseEvent.code)
+    ) {
+      throw errOrCloseEvent;
+    }
+
+    // normal closure is disposal, shouldnt try again
+    if (errOrCloseEvent.code === 1000) {
+      return false;
+    }
+
+    // user cancelled early, shouldnt try again
+    if (errOrCloseEvent.code === 3499) {
+      return false;
+    }
+
+    // retries are not allowed or we tried to many times, report error
+    if (!retryAttempts || state.tries > retryAttempts) {
+      throw errOrCloseEvent;
+    }
+
+    // looks good, please retry
+    return true;
+  }
 
   // in non-lazy (hot?) mode always hold one connection lock to persist the socket
   if (!lazy) {
@@ -419,22 +471,11 @@ export function createClient(options: ClientOptions): Client {
           // cancelled, shouldnt try again
           return;
         } catch (errOrCloseEvent) {
-          // throw non `CloseEvent`s immediately, something else is wrong
-          if (!isCloseEvent(errOrCloseEvent)) {
-            throw errOrCloseEvent; // TODO-db-200909 promise is uncaught, will appear in console
-          }
-
-          // normal closure is disposal, shouldnt try again
-          if (errOrCloseEvent.code === 1000) {
+          // return if shouldnt try again
+          if (!shouldRetryConnectOrThrow(errOrCloseEvent)) {
             return;
           }
-
-          // retries are not allowed or we tried to many times, close for good
-          if (!retryAttempts || state.tries > retryAttempts) {
-            return;
-          }
-
-          // otherwise, wait a bit and retry
+          // if should try again, wait a bit and continue loop
           await new Promise((resolve) => setTimeout(resolve, retryTimeout));
         }
       }
@@ -533,27 +574,11 @@ export function createClient(options: ClientOptions): Client {
             // cancelled, shouldnt try again
             return;
           } catch (errOrCloseEvent) {
-            // throw non `CloseEvent`s immediately, something else is wrong
-            if (!isCloseEvent(errOrCloseEvent)) {
-              throw errOrCloseEvent;
-            }
-
-            // normal closure is disposal, shouldnt try again
-            if (errOrCloseEvent.code === 1000) {
+            // return if shouldnt try again
+            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) {
               return;
             }
-
-            // user cancelled early, shouldnt try again
-            if (errOrCloseEvent.code === 3499) {
-              return;
-            }
-
-            // retries are not allowed or we tried to many times, close for good
-            if (!retryAttempts || state.tries > retryAttempts) {
-              throw errOrCloseEvent;
-            }
-
-            // otherwise, wait a bit and retry
+            // if should try again, wait a bit and continue loop
             await new Promise((resolve) => setTimeout(resolve, retryTimeout));
           }
         }

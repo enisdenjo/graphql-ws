@@ -10,9 +10,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up node
-        uses: actions/setup-node@v2.1.1
+        uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -24,13 +24,12 @@ jobs:
         run: yarn install --immutable
       - name: Build
         run: yarn build
-      - name: Upload artifact
+      - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: lib
+          name: build
           path: |
-            cjs
-            esm
+            lib
             umd
 
   release:
@@ -45,9 +44,9 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0 # necessary for correct CHANGELOGS
       - name: Set up node
-        uses: actions/setup-node@v2.1.1
+        uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -57,10 +56,10 @@ jobs:
             ${{ runner.os }}-yarn-cache-
       - name: Install
         run: yarn install --immutable
-      - name: Download artifact
+      - name: Download build
         uses: actions/download-artifact@v2
         with:
-          name: lib
+          name: build
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

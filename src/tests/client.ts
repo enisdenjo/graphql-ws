@@ -640,12 +640,16 @@ describe('reconnecting', () => {
   it('should not reconnect if retry attempts is zero', async () => {
     const { url, ...server } = await startTServer();
 
-    createClient({
-      url,
-      lazy: false,
-      retryAttempts: 0,
-      retryTimeout: 5, // fake timeout
-    });
+    const sub = tsubscribe(
+      createClient({
+        url,
+        retryAttempts: 0,
+        retryTimeout: 5, // fake timeout
+      }),
+      {
+        query: 'subscription { ping }',
+      },
+    );
 
     await server.waitForClient((client) => {
       client.close();
@@ -654,17 +658,26 @@ describe('reconnecting', () => {
     await server.waitForClient(() => {
       fail('Shouldnt have tried again');
     }, 20);
+
+    // client reported the error
+    await sub.waitForError((err) => {
+      expect((err as CloseEvent).code).toBe(1005);
+    });
   });
 
   it('should reconnect silently after socket closes', async () => {
     const { url, ...server } = await startTServer();
 
-    createClient({
-      url,
-      lazy: false,
-      retryAttempts: 1,
-      retryTimeout: 5,
-    });
+    const sub = tsubscribe(
+      createClient({
+        url,
+        retryAttempts: 1,
+        retryTimeout: 5,
+      }),
+      {
+        query: 'subscription { ping }',
+      },
+    );
 
     await server.waitForClient((client) => {
       client.close();
@@ -679,6 +692,48 @@ describe('reconnecting', () => {
     await server.waitForClient(() => {
       fail('Shouldnt have tried again');
     }, 20);
+
+    // client reported the error
+    await sub.waitForError((err) => {
+      expect((err as CloseEvent).code).toBe(1005);
+    });
+  });
+
+  it('should report some close events immediately and not reconnect', async () => {
+    const { url, ...server } = await startTServer();
+
+    async function testCloseCode(code: number) {
+      const sub = tsubscribe(
+        createClient({
+          url,
+          retryAttempts: Infinity, // keep retrying forever
+          retryTimeout: 5,
+        }),
+        {
+          query: 'subscription { ping }',
+        },
+      );
+
+      await server.waitForClient((client) => {
+        client.close(code);
+      });
+
+      await server.waitForClient(() => {
+        fail('Shouldnt have tried again');
+      }, 20);
+
+      // client reported the error
+      await sub.waitForError((err) => {
+        expect((err as CloseEvent).code).toBe(code);
+      });
+    }
+
+    await testCloseCode(1002);
+    await testCloseCode(1011);
+    await testCloseCode(4400);
+    await testCloseCode(4401);
+    await testCloseCode(4409);
+    await testCloseCode(4429);
   });
 
   it.todo(
@@ -698,7 +753,6 @@ describe('events', () => {
     const client = await new Promise<Client>((resolve) => {
       const client = createClient({
         url,
-        lazy: false,
         retryAttempts: 0,
         on: {
           connecting: connectingFn,
@@ -712,9 +766,12 @@ describe('events', () => {
         resolve(client);
       });
       client.on('closed', closedFn);
+
+      // trigger connecting
+      tsubscribe(client, { query: 'subscription {ping}' });
     });
 
-    expect(connectingFn).toBeCalledTimes(1); // only once because `client.on` missed the initial connecting event
+    expect(connectingFn).toBeCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(0);
 
     expect(connectedFn).toBeCalledTimes(2); // initial and registered listener
@@ -738,7 +795,7 @@ describe('events', () => {
     }
 
     // retrying is disabled
-    expect(connectingFn).toBeCalledTimes(1);
+    expect(connectingFn).toBeCalledTimes(2);
     expect(connectedFn).toBeCalledTimes(2);
 
     expect(closedFn).toBeCalledTimes(2); // initial and registered listener

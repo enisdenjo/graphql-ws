@@ -18,9 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up node
-        uses: actions/setup-node@v2.1.1
+        uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -41,9 +41,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up node
-        uses: actions/setup-node@v2.1.1
+        uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -64,9 +64,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up node
-        uses: actions/setup-node@v2.1.1
+        uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Cache
         uses: actions/cache@v2
         with:

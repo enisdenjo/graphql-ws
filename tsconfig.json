@@ -3,7 +3,6 @@
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     "moduleResolution": "node",
     "target": "es2017",
-    "declaration": true,
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,

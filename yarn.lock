@@ -1621,6 +1621,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/plugin-typescript@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "@rollup/plugin-typescript@npm:6.1.0"
+  dependencies:
+    "@rollup/pluginutils": ^3.1.0
+    resolve: ^1.17.0
+  peerDependencies:
+    rollup: ^2.14.0
+    tslib: "*"
+    typescript: ">=3.4.0"
+  checksum: a90e81b60f3364e1d6e139357020d6c759df1ca1745edb756430ae79cb66ed1d4d1325a64ad7dd3bcc7f2dc8907f70bd27f2e7c360b7b3d95b87cb7cb5ec75b9
+  languageName: node
+  linkType: hard
+
+"@rollup/pluginutils@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@rollup/pluginutils@npm:3.1.0"
+  dependencies:
+    "@types/estree": 0.0.39
+    estree-walker: ^1.0.1
+    picomatch: ^2.2.2
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0
+  checksum: 45da6411e045d1b034242a8144f4a5e8c02ff1b68a2e0857807f5bb4b091c416f2015e075057f0f0dec200e7b35efe6ed4e301b43e365cedea09192f01a6839b
+  languageName: node
+  linkType: hard
+
 "@semantic-release/changelog@npm:^5.0.1":
   version: 5.0.1
   resolution: "@semantic-release/changelog@npm:5.0.1"
@@ -1809,6 +1836,13 @@ __metadata:
   dependencies:
     "@babel/types": ^7.3.0
   checksum: 70c4bcc395738a6cf64e413095985b6863d34e81cd7c1c767715ecabbb3120bd6fc38f2dddfa8b30787a903f716a625ecdc93e0d5dd1d62935a016b2a07ab17d
+  languageName: node
+  linkType: hard
+
+"@types/estree@npm:0.0.39":
+  version: 0.0.39
+  resolution: "@types/estree@npm:0.0.39"
+  checksum: 43e5361de39969def145f32f4599391ab13055ec94841f1633a7cfe10f0e8a940ebf0e9a4b2770454a6bddd034b57e7e0d51a4d565cb2714ee2accf10a7718be
   languageName: node
   linkType: hard
 
@@ -4103,6 +4137,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"estree-walker@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "estree-walker@npm:1.0.1"
+  checksum: 85e7cee763e9125a7d8a947b3a06a8b9282873936df220dd0d791d9b3315e45e40ab096b43ba71bdc99140c11a6d23fdcf686642dc119a7b2d6181004fdb24d2
+  languageName: node
+  linkType: hard
+
 "esutils@npm:^2.0.2":
   version: 2.0.3
   resolution: "esutils@npm:2.0.3"
@@ -4824,6 +4865,7 @@ __metadata:
     "@babel/plugin-proposal-optional-chaining": ^7.12.1
     "@babel/preset-env": ^7.12.1
     "@babel/preset-typescript": ^7.12.1
+    "@rollup/plugin-typescript": ^6.1.0
     "@semantic-release/changelog": ^5.0.1
     "@semantic-release/git": ^9.0.0
     "@types/jest": ^26.0.15
@@ -8318,7 +8360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^2.0.4, picomatch@npm:^2.0.5, picomatch@npm:^2.2.1":
+"picomatch@npm:^2.0.4, picomatch@npm:^2.0.5, picomatch@npm:^2.2.1, picomatch@npm:^2.2.2":
   version: 2.2.2
   resolution: "picomatch@npm:2.2.2"
   checksum: 20fa75e0a58b39d83425b3db68744d5f6f361fd4fd66ec7745d884036d502abba0d553a637703af79939b844164b13e60eea339ccb043d7fbd74c3da2592b864

@@ -1,3 +1,20 @@
+# [1.14.0](https://github.com/enisdenjo/graphql-ws/compare/v1.13.1...v1.14.0) (2020-11-15)
+
+
+### Features
+
+* **server:** `context` may return a promise ([cd5c2f8](https://github.com/enisdenjo/graphql-ws/commit/cd5c2f8d0f9d11889052601c0fabdb8c6ed607fa)), closes [#74](https://github.com/enisdenjo/graphql-ws/issues/74)
+
+## [1.13.1](https://github.com/enisdenjo/graphql-ws/compare/v1.13.0...v1.13.1) (2020-11-14)
+
+
+### Bug Fixes
+
+* **client:** Some close events are not worth retrying ([4d9134b](https://github.com/enisdenjo/graphql-ws/commit/4d9134b8704446f0b2674c71e25d7c6c44000c9a))
+* **message:** Allow `data` field to be of any type ([533248e](https://github.com/enisdenjo/graphql-ws/commit/533248e0bcfd857c7960c9e8671cbd300788ad7d)), closes [#72](https://github.com/enisdenjo/graphql-ws/issues/72)
+* **message:** Allow `payload` field to be of any type for `NextMessage` ([7cebbfe](https://github.com/enisdenjo/graphql-ws/commit/7cebbfe00dc3c360e80e8962f345a28743b49c1f)), closes [#72](https://github.com/enisdenjo/graphql-ws/issues/72)
+* Use `ID` type for message id field ([87ebd35](https://github.com/enisdenjo/graphql-ws/commit/87ebd357da73ec83d72583f1c82fc14dfe2ffe5a))
+
 # [1.13.0](https://github.com/enisdenjo/graphql-ws/compare/v1.12.0...v1.13.0) (2020-11-12)
 
 
