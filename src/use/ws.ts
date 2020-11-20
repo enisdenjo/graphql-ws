@@ -1,7 +1,4 @@
-import type {
-  Server as WebSocketServer,
-  CloseEvent as WebSocketCloseEvent,
-} from 'ws';
+import type { Server as WebSocketServer } from 'ws';
 import { makeServer, ServerOptions } from '../server';
 import { Disposable } from '../types';
 
