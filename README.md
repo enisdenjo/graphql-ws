@@ -552,7 +552,7 @@ wsServer.on('connection', (socket, request) => {
   );
 
   // notify server that the socket closed
-  socket.once('close', closed);
+  socket.once('close', () => closed());
 });
 ```
 
