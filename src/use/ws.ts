@@ -1,36 +1,15 @@
-import type { Server as WebSocketServer } from 'ws';
-import { makeServer, Server, ServerOptions } from '../server';
+import type {
+  Server as WebSocketServer,
+  CloseEvent as WebSocketCloseEvent,
+} from 'ws';
+import { makeServer, ServerOptions } from '../server';
 import { Disposable } from '../types';
-
-/**
- * Creates a Protocol complient WebSocket GraphQL on
- * a [ws](https://github.com/websockets/ws) WebSocket server.
- */
-export function createServer(
-  options: ServerOptions,
-  ws: WebSocketServer,
-  /** Read documentation on `useServer`. */
-  keepAlive?: number,
-): Disposable {
-  useServer(makeServer(options), ws, keepAlive);
-  return {
-    dispose: async () => {
-      for (const client of ws.clients) {
-        client.close(1001, 'Going away');
-      }
-      ws.removeAllListeners();
-      await new Promise((resolve, reject) =>
-        ws.close((err) => (err ? reject(err) : resolve())),
-      );
-    },
-  };
-}
 
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) WebSocket server.
  */
 export function useServer(
-  server: Server,
+  options: ServerOptions,
   ws: WebSocketServer,
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [WebSocket Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets))
@@ -40,8 +19,9 @@ export function useServer(
    * @default 12 * 1000 // 12 seconds
    */
   keepAlive = 12 * 1000,
-): void {
+): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
+  const server = makeServer(options);
 
   ws.on('error', (err) => {
     // catch the first thrown error and re-throw it once all clients have been notified
@@ -87,7 +67,7 @@ export function useServer(
           }, keepAlive)
         : null;
 
-    server.opened({
+    const closed = server.opened({
       protocol: socket.protocol,
       send: (data) =>
         new Promise((resolve, reject) => {
@@ -102,12 +82,24 @@ export function useServer(
             socket.close(1011, isProd ? 'Internal Error' : err.message);
           }
         }),
-      onClose: (cb) =>
-        socket.on('close', () => {
-          if (pongWait) clearTimeout(pongWait);
-          if (pingInterval) clearInterval(pingInterval);
-          cb();
-        }),
+    });
+
+    socket.once('close', () => {
+      if (pongWait) clearTimeout(pongWait);
+      if (pingInterval) clearInterval(pingInterval);
+      closed();
     });
   });
+
+  return {
+    dispose: async () => {
+      for (const client of ws.clients) {
+        client.close(1001, 'Going away');
+      }
+      ws.removeAllListeners();
+      await new Promise((resolve, reject) => {
+        ws.close((err) => (err ? reject(err) : resolve()));
+      });
+    },
+  };
 }

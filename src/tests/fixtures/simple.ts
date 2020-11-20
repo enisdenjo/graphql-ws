@@ -11,7 +11,7 @@ import WebSocket from 'ws';
 import net from 'net';
 import http from 'http';
 import { ServerOptions, Context } from '../../server';
-import { createServer } from '../../use/ws';
+import { useServer } from '../../use/ws';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -147,7 +147,7 @@ export async function startTServer(
     server: httpServer,
     path,
   });
-  const server = await createServer(
+  const server = await useServer(
     {
       schema,
       execute,

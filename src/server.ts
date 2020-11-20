@@ -284,8 +284,13 @@ export interface Server {
    * sub-protocols. The lib will validate the protocols
    * and use the socket accordingly. Returned promise will
    * resolve after the socket closes.
+   *
+   * Returns a function that should be called when the exact
+   * same socket has been closed, for whatever reason. The
+   * returned promise will resolve once the internal cleanup
+   * is complete.
    */
-  opened(socket: WebSocket): Promise<void>;
+  opened(socket: WebSocket): () => Promise<void>;
 }
 
 export interface WebSocket {
@@ -324,10 +329,6 @@ export interface WebSocket {
    * to your clients however you wish.
    */
   onMessage(cb: (data: string) => Promise<void>): void;
-  /**
-   * The socket has closed, by whatever reason.
-   */
-  onClose(cb: () => void): void;
 }
 
 export interface Context {
@@ -382,9 +383,12 @@ export function makeServer(options: ServerOptions): Server {
   } = options;
 
   return {
-    async opened(socket) {
+    opened(socket) {
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
-        return socket.close(1002, 'Protocol Error');
+        socket.close(1002, 'Protocol Error');
+        return async () => {
+          /* nothing was set up */
+        };
       }
 
       const ctx: Context = {
@@ -415,7 +419,7 @@ export function makeServer(options: ServerOptions): Server {
         switch (message.type) {
           case MessageType.ConnectionInit: {
             if (ctx.connectionInitReceived) {
-              return ctx.socket.close(4429, 'Too many initialisation requests');
+              return socket.close(4429, 'Too many initialisation requests');
             }
             ctx.connectionInitReceived = true;
 
@@ -425,7 +429,7 @@ export function makeServer(options: ServerOptions): Server {
 
             const permittedOrPayload = await onConnect?.(ctx);
             if (permittedOrPayload === false) {
-              return ctx.socket.close(4403, 'Forbidden');
+              return socket.close(4403, 'Forbidden');
             }
 
             await socket.send(
@@ -594,7 +598,7 @@ export function makeServer(options: ServerOptions): Server {
 
               // iterable subscriptions are distinct on ID
               if (ctx.subscriptions[id]) {
-                return ctx.socket.close(
+                return socket.close(
                   4409,
                   `Subscriber for ${id} already exists`,
                 );
@@ -630,12 +634,12 @@ export function makeServer(options: ServerOptions): Server {
       });
 
       // wait for close and cleanup
-      socket.onClose(() => {
+      return async () => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          sub.return?.();
+          await sub.return?.();
         }
-      });
+      };
     },
   };
 }
