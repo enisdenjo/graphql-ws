@@ -1,3 +1,86 @@
+# [2.0.0](https://github.com/enisdenjo/graphql-ws/compare/v1.14.0...v2.0.0) (2020-11-20)
+
+
+### Features
+
+* **server:** Make and use with your own flavour ([#64](https://github.com/enisdenjo/graphql-ws/issues/64)) ([38bde87](https://github.com/enisdenjo/graphql-ws/commit/38bde87122f4c39b0357c636fd98bfee886dd6e5)), closes [#61](https://github.com/enisdenjo/graphql-ws/issues/61) [#73](https://github.com/enisdenjo/graphql-ws/issues/73) [#75](https://github.com/enisdenjo/graphql-ws/issues/75)
+
+
+### BREAKING CHANGES
+
+* **server:** You now "make" a ready-to-use server that can be used with _any_ WebSocket implementation!
+
+Summary of breaking changes:
+- No more `keepAlive`. The user should provide its own keep-alive implementation. _(I highly recommend [WebSocket Ping and Pongs](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Pings_and_Pongs_The_Heartbeat_of_WebSockets))_
+- No more HTTP `request` in the server context.
+- No more WebSocket in the server context (you're the one that creates it).
+- You use your own WebSocket server
+- Server exports only `makeServer` _(no more `createServer`)_
+
+### Benefits
+- You're responsible for the server (_any_ optimisation or adjustment can be applied)
+- Any WebSocket server can be used (or even mocked if necessary)
+- You control the disposal of the server (close or transfer clients however you wish)
+- New `extra` field in the `Context` for storing custom values useful for callbacks
+- Full control of authentication flow
+- Full control over error handling
+- True zero-dependency
+
+### Migrating from v1
+
+**Only the server has to be migrated.** Since this release allows you to use your favourite WebSocket library (or your own implementation), using [ws](https://github.com/websockets/ws) is just one way of using `graphql-ws`. This is how to use the implementation shipped with the lib:
+
+```ts
+/**
+ * ❌ instead of the lib creating a WebSocket server internally with the provided arguments
+ */
+import https from 'https';
+import { createServer } from 'graphql-ws';
+
+const server = https.createServer(...);
+
+createServer(
+  {
+    onConnect(ctx) {
+      // were previously directly on the context
+      ctx.request as IncomingRequest
+      ctx.socket as WebSocket
+    },
+    ...rest,
+  },
+  {
+    server,
+    path: '/graphql',
+  },
+);
+
+/**
+ * ✅ you have to supply the server yourself
+ */
+import https from 'https';
+import ws from 'ws'; // yarn add ws
+import { useServer } from 'graphql-ws/lib/use/ws'; // notice the import path
+
+const server = https.createServer(...);
+const wsServer = new ws.Server({
+  server,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    onConnect(ctx) {
+      // are now in the `extra` field
+      ctx.extra.request as IncomingRequest
+      ctx.extra.socket as WebSocket
+    },
+    ...rest,
+  },
+  wsServer,
+  // optional keepAlive with ping pongs (defaults to 12 seconds)
+);
+```
+
 # [1.14.0](https://github.com/enisdenjo/graphql-ws/compare/v1.13.1...v1.14.0) (2020-11-15)
 
 
