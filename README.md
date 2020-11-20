@@ -558,6 +558,107 @@ wsServer.on('connection', (socket, request) => {
 
 </details>
 
+<details id="ws-auth-handling">
+<summary><a href="#ws-auth-handling">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a> and custom auth handling</summary>
+
+```ts
+// check extended implementation at `{ useServer } from 'graphql-ws/lib/use/ws'`
+
+import http from 'http';
+import ws from 'ws'; // yarn add ws
+import { makeServer } from '../index';
+import { execute, subscribe } from 'graphql';
+import { schema } from 'my-graphql-schema';
+import { validate } from 'my-auth';
+
+// extra in the context
+interface Extra {
+  readonly request: http.IncomingMessage;
+}
+
+// your custom auth
+class Forbidden extends Error {}
+function handleAuth(request: http.IncomingMessage) {
+  // do your auth on every subscription connect
+  const good = validate(request.headers['authorization']);
+  // or const { iDontApprove } = session(request.cookies);
+  if (!good) {
+    // throw a custom error to be handled
+    throw new Forbidden(':(');
+  }
+}
+
+// make
+const server = makeServer<Extra>({
+  schema,
+  execute,
+  subscribe,
+  onConnect: async (ctx) => {
+    // do your auth on every connect
+    await handleAuth(ctx.extra.request);
+  },
+  onSubscribe: async (ctx) => {
+    // or maybe on every subscribe
+    await handleAuth(ctx.extra.request);
+  },
+  onNext: async (ctx) => {
+    // haha why not on every result emission?
+    await handleAuth(ctx.extra.request);
+  },
+});
+
+// create websocket server
+const wsServer = new ws.Server({
+  server,
+  path: '/graphql',
+});
+
+// implement
+wsServer.on('connection', (socket, request) => {
+  // you may even reject the connection without ever reaching the lib
+  // return socket.close(4403, 'Forbidden');
+
+  // pass the connection to graphql-ws
+  const closed = server.opened(
+    {
+      protocol: socket.protocol, // will be validated
+      send: (data) =>
+        new Promise((resolve, reject) => {
+          // control your data flow by timing the promise resolve
+          socket.send(data, (err) => (err ? reject(err) : resolve()));
+        }),
+      close: (code, reason) => socket.close(code, reason), // for standard closures
+      onMessage: (cb) => {
+        socket.on('message', async (event) => {
+          try {
+            // wait for the the operation to complete
+            // - if init message, waits for connect
+            // - if query/mutation, waits for result
+            // - if subscription, waits for complete
+            await cb(event.toString());
+          } catch (err) {
+            // all errors that could be thrown during the
+            // execution of operations, will be caught here
+            if (err instanceof Forbidden) {
+              // your magic
+            } else {
+              socket.close(1011, err.message);
+            }
+          }
+        });
+      },
+    },
+    // pass request to the extra
+    { request },
+  );
+
+  // notify server that the socket closed
+  socket.once('close', () => closed());
+});
+```
+
+</details>
+
 <details id="express">
 <summary><a href="#express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
