@@ -524,31 +524,35 @@ const wsServer = new ws.Server({
 
 // implement
 wsServer.on('connection', (socket, request) => {
+  // a new socket opened, let graphql-ws take over
   const closed = server.opened(
     {
-      protocol: socket.protocol,
+      protocol: socket.protocol, // will be validated
       send: (data) =>
         new Promise((resolve, reject) => {
           socket.send(data, (err) => (err ? reject(err) : resolve()));
-        }),
-      close: (code, reason) => socket.close(code, reason),
+        }), // control your data flow by timing the promise resole
+      close: (code, reason) => socket.close(code, reason), // there are protocol standard closures
       onMessage: (cb) =>
         socket.on('message', async (event) => {
           try {
+            // wait for the the operation to complete
+            // - if query/mutation, waits for result
+            // - if subscription, waits for complete
             await cb(event.toString());
           } catch (err) {
+            // all errors that could be thrown during the
+            // execution of operations, will be caught here
             socket.close(1011, err.message);
           }
         }),
     },
+    // pass values to the `extra` field in the context
     { socket, request },
   );
 
-  socket.once('close', () => {
-    if (pongWait) clearTimeout(pongWait);
-    if (pingInterval) clearInterval(pingInterval);
-    closed();
-  });
+  // notify server that the socket closed
+  socket.once('close', closed);
 });
 ```
 
