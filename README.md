@@ -82,7 +82,7 @@ server.listen(443);
 #### Use the client
 
 ```ts
-import { createClient } from 'graphql-ws/lib/use/ws';
+import { createClient } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://welcomer.com/graphql',
@@ -136,7 +136,7 @@ const client = createClient({
 <summary><a href="#promise">🔗</a> Client usage with Promise</summary>
 
 ```ts
-import { createClient, SubscribePayload } from 'graphql-ws/lib/use/ws';
+import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://hey.there/graphql',
@@ -173,7 +173,7 @@ async function execute<T>(payload: SubscribePayload) {
 <summary><a href="#async-iterator">🔗</a> Client usage with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator">AsyncIterator</a></summary>
 
 ```ts
-import { createClient, SubscribePayload } from 'graphql-ws/lib/use/ws';
+import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://iterators.ftw/graphql',
@@ -284,7 +284,7 @@ import {
   RequestParameters,
   Variables,
 } from 'relay-runtime';
-import { createClient } from 'graphql-ws/lib/use/ws';
+import { createClient } from 'graphql-ws';
 
 const subscriptionsClient = createClient({
   url: 'wss://i.love/graphql',
@@ -349,7 +349,7 @@ export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 
 ```ts
 import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
-import { createClient as createWSClient } from 'graphql-ws/lib/use/ws';
+import { createClient as createWSClient } from 'graphql-ws';
 
 const wsClient = createWSClient({
   url: 'wss://its.urql/graphql',
@@ -383,7 +383,7 @@ const client = createClient({
 ```typescript
 import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
 import { print, GraphQLError } from 'graphql';
-import { createClient, ClientOptions, Client } from 'graphql-ws/lib/use/ws';
+import { createClient, ClientOptions, Client } from 'graphql-ws';
 
 class WebSocketLink extends ApolloLink {
   private client: Client;
@@ -797,7 +797,8 @@ import https from 'https';
 import ws from 'ws'; // yarn add ws
 import url from 'url';
 import { execute, subscribe } from 'graphql';
-import { useServer, createClient } from 'graphql-ws/lib/use/ws';
+import { createClient } from 'graphql-ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from 'my-graphql-schema';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
@@ -962,7 +963,7 @@ useServer(
 ```typescript
 // 📺 client
 
-import { createClient } from 'graphql-ws/lib/use/ws';
+import { createClient } from 'graphql-ws';
 
 const client = createClient({
   url: 'wss://persisted.graphql/queries',
