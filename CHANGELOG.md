@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/enisdenjo/graphql-ws/compare/v2.0.0...v2.0.1) (2020-12-03)
+
+
+### Bug Fixes
+
+* **client:** Close event's `wasClean` is not necessary ([2c65f0e](https://github.com/enisdenjo/graphql-ws/commit/2c65f0ee91a6372a9c2935183d9be0be50f40663)), closes [#81](https://github.com/enisdenjo/graphql-ws/issues/81)
+
 # [2.0.0](https://github.com/enisdenjo/graphql-ws/compare/v1.14.0...v2.0.0) (2020-11-20)
 
 
