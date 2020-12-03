@@ -789,7 +789,7 @@ describe('events', () => {
       // already closed
     } else {
       // wait for close
-      await new Promise((resolve) => {
+      await new Promise<void>((resolve) => {
         client.on('closed', () => resolve());
       });
     }

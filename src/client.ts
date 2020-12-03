@@ -286,7 +286,7 @@ export function createClient(options: ClientOptions): Client {
     };
     emitter.emit('connecting');
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       let cancelled = false;
       cancellerRef.current = () => (cancelled = true);
 

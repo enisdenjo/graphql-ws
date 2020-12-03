@@ -118,7 +118,7 @@ export function useServer(
         client.close(1001, 'Going away');
       }
       ws.removeAllListeners();
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         ws.close((err) => (err ? reject(err) : resolve()));
       });
     },
