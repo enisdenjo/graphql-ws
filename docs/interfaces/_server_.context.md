@@ -62,6 +62,15 @@ ___
 An extra field where you can store your own context values
 to pass between callbacks.
 
+An object containing socket and request fields passed from `ws` connection event.
+
+#### Fields:
+
+Name     | Type      |
+-------- | --------- |
+`socket` | WebSocket |
+`request` | http.IncomingMessage |
+
 ___
 
 ### subscriptions
