@@ -384,7 +384,7 @@ export function createClient(options: ClientOptions): Client {
           state.locks++;
 
           socket.addEventListener('close', listener);
-          function listener(event: CloseEvent) {
+          function listener(event: LikeCloseEvent) {
             cancellerRef.current = null;
             state.locks--;
             socket.removeEventListener('close', listener);
@@ -422,7 +422,7 @@ export function createClient(options: ClientOptions): Client {
    */
   function shouldRetryConnectOrThrow(errOrCloseEvent: unknown): boolean {
     // throw non `CloseEvent`s immediately, something else is wrong
-    if (!isCloseEvent(errOrCloseEvent)) {
+    if (!isLikeCloseEvent(errOrCloseEvent)) {
       throw errOrCloseEvent;
     }
 
@@ -597,8 +597,16 @@ export function createClient(options: ClientOptions): Client {
   };
 }
 
-function isCloseEvent(val: unknown): val is CloseEvent {
-  return isObject(val) && 'code' in val && 'reason' in val && 'wasClean' in val;
+/** Minimal close event interface required by the lib for error and socket close handling. */
+interface LikeCloseEvent {
+  /** Returns the WebSocket connection close code provided by the server. */
+  readonly code: number;
+  /** Returns the WebSocket connection close reason provided by the server. */
+  readonly reason: string;
+}
+
+function isLikeCloseEvent(val: unknown): val is LikeCloseEvent {
+  return isObject(val) && 'code' in val && 'reason' in val;
 }
 
 function isWebSocket(val: unknown): val is typeof WebSocket {
