@@ -742,6 +742,71 @@ server.listen(443, () => {
 
 </details>
 
+<details id="ws-backwards-compat">
+<summary><a href="#ws-backwards-compat">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/apollographql/subscriptions-transport-ws">subscriptions-transport-ws</a> backwards compatibility</summary>
+
+```ts
+import https from 'https';
+import ws from 'ws'; // yarn add ws
+import { execute, subscribe } from 'graphql';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { SubscriptionServer, GRAPHQL_WS } from 'subscriptions-transport-ws';
+import { schema } from 'my-graphql-schema';
+
+// graphql-ws
+const graphqlWs = new ws.Server({ noServer: true });
+useServer(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  graphqlWs,
+);
+
+// subscriptions-transport-ws
+const subTransWs = new ws.Server({ noServer: true });
+SubscriptionServer.create(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  subTransWs,
+);
+
+// create https server
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+// listen for upgrades and delegate requests according to the WS subprotocol
+server.on('upgrade', (req, socket, head) => {
+  // extract websocket subprotocol from header
+  const protocol = req.headers['sec-websocket-protocol'];
+  const protocols = Array.isArray(protocol)
+    ? protocol
+    : protocol?.split(',').map((p) => p.trim());
+
+  // decide which websocket server to use
+  const wss =
+    protocols?.includes(GRAPHQL_WS) && // subscriptions-transport-ws subprotocol
+    !protocols.includes(GRAPHQL_TRANSPORT_WS_PROTOCOL) // graphql-ws subprotocol
+      ? subTransWs
+      : // graphql-ws will welcome its own subprotocol and
+        // gracefully reject invalid ones. if the client supports
+        // both transports, graphql-ws will prevail
+        graphqlWs;
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit('connection', ws, req);
+  });
+});
+```
+
+</details>
+
 <details id="logging">
 <summary><a href="#logging">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with console logging</summary>
 
