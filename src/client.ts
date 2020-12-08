@@ -102,12 +102,6 @@ export interface ClientOptions {
    */
   retryAttempts?: number;
   /**
-   * How long should the client wait until attempting to retry.
-   *
-   * @default 3 * 1000 (3 seconds)
-   */
-  retryTimeout?: number;
-  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -154,7 +148,6 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     keepAlive = 0,
     retryAttempts = 5,
-    retryTimeout = 3 * 1000, // 3 seconds
     on,
     webSocketImpl,
     /**
@@ -235,6 +228,16 @@ export function createClient(options: ClientOptions): Client {
     locks: 0,
     tries: 0,
   };
+
+  /**
+   * Retry with randomised exponential backoff.
+   */
+  const initRetryDelay = 1000;
+  let currRetryDelay = initRetryDelay;
+  function retryDelay() {
+    if (state.tries > 0) currRetryDelay *= 2;
+    return currRetryDelay + Math.floor(Math.random() * (3000 - 300) + 300); // from 300ms to 3s
+  }
 
   type ConnectReturn = Promise<
     [
@@ -330,6 +333,7 @@ export function createClient(options: ClientOptions): Client {
 
           clearTimeout(tooLong);
           state = { ...state, acknowledged: true, socket, tries: 0 };
+          currRetryDelay = initRetryDelay; // reset retry delays
           emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
           return resolve();
         } catch (err) {
@@ -480,7 +484,7 @@ export function createClient(options: ClientOptions): Client {
             return;
           }
           // if should try again, wait a bit and continue loop
-          await new Promise((resolve) => setTimeout(resolve, retryTimeout));
+          await new Promise((resolve) => setTimeout(resolve, retryDelay()));
         }
       }
     })();
@@ -583,7 +587,7 @@ export function createClient(options: ClientOptions): Client {
               return;
             }
             // if should try again, wait a bit and continue loop
-            await new Promise((resolve) => setTimeout(resolve, retryTimeout));
+            await new Promise((resolve) => setTimeout(resolve, retryDelay()));
           }
         }
       })()
