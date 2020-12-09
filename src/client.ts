@@ -155,12 +155,9 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     keepAlive = 0,
     retryAttempts = 5,
-    /**
-     * Retry with randomised exponential backoff.
-     */
-    retryWait = async function retryWait(tries) {
-      let retryDelay = 1000; // 1s
-      for (let i = 0; i < tries; i++) {
+    retryWait = async function randomisedExponentialBackoff(retries) {
+      let retryDelay = 1000; // start with 1s delay
+      for (let i = 0; i < retries; i++) {
         retryDelay *= 2;
       }
       await new Promise((resolve) =>
