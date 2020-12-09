@@ -113,10 +113,10 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: undefined \| (tries: number) => Promise\<void>
+• `Optional` **retryWait**: undefined \| (retries: number) => Promise\<void>
 
 Control the wait time between retries. You may implement your own strategy
-by timing the resolution of the returned promise.
+by timing the resolution of the returned promise with the retries count.
 
 **`default`** Randomised exponential backoff
 
