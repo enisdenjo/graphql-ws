@@ -664,21 +664,30 @@ describe('reconnecting', () => {
   it('should reconnect silently after socket closes', async () => {
     const { url, ...server } = await startTServer();
 
-    const sub = tsubscribe(
-      createClient({
-        url,
-        retryAttempts: 1,
-      }),
-      {
-        query: 'subscription { ping }',
-      },
-    );
+    const client = createClient({
+      url,
+      retryAttempts: 3,
+      retryWait: () => Promise.resolve(),
+    });
+    const sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
 
     await server.waitForClient((client) => {
       client.close();
     });
 
-    // tried again
+    // retried
+    await server.waitForClient((client) => {
+      client.close();
+    });
+
+    // once more
+    await server.waitForClient((client) => {
+      client.close();
+    });
+
+    // and once more
     await server.waitForClient((client) => {
       client.close();
     });
