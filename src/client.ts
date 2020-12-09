@@ -276,7 +276,7 @@ export function createClient(options: ClientOptions): Client {
     if (state.retrying && callDepth === 0) {
       if (retryWaiting.length) {
         // if others are waiting for retry, I'll wait too
-        await new Promise((resolve) => retryWaiting.push(resolve));
+        await new Promise<void>((resolve) => retryWaiting.push(resolve));
       } else {
         retryWaiting.push(() => {
           /** fake waiter to lead following connects in the `retryWaiting` queue */
