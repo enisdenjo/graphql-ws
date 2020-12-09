@@ -103,11 +103,11 @@ export interface ClientOptions {
   retryAttempts?: number;
   /**
    * Control the wait time between retries. You may implement your own strategy
-   * by timing the resolution of the returned promise.
+   * by timing the resolution of the returned promise with the retries count.
    *
    * @default Randomised exponential backoff
    */
-  retryWait?: (tries: number) => Promise<void>;
+  retryWait?: (retries: number) => Promise<void>;
   /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.

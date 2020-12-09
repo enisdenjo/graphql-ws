@@ -20,6 +20,7 @@ Configuration used for the GraphQL over WebSocket client.
 * [lazy](_client_.clientoptions.md#lazy)
 * [on](_client_.clientoptions.md#on)
 * [retryAttempts](_client_.clientoptions.md#retryattempts)
+* [retryWait](_client_.clientoptions.md#retrywait)
 * [url](_client_.clientoptions.md#url)
 * [webSocketImpl](_client_.clientoptions.md#websocketimpl)
 
@@ -107,6 +108,17 @@ The library classifies the following close events as fatal:
 These events are reported immediately and the client will not reconnect.
 
 **`default`** 5
+
+___
+
+### retryWait
+
+• `Optional` **retryWait**: undefined \| (tries: number) => Promise\<void>
+
+Control the wait time between retries. You may implement your own strategy
+by timing the resolution of the returned promise.
+
+**`default`** Randomised exponential backoff
 
 ___
 
