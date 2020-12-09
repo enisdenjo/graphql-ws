@@ -1,3 +1,33 @@
+# [3.0.0](https://github.com/enisdenjo/graphql-ws/compare/v2.0.1...v3.0.0) (2020-12-09)
+
+
+### Features
+
+* **client:** Retry with randomised exponential backoff or provide your own strategy ([#84](https://github.com/enisdenjo/graphql-ws/issues/84)) ([d3e7a17](https://github.com/enisdenjo/graphql-ws/commit/d3e7a171603a3ef181c5af533768dcda416a1731))
+
+
+### BREAKING CHANGES
+
+* **client:** Client `retryTimeout` option has been replaced with the new `retryWait`.
+
+`retryWait` allows you to control the retry timeout strategy by resolving the returned promise when ready. The default implements the randomised exponential backoff like so:
+```ts
+// this is the default
+const retryWait = async function randomisedExponentialBackoff(retries: number) {
+  let retryDelay = 1000; // start with 1s delay
+  for (let i = 0; i < retries; i++) {
+    retryDelay *= 2; // square `retries` times
+  }
+  await new Promise((resolve) =>
+    setTimeout(
+      // resolve pending promise with added random timeout from 300ms to 3s
+      resolve,
+      retryDelay + Math.floor(Math.random() * (3000 - 300) + 300),
+    ),
+  );
+};
+```
+
 ## [2.0.1](https://github.com/enisdenjo/graphql-ws/compare/v2.0.0...v2.0.1) (2020-12-03)
 
 
