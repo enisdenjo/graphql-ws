@@ -182,11 +182,15 @@ export function createClient(options: ClientOptions): Client {
   } else if (typeof WebSocket !== 'undefined') {
     ws = WebSocket;
   } else if (typeof global !== 'undefined') {
-    // @ts-expect-error: Support more browsers
-    ws = global.WebSocket || global.MozWebSocket;
+    ws =
+      global.WebSocket ||
+      // @ts-expect-error: Support more browsers
+      global.MozWebSocket;
   } else if (typeof window !== 'undefined') {
-    // @ts-expect-error: Support more browsers
-    ws = window.WebSocket || window.MozWebSocket;
+    ws =
+      window.WebSocket ||
+      // @ts-expect-error: Support more browsers
+      window.MozWebSocket;
   }
   if (!ws) {
     throw new Error('WebSocket implementation missing');
