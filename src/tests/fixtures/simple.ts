@@ -147,7 +147,7 @@ export async function startTServer(
     server: httpServer,
     path,
   });
-  const server = await useServer(
+  const server = useServer(
     {
       schema,
       execute,
@@ -179,6 +179,26 @@ export async function startTServer(
     ws,
     keepAlive,
   );
+
+  // disposes of all started servers
+  const dispose: Dispose = (beNice) => {
+    return new Promise((resolve, reject) => {
+      if (!beNice) {
+        for (const socket of sockets) {
+          socket.destroy();
+          sockets.delete(socket);
+        }
+      }
+      const disposing = server.dispose() as Promise<void>;
+      disposing.catch(reject).then(() => {
+        httpServer.close(() => {
+          leftovers.splice(leftovers.indexOf(dispose), 1);
+          resolve();
+        });
+      });
+    });
+  };
+  leftovers.push(dispose);
 
   // search for open port from the starting port
   let tried = 0;
@@ -219,26 +239,6 @@ export async function startTServer(
       emitter.emit('close');
     });
   });
-
-  // disposes of all started servers
-  const dispose: Dispose = (beNice) => {
-    return new Promise((resolve, reject) => {
-      if (!beNice) {
-        for (const socket of sockets) {
-          socket.destroy();
-          sockets.delete(socket);
-        }
-      }
-      const disposing = server.dispose() as Promise<void>;
-      disposing.catch(reject).then(() => {
-        httpServer.close(() => {
-          leftovers.splice(leftovers.indexOf(dispose), 1);
-          resolve();
-        });
-      });
-    });
-  };
-  leftovers.push(dispose);
 
   const addr = httpServer.address();
   if (!addr || typeof addr !== 'object') {
