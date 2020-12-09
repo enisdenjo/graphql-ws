@@ -290,13 +290,15 @@ export function createClient(options: ClientOptions): Client {
       }
     }
 
+    // if recursive call, wait a bit for socket change
+    await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
+
     // socket already exists. can be ready or pending, check and behave accordingly
     if (state.socket) {
       switch (state.socket.readyState) {
         case WebSocketImpl.OPEN: {
           // if the socket is not acknowledged, wait a bit and reavaluate
           if (!state.acknowledged) {
-            await new Promise((resolve) => setTimeout(resolve, 300));
             return connect(cancellerRef, callDepth + 1);
           }
 
@@ -304,14 +306,12 @@ export function createClient(options: ClientOptions): Client {
         }
         case WebSocketImpl.CONNECTING: {
           // if the socket is in the connecting phase, wait a bit and reavaluate
-          await new Promise((resolve) => setTimeout(resolve, 300));
           return connect(cancellerRef, callDepth + 1);
         }
         case WebSocketImpl.CLOSED:
           break; // just continue, we'll make a new one
         case WebSocketImpl.CLOSING: {
           // if the socket is in the closing phase, wait a bit and connect
-          await new Promise((resolve) => setTimeout(resolve, 300));
           return connect(cancellerRef, callDepth + 1);
         }
         default:
