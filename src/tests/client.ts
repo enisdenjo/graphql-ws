@@ -644,7 +644,6 @@ describe('reconnecting', () => {
       createClient({
         url,
         retryAttempts: 0,
-        retryTimeout: 5, // fake timeout
       }),
       {
         query: 'subscription { ping }',
@@ -655,48 +654,49 @@ describe('reconnecting', () => {
       client.close();
     });
 
-    await server.waitForClient(() => {
-      fail('Shouldnt have tried again');
-    }, 20);
-
-    // client reported the error
+    // client reported the error immediately, meaning it wont retry
+    expect.assertions(1);
     await sub.waitForError((err) => {
       expect((err as CloseEvent).code).toBe(1005);
-    });
+    }, 20);
   });
 
   it('should reconnect silently after socket closes', async () => {
     const { url, ...server } = await startTServer();
 
-    const sub = tsubscribe(
-      createClient({
-        url,
-        retryAttempts: 1,
-        retryTimeout: 5,
-      }),
-      {
-        query: 'subscription { ping }',
-      },
-    );
+    const client = createClient({
+      url,
+      retryAttempts: 3,
+      retryWait: () => Promise.resolve(),
+    });
+    const sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
 
     await server.waitForClient((client) => {
       client.close();
     });
 
-    // tried again
+    // retried
     await server.waitForClient((client) => {
       client.close();
     });
 
-    // never again
-    await server.waitForClient(() => {
-      fail('Shouldnt have tried again');
-    }, 20);
+    // once more
+    await server.waitForClient((client) => {
+      client.close();
+    });
 
-    // client reported the error
+    // and once more
+    await server.waitForClient((client) => {
+      client.close();
+    });
+
+    // client reported the error, meaning it wont retry anymore
+    expect.assertions(1);
     await sub.waitForError((err) => {
       expect((err as CloseEvent).code).toBe(1005);
-    });
+    }, 20);
   });
 
   it('should report some close events immediately and not reconnect', async () => {
@@ -707,7 +707,6 @@ describe('reconnecting', () => {
         createClient({
           url,
           retryAttempts: Infinity, // keep retrying forever
-          retryTimeout: 5,
         }),
         {
           query: 'subscription { ping }',
@@ -718,16 +717,13 @@ describe('reconnecting', () => {
         client.close(code);
       });
 
-      await server.waitForClient(() => {
-        fail('Shouldnt have tried again');
-      }, 20);
-
-      // client reported the error
+      // client reported the error immediately, meaning it wont retry
       await sub.waitForError((err) => {
         expect((err as CloseEvent).code).toBe(code);
-      });
+      }, 20);
     }
 
+    expect.assertions(6);
     await testCloseCode(1002);
     await testCloseCode(1011);
     await testCloseCode(4400);

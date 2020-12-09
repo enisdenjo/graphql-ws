@@ -20,7 +20,7 @@ Configuration used for the GraphQL over WebSocket client.
 * [lazy](_client_.clientoptions.md#lazy)
 * [on](_client_.clientoptions.md#on)
 * [retryAttempts](_client_.clientoptions.md#retryattempts)
-* [retryTimeout](_client_.clientoptions.md#retrytimeout)
+* [retryWait](_client_.clientoptions.md#retrywait)
 * [url](_client_.clientoptions.md#url)
 * [webSocketImpl](_client_.clientoptions.md#websocketimpl)
 
@@ -111,13 +111,14 @@ These events are reported immediately and the client will not reconnect.
 
 ___
 
-### retryTimeout
+### retryWait
 
-• `Optional` **retryTimeout**: undefined \| number
+• `Optional` **retryWait**: undefined \| (retries: number) => Promise\<void>
 
-How long should the client wait until attempting to retry.
+Control the wait time between retries. You may implement your own strategy
+by timing the resolution of the returned promise with the retries count.
 
-**`default`** 3 * 1000 (3 seconds)
+**`default`** Randomised exponential backoff
 
 ___
 

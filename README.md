@@ -443,6 +443,33 @@ const link = new WebSocketLink({
 
 </details>
 
+<details id="retry-strategy">
+<summary><a href="#retry-strategy">🔗</a> Client usage with custom retry timeout strategy</summary>
+
+```typescript
+import { createClient } from 'graphql-ws';
+
+const client = createClient({
+  url: 'wss://i.want.retry/control/graphql',
+  // this is the default
+  retryWait: async function randomisedExponentialBackoff(retries: number) {
+    let retryDelay = 1000; // start with 1s delay
+    for (let i = 0; i < retries; i++) {
+      retryDelay *= 2; // square `retries` times
+    }
+    await new Promise((resolve) =>
+      setTimeout(
+        // resolve pending promise with added random timeout from 300ms to 3s
+        resolve,
+        retryDelay + Math.floor(Math.random() * (3000 - 300) + 300),
+      ),
+    );
+  },
+});
+```
+
+</details>
+
 <details id="browser">
 <summary><a href="#browser">🔗</a> Client usage in browser</summary>
 
