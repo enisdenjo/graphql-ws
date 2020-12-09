@@ -102,6 +102,13 @@ export interface ClientOptions {
    */
   retryAttempts?: number;
   /**
+   * Control the wait time between retries. You may implement your own strategy
+   * by timing the resolution of the returned promise.
+   *
+   * @default Randomised exponential backoff
+   */
+  retryWait?: (tries: number) => Promise<void>;
+  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -148,6 +155,23 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     keepAlive = 0,
     retryAttempts = 5,
+    /**
+     * Retry with randomised exponential backoff.
+     */
+    retryWait = async function retryWait(tries) {
+      let retryDelay = 1000; // 1s
+      for (let i = 0; i < tries; i++) {
+        retryDelay *= 2;
+      }
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          retryDelay +
+            // add random timeout from 300ms to 3s
+            Math.floor(Math.random() * (3000 - 300) + 300),
+        ),
+      );
+    },
     on,
     webSocketImpl,
     /**
@@ -226,18 +250,12 @@ export function createClient(options: ClientOptions): Client {
     socket: null as WebSocket | null,
     acknowledged: false,
     locks: 0,
-    tries: 0,
+    retrying: false,
+    retries: 0,
   };
 
-  /**
-   * Retry with randomised exponential backoff.
-   */
-  const initRetryDelay = 1000;
-  let currRetryDelay = initRetryDelay;
-  function retryDelay() {
-    if (state.tries > 0) currRetryDelay *= 2;
-    return currRetryDelay + Math.floor(Math.random() * (3000 - 300) + 300); // from 300ms to 3s
-  }
+  // all those waiting for the `retryWait` to resolve
+  const retryWaiting: (() => void)[] = [];
 
   type ConnectReturn = Promise<
     [
@@ -252,6 +270,24 @@ export function createClient(options: ClientOptions): Client {
     // prevents too many recursive calls when reavaluating/re-connecting
     if (callDepth > 10) {
       throw new Error('Kept trying to connect but the socket never settled.');
+    }
+
+    // retry wait strategy only on root caller
+    if (state.retrying && callDepth === 0) {
+      if (retryWaiting.length) {
+        // if others are waiting for retry, I'll wait too
+        await new Promise((resolve) => retryWaiting.push(resolve));
+      } else {
+        retryWaiting.push(() => {
+          /** fake waiter to lead following connects in the `retryWaiting` queue */
+        });
+        // use retry wait strategy
+        await retryWait(state.retries);
+        // complete all waiting and clear the queue
+        while (retryWaiting.length) {
+          retryWaiting.pop()?.();
+        }
+      }
     }
 
     // socket already exists. can be ready or pending, check and behave accordingly
@@ -289,7 +325,7 @@ export function createClient(options: ClientOptions): Client {
       ...state,
       acknowledged: false,
       socket,
-      tries: state.tries + 1,
+      retries: state.retrying ? state.retries + 1 : state.retries,
     };
     emitter.emit('connecting');
 
@@ -332,8 +368,13 @@ export function createClient(options: ClientOptions): Client {
           }
 
           clearTimeout(tooLong);
-          state = { ...state, acknowledged: true, socket, tries: 0 };
-          currRetryDelay = initRetryDelay; // reset retry delays
+          state = {
+            ...state,
+            acknowledged: true,
+            socket,
+            retrying: false,
+            retries: 0,
+          };
           emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
           return resolve();
         } catch (err) {
@@ -459,11 +500,12 @@ export function createClient(options: ClientOptions): Client {
     }
 
     // retries are not allowed or we tried to many times, report error
-    if (!retryAttempts || state.tries > retryAttempts) {
+    if (!retryAttempts || state.retries >= retryAttempts) {
       throw errOrCloseEvent;
     }
 
-    // looks good, please retry
+    // looks good, start retrying
+    state.retrying = true;
     return true;
   }
 
@@ -480,11 +522,7 @@ export function createClient(options: ClientOptions): Client {
           return;
         } catch (errOrCloseEvent) {
           // return if shouldnt try again
-          if (!shouldRetryConnectOrThrow(errOrCloseEvent)) {
-            return;
-          }
-          // if should try again, wait a bit and continue loop
-          await new Promise((resolve) => setTimeout(resolve, retryDelay()));
+          if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
         }
       }
     })();
@@ -583,11 +621,7 @@ export function createClient(options: ClientOptions): Client {
             return;
           } catch (errOrCloseEvent) {
             // return if shouldnt try again
-            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) {
-              return;
-            }
-            // if should try again, wait a bit and continue loop
-            await new Promise((resolve) => setTimeout(resolve, retryDelay()));
+            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
           }
         }
       })()
