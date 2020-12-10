@@ -723,7 +723,7 @@ describe('reconnecting', () => {
     }
 
     // retried
-    await server.waitForClient(async (client) => {
+    await server.waitForClient((client) => {
       client.close();
     });
     // wait for all active subscribers to reconnect
@@ -732,7 +732,7 @@ describe('reconnecting', () => {
     }
 
     // once more
-    await server.waitForClient(async (client) => {
+    await server.waitForClient((client) => {
       client.close();
     });
     // wait for all active subscribers to reconnect
@@ -741,7 +741,7 @@ describe('reconnecting', () => {
     }
 
     // and finally
-    await server.waitForClient(async (client) => {
+    await server.waitForClient((client) => {
       client.close();
     });
     // wait for all active subscribers to reconnect
