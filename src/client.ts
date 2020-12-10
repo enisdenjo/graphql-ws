@@ -282,7 +282,7 @@ export function createClient(options: ClientOptions): Client {
           /** fake waiter to lead following connects in the `retryWaiting` queue */
         });
         // use retry wait strategy
-        await retryWait(state.retries++);
+        await retryWait(state.retries);
         // complete all waiting and clear the queue
         while (retryWaiting.length) {
           retryWaiting.pop()?.();
@@ -327,6 +327,7 @@ export function createClient(options: ClientOptions): Client {
       ...state,
       acknowledged: false,
       socket,
+      retries: state.retries + (state.retrying ? 1 : 0),
     };
     emitter.emit('connecting');
 
