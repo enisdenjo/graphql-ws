@@ -104,6 +104,8 @@ export interface ClientOptions {
   /**
    * Control the wait time between retries. You may implement your own strategy
    * by timing the resolution of the returned promise with the retries count.
+   * `retries` argument counts actual connection attempts, so it will begin with
+   * 0 after the first retryable disconnect.
    *
    * @default Randomised exponential backoff
    */
