@@ -246,6 +246,7 @@ export function createClient(options: ClientOptions): Client {
   })();
 
   let state = {
+    disposed: false,
     socket: null as WebSocket | null,
     acknowledged: false,
     locks: 0,
@@ -489,8 +490,8 @@ export function createClient(options: ClientOptions): Client {
       throw errOrCloseEvent;
     }
 
-    // normal closure is disposal, shouldnt try again
-    if (errOrCloseEvent.code === 1000) {
+    // already disposed or normal closure, shouldnt try again
+    if (state.disposed || errOrCloseEvent.code === 1000) {
       return false;
     }
 
@@ -633,6 +634,7 @@ export function createClient(options: ClientOptions): Client {
       };
     },
     dispose() {
+      state.disposed = true;
       state.socket?.close(1000, 'Normal Closure');
       emitter.reset();
     },
