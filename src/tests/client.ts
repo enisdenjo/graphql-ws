@@ -707,7 +707,7 @@ describe('reconnecting', () => {
 
     const client = createClient({
       url,
-      retryAttempts: 3,
+      retryAttempts: 1,
       retryWait: () => Promise.resolve(),
     });
 
@@ -721,23 +721,29 @@ describe('reconnecting', () => {
       );
       await server.waitForOperation();
     }
-    await server.waitForClient((client) => {
-      client.close();
-    });
 
     // retried
     await server.waitForClient(async (client) => {
       client.close();
     });
+    // wait for all active subscribers to reconnect
+    for (const _ of subs) {
+      await server.waitForOperation();
+    }
 
     // once more
     await server.waitForClient(async (client) => {
       client.close();
     });
+    // wait for all active subscribers to reconnect
+    for (const _ of subs) {
+      await server.waitForOperation();
+    }
 
     // and finally
-    await server.waitForClient();
-
+    await server.waitForClient(async (client) => {
+      client.close();
+    });
     // wait for all active subscribers to reconnect
     for (const _ of subs) {
       await server.waitForOperation();
