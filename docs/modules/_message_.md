@@ -34,7 +34,7 @@
 
 ### Message
 
-Ƭ  **Message**\<T>: T *extends* ConnectionAck ? ConnectionAckMessage : T *extends* ConnectionInit ? ConnectionInitMessage : T *extends* Subscribe ? SubscribeMessage : T *extends* Next ? NextMessage : T *extends* Error ? ErrorMessage : T *extends* Complete ? CompleteMessage : never
+Ƭ  **Message**<T\>: T *extends* ConnectionAck ? ConnectionAckMessage : T *extends* ConnectionInit ? ConnectionInitMessage : T *extends* Subscribe ? SubscribeMessage : T *extends* Next ? NextMessage : T *extends* Error ? ErrorMessage : T *extends* Complete ? CompleteMessage : never
 
 #### Type parameters:
 
@@ -78,7 +78,7 @@ ___
 
 ### stringifyMessage
 
-▸ **stringifyMessage**\<T>(`msg`: [Message](_message_.md#message)\<T>): string
+▸ **stringifyMessage**<T\>(`msg`: [Message](_message_.md#message)<T\>): string
 
 Stringifies a valid message ready to be sent through the socket.
 
@@ -92,6 +92,6 @@ Name | Type |
 
 Name | Type |
 ------ | ------ |
-`msg` | [Message](_message_.md#message)\<T> |
+`msg` | [Message](_message_.md#message)<T\> |
 
 **Returns:** string

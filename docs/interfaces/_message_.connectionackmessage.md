@@ -19,7 +19,7 @@
 
 ### payload
 
-• `Optional` `Readonly` **payload**: Record\<string, unknown>
+• `Optional` `Readonly` **payload**: Record<string, unknown\>
 
 ___
 

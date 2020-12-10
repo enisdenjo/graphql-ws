@@ -2,7 +2,7 @@
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / Context
 
-# Interface: Context\<E>
+# Interface: Context<E\>
 
 ## Type parameters
 
@@ -49,7 +49,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: Readonly\<Record\<string, unknown>>
+• `Optional` `Readonly` **connectionParams**: Readonly<Record<string, unknown\>\>
 
 The parameters passed during the connection initialisation.
 
@@ -66,7 +66,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: Record\<[ID](../modules/_types_.md#id), AsyncIterator\<unknown>>
+• `Readonly` **subscriptions**: Record<[ID](../modules/_types_.md#id), AsyncIterator<unknown\>\>
 
 Holds the active subscriptions for this context.
 Subscriptions are for **streaming operations only**,

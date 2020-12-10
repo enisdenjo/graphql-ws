@@ -2,7 +2,7 @@
 
 > [Globals](../README.md) / ["types"](../modules/_types_.md) / Sink
 
-# Interface: Sink\<T>
+# Interface: Sink<T\>
 
 A representation of any set of values over any amount of time.
 

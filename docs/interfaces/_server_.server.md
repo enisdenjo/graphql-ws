@@ -2,7 +2,7 @@
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / Server
 
-# Interface: Server\<E>
+# Interface: Server<E\>
 
 ## Type parameters
 

@@ -32,4 +32,4 @@ ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: Record\<string, unknown> \| null
+• `Optional` `Readonly` **variables**: Record<string, unknown\> \| null

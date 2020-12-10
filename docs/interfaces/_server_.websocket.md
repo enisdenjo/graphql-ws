@@ -33,7 +33,7 @@ to validate agains the supported ones.
 
 ### close
 
-▸ **close**(`code`: number, `reason`: string): Promise\<void> \| void
+▸ **close**(`code`: number, `reason`: string): Promise<void\> \| void
 
 Closes the socket gracefully. Will always provide
 the appropriate code and close reason.
@@ -48,13 +48,13 @@ Name | Type |
 `code` | number |
 `reason` | string |
 
-**Returns:** Promise\<void> \| void
+**Returns:** Promise<void\> \| void
 
 ___
 
 ### onMessage
 
-▸ **onMessage**(`cb`: (data: string) => Promise\<void>): void
+▸ **onMessage**(`cb`: (data: string) => Promise<void\>): void
 
 Called when message is received. The library requires the data
 to be a `string`.
@@ -72,7 +72,7 @@ to your clients however you wish.
 
 Name | Type |
 ------ | ------ |
-`cb` | (data: string) => Promise\<void> |
+`cb` | (data: string) => Promise<void\> |
 
 **Returns:** void
 
@@ -80,7 +80,7 @@ ___
 
 ### send
 
-▸ **send**(`data`: string): Promise\<void> \| void
+▸ **send**(`data`: string): Promise<void\> \| void
 
 Sends a message through the socket. Will always
 provide a `string` message.
@@ -98,4 +98,4 @@ Name | Type |
 ------ | ------ |
 `data` | string |
 
-**Returns:** Promise\<void> \| void
+**Returns:** Promise<void\> \| void

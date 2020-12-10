@@ -58,7 +58,7 @@ ___
 
 ### EventConnectedListener
 
-Ƭ  **EventConnectedListener**: (socket: unknown, payload?: Record\<string, unknown>) => void
+Ƭ  **EventConnectedListener**: (socket: unknown, payload?: Record<string, unknown\>) => void
 
 The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
@@ -83,7 +83,7 @@ ___
 
 ### EventListener
 
-Ƭ  **EventListener**\<E>: E *extends* EventConnecting ? EventConnectingListener : E *extends* EventConnected ? EventConnectedListener : E *extends* EventClosed ? EventClosedListener : never
+Ƭ  **EventListener**<E\>: E *extends* EventConnecting ? EventConnectingListener : E *extends* EventConnected ? EventConnectedListener : E *extends* EventClosed ? EventClosedListener : never
 
 #### Type parameters:
 

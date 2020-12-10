@@ -39,13 +39,13 @@ ___
 
 ### OperationResult
 
-Ƭ  **OperationResult**: Promise\<AsyncIterableIterator\<ExecutionResult> \| ExecutionResult> \| AsyncIterableIterator\<ExecutionResult> \| ExecutionResult
+Ƭ  **OperationResult**: Promise<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| AsyncIterableIterator<ExecutionResult\> \| ExecutionResult
 
 ## Functions
 
 ### makeServer
 
-▸ **makeServer**\<E>(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md)\<E>): [Server](../interfaces/_server_.server.md)\<E>
+▸ **makeServer**<E\>(`options`: [ServerOptions](../interfaces/_server_.serveroptions.md)<E\>): [Server](../interfaces/_server_.server.md)<E\>
 
 Makes a Protocol complient WebSocket GraphQL server. The server
 is actually an API which is to be used with your favourite WebSocket
@@ -63,6 +63,6 @@ Name | Default |
 
 Name | Type |
 ------ | ------ |
-`options` | [ServerOptions](../interfaces/_server_.serveroptions.md)\<E> |
+`options` | [ServerOptions](../interfaces/_server_.serveroptions.md)<E\> |
 
-**Returns:** [Server](../interfaces/_server_.server.md)\<E>
+**Returns:** [Server](../interfaces/_server_.server.md)<E\>

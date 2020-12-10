@@ -2,7 +2,7 @@
 
 > [Globals](../README.md) / ["server"](../modules/_server_.md) / ServerOptions
 
-# Interface: ServerOptions\<E>
+# Interface: ServerOptions<E\>
 
 ## Type parameters
 
@@ -53,7 +53,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue) \| (ctx: [Context](_server_.context.md)\<E>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs) => Promise\<[GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)> \| [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)
+• `Optional` **context**: [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue) \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs) => Promise<[GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)\> \| [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -85,7 +85,7 @@ ___
 
 ### onComplete
 
-• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md)\<E>, message: [CompleteMessage](_message_.completemessage.md)) => Promise\<void> \| void
+• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [CompleteMessage](_message_.completemessage.md)) => Promise<void\> \| void
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -103,7 +103,7 @@ ___
 
 ### onConnect
 
-• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)\<E>) => Promise\<Record\<string, unknown> \| boolean \| void> \| Record\<string, unknown> \| boolean \| void
+• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)<E\>) => Promise<Record<string, unknown\> \| boolean \| void\> \| Record<string, unknown\> \| boolean \| void
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -132,7 +132,7 @@ ___
 
 ### onError
 
-• `Optional` **onError**: undefined \| (ctx: [Context](_server_.context.md)\<E>, message: [ErrorMessage](_message_.errormessage.md), errors: readonly GraphQLError[]) => Promise\<readonly GraphQLError[] \| void> \| readonly GraphQLError[] \| void
+• `Optional` **onError**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [ErrorMessage](_message_.errormessage.md), errors: readonly GraphQLError[]) => Promise<readonly GraphQLError[] \| void\> \| readonly GraphQLError[] \| void
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -150,7 +150,7 @@ ___
 
 ### onNext
 
-• `Optional` **onNext**: undefined \| (ctx: [Context](_server_.context.md)\<E>, message: [NextMessage](_message_.nextmessage.md), args: ExecutionArgs, result: ExecutionResult) => Promise\<ExecutionResult \| void> \| ExecutionResult \| void
+• `Optional` **onNext**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [NextMessage](_message_.nextmessage.md), args: ExecutionArgs, result: ExecutionResult) => Promise<ExecutionResult \| void\> \| ExecutionResult \| void
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -169,7 +169,7 @@ ___
 
 ### onOperation
 
-• `Optional` **onOperation**: undefined \| (ctx: [Context](_server_.context.md)\<E>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs, result: [OperationResult](../modules/_server_.md#operationresult)) => Promise\<[OperationResult](../modules/_server_.md#operationresult) \| void> \| [OperationResult](../modules/_server_.md#operationresult) \| void
+• `Optional` **onOperation**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs, result: [OperationResult](../modules/_server_.md#operationresult)) => Promise<[OperationResult](../modules/_server_.md#operationresult) \| void\> \| [OperationResult](../modules/_server_.md#operationresult) \| void
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -194,7 +194,7 @@ ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md)\<E>, message: [SubscribeMessage](_message_.subscribemessage.md)) => Promise\<ExecutionArgs \| readonly GraphQLError[] \| void> \| ExecutionArgs \| readonly GraphQLError[] \| void
+• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md)) => Promise<ExecutionArgs \| readonly GraphQLError[] \| void\> \| ExecutionArgs \| readonly GraphQLError[] \| void
 
 The subscribe callback executed right after
 acknowledging the request before any payload
