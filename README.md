@@ -448,21 +448,21 @@ const link = new WebSocketLink({
 
 ```typescript
 import { createClient } from 'graphql-ws';
+import { waitForHealthy } from 'my-servers';
+
+const url = 'wss://i.want.retry/control/graphql';
 
 const client = createClient({
-  url: 'wss://i.want.retry/control/graphql',
-  // this is the default
-  retryWait: async function randomisedExponentialBackoff(retries: number) {
-    let retryDelay = 1000; // start with 1s delay
-    for (let i = 0; i < retries; i++) {
-      retryDelay *= 2; // square `retries` times
-    }
+  url,
+  retryWait: async function waitForServerHealthyBeforeRetry() {
+    // if you have a server healthcheck, you can wait for it to become
+    // healthy before retrying after an abrupt disconnect (most commonly a restart)
+    await waitForHealthy(url);
+
+    // after the server becomes ready, wait for a second + random 0-3s timeout
+    // (avoid DDoSing yourself) and try connecting again
     await new Promise((resolve) =>
-      setTimeout(
-        // resolve pending promise with added random timeout from 300ms to 3s
-        resolve,
-        retryDelay + Math.floor(Math.random() * (3000 - 300) + 300),
-      ),
+      setTimeout(resolve, 1000 + Math.random() * 3000),
     );
   },
 });
