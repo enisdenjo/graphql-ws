@@ -288,7 +288,9 @@ export function createClient(options: ClientOptions): Client {
     }
 
     // if recursive call, wait a bit for socket change
-    await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
+    if (callDepth) {
+      await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
+    }
 
     // socket already exists. can be ready or pending, check and behave accordingly
     if (state.socket) {
