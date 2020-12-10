@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/enisdenjo/graphql-ws/compare/v3.0.1...v3.0.2) (2020-12-10)
+
+
+### Bug Fixes
+
+* **client:** No retries when disposed ([0d5e6c2](https://github.com/enisdenjo/graphql-ws/commit/0d5e6c259eee5e331c5cef92246888745edda5a4))
+
 ## [3.0.1](https://github.com/enisdenjo/graphql-ws/compare/v3.0.0...v3.0.1) (2020-12-10)
 
 
