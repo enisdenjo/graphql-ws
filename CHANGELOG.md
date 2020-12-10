@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/enisdenjo/graphql-ws/compare/v3.0.0...v3.0.1) (2020-12-10)
+
+
+### Performance Improvements
+
+* **client:** Await timeouts only in recursive connects ([55c8fc8](https://github.com/enisdenjo/graphql-ws/commit/55c8fc8aba5dfb5ff3c66a11946f85ec631b1d41))
+
 # [3.0.0](https://github.com/enisdenjo/graphql-ws/compare/v2.0.1...v3.0.0) (2020-12-09)
 
 
