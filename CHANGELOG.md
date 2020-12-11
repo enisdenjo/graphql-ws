@@ -1,3 +1,15 @@
+# [3.1.0](https://github.com/enisdenjo/graphql-ws/compare/v3.0.2...v3.1.0) (2020-12-11)
+
+
+### Bug Fixes
+
+* **client:** Time retries and socket change waits ([7c707db](https://github.com/enisdenjo/graphql-ws/commit/7c707db3c8c3b1991a7e1b95a225efd8d58d5615)), closes [#85](https://github.com/enisdenjo/graphql-ws/issues/85)
+
+
+### Features
+
+* **client:** `onNonLazyError` allows you to catch errors reported in non-lazy mode ([cd1e7df](https://github.com/enisdenjo/graphql-ws/commit/cd1e7df70ab63b59bbfac1354b8779173fb1f333))
+
 ## [3.0.2](https://github.com/enisdenjo/graphql-ws/compare/v3.0.1...v3.0.2) (2020-12-10)
 
 
