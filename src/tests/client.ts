@@ -131,6 +131,7 @@ it('should use the provided WebSocket implementation', async () => {
 
   createClient({
     url,
+    retryAttempts: 0,
     lazy: false,
     webSocketImpl: WebSocket,
   });
@@ -148,6 +149,7 @@ it('should not accept invalid WebSocket implementations', async () => {
   expect(() =>
     createClient({
       url,
+      retryAttempts: 0,
       lazy: false,
       webSocketImpl: {},
     }),
@@ -161,6 +163,7 @@ it('should recieve optional connection ack payload in event handler', async (don
 
   createClient({
     url,
+    retryAttempts: 0,
     lazy: false,
     on: {
       connected: (_socket, payload) => {
@@ -207,6 +210,7 @@ it('should pass the `connectionParams` through', async () => {
 
   let client = createClient({
     url: server.url,
+    retryAttempts: 0,
     lazy: false,
     connectionParams: { auth: 'token' },
   });
@@ -217,6 +221,7 @@ it('should pass the `connectionParams` through', async () => {
 
   client = createClient({
     url: server.url,
+    retryAttempts: 0,
     lazy: false,
     connectionParams: () => ({ from: 'func' }),
   });
@@ -227,6 +232,7 @@ it('should pass the `connectionParams` through', async () => {
 
   client = createClient({
     url: server.url,
+    retryAttempts: 0,
     lazy: false,
     connectionParams: () => Promise.resolve({ from: 'promise' }),
   });
@@ -273,7 +279,7 @@ describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     const sub = tsubscribe(client, {
       query: 'query { getValue }',
@@ -289,7 +295,7 @@ describe('query operation', () => {
   it('should accept nullish value for `operationName` and `variables`', async () => {
     const { url } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     // nothing
     await tsubscribe(client, {
@@ -316,7 +322,7 @@ describe('subscription operation', () => {
   it('should execute and "next" the emitted results until disposed', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     const sub = tsubscribe(client, {
       query: 'subscription Ping { ping }',
@@ -347,7 +353,7 @@ describe('subscription operation', () => {
   it('should emit results to correct distinct sinks', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     const sub1 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
@@ -406,7 +412,11 @@ describe('subscription operation', () => {
 
     const generateIDFn = jest.fn(() => 'not unique');
 
-    const client = createClient({ url, generateID: generateIDFn });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      generateID: generateIDFn,
+    });
 
     tsubscribe(client, {
       query: '{ getValue }',
@@ -419,7 +429,7 @@ describe('subscription operation', () => {
   it('should dispose of the subscription on complete', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     const sub = tsubscribe(client, {
       query: '{ getValue }',
@@ -435,7 +445,7 @@ describe('subscription operation', () => {
   it('should dispose of the subscription on error', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url });
+    const client = createClient({ url, retryAttempts: 0 });
 
     const sub = tsubscribe(client, {
       query: '{ iDontExist }',
@@ -456,7 +466,7 @@ describe('subscription operation', () => {
       waitForComplete,
     } = await startTServer();
 
-    const sub = tsubscribe(createClient({ url }), {
+    const sub = tsubscribe(createClient({ url, retryAttempts: 0 }), {
       query: 'subscription { greetings }',
     });
     await waitForOperation();
@@ -511,6 +521,7 @@ describe('lazy', () => {
 
     createClient({
       url,
+      retryAttempts: 0,
       lazy: false,
     });
 
