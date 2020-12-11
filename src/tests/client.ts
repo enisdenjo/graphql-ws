@@ -754,6 +754,55 @@ describe('reconnecting', () => {
     EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
+  it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async () => {
+    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
+    EventEmitter.defaultMaxListeners = 50; // for test
+
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 3,
+      retryWait: () => new Promise((resolve) => setTimeout(resolve, 500)),
+    });
+
+    // add subscribers
+    const subs: TSubscribe<unknown>[] = [];
+    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+      subs.push(
+        tsubscribe(client, {
+          query: `subscription Sub${i} { ping(key: "${i}") }`,
+        }),
+      );
+      await server.waitForOperation();
+    }
+
+    // connected
+    await server.waitForClient((client) => {
+      client.close();
+    });
+
+    // reconnected
+    await server.waitForClient((client) => {
+      client.close();
+    });
+    // once more
+    await server.waitForClient((client) => {
+      client.close();
+    });
+
+    await server.waitForClient();
+
+    // wait for all active subscribers to reconnect
+    for (const _ of subs) {
+      await server.waitForOperation();
+    }
+
+    client.dispose();
+
+    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
+  });
+
   it('should report some close events immediately and not reconnect', async () => {
     const { url, ...server } = await startTServer();
 

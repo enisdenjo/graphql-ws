@@ -267,13 +267,17 @@ export function createClient(options: ClientOptions): Client {
     cancellerRef: CancellerRef,
     callDepth = 0,
   ): ConnectReturn {
-    // prevents too many recursive calls when reavaluating/re-connecting
-    if (callDepth > 10) {
-      throw new Error('Kept trying to connect but the socket never settled.');
+    if (callDepth) {
+      // prevents too many recursive calls when reavaluating/re-connecting
+      if (callDepth > 10) {
+        throw new Error('Kept trying to connect but the socket never settled.');
+      }
+      // wait a bit for socket state changes in recursive calls
+      await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
     }
 
-    // retry wait strategy only on root caller
-    if (state.retrying && callDepth === 0) {
+    // retry wait strategy for all callers
+    if (state.retrying) {
       if (retryWaiting.length) {
         // if others are waiting for retry, I'll wait too
         await new Promise<void>((resolve) => retryWaiting.push(resolve));
@@ -283,6 +287,11 @@ export function createClient(options: ClientOptions): Client {
         });
         // use retry wait strategy
         await retryWait(state.retries);
+        state = {
+          ...state,
+          retrying: false, // avoid reading to waiting queue
+          retries: state.retries + 1, // is about to create a new WebSocket
+        };
         // complete all waiting and clear the queue
         while (retryWaiting.length) {
           retryWaiting.pop()?.();
@@ -290,20 +299,12 @@ export function createClient(options: ClientOptions): Client {
       }
     }
 
-    // if recursive call, wait a bit for socket change
-    if (callDepth) {
-      await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
-    }
-
     // socket already exists. can be ready or pending, check and behave accordingly
     if (state.socket) {
       switch (state.socket.readyState) {
         case WebSocketImpl.OPEN: {
           // if the socket is not acknowledged, wait a bit and reavaluate
-          if (!state.acknowledged) {
-            return connect(cancellerRef, callDepth + 1);
-          }
-
+          if (!state.acknowledged) return connect(cancellerRef, callDepth + 1);
           return makeConnectReturn(state.socket, cancellerRef);
         }
         case WebSocketImpl.CONNECTING: {
@@ -327,7 +328,6 @@ export function createClient(options: ClientOptions): Client {
       ...state,
       acknowledged: false,
       socket,
-      retries: state.retries + (state.retrying ? 1 : 0),
     };
     emitter.emit('connecting');
 
