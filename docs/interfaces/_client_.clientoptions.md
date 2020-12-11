@@ -19,6 +19,7 @@ Configuration used for the GraphQL over WebSocket client.
 * [keepAlive](_client_.clientoptions.md#keepalive)
 * [lazy](_client_.clientoptions.md#lazy)
 * [on](_client_.clientoptions.md#on)
+* [onNonLazyError](_client_.clientoptions.md#onnonlazyerror)
 * [retryAttempts](_client_.clientoptions.md#retryattempts)
 * [retryWait](_client_.clientoptions.md#retrywait)
 * [url](_client_.clientoptions.md#url)
@@ -88,6 +89,28 @@ you can ensure to catch all client relevant emitted events.
 
 The listeners passed in will **always** be the first ones
 to get the emitted event before other registered listeners.
+
+___
+
+### onNonLazyError
+
+• `Optional` **onNonLazyError**: undefined \| (errorOrCloseEvent: unknown) => void
+
+Used ONLY when the client is in non-lazy mode (`lazy = false`). When
+using this mode, the errors might have no sinks to report to. To avoid
+swallowing errors, or having uncaught promises; consider using `onNonLazyError`,
+which will be called when either:
+- An unrecoverable error/close event occurs
+- Silent retry attempts have been exceeded
+
+After a client has errored out, it will NOT perform any automatic actions.
+
+The argument can be a websocket `CloseEvent` or an `Error`. To avoid bundling
+DOM types, you should derive and assert the correct type. When receiving:
+- A `CloseEvent`: retry attempts have been exceeded or the specific
+close event is labeled as fatal (read more in `retryAttempts`).
+- An `Error`: some internal issue has occured, all internal errors are
+fatal by nature.
 
 ___
 

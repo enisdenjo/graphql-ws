@@ -78,6 +78,24 @@ export interface ClientOptions {
    */
   lazy?: boolean;
   /**
+   * Used ONLY when the client is in non-lazy mode (`lazy = false`). When
+   * using this mode, the errors might have no sinks to report to. To avoid
+   * swallowing errors, or having uncaught promises; consider using `onNonLazyError`,
+   * which will be called when either:
+   * - An unrecoverable error/close event occurs
+   * - Silent retry attempts have been exceeded
+   *
+   * After a client has errored out, it will NOT perform any automatic actions.
+   *
+   * The argument can be a websocket `CloseEvent` or an `Error`. To avoid bundling
+   * DOM types, you should derive and assert the correct type. When receiving:
+   * - A `CloseEvent`: retry attempts have been exceeded or the specific
+   * close event is labeled as fatal (read more in `retryAttempts`).
+   * - An `Error`: some internal issue has occured, all internal errors are
+   * fatal by nature.
+   */
+  onNonLazyError?: (errorOrCloseEvent: unknown) => void;
+  /**
    * How long should the client wait before closing the socket after the last oparation has
    * completed. This is meant to be used in combination with `lazy`. You might want to have
    * a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
@@ -155,6 +173,7 @@ export function createClient(options: ClientOptions): Client {
     url,
     connectionParams,
     lazy = true,
+    onNonLazyError,
     keepAlive = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
@@ -523,8 +542,14 @@ export function createClient(options: ClientOptions): Client {
           // cancelled, shouldnt try again
           return;
         } catch (errOrCloseEvent) {
-          // return if shouldnt try again
-          if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
+          try {
+            // return and report if shouldnt try again
+            if (!shouldRetryConnectOrThrow(errOrCloseEvent))
+              return onNonLazyError?.(errOrCloseEvent);
+          } catch {
+            // report thrown error, no further retries
+            return onNonLazyError?.(errOrCloseEvent);
+          }
         }
       }
     })();

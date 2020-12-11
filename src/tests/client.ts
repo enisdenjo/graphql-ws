@@ -645,6 +645,24 @@ describe('lazy', () => {
     // but will close eventually
     await server.waitForClientClose();
   });
+
+  it('should report errors to the `onNonLazyError` callback', async (done) => {
+    const { url, ...server } = await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: (err) => {
+        expect((err as CloseEvent).code).toBe(1005);
+        done();
+      },
+    });
+
+    await server.waitForClient((client) => {
+      client.close();
+    });
+  });
 });
 
 describe('reconnecting', () => {
