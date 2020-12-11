@@ -1870,13 +1870,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^26.0.18":
-  version: 26.0.18
-  resolution: "@types/jest@npm:26.0.18"
+"@types/jest@npm:^26.0.19":
+  version: 26.0.19
+  resolution: "@types/jest@npm:26.0.19"
   dependencies:
     jest-diff: ^26.0.0
     pretty-format: ^26.0.0
-  checksum: 942433a3bebfcc88f0d7e9662ef2157826e8018b0c30191f9ca56bc75703652e614c5019d8bc43950abacf304777204e35d968a6e28a35ad98d9f1bdb9442390
+  checksum: 98c8daaf89ca79823461818c1c22d337354e250a135e0314ba1a49e615620c8e2f54c5b900ba8554bf853919c97538f9a38b5af00cea83fd715ee2e6d75e04b8
   languageName: node
   linkType: hard
 
@@ -3775,9 +3775,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.621":
-  version: 1.3.621
-  resolution: "electron-to-chromium@npm:1.3.621"
-  checksum: 572d1da6d7b867c7332e10182c35539aee2f89e2c5b2bf5733069db5f446d00b97404ca158895def4f5b914fdfd2d2b74be07b29f0e8f382a8c25236fbd9d2c3
+  version: 1.3.622
+  resolution: "electron-to-chromium@npm:1.3.622"
+  checksum: cbe1f2215cb2b60a6d35bc2055559c458d68cf8bf35c838e236f6defa69c14ee9796779bb42a0999f19f904a5fb9b24f6502e6f57694e73cf939f6665341ab24
   languageName: node
   linkType: hard
 
@@ -4863,7 +4863,7 @@ __metadata:
     "@rollup/plugin-typescript": ^8.0.0
     "@semantic-release/changelog": ^5.0.1
     "@semantic-release/git": ^9.0.0
-    "@types/jest": ^26.0.18
+    "@types/jest": ^26.0.19
     "@types/ws": ^7.4.0
     "@typescript-eslint/eslint-plugin": ^4.9.1
     "@typescript-eslint/parser": ^4.9.1
@@ -4877,8 +4877,9 @@ __metadata:
     rollup: ^2.34.2
     rollup-plugin-terser: ^7.0.2
     semantic-release: ^17.3.0
+    tslib: ^2.0.3
     typedoc: ^0.19.2
-    typedoc-plugin-markdown: ^3.1.0
+    typedoc-plugin-markdown: ^3.1.1
     typescript: ^4.1.2
     ws: ^7.4.1
   peerDependencies:
@@ -7071,11 +7072,11 @@ __metadata:
   linkType: hard
 
 "marked@npm:^1.0.0, marked@npm:^1.1.1":
-  version: 1.2.5
-  resolution: "marked@npm:1.2.5"
+  version: 1.2.6
+  resolution: "marked@npm:1.2.6"
   bin:
     marked: bin/marked
-  checksum: f4d370e267ead928530d78ef5e52d79d7f938e419fc71103a8c22626daddadbe8f9cd56e8f745e94b5d1c47b95bf5ccb4d4917497d9bc1cd0c3f2cb3ee2f1398
+  checksum: d7d9a2d16315680cb2148e63d3f56881e499973275a6d496df27508fe8f1fdc061259c2b7b2789477f15091fc9fb2de11374be86f4c0846e019f6c3592586dbc
   languageName: node
   linkType: hard
 
@@ -10338,6 +10339,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "tslib@npm:2.0.3"
+  checksum: 447bfca5deaa157806c3f77eaba74d05dd0b38b014e47ce79d98b5c77ce7d91b00a687ba13ca1b5a74d35ca1098ac7a072c0a97fad06f0266612f2a03a6c8e8f
+  languageName: node
+  linkType: hard
+
 "tsutils@npm:^3.17.1":
   version: 3.17.1
   resolution: "tsutils@npm:3.17.1"
@@ -10448,14 +10456,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc-plugin-markdown@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "typedoc-plugin-markdown@npm:3.1.0"
+"typedoc-plugin-markdown@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "typedoc-plugin-markdown@npm:3.1.1"
   dependencies:
     handlebars: ^4.7.6
   peerDependencies:
     typedoc: ">=0.19.0 < 0.20.0"
-  checksum: 77484200da39f88a70b3858694aff5ecee656339608112871f9951cb7de35c6259b8dc814a1be9222dc7258e7cfc5695442d698c6f9fcf616793c1cacdc339fd
+  checksum: 66e672e3945bcaba26feae7c9e74d56d100c69c7954dfedb0d7962e9562f570b98ac1dd4169844fac41c376df10fbc12f81990cd481748eac0aa83092c21c1c5
   languageName: node
   linkType: hard
 
