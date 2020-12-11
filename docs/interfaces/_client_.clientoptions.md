@@ -97,9 +97,9 @@ ___
 • `Optional` **onNonLazyError**: undefined \| (errorOrCloseEvent: unknown) => void
 
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
-using this mode, the errors might have no sinks to report to. To avoid
-swallowing errors, or having uncaught promises; consider using `onNonLazyError`,
-which will be called when either:
+using this mode, the errors might have no sinks to report to; however,
+to avoid swallowing errors, consider using `onNonLazyError`,  which will
+be called when either:
 - An unrecoverable error/close event occurs
 - Silent retry attempts have been exceeded
 
@@ -111,6 +111,8 @@ DOM types, you should derive and assert the correct type. When receiving:
 close event is labeled as fatal (read more in `retryAttempts`).
 - An `Error`: some internal issue has occured, all internal errors are
 fatal by nature.
+
+**`default`** console.error
 
 ___
 

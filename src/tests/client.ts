@@ -132,6 +132,7 @@ it('should use the provided WebSocket implementation', async () => {
   createClient({
     url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     lazy: false,
     webSocketImpl: WebSocket,
   });
@@ -150,6 +151,7 @@ it('should not accept invalid WebSocket implementations', async () => {
     createClient({
       url,
       retryAttempts: 0,
+      onNonLazyError: noop,
       lazy: false,
       webSocketImpl: {},
     }),
@@ -164,6 +166,7 @@ it('should recieve optional connection ack payload in event handler', async (don
   createClient({
     url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     lazy: false,
     on: {
       connected: (_socket, payload) => {
@@ -185,6 +188,7 @@ it('should close with error message during connecting issues', async () => {
   const client = createClient({
     url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     on: {
       connected: () => {
         // the `connected` listener is called right before successful connection
@@ -211,6 +215,7 @@ it('should pass the `connectionParams` through', async () => {
   let client = createClient({
     url: server.url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     lazy: false,
     connectionParams: { auth: 'token' },
   });
@@ -222,6 +227,7 @@ it('should pass the `connectionParams` through', async () => {
   client = createClient({
     url: server.url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     lazy: false,
     connectionParams: () => ({ from: 'func' }),
   });
@@ -233,6 +239,7 @@ it('should pass the `connectionParams` through', async () => {
   client = createClient({
     url: server.url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     lazy: false,
     connectionParams: () => Promise.resolve({ from: 'promise' }),
   });
@@ -247,6 +254,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   let client = createClient({
     url: server.url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     connectionParams: () => {
       throw new Error('No auth?');
     },
@@ -263,6 +271,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   client = createClient({
     url: server.url,
     retryAttempts: 0,
+    onNonLazyError: noop,
     connectionParams: () => Promise.reject(new Error('No auth?')),
   });
 
@@ -279,7 +288,11 @@ describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub = tsubscribe(client, {
       query: 'query { getValue }',
@@ -295,7 +308,11 @@ describe('query operation', () => {
   it('should accept nullish value for `operationName` and `variables`', async () => {
     const { url } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     // nothing
     await tsubscribe(client, {
@@ -322,7 +339,11 @@ describe('subscription operation', () => {
   it('should execute and "next" the emitted results until disposed', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub = tsubscribe(client, {
       query: 'subscription Ping { ping }',
@@ -353,7 +374,11 @@ describe('subscription operation', () => {
   it('should emit results to correct distinct sinks', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub1 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
@@ -415,6 +440,7 @@ describe('subscription operation', () => {
     const client = createClient({
       url,
       retryAttempts: 0,
+      onNonLazyError: noop,
       generateID: generateIDFn,
     });
 
@@ -429,7 +455,11 @@ describe('subscription operation', () => {
   it('should dispose of the subscription on complete', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub = tsubscribe(client, {
       query: '{ getValue }',
@@ -445,7 +475,11 @@ describe('subscription operation', () => {
   it('should dispose of the subscription on error', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub = tsubscribe(client, {
       query: '{ iDontExist }',
@@ -466,9 +500,12 @@ describe('subscription operation', () => {
       waitForComplete,
     } = await startTServer();
 
-    const sub = tsubscribe(createClient({ url, retryAttempts: 0 }), {
-      query: 'subscription { greetings }',
-    });
+    const sub = tsubscribe(
+      createClient({ url, retryAttempts: 0, onNonLazyError: noop }),
+      {
+        query: 'subscription { greetings }',
+      },
+    );
     await waitForOperation();
 
     for (const client of clients) {
@@ -487,7 +524,11 @@ describe('"concurrency"', () => {
   it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async () => {
     const { url, ...server } = await startTServer();
 
-    const client = createClient({ url, retryAttempts: 0 });
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
 
     const sub1 = tsubscribe(client, {
       query: 'subscription { ping }',
@@ -522,6 +563,7 @@ describe('lazy', () => {
     createClient({
       url,
       retryAttempts: 0,
+      onNonLazyError: noop,
       lazy: false,
     });
 
@@ -537,6 +579,7 @@ describe('lazy', () => {
         url,
         lazy: false,
         retryAttempts: 0,
+        onNonLazyError: noop,
         on: {
           connected: () => resolve(client),
         },
@@ -555,6 +598,7 @@ describe('lazy', () => {
       url,
       lazy: true, // default
       retryAttempts: 0,
+      onNonLazyError: noop,
     });
 
     await server.waitForClient(() => {
@@ -582,6 +626,7 @@ describe('lazy', () => {
       url,
       lazy: true, // default
       retryAttempts: 0,
+      onNonLazyError: noop,
     });
 
     await server.waitForClient(() => {
@@ -622,6 +667,7 @@ describe('lazy', () => {
       lazy: true, // default
       keepAlive: 20,
       retryAttempts: 0,
+      onNonLazyError: noop,
     });
 
     const sub = tsubscribe(client, {
@@ -673,6 +719,7 @@ describe('reconnecting', () => {
       createClient({
         url,
         retryAttempts: 0,
+        onNonLazyError: noop,
       }),
       {
         query: 'subscription { ping }',
@@ -883,6 +930,7 @@ describe('events', () => {
       const client = createClient({
         url,
         retryAttempts: 0,
+        onNonLazyError: noop,
         on: {
           connecting: connectingFn,
           connected: connectedFn,
