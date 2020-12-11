@@ -308,7 +308,7 @@ export function createClient(options: ClientOptions): Client {
         await retryWait(state.retries);
         state = {
           ...state,
-          retrying: false, // avoid reading to waiting queue
+          retrying: false, // avoid leading to waiting queue
           retries: state.retries + 1, // is about to create a new WebSocket
         };
         // complete all waiting and clear the queue
