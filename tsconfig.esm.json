@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "es2015",
+    "outDir": "./lib",
+    "declaration": true
+  },
+  "exclude": ["src/tests", "lib"]
+}
