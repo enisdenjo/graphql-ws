@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/enisdenjo/graphql-ws/compare/v3.1.0...v3.2.0) (2020-12-17)
+
+
+### Features
+
+* Package ECMAScript Modules too ([#87](https://github.com/enisdenjo/graphql-ws/issues/87)) ([2108174](https://github.com/enisdenjo/graphql-ws/commit/2108174eb5e1f48656287a2e55adc67112a05314))
+
 # [3.1.0](https://github.com/enisdenjo/graphql-ws/compare/v3.0.2...v3.1.0) (2020-12-11)
 
 
