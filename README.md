@@ -1113,9 +1113,9 @@ useServer(
   }
 );
 
-app.listen(9001, (listenSocket) => {
+app.listen(3000, (listenSocket) => {
   if (listenSocket) {
-    console.log('Listening to port 9001');
+    console.log('Listening to port 3000');
   }
 });
 ```
