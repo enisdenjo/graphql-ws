@@ -1097,11 +1097,11 @@ import { schema } from 'my-graphql-schema';
 const app = uws.App();
 
 useServer(
-	{
-		schema,
-		execute,
-		subscribe
-	},
+  {
+    schema,
+    execute,
+    subscribe
+  },
   {
     app,
     path: '/*',
@@ -1114,7 +1114,7 @@ useServer(
 );
 
 app.listen(9001, (listenSocket) => {
-	if (listenSocket) {
+  if (listenSocket) {
     console.log('Listening to port 9001');
   }
 });
