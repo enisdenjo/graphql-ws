@@ -74,7 +74,7 @@ export function useServer(
     },
 
     async open(socket) {
-      const client: Client = {}
+      const client: Client = {};
       const request = socket.upgradeReq as uws.HttpRequest;
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
@@ -86,7 +86,7 @@ export function useServer(
 
           clients.set(socket, {
             ...clients.get(socket),
-            pongWaitTimeout
+            pongWaitTimeout,
           });
 
           socket.ping();
@@ -158,6 +158,6 @@ export function useServer(
       for (const [socket] of clients) {
         socket.end(1001, 'Going away');
       }
-    }
+    },
   };
 }
