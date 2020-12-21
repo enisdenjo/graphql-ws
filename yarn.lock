@@ -4699,6 +4699,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-port@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "get-port@npm:5.1.1"
+  checksum: 75a5af5cef1e601cfa5a071d1b205ba94338f69f83f1092039bdf8e15351a76f5e6b7df7d3987bd3b7ad5d6893759d2bc28d36d8a4ee65976c3868d7efe7cf8c
+  languageName: node
+  linkType: hard
+
 "get-stream@npm:^3.0.0":
   version: 3.0.0
   resolution: "get-stream@npm:3.0.0"
@@ -4871,6 +4878,7 @@ __metadata:
     eslint: ^7.15.0
     eslint-config-prettier: ^7.0.0
     eslint-plugin-prettier: ^3.2.0
+    get-port: ^5.1.1
     graphql: ^15.4.0
     jest: ^26.6.3
     prettier: ^2.2.1
