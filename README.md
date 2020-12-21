@@ -1085,6 +1085,43 @@ const client = createClient({
 
 </details>
 
+<details id="uws">
+<summary><a href="#uws">🔗</a> Server usage with <a href="https://github.com/uNetworking/uWebSockets.js">uWebSockets.js</a></summary>
+
+```ts
+import uws from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#v18.12.0
+import { useServer } from 'graphql-ws/lib/use/uws'
+import { execute, subscribe } from 'graphql';
+import { schema } from 'my-graphql-schema';
+
+const app = uws.App();
+
+useServer(
+	{
+		schema,
+		execute,
+		subscribe
+	},
+  {
+    app,
+    path: '/*',
+    config: {
+      maxBackpressure: 1024,
+      maxPayloadLength: 512,
+      compression: uws.DEDICATED_COMPRESSOR_3KB
+    }
+  }
+);
+
+app.listen(9001, (listenSocket) => {
+	if (listenSocket) {
+    console.log('Listening to port 9001');
+  }
+});
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.

@@ -4881,6 +4881,7 @@ __metadata:
     typedoc: ^0.19.2
     typedoc-plugin-markdown: ^3.1.1
     typescript: ^4.1.2
+    uWebSockets.js: "uNetworking/uWebSockets.js#v18.12.0"
     ws: ^7.4.1
   peerDependencies:
     graphql: ">=0.11 <=15"
@@ -10507,6 +10508,13 @@ typescript@^4.1.2:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: acfc7be6a091806432f324ad258c4a7d2a63996106a4c001db1eebb2661608a9fd0d109d0d29249c3e6890e3547a97b8580cbe0833aa64b2fb83f66e4d88a466
+  languageName: node
+  linkType: hard
+
+"uWebSockets.js@uNetworking/uWebSockets.js#v18.12.0":
+  version: 18.12.0
+  resolution: "uWebSockets.js@https://github.com/uNetworking/uWebSockets.js.git#commit=8cf8b315f10a31428c007b954f10e8c577858e6f"
+  checksum: fb567320abe090478847be042d921e2435912cd1a6fa2cacc5c73693d03081654fb8d2d5c660d6dcb851e0c02caf78990413cd67a793e41b033fe4262d75bd82
   languageName: node
   linkType: hard
 
