@@ -1108,7 +1108,7 @@ useServer(
     config: {
       maxBackpressure: 1024,
       maxPayloadLength: 512,
-      compression: uws.DEDICATED_COMPRESSOR_3KB
+      compression: uws.DEDICATED_COMPRESSOR_4KB // See https://github.com/uNetworking/uWebSockets.js/discussions/418#discussioncomment-230712
     }
   }
 );
