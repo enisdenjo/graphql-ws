@@ -45,7 +45,7 @@ export function useServer(
 ): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer<Extra>(options);
-  const clients: Map<uws.WebSocket, Client> = new Map();
+  const clients = new Map<uws.WebSocket, Client>();
 
   const { app, path, config } = uwsOptions;
 
