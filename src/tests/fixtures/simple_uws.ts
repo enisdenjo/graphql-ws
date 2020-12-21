@@ -7,7 +7,7 @@ import {
   GraphQLNonNull,
 } from 'graphql';
 import uws from 'uWebSockets.js';
-import getPort from 'get-port'
+import getPort from 'get-port';
 import { ServerOptions } from '../../server';
 import { useServer, Extra } from '../../use/uws';
 
@@ -49,7 +49,7 @@ export const schema = new GraphQLSchema({
             yield { greetings: hi };
           }
         },
-      }
+      },
     },
   }),
 });
@@ -87,7 +87,7 @@ export async function startTServer(
     },
     {
       app,
-      path
+      path,
     },
     keepAlive,
   );
@@ -99,16 +99,16 @@ export async function startTServer(
       } else {
         reject('There is no UWS socket');
       }
-    })
-  })
+    });
+  });
 
   const dispose: Dispose = () => {
     server.dispose();
     uws.us_listen_socket_close(socket);
     leftovers.splice(leftovers.indexOf(dispose), 1);
-  }
+  };
 
-  leftovers.push(dispose)
+  leftovers.push(dispose);
 
   return {
     url: `ws://localhost:${port}${path}`,
