@@ -1,6 +1,6 @@
 import type * as uws from 'uWebSockets.js';
 import { makeServer, ServerOptions } from '../server';
-// import { Disposable } from '../types';
+import { Disposable } from '../types';
 
 /**
  * The extra that will be put in the `Context`.
@@ -24,6 +24,13 @@ export interface UwsOptions {
   config?: uws.WebSocketBehavior;
 }
 
+interface Client {
+  messageHandler?: (data: string) => Promise<void>;
+  closeHandler?: () => void;
+  pingInterval?: NodeJS.Timeout | null;
+  pongWaitTimeout?: NodeJS.Timeout | null;
+}
+
 export function useServer(
   options: ServerOptions<Extra>,
   uwsOptions: UwsOptions,
@@ -35,16 +42,10 @@ export function useServer(
    * @default 12 * 1000 // 12 seconds
    */
   keepAlive = 12 * 1000,
-) {
+): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer<Extra>(options);
-  const socketMessageHandlers: Map<
-    uws.WebSocket,
-    (data: string) => Promise<void>
-  > = new Map();
-  const socketCloseHandlers: Map<uws.WebSocket, () => void> = new Map();
-  const pingIntervals: Map<uws.WebSocket, NodeJS.Timeout> = new Map();
-  const pongWaitIntervals: Map<uws.WebSocket, NodeJS.Timeout> = new Map();
+  const clients: Map<uws.WebSocket, Client> = new Map();
 
   const { app, path, config } = uwsOptions;
 
@@ -52,11 +53,11 @@ export function useServer(
     ...config,
 
     pong(socket) {
-      const interval = pongWaitIntervals.get(socket);
+      const client = clients.get(socket);
 
-      if (interval) {
-        clearTimeout(interval);
-        pongWaitIntervals.delete(socket);
+      if (client?.pongWaitTimeout) {
+        clearTimeout(client.pongWaitTimeout);
+        client.pongWaitTimeout = null;
       }
     },
 
@@ -73,27 +74,30 @@ export function useServer(
     },
 
     async open(socket) {
+      const client: Client = {}
       const request = socket.upgradeReq as uws.HttpRequest;
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
-        const pingInterval = setInterval(() => {
+        client.pingInterval = setInterval(() => {
           // terminate the connection after pong wait has passed because the client is idle
-          const pongWaitInterval = setTimeout(() => {
+          const pongWaitTimeout = setTimeout(() => {
             socket.close();
           }, keepAlive);
 
-          pongWaitIntervals.set(socket, pongWaitInterval);
+          clients.set(socket, {
+            ...clients.get(socket),
+            pongWaitTimeout
+          });
+
           socket.ping();
         }, keepAlive);
-
-        pingIntervals.set(socket, pingInterval);
       }
 
-      const closed = server.opened(
+      client.closeHandler = server.opened(
         {
           protocol: request.getHeader('sec-websocket-protocol'),
           send(message) {
-            if (socketCloseHandlers.has(socket)) {
+            if (clients.has(socket)) {
               socket.send(message, false, true);
             }
           },
@@ -101,7 +105,7 @@ export function useServer(
             socket.end(code, reason);
           },
           onMessage(cb) {
-            socketMessageHandlers.set(socket, cb);
+            client.messageHandler = cb;
           },
         },
         {
@@ -110,16 +114,16 @@ export function useServer(
         },
       );
 
-      socketCloseHandlers.set(socket, closed);
+      clients.set(socket, client);
     },
 
     async message(socket, message) {
       const msg = Buffer.from(message).toString();
-      const cb = socketMessageHandlers.get(socket);
+      const client = clients.get(socket);
 
-      if (cb) {
+      if (client?.messageHandler) {
         try {
-          await cb(msg);
+          await client.messageHandler(msg);
         } catch (err) {
           socket.end(1011, isProd ? 'Internal Error' : err.message);
         }
@@ -127,28 +131,33 @@ export function useServer(
     },
 
     close(socket) {
-      const close = socketCloseHandlers.get(socket);
+      const client = clients.get(socket);
 
-      if (close) {
-        close();
+      if (!client) {
+        return;
       }
 
-      socketCloseHandlers.delete(socket);
-      socketMessageHandlers.delete(socket);
-
-      const pingInterval = pingIntervals.get(socket);
-
-      if (pingInterval) {
-        clearTimeout(pingInterval);
-        pingIntervals.delete(socket);
+      if (client.closeHandler) {
+        client.closeHandler();
       }
 
-      const pongWaitInterval = pongWaitIntervals.get(socket);
-
-      if (pongWaitInterval) {
-        clearTimeout(pongWaitInterval);
-        pongWaitIntervals.delete(socket);
+      if (client.pingInterval) {
+        clearTimeout(client.pingInterval);
       }
+
+      if (client.pongWaitTimeout) {
+        clearTimeout(client.pongWaitTimeout);
+      }
+
+      clients.delete(socket);
     },
   });
+
+  return {
+    dispose() {
+      for (const [socket] of clients) {
+        socket.end(1001, 'Going away');
+      }
+    }
+  };
 }
