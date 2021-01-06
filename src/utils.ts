@@ -55,3 +55,9 @@ export function hasOwnStringProperty<
 >(obj: O, prop: P): obj is O & Record<P, string> {
   return baseHasOwnProperty.call(obj, prop) && typeof obj[prop] === 'string';
 }
+
+export function logDeveloperWarning(msg: string): void {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(`[graphql-ws] ${msg}`);
+  }
+}

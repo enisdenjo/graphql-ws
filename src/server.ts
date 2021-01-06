@@ -26,7 +26,12 @@ import {
   ErrorMessage,
   CompleteMessage,
 } from './message';
-import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
+import {
+  isObject,
+  isAsyncIterable,
+  areGraphQLErrors,
+  logDeveloperWarning,
+} from './utils';
 import { ID } from './types';
 
 export type OperationResult =
@@ -398,6 +403,11 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     opened(socket, extra) {
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
         socket.close(1002, 'Protocol Error');
+        logDeveloperWarning(
+          `Invalid protocol: '${socket.protocol}'. 
+          Only ${GRAPHQL_TRANSPORT_WS_PROTOCOL} is supported.
+          For more details see https://github.com/enisdenjo/graphql-ws/issues/83`,
+        );
         return async () => {
           /* nothing was set up */
         };
