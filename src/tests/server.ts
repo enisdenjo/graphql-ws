@@ -1101,7 +1101,7 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
+  it('should close the socket on duplicate operation requests', async () => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -1130,7 +1130,52 @@ describe('Subscribe', () => {
         id: 'not-unique',
         type: MessageType.Subscribe,
         payload: {
-          query: 'subscription { greetings }',
+          query: 'query { getValue }',
+        },
+      }),
+    );
+
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4409);
+      expect(event.reason).toBe('Subscriber for not-unique already exists');
+      expect(event.wasClean).toBeTruthy();
+    });
+  });
+
+  it('should close the socket on duplicate operation requests even if one is still preparing', async () => {
+    const { url } = await startTServer({
+      onSubscribe: () =>
+        new Promise(() => {
+          /* i never resolve, the subscription will be preparing forever */
+        }),
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: 'not-unique',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'query { getValue }',
+          },
+        }),
+      );
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: 'not-unique',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'query { getValue }',
         },
       }),
     );

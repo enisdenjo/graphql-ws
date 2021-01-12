@@ -359,11 +359,16 @@ export interface Context<E = unknown> {
   /** The parameters passed during the connection initialisation. */
   readonly connectionParams?: Readonly<Record<string, unknown>>;
   /**
-   * Holds the active subscriptions for this context.
-   * Subscriptions are for **streaming operations only**,
-   * those that resolve once wont be added here.
+   * Holds the active subscriptions for this context. **All operations**
+   * that are taking place are aggregated here. The user is _subscribed_
+   * to an operation when waiting for result(s).
+   *
+   * If the subscription behind an ID is an `AsyncIterator` - the operation
+   * is streaming; on the contrary, if the subscription is `null` - it is simply
+   * a reservation, meaning - the operation resolves to a single result or is still
+   * pending/being prepared.
    */
-  readonly subscriptions: Record<ID, AsyncIterator<unknown>>;
+  readonly subscriptions: Record<ID, AsyncIterator<unknown> | null>;
   /**
    * An extra field where you can store your own context values
    * to pass between callbacks.
@@ -470,6 +475,14 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             }
 
             const id = message.id;
+            if (id in ctx.subscriptions) {
+              return socket.close(4409, `Subscriber for ${id} already exists`);
+            }
+
+            // if this turns out to be a streaming operation, the subscription value
+            // will change to an `AsyncIterable`, otherwise it will stay as is
+            ctx.subscriptions[id] = null;
+
             const emit = {
               next: async (result: ExecutionResult, args: ExecutionArgs) => {
                 let nextMessage: NextMessage = {
@@ -610,30 +623,19 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
             if (isAsyncIterable(operationResult)) {
               /** multiple emitted results */
-
-              // iterable subscriptions are distinct on ID
-              if (ctx.subscriptions[id]) {
-                return socket.close(
-                  4409,
-                  `Subscriber for ${id} already exists`,
-                );
-              }
               ctx.subscriptions[id] = operationResult;
-
               for await (const result of operationResult) {
                 await emit.next(result, execArgs);
               }
-
-              // lack of subscription at this point indicates that the client
-              // completed the stream, he doesnt need to be reminded
-              await emit.complete(Boolean(ctx.subscriptions[id]));
-              delete ctx.subscriptions[id];
             } else {
               /** single emitted result */
-
               await emit.next(operationResult, execArgs);
-              await emit.complete(true);
             }
+
+            // lack of subscription at this point indicates that the client
+            // completed the subscription, he doesnt need to be reminded
+            await emit.complete(id in ctx.subscriptions);
+            delete ctx.subscriptions[id];
             break;
           }
           case MessageType.Complete: {
@@ -652,7 +654,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       return async () => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          await sub.return?.();
+          await sub?.return?.();
         }
       };
     },
