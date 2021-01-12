@@ -165,10 +165,15 @@ export interface ServerOptions<E = unknown> {
     | void;
   /**
    * Called when the socket/client closes/disconnects for
-   * whatever reason. Beware that this callback happens
-   * AFTER all subscriptions have been gracefuly completed.
+   * whatever reason. Provides the close event too. Beware
+   * that this callback happens AFTER all subscriptions have
+   * been gracefuly completed.
    */
-  onDisconnect?: (ctx: Context<E>) => Promise<void> | void;
+  onDisconnect?: (
+    ctx: Context<E>,
+    code: number,
+    reason: string,
+  ) => Promise<void> | void;
   /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
@@ -300,10 +305,14 @@ export interface Server<E = undefined> {
    * original WebSocket, if you need it down the road.
    *
    * Returns a function that should be called when the same socket
-   * has been closed, for whatever reason. The returned promise will
-   * resolve once the internal cleanup is complete.
+   * has been closed, for whatever reason. The close code and reason
+   * must be passed for reporting to the `onDisconnect` callback. Returned
+   * promise will resolve once the internal cleanup is complete.
    */
-  opened(socket: WebSocket, ctxExtra: E): () => Promise<void>; // closed
+  opened(
+    socket: WebSocket,
+    ctxExtra: E,
+  ): (code: number, reason: string) => Promise<void>; // closed
 }
 
 export interface WebSocket {
@@ -662,12 +671,12 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       });
 
       // wait for close, cleanup and the disconnect callback
-      return async () => {
+      return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
           await sub?.return?.();
         }
-        await onDisconnect?.(ctx);
+        await onDisconnect?.(ctx, code, reason);
       };
     },
   };

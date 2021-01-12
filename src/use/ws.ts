@@ -105,10 +105,10 @@ export function useServer(
       { socket, request },
     );
 
-    socket.once('close', () => {
+    socket.once('close', (code, reason) => {
       if (pongWait) clearTimeout(pongWait);
       if (pingInterval) clearInterval(pingInterval);
-      closed();
+      closed(code, reason);
     });
   });
 
