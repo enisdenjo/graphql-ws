@@ -62,7 +62,7 @@ Direction: **Client -> Server**
 
 Requests an operation specified in the message `payload`. This message provides a unique ID field to connect published messages to the operation requested by this message.
 
-If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future events.
+If there is already an active subscriber for an operation matching the provided ID, regardless of the operation type, the server must close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`.
 
 ```typescript
 interface SubscribeMessage {
