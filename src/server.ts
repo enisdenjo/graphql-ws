@@ -168,6 +168,9 @@ export interface ServerOptions<E = unknown> {
    * whatever reason. Provides the close event too. Beware
    * that this callback happens AFTER all subscriptions have
    * been gracefuly completed.
+   *
+   * If you are interested in tracking the subscriptions completions,
+   * consider using the `onComplete` callback.
    */
   onDisconnect?: (
     ctx: Context<E>,
