@@ -361,7 +361,7 @@ export interface Context<E = unknown> {
   /**
    * Holds the active subscriptions for this context. **All operations**
    * that are taking place are aggregated here. The user is _subscribed_
-   * to the operation waiting for the result(s).
+   * to an operation when waiting for result(s).
    *
    * If the subscription behind an ID is an `AsyncIterator` - the operation
    * is streaming; on the contrary, if the subscription is a `Promise` - the
