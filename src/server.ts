@@ -164,6 +164,12 @@ export interface ServerOptions<E = unknown> {
     | boolean
     | void;
   /**
+   * Called when the socket/client closes/disconnects for
+   * whatever reason. Beware that this callback happens
+   * AFTER all subscriptions have been gracefuly completed.
+   */
+  onDisconnect?: (ctx: Context<E>) => Promise<void> | void;
+  /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
    * processing has been performed.
@@ -320,7 +326,8 @@ export interface WebSocket {
   send(data: string): Promise<void> | void;
   /**
    * Closes the socket gracefully. Will always provide
-   * the appropriate code and close reason.
+   * the appropriate code and close reason. `onDisconnect`
+   * callback will be called.
    *
    * The returned promise is used to control the graceful
    * closure.
@@ -392,6 +399,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     subscribe,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
     onConnect,
+    onDisconnect,
     onSubscribe,
     onOperation,
     onNext,
@@ -653,12 +661,13 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
         }
       });
 
-      // wait for close and cleanup
+      // wait for close, cleanup and the disconnect callback
       return async () => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
           await sub?.return?.();
         }
+        await onDisconnect?.(ctx);
       };
     },
   };
