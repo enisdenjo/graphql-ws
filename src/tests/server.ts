@@ -1101,7 +1101,7 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it.only('should close the socket on duplicate operation requests', async () => {
+  it('should close the socket on duplicate operation requests', async () => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
