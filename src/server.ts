@@ -629,7 +629,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               }
             } else {
               /** single emitted result */
-              await emit.next(operationResult, execArgs);
+              // if the client completed the subscription before the single result
+              // became available, he effectively canceled it and no data should be sent
+              if (id in ctx.subscriptions)
+                await emit.next(operationResult, execArgs);
             }
 
             // lack of subscription at this point indicates that the client
@@ -640,7 +643,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
           }
           case MessageType.Complete: {
             await ctx.subscriptions[message.id]?.return?.();
-            delete ctx.subscriptions[message.id]; // deleting the subscription means no further action
+            delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
             break;
           }
           default:

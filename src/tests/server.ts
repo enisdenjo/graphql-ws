@@ -5,6 +5,7 @@ import {
   subscribe,
   GraphQLError,
   ExecutionArgs,
+  ExecutionResult,
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
@@ -941,6 +942,69 @@ describe('Subscribe', () => {
         type: MessageType.Complete,
       });
     });
+  });
+
+  it('should be able to complete a long running query before the result becomes available', async () => {
+    let resultIsHere = (_result: ExecutionResult) => {
+        /* noop for calming typescript */
+      },
+      execute = () => {
+        /* noop for calming typescript */
+      };
+    const waitForExecute = new Promise<void>((resolve) => (execute = resolve));
+
+    const { url, ws } = await startTServer({
+      schema,
+      execute: () =>
+        new Promise<ExecutionResult>((resolve) => {
+          resultIsHere = resolve;
+          execute();
+        }),
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'query { getValue }',
+          },
+        }),
+      );
+    });
+
+    await waitForExecute;
+
+    // complete before resolve
+    client.ws.send(
+      stringifyMessage<MessageType.Complete>({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+
+    // will be just one client and the only next message can be "complete"
+    for (const client of ws.clients) {
+      await new Promise<void>((resolve) =>
+        client.once('message', () => resolve()),
+      );
+    }
+
+    // result became available after complete
+    resultIsHere({ data: { getValue: 'nope' } });
+
+    await client.waitForMessage(() => {
+      fail('No further activity expected after complete');
+    }, 30);
   });
 
   it('should execute the query and "error" out because of validation errors', async () => {
