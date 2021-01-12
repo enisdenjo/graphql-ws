@@ -1101,7 +1101,7 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should close the socket on duplicate `subscription` operation subscriptions request', async () => {
+  it.only('should close the socket on duplicate operation requests', async () => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -1130,7 +1130,7 @@ describe('Subscribe', () => {
         id: 'not-unique',
         type: MessageType.Subscribe,
         payload: {
-          query: 'subscription { greetings }',
+          query: 'query { getValue }',
         },
       }),
     );
