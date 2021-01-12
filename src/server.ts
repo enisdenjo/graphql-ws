@@ -364,10 +364,11 @@ export interface Context<E = unknown> {
    * to an operation when waiting for result(s).
    *
    * If the subscription behind an ID is an `AsyncIterator` - the operation
-   * is streaming; on the contrary, if the subscription is a `Promise` - the
-   * operation resolves to a single result or is still pending/being prepared.
+   * is streaming; on the contrary, if the subscription is `null` - it is simply
+   * a reservation, meaning - the operation resolves to a single result or is still
+   * pending/being prepared.
    */
-  readonly subscriptions: Record<ID, AsyncIterator<unknown> | Promise<void>>;
+  readonly subscriptions: Record<ID, AsyncIterator<unknown> | null>;
   /**
    * An extra field where you can store your own context values
    * to pass between callbacks.
@@ -474,18 +475,13 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             }
 
             const id = message.id;
-            if (ctx.subscriptions[id]) {
+            if (id in ctx.subscriptions) {
               return socket.close(4409, `Subscriber for ${id} already exists`);
             }
 
             // if this turns out to be a streaming operation, the subscription value
             // will change to an `AsyncIterable`, otherwise it will stay as is
-            let done = () => {
-              /* placeholder noop function to calm typescript down */
-            };
-            ctx.subscriptions[id] = new Promise<void>(
-              (resolve) => (done = resolve),
-            );
+            ctx.subscriptions[id] = null;
 
             const emit = {
               next: async (result: ExecutionResult, args: ExecutionArgs) => {
@@ -638,14 +634,12 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
             // lack of subscription at this point indicates that the client
             // completed the subscription, he doesnt need to be reminded
-            await emit.complete(Boolean(ctx.subscriptions[id]));
+            await emit.complete(id in ctx.subscriptions);
             delete ctx.subscriptions[id];
-            done();
             break;
           }
           case MessageType.Complete: {
-            const subscription = ctx.subscriptions[message.id];
-            if (isAsyncIterable(subscription)) await subscription.return?.();
+            await ctx.subscriptions[message.id]?.return?.();
             delete ctx.subscriptions[message.id]; // deleting the subscription means no further action
             break;
           }
@@ -660,7 +654,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       return async () => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          if (isAsyncIterable(sub)) await sub.return?.();
+          await sub?.return?.();
         }
       };
     },

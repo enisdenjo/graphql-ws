@@ -66,12 +66,13 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: Record<[ID](../modules/_types_.md#id), AsyncIterator<unknown\> \| Promise<void\>\>
+• `Readonly` **subscriptions**: Record<[ID](../modules/_types_.md#id), AsyncIterator<unknown\> \| null\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_
 to an operation when waiting for result(s).
 
 If the subscription behind an ID is an `AsyncIterator` - the operation
-is streaming; on the contrary, if the subscription is a `Promise` - the
-operation resolves to a single result or is still pending/being prepared.
+is streaming; on the contrary, if the subscription is `null` - it is simply
+a reservation, meaning - the operation resolves to a single result or is still
+pending/being prepared.
