@@ -36,7 +36,8 @@ to validate agains the supported ones.
 ▸ **close**(`code`: number, `reason`: string): Promise<void\> \| void
 
 Closes the socket gracefully. Will always provide
-the appropriate code and close reason.
+the appropriate code and close reason. `onDisconnect`
+callback will be called.
 
 The returned promise is used to control the graceful
 closure.

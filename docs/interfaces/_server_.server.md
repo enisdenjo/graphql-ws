@@ -35,8 +35,9 @@ of the `Context`. You may pass the initial request or the
 original WebSocket, if you need it down the road.
 
 Returns a function that should be called when the same socket
-has been closed, for whatever reason. The returned promise will
-resolve once the internal cleanup is complete.
+has been closed, for whatever reason. The close code and reason
+must be passed for reporting to the `onDisconnect` callback. Returned
+promise will resolve once the internal cleanup is complete.
 
 #### Parameters:
 

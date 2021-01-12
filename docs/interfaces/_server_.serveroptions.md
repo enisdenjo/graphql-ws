@@ -23,6 +23,7 @@ Name | Default |
 * [execute](_server_.serveroptions.md#execute)
 * [onComplete](_server_.serveroptions.md#oncomplete)
 * [onConnect](_server_.serveroptions.md#onconnect)
+* [onDisconnect](_server_.serveroptions.md#ondisconnect)
 * [onError](_server_.serveroptions.md#onerror)
 * [onNext](_server_.serveroptions.md#onnext)
 * [onOperation](_server_.serveroptions.md#onoperation)
@@ -127,6 +128,17 @@ field in the `ConnectionAck` message.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
+
+___
+
+### onDisconnect
+
+• `Optional` **onDisconnect**: undefined \| (ctx: [Context](_server_.context.md)<E\>, code: number, reason: string) => Promise<void\> \| void
+
+Called when the socket/client closes/disconnects for
+whatever reason. Provides the close event too. Beware
+that this callback happens AFTER all subscriptions have
+been gracefuly completed.
 
 ___
 
