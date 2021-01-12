@@ -1142,6 +1142,51 @@ describe('Subscribe', () => {
     });
   });
 
+  it('should close the socket on duplicate operation requests even if one is still preparing', async () => {
+    const { url } = await startTServer({
+      onSubscribe: () =>
+        new Promise(() => {
+          /* i never resolve, the subscription will be preparing forever */
+        }),
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: 'not-unique',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'query { getValue }',
+          },
+        }),
+      );
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: 'not-unique',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'query { getValue }',
+        },
+      }),
+    );
+
+    await client.waitForClose((event) => {
+      expect(event.code).toBe(4409);
+      expect(event.reason).toBe('Subscriber for not-unique already exists');
+      expect(event.wasClean).toBeTruthy();
+    });
+  });
+
   it('should support persisted queries', async () => {
     const queriesStore: Record<string, ExecutionArgs> = {
       iWantTheValue: {
