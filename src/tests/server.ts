@@ -1383,3 +1383,26 @@ describe('Subscribe', () => {
     client.ws.terminate();
   });
 });
+
+describe('Disconnect', () => {
+  it('should report close code and reason to disconnect callback', async (done) => {
+    const { url, waitForConnect } = await startTServer({
+      onDisconnect: (_ctx, code, reason) => {
+        expect(code).toBe(4321);
+        expect(reason).toBe('Byebye');
+        done();
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await waitForConnect();
+
+    client.ws.close(4321, 'Byebye');
+  });
+});
