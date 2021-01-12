@@ -164,6 +164,20 @@ export interface ServerOptions<E = unknown> {
     | boolean
     | void;
   /**
+   * Called when the socket/client closes/disconnects for
+   * whatever reason. Provides the close event too. Beware
+   * that this callback happens AFTER all subscriptions have
+   * been gracefuly completed.
+   *
+   * If you are interested in tracking the subscriptions completions,
+   * consider using the `onComplete` callback.
+   */
+  onDisconnect?: (
+    ctx: Context<E>,
+    code: number,
+    reason: string,
+  ) => Promise<void> | void;
+  /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
    * processing has been performed.
@@ -294,10 +308,14 @@ export interface Server<E = undefined> {
    * original WebSocket, if you need it down the road.
    *
    * Returns a function that should be called when the same socket
-   * has been closed, for whatever reason. The returned promise will
-   * resolve once the internal cleanup is complete.
+   * has been closed, for whatever reason. The close code and reason
+   * must be passed for reporting to the `onDisconnect` callback. Returned
+   * promise will resolve once the internal cleanup is complete.
    */
-  opened(socket: WebSocket, ctxExtra: E): () => Promise<void>; // closed
+  opened(
+    socket: WebSocket,
+    ctxExtra: E,
+  ): (code: number, reason: string) => Promise<void>; // closed
 }
 
 export interface WebSocket {
@@ -320,7 +338,8 @@ export interface WebSocket {
   send(data: string): Promise<void> | void;
   /**
    * Closes the socket gracefully. Will always provide
-   * the appropriate code and close reason.
+   * the appropriate code and close reason. `onDisconnect`
+   * callback will be called.
    *
    * The returned promise is used to control the graceful
    * closure.
@@ -392,6 +411,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     subscribe,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
     onConnect,
+    onDisconnect,
     onSubscribe,
     onOperation,
     onNext,
@@ -653,12 +673,13 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
         }
       });
 
-      // wait for close and cleanup
-      return async () => {
+      // wait for close, cleanup and the disconnect callback
+      return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
           await sub?.return?.();
         }
+        await onDisconnect?.(ctx, code, reason);
       };
     },
   };
