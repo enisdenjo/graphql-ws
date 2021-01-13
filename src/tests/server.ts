@@ -19,6 +19,11 @@ import { createTClient } from './utils';
 it('should allow connections with valid protocols only', async () => {
   const { url } = await startTServer();
 
+  const warn = console.warn;
+  console.warn = () => {
+    /* hide warnings for test */
+  };
+
   let client = await createTClient(url, '');
   await client.waitForClose((event) => {
     expect(event.code).toBe(1002);
@@ -48,6 +53,8 @@ it('should allow connections with valid protocols only', async () => {
     () => fail('shouldnt close for valid protocol'),
     30, // should be kicked off within this time
   );
+
+  console.warn = warn;
 });
 
 it('should use the provided roots as resolvers', async () => {

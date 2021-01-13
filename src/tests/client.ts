@@ -904,7 +904,12 @@ describe('reconnecting', () => {
     }
 
     expect.assertions(6);
+    const warn = console.warn;
+    console.warn = () => {
+      /* hide warnings for test */
+    };
     await testCloseCode(1002);
+    console.warn = warn;
     await testCloseCode(1011);
     await testCloseCode(4400);
     await testCloseCode(4401);
