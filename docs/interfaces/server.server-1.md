@@ -1,30 +1,30 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["server"](../modules/_server_.md) / Server
+[graphql-ws](../README.md) / [server](../modules/server.md) / Server
 
 # Interface: Server<E\>
+
+[server](../modules/server.md).Server
 
 ## Type parameters
 
 Name | Default |
 ------ | ------ |
-`E` | undefined |
+`E` | *undefined* |
 
 ## Hierarchy
 
 * **Server**
 
-## Index
+## Table of contents
 
 ### Methods
 
-* [opened](_server_.server.md#opened)
+- [opened](server.server-1.md#opened)
 
 ## Methods
 
 ### opened
 
-▸ **opened**(`socket`: [WebSocket](_server_.websocket.md), `ctxExtra`: E): function
+▸ **opened**(`socket`: [*WebSocket*](server.websocket.md), `ctxExtra`: E): *function*
 
 New socket has beeen established. The lib will validate
 the protocol and use the socket accordingly. Returned promise
@@ -43,7 +43,7 @@ promise will resolve once the internal cleanup is complete.
 
 Name | Type |
 ------ | ------ |
-`socket` | [WebSocket](_server_.websocket.md) |
+`socket` | [*WebSocket*](server.websocket.md) |
 `ctxExtra` | E |
 
-**Returns:** function
+**Returns:** *function*

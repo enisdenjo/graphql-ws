@@ -1,8 +1,8 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["client"](../modules/_client_.md) / ClientOptions
+[graphql-ws](../README.md) / [client](../modules/client.md) / ClientOptions
 
 # Interface: ClientOptions
+
+[client](../modules/client.md).ClientOptions
 
 Configuration used for the GraphQL over WebSocket client.
 
@@ -10,26 +10,26 @@ Configuration used for the GraphQL over WebSocket client.
 
 * **ClientOptions**
 
-## Index
+## Table of contents
 
 ### Properties
 
-* [connectionParams](_client_.clientoptions.md#connectionparams)
-* [generateID](_client_.clientoptions.md#generateid)
-* [keepAlive](_client_.clientoptions.md#keepalive)
-* [lazy](_client_.clientoptions.md#lazy)
-* [on](_client_.clientoptions.md#on)
-* [onNonLazyError](_client_.clientoptions.md#onnonlazyerror)
-* [retryAttempts](_client_.clientoptions.md#retryattempts)
-* [retryWait](_client_.clientoptions.md#retrywait)
-* [url](_client_.clientoptions.md#url)
-* [webSocketImpl](_client_.clientoptions.md#websocketimpl)
+- [connectionParams](client.clientoptions.md#connectionparams)
+- [generateID](client.clientoptions.md#generateid)
+- [keepAlive](client.clientoptions.md#keepalive)
+- [lazy](client.clientoptions.md#lazy)
+- [on](client.clientoptions.md#on)
+- [onNonLazyError](client.clientoptions.md#onnonlazyerror)
+- [retryAttempts](client.clientoptions.md#retryattempts)
+- [retryWait](client.clientoptions.md#retrywait)
+- [url](client.clientoptions.md#url)
+- [webSocketImpl](client.clientoptions.md#websocketimpl)
 
 ## Properties
 
 ### connectionParams
 
-• `Optional` **connectionParams**: Record<string, unknown\> \| () => Promise<Record<string, unknown\>\> \| Record<string, unknown\>
+• `Optional` **connectionParams**: *undefined* \| *Record*<*string*, *unknown*\> \| () => *Record*<*string*, *unknown*\> \| *Promise*<*Record*<*string*, *unknown*\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
@@ -45,7 +45,7 @@ ___
 
 ### generateID
 
-• `Optional` **generateID**: undefined \| () => [ID](../modules/_types_.md#id)
+• `Optional` **generateID**: *undefined* \| () => *string*
 
 A custom ID generator for identifying subscriptions.
 
@@ -59,7 +59,7 @@ ___
 
 ### keepAlive
 
-• `Optional` **keepAlive**: undefined \| number
+• `Optional` **keepAlive**: *undefined* \| *number*
 
 How long should the client wait before closing the socket after the last oparation has
 completed. This is meant to be used in combination with `lazy`. You might want to have
@@ -71,7 +71,7 @@ ___
 
 ### lazy
 
-• `Optional` **lazy**: undefined \| false \| true
+• `Optional` **lazy**: *undefined* \| *boolean*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -82,7 +82,7 @@ ___
 
 ### on
 
-• `Optional` **on**: Partial<{}\>
+• `Optional` **on**: *undefined* \| *Partial*<{ `closed`:  ; `connected`:  ; `connecting`:   }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -94,7 +94,7 @@ ___
 
 ### onNonLazyError
 
-• `Optional` **onNonLazyError**: undefined \| (errorOrCloseEvent: unknown) => void
+• `Optional` **onNonLazyError**: *undefined* \| (`errorOrCloseEvent`: *unknown*) => *void*
 
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
 using this mode, the errors might have no sinks to report to; however,
@@ -118,7 +118,7 @@ ___
 
 ### retryAttempts
 
-• `Optional` **retryAttempts**: undefined \| number
+• `Optional` **retryAttempts**: *undefined* \| *number*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -138,7 +138,7 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: undefined \| (retries: number) => Promise<void\>
+• `Optional` **retryWait**: *undefined* \| (`retries`: *number*) => *Promise*<*void*\>
 
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.
@@ -151,7 +151,7 @@ ___
 
 ### url
 
-•  **url**: string
+• **url**: *string*
 
 URL of the GraphQL over WebSocket Protocol compliant server to connect.
 
@@ -159,7 +159,7 @@ ___
 
 ### webSocketImpl
 
-• `Optional` **webSocketImpl**: unknown
+• `Optional` **webSocketImpl**: *unknown*
 
 A custom WebSocket implementation to use instead of the
 one provided by the global scope. Mostly useful for when

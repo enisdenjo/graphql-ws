@@ -1,16 +1,14 @@
-**[graphql-ws](README.md)**
-
-> Globals
+graphql-ws
 
 # graphql-ws
 
-## Index
+## Table of contents
 
 ### Modules
 
-* ["client"](modules/_client_.md)
-* ["message"](modules/_message_.md)
-* ["protocol"](modules/_protocol_.md)
-* ["server"](modules/_server_.md)
-* ["types"](modules/_types_.md)
-* ["use/ws"](modules/_use_ws_.md)
+- [client](modules/client.md)
+- [message](modules/message.md)
+- [protocol](modules/protocol.md)
+- [server](modules/server.md)
+- [types](modules/types.md)
+- [use/ws](modules/use_ws.md)

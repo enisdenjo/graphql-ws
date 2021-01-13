@@ -1,42 +1,42 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["server"](../modules/_server_.md) / ServerOptions
+[graphql-ws](../README.md) / [server](../modules/server.md) / ServerOptions
 
 # Interface: ServerOptions<E\>
+
+[server](../modules/server.md).ServerOptions
 
 ## Type parameters
 
 Name | Default |
 ------ | ------ |
-`E` | unknown |
+`E` | *unknown* |
 
 ## Hierarchy
 
 * **ServerOptions**
 
-## Index
+## Table of contents
 
 ### Properties
 
-* [connectionInitWaitTimeout](_server_.serveroptions.md#connectioninitwaittimeout)
-* [context](_server_.serveroptions.md#context)
-* [execute](_server_.serveroptions.md#execute)
-* [onComplete](_server_.serveroptions.md#oncomplete)
-* [onConnect](_server_.serveroptions.md#onconnect)
-* [onDisconnect](_server_.serveroptions.md#ondisconnect)
-* [onError](_server_.serveroptions.md#onerror)
-* [onNext](_server_.serveroptions.md#onnext)
-* [onOperation](_server_.serveroptions.md#onoperation)
-* [onSubscribe](_server_.serveroptions.md#onsubscribe)
-* [roots](_server_.serveroptions.md#roots)
-* [schema](_server_.serveroptions.md#schema)
-* [subscribe](_server_.serveroptions.md#subscribe)
+- [connectionInitWaitTimeout](server.serveroptions.md#connectioninitwaittimeout)
+- [context](server.serveroptions.md#context)
+- [execute](server.serveroptions.md#execute)
+- [onComplete](server.serveroptions.md#oncomplete)
+- [onConnect](server.serveroptions.md#onconnect)
+- [onDisconnect](server.serveroptions.md#ondisconnect)
+- [onError](server.serveroptions.md#onerror)
+- [onNext](server.serveroptions.md#onnext)
+- [onOperation](server.serveroptions.md#onoperation)
+- [onSubscribe](server.serveroptions.md#onsubscribe)
+- [roots](server.serveroptions.md#roots)
+- [schema](server.serveroptions.md#schema)
+- [subscribe](server.serveroptions.md#subscribe)
 
 ## Properties
 
 ### connectionInitWaitTimeout
 
-• `Optional` **connectionInitWaitTimeout**: undefined \| number
+• `Optional` **connectionInitWaitTimeout**: *undefined* \| *number*
 
 The amount of time for which the server will wait
 for `ConnectionInit` message.
@@ -54,7 +54,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue) \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs) => Promise<[GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)\> \| [GraphQLExecutionContextValue](../modules/_server_.md#graphqlexecutioncontextvalue)
+• `Optional` **context**: *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -73,7 +73,7 @@ ___
 
 ### execute
 
-•  **execute**: (args: ExecutionArgs) => [OperationResult](../modules/_server_.md#operationresult)
+• **execute**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
 
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
@@ -86,7 +86,7 @@ ___
 
 ### onComplete
 
-• `Optional` **onComplete**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [CompleteMessage](_message_.completemessage.md)) => Promise<void\> \| void
+• `Optional` **onComplete**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<*void*\>
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -104,7 +104,7 @@ ___
 
 ### onConnect
 
-• `Optional` **onConnect**: undefined \| (ctx: [Context](_server_.context.md)<E\>) => Promise<Record<string, unknown\> \| boolean \| void\> \| Record<string, unknown\> \| boolean \| void
+• `Optional` **onConnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<*string*, *unknown*\> \| *Promise*<*boolean* \| *void* \| *Record*<*string*, *unknown*\>\>
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -133,7 +133,7 @@ ___
 
 ### onDisconnect
 
-• `Optional` **onDisconnect**: undefined \| (ctx: [Context](_server_.context.md)<E\>, code: number, reason: string) => Promise<void\> \| void
+• `Optional` **onDisconnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<*void*\>
 
 Called when the socket/client closes/disconnects for
 whatever reason. Provides the close event too. Beware
@@ -147,7 +147,7 @@ ___
 
 ### onError
 
-• `Optional` **onError**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [ErrorMessage](_message_.errormessage.md), errors: readonly GraphQLError[]) => Promise<readonly GraphQLError[] \| void\> \| readonly GraphQLError[] \| void
+• `Optional` **onError**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<*void* \| readonly *GraphQLError*[]\>
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -165,7 +165,7 @@ ___
 
 ### onNext
 
-• `Optional` **onNext**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [NextMessage](_message_.nextmessage.md), args: ExecutionArgs, result: ExecutionResult) => Promise<ExecutionResult \| void\> \| ExecutionResult \| void
+• `Optional` **onNext**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<*void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -184,7 +184,7 @@ ___
 
 ### onOperation
 
-• `Optional` **onOperation**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md), args: ExecutionArgs, result: [OperationResult](../modules/_server_.md#operationresult)) => Promise<[OperationResult](../modules/_server_.md#operationresult) \| void\> \| [OperationResult](../modules/_server_.md#operationresult) \| void
+• `Optional` **onOperation**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<*AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<*void* \| *Promise*<*AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -209,7 +209,7 @@ ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: undefined \| (ctx: [Context](_server_.context.md)<E\>, message: [SubscribeMessage](_message_.subscribemessage.md)) => Promise<ExecutionArgs \| readonly GraphQLError[] \| void\> \| ExecutionArgs \| readonly GraphQLError[] \| void
+• `Optional` **onSubscribe**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<*void* \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -243,7 +243,7 @@ ___
 
 ### roots
 
-• `Optional` **roots**: undefined \| {}
+• `Optional` **roots**: *undefined* \| { `mutation`:  ; `query`:  ; `subscription`:   }
 
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
@@ -257,7 +257,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: GraphQLSchema
+• `Optional` **schema**: *undefined* \| *GraphQLSchema*
 
 The GraphQL schema on which the operations
 will be executed and validated against.
@@ -270,7 +270,7 @@ ___
 
 ### subscribe
 
-•  **subscribe**: (args: ExecutionArgs) => [OperationResult](../modules/_server_.md#operationresult)
+• **subscribe**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.

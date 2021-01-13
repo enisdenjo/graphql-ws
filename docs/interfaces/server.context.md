@@ -1,34 +1,34 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["server"](../modules/_server_.md) / Context
+[graphql-ws](../README.md) / [server](../modules/server.md) / Context
 
 # Interface: Context<E\>
+
+[server](../modules/server.md).Context
 
 ## Type parameters
 
 Name | Default |
 ------ | ------ |
-`E` | unknown |
+`E` | *unknown* |
 
 ## Hierarchy
 
 * **Context**
 
-## Index
+## Table of contents
 
 ### Properties
 
-* [acknowledged](_server_.context.md#acknowledged)
-* [connectionInitReceived](_server_.context.md#connectioninitreceived)
-* [connectionParams](_server_.context.md#connectionparams)
-* [extra](_server_.context.md#extra)
-* [subscriptions](_server_.context.md#subscriptions)
+- [acknowledged](server.context.md#acknowledged)
+- [connectionInitReceived](server.context.md#connectioninitreceived)
+- [connectionParams](server.context.md#connectionparams)
+- [extra](server.context.md#extra)
+- [subscriptions](server.context.md#subscriptions)
 
 ## Properties
 
 ### acknowledged
 
-• `Readonly` **acknowledged**: boolean
+• `Readonly` **acknowledged**: *boolean*
 
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
@@ -38,7 +38,7 @@ ___
 
 ### connectionInitReceived
 
-• `Readonly` **connectionInitReceived**: boolean
+• `Readonly` **connectionInitReceived**: *boolean*
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -49,7 +49,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: Readonly<Record<string, unknown\>\>
+• `Optional` `Readonly` **connectionParams**: *undefined* \| *Readonly*<*Record*<*string*, *unknown*\>\>
 
 The parameters passed during the connection initialisation.
 
@@ -57,7 +57,7 @@ ___
 
 ### extra
 
-•  **extra**: E
+• **extra**: E
 
 An extra field where you can store your own context values
 to pass between callbacks.
@@ -66,7 +66,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: Record<[ID](../modules/_types_.md#id), AsyncIterator<unknown\> \| null\>
+• `Readonly` **subscriptions**: *Record*<*string*, *null* \| *AsyncIterator*<*unknown*, *any*, *undefined*\>\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_

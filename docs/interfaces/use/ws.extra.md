@@ -1,8 +1,8 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["use/ws"](../modules/_use_ws_.md) / Extra
+[graphql-ws](../../README.md) / [use/ws](../../modules/use_ws.md) / Extra
 
 # Interface: Extra
+
+[use/ws](../../modules/use_ws.md).Extra
 
 The extra that will be put in the `Context`.
 
@@ -10,18 +10,18 @@ The extra that will be put in the `Context`.
 
 * **Extra**
 
-## Index
+## Table of contents
 
 ### Properties
 
-* [request](_use_ws_.extra.md#request)
-* [socket](_use_ws_.extra.md#socket)
+- [request](ws.extra.md#request)
+- [socket](ws.extra.md#socket)
 
 ## Properties
 
 ### request
 
-• `Readonly` **request**: IncomingMessage
+• `Readonly` **request**: *IncomingMessage*
 
 The initial HTTP request before the actual
 socket and connection is established.
@@ -30,6 +30,6 @@ ___
 
 ### socket
 
-• `Readonly` **socket**: WebSocket
+• `Readonly` **socket**: *WebSocket*
 
 The actual socket connection between the server and the client.

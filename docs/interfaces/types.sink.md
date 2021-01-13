@@ -1,8 +1,8 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["types"](../modules/_types_.md) / Sink
+[graphql-ws](../README.md) / [types](../modules/types.md) / Sink
 
 # Interface: Sink<T\>
+
+[types](../modules/types.md).Sink
 
 A representation of any set of values over any amount of time.
 
@@ -10,35 +10,35 @@ A representation of any set of values over any amount of time.
 
 Name | Default |
 ------ | ------ |
-`T` | unknown |
+`T` | *unknown* |
 
 ## Hierarchy
 
 * **Sink**
 
-## Index
+## Table of contents
 
 ### Methods
 
-* [complete](_types_.sink.md#complete)
-* [error](_types_.sink.md#error)
-* [next](_types_.sink.md#next)
+- [complete](types.sink.md#complete)
+- [error](types.sink.md#error)
+- [next](types.sink.md#next)
 
 ## Methods
 
 ### complete
 
-▸ **complete**(): void
+▸ **complete**(): *void*
 
 The sink has completed. This function "closes" the sink.
 
-**Returns:** void
+**Returns:** *void*
 
 ___
 
 ### error
 
-▸ **error**(`error`: unknown): void
+▸ **error**(`error`: *unknown*): *void*
 
 An error that has occured. Calling this function "closes" the sink.
 Besides the errors being `Error` and `readonly GraphQLError[]`, it
@@ -50,15 +50,15 @@ type during implementation.
 
 Name | Type |
 ------ | ------ |
-`error` | unknown |
+`error` | *unknown* |
 
-**Returns:** void
+**Returns:** *void*
 
 ___
 
 ### next
 
-▸ **next**(`value`: T): void
+▸ **next**(`value`: T): *void*
 
 Next value arriving.
 
@@ -68,4 +68,4 @@ Name | Type |
 ------ | ------ |
 `value` | T |
 
-**Returns:** void
+**Returns:** *void*
