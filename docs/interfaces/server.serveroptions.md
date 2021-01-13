@@ -135,13 +135,20 @@ ___
 
 • `Optional` **onDisconnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<*void*\>
 
-Called when the socket/client closes/disconnects for
-whatever reason. Provides the close event too. Beware
-that this callback happens AFTER all subscriptions have
-been gracefuly completed.
+Called when the client disconnects for whatever reason after
+he successfully went through the connection initialisation phase.
+Provides the close event too. Beware that this callback happens
+AFTER all subscriptions have been gracefully completed and BEFORE
+the `onClose` callback.
 
 If you are interested in tracking the subscriptions completions,
 consider using the `onComplete` callback.
+
+This callback will be called EXCLUSIVELY if the client connection
+is acknowledged. Meaning, `onConnect` will be called before the `onDisconnect`.
+
+For tracking socket closures at any point in time, regardless
+of the connection state - consider using the `onClose` callback.
 
 ___
 

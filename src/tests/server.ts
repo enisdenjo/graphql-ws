@@ -1392,7 +1392,7 @@ describe('Subscribe', () => {
 });
 
 describe('Disconnect', () => {
-  it('should report close code and reason to disconnect callback', async (done) => {
+  it('should report close code and reason to disconnect callback after connection acknowledgement', async (done) => {
     const { url, waitForConnect } = await startTServer({
       onDisconnect: (_ctx, code, reason) => {
         expect(code).toBe(4321);
@@ -1411,5 +1411,19 @@ describe('Disconnect', () => {
     await waitForConnect();
 
     client.ws.close(4321, 'Byebye');
+  });
+
+  it('should not trigger the disconnect callback if connection is not acknowledged', async () => {
+    const { url, waitForClientClose } = await startTServer({
+      onDisconnect: () => {
+        fail("Disconnect callback shouldn't be triggered");
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.close(4321, 'Byebye');
+
+    await waitForClientClose();
   });
 });
