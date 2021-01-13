@@ -21,6 +21,7 @@ Name | Default |
 - [connectionInitWaitTimeout](server.serveroptions.md#connectioninitwaittimeout)
 - [context](server.serveroptions.md#context)
 - [execute](server.serveroptions.md#execute)
+- [onClose](server.serveroptions.md#onclose)
 - [onComplete](server.serveroptions.md#oncomplete)
 - [onConnect](server.serveroptions.md#onconnect)
 - [onDisconnect](server.serveroptions.md#ondisconnect)
@@ -81,6 +82,25 @@ used to execute the query and mutation operations.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
+
+___
+
+### onClose
+
+• `Optional` **onClose**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<*void*\>
+
+Called when the socket closes for whatever reason, at any
+point in time. Provides the close event too. Beware
+that this callback happens AFTER all subscriptions have
+been gracefully completed and AFTER the `onDisconnect` callback.
+
+If you are interested in tracking the subscriptions completions,
+consider using the `onComplete` callback.
+
+In comparison to `onDisconnect`, this callback will ALWAYS
+be called, regardless if the user succesfully went through
+the connection initialisation or not. `onConnect` might not
+called before the `onClose`.
 
 ___
 

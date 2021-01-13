@@ -185,6 +185,25 @@ export interface ServerOptions<E = unknown> {
     reason: string,
   ) => Promise<void> | void;
   /**
+   * Called when the socket closes for whatever reason, at any
+   * point in time. Provides the close event too. Beware
+   * that this callback happens AFTER all subscriptions have
+   * been gracefully completed and AFTER the `onDisconnect` callback.
+   *
+   * If you are interested in tracking the subscriptions completions,
+   * consider using the `onComplete` callback.
+   *
+   * In comparison to `onDisconnect`, this callback will ALWAYS
+   * be called, regardless if the user succesfully went through
+   * the connection initialisation or not. `onConnect` might not
+   * called before the `onClose`.
+   */
+  onClose?: (
+    ctx: Context<E>,
+    code: number,
+    reason: string,
+  ) => Promise<void> | void;
+  /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
    * processing has been performed.
@@ -419,6 +438,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
     onConnect,
     onDisconnect,
+    onClose,
     onSubscribe,
     onOperation,
     onNext,
@@ -430,8 +450,9 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     opened(socket, extra) {
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
         socket.close(1002, 'Protocol Error');
-        return async () => {
-          /* nothing was set up */
+        return async (code, reason) => {
+          /* nothing was set up, just notify the closure */
+          await onClose?.(ctx, code, reason);
         };
       }
 
@@ -687,6 +708,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
           await sub?.return?.();
         }
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
+        await onClose?.(ctx, code, reason);
       };
     },
   };
