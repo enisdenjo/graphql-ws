@@ -1,3 +1,23 @@
+# [4.0.0](https://github.com/enisdenjo/graphql-ws/compare/v3.2.0...v4.0.0) (2021-01-13)
+
+
+### Bug Fixes
+
+* **server:** Client can complete/cancel any operation ([0ad1c4c](https://github.com/enisdenjo/graphql-ws/commit/0ad1c4c174d13effc185de49b42c64cdfd54a7ec))
+* **server:** Enforce ID uniqueness across all operations and during the whole subscription life ([#96](https://github.com/enisdenjo/graphql-ws/issues/96)) ([65d1bfa](https://github.com/enisdenjo/graphql-ws/commit/65d1bfa876fa5ff724c736b7ce958a1b1c9b0dc3))
+
+
+### Features
+
+* **server:** Add `onDisconnect` callback ([#94](https://github.com/enisdenjo/graphql-ws/issues/94)) ([2a61268](https://github.com/enisdenjo/graphql-ws/commit/2a612687d2b3fe7dc9a62dca5a171a52c28b99ab))
+* **server:** Log a warning for unsupported subprotocols ([88a12ef](https://github.com/enisdenjo/graphql-ws/commit/88a12ef3d9261e787a150d226210856688bf97da)), closes [#92](https://github.com/enisdenjo/graphql-ws/issues/92)
+
+
+### BREAKING CHANGES
+
+* **server:** The return function of `server.opened` (`closed`) now requires the close event code and reason for reporting to the `onDisconnect` callback.
+* **server:** The `Context.subscriptions` record value can be either an `AsyncIterator` or a `Promise`.
+
 # [3.2.0](https://github.com/enisdenjo/graphql-ws/compare/v3.1.0...v3.2.0) (2020-12-17)
 
 
