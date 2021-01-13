@@ -1,3 +1,15 @@
+# [4.1.0](https://github.com/enisdenjo/graphql-ws/compare/v4.0.0...v4.1.0) (2021-01-13)
+
+
+### Bug Fixes
+
+* **server:** `onDisconnect` is called exclusively if the connection is acknowledged ([33ed5f2](https://github.com/enisdenjo/graphql-ws/commit/33ed5f227a787773a6661d4e5efce1be5e500525))
+
+
+### Features
+
+* **server:** Add `onClose` callback for closures at _any_ point in time ([dd0d4fa](https://github.com/enisdenjo/graphql-ws/commit/dd0d4fa7828974b27876e138c0d09f78b2721d2d))
+
 # [4.0.0](https://github.com/enisdenjo/graphql-ws/compare/v3.2.0...v4.0.0) (2021-01-13)
 
 
