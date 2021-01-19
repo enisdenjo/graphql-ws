@@ -15,6 +15,10 @@ import {
 } from './message';
 import { isObject } from './utils';
 
+// this file is the entry point for browsers, re-export relevant elements
+export * from './message';
+export * from './protocol';
+
 export type EventConnecting = 'connecting';
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
 export type EventClosed = 'closed';
