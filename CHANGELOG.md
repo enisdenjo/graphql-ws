@@ -1,3 +1,11 @@
+## [4.1.1](https://github.com/enisdenjo/graphql-ws/compare/v4.1.0...v4.1.1) (2021-01-19)
+
+
+### Bug Fixes
+
+* **client:** Export relevant elements from the browser bundle ([b106dbe](https://github.com/enisdenjo/graphql-ws/commit/b106dbed1440488692a5588dcfd73f2f5a855a74)), closes [#97](https://github.com/enisdenjo/graphql-ws/issues/97)
+* **client:** Wait for server acknowledgement indefinitely ([a4bd602](https://github.com/enisdenjo/graphql-ws/commit/a4bd6029916e26a48b3f1acbbf9d741775e34baa)), closes [#98](https://github.com/enisdenjo/graphql-ws/issues/98)
+
 # [4.1.0](https://github.com/enisdenjo/graphql-ws/compare/v4.0.0...v4.1.0) (2021-01-13)
 
 
