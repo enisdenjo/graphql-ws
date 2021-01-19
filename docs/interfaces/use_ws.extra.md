@@ -1,8 +1,8 @@
-[graphql-ws](../../README.md) / [use/ws](../../modules/use_ws.md) / Extra
+[graphql-ws](../README.md) / [use/ws](../modules/use_ws.md) / Extra
 
 # Interface: Extra
 
-[use/ws](../../modules/use_ws.md).Extra
+[use/ws](../modules/use_ws.md).Extra
 
 The extra that will be put in the `Context`.
 
@@ -14,8 +14,8 @@ The extra that will be put in the `Context`.
 
 ### Properties
 
-- [request](ws.extra.md#request)
-- [socket](ws.extra.md#socket)
+- [request](use_ws.extra.md#request)
+- [socket](use_ws.extra.md#socket)
 
 ## Properties
 
