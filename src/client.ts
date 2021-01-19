@@ -360,10 +360,6 @@ export function createClient(options: ClientOptions): Client {
       let cancelled = false;
       cancellerRef.current = () => (cancelled = true);
 
-      const tooLong = setTimeout(() => {
-        socket.close(3408, 'Waited 5 seconds but socket connect never settled');
-      }, 5 * 1000);
-
       /**
        * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
        *
@@ -375,7 +371,6 @@ export function createClient(options: ClientOptions): Client {
 
       socket.onclose = (event) => {
         socket.onclose = null;
-        clearTimeout(tooLong);
         state = { ...state, acknowledged: false, socket: null };
         emitter.emit('closed', event);
         return reject(event);
@@ -394,7 +389,6 @@ export function createClient(options: ClientOptions): Client {
             throw new Error(`First message cannot be of type ${message.type}`);
           }
 
-          clearTimeout(tooLong);
           state = {
             ...state,
             acknowledged: true,
