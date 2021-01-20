@@ -284,6 +284,7 @@ export function createClient(options: ClientOptions): Client {
         const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
         socket.onclose = (event) => {
+          connecting = undefined;
           emitter.emit('closed', event);
           reject(event);
         };
