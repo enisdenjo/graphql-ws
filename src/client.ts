@@ -348,7 +348,8 @@ export function createClient(options: ClientOptions): Client {
               // then complete. but only if no lock got created in the meantime and
               // if the socket is still open
               setTimeout(() => {
-                if (!locks && socket.OPEN) complete();
+                if (!locks && socket.readyState === WebSocketImpl.OPEN)
+                  complete();
               }, keepAlive);
             } else {
               // otherwise complete immediately
@@ -561,9 +562,12 @@ export function createClient(options: ClientOptions): Client {
 
       return () => releaserRef.current();
     },
-    dispose() {
-      // TODO-db-210119 handle disposal and close
-      // state.socket?.close(1000, 'Normal Closure');
+    async dispose() {
+      if (connecting) {
+        // if there is a connection, close it
+        const socket = await connecting;
+        socket.close(1000, 'Normal Closure');
+      }
       emitter.reset();
     },
   };
