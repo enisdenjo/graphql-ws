@@ -269,7 +269,8 @@ export function createClient(options: ClientOptions): Client {
   let connecting: Promise<WebSocket> | undefined,
     locks = 0,
     retrying = false,
-    retries = 0;
+    retries = 0,
+    disposed = false;
   async function connect(): Promise<
     [
       socket: WebSocket,
@@ -404,8 +405,8 @@ export function createClient(options: ClientOptions): Client {
       throw errOrCloseEvent;
     }
 
-    // normal closure (completed), shouldnt try again
-    if (errOrCloseEvent.code === 1000) {
+    // disposed or normal closure (completed), shouldnt try again
+    if (disposed || errOrCloseEvent.code === 1000) {
       return false;
     }
 
@@ -565,6 +566,7 @@ export function createClient(options: ClientOptions): Client {
       return () => releaserRef.current();
     },
     async dispose() {
+      disposed = true;
       if (connecting) {
         // if there is a connection, close it
         const socket = await connecting;
