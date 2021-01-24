@@ -280,62 +280,64 @@ export function createClient(options: ClientOptions): Client {
     locks++;
 
     const socket = await (connecting ??
-      (connecting = new Promise<WebSocket>(async (resolve, reject) => {
-        if (retrying) {
-          await retryWait(retries);
-          retries++;
-        }
-
-        emitter.emit('connecting');
-        const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-
-        socket.onclose = (event) => {
-          connecting = undefined;
-          emitter.emit('closed', event);
-          reject(event);
-        };
-
-        socket.onopen = async () => {
-          try {
-            socket.send(
-              stringifyMessage<MessageType.ConnectionInit>({
-                type: MessageType.ConnectionInit,
-                payload:
-                  typeof connectionParams === 'function'
-                    ? await connectionParams()
-                    : connectionParams,
-              }),
-            );
-          } catch (err) {
-            // onclose listener will reject the promise
-            socket.close(
-              4400,
-              err instanceof Error ? err.message : new Error(err).message,
-            );
+      (connecting = new Promise<WebSocket>((resolve, reject) =>
+        (async () => {
+          if (retrying) {
+            await retryWait(retries);
+            retries++;
           }
-        };
 
-        socket.onmessage = ({ data }) => {
-          socket.onmessage = null; // interested only in the first message
-          try {
-            const message = parseMessage(data);
-            if (message.type !== MessageType.ConnectionAck) {
-              throw new Error(
-                `First message cannot be of type ${message.type}`,
+          emitter.emit('connecting');
+          const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+
+          socket.onclose = (event) => {
+            connecting = undefined;
+            emitter.emit('closed', event);
+            reject(event);
+          };
+
+          socket.onopen = async () => {
+            try {
+              socket.send(
+                stringifyMessage<MessageType.ConnectionInit>({
+                  type: MessageType.ConnectionInit,
+                  payload:
+                    typeof connectionParams === 'function'
+                      ? await connectionParams()
+                      : connectionParams,
+                }),
+              );
+            } catch (err) {
+              // onclose listener will reject the promise
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
               );
             }
-            emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
-            retries = 0; // reset the retries on connect
-            resolve(socket);
-          } catch (err) {
-            // onclose listener will reject the promise
-            socket.close(
-              4400,
-              err instanceof Error ? err.message : new Error(err).message,
-            );
-          }
-        };
-      })));
+          };
+
+          socket.onmessage = ({ data }) => {
+            socket.onmessage = null; // interested only in the first message
+            try {
+              const message = parseMessage(data);
+              if (message.type !== MessageType.ConnectionAck) {
+                throw new Error(
+                  `First message cannot be of type ${message.type}`,
+                );
+              }
+              emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+              retries = 0; // reset the retries on connect
+              resolve(socket);
+            } catch (err) {
+              // onclose listener will reject the promise
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
+              );
+            }
+          };
+        })(),
+      )));
 
     let release = () => {
       // releases this connection lock
