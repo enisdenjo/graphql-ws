@@ -179,22 +179,21 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     onNonLazyError = console.error,
     keepAlive = 0,
-    // TODO-db-210119 implement retrying
-    // retryAttempts = 5,
-    // retryWait = async function randomisedExponentialBackoff(retries) {
-    //   let retryDelay = 1000; // start with 1s delay
-    //   for (let i = 0; i < retries; i++) {
-    //     retryDelay *= 2;
-    //   }
-    //   await new Promise((resolve) =>
-    //     setTimeout(
-    //       resolve,
-    //       retryDelay +
-    //         // add random timeout from 300ms to 3s
-    //         Math.floor(Math.random() * (3000 - 300) + 300),
-    //     ),
-    //   );
-    // },
+    retryAttempts = 5,
+    retryWait = async function randomisedExponentialBackoff(retries) {
+      let retryDelay = 1000; // start with 1s delay
+      for (let i = 0; i < retries; i++) {
+        retryDelay *= 2;
+      }
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          retryDelay +
+            // add random timeout from 300ms to 3s
+            Math.floor(Math.random() * (3000 - 300) + 300),
+        ),
+      );
+    },
     on,
     webSocketImpl,
     /**
@@ -268,7 +267,9 @@ export function createClient(options: ClientOptions): Client {
   })();
 
   let connecting: Promise<WebSocket> | undefined,
-    locks = 0;
+    locks = 0,
+    retrying = false,
+    retries = 0;
   async function connect(): Promise<
     [
       socket: WebSocket,
@@ -279,7 +280,12 @@ export function createClient(options: ClientOptions): Client {
     locks++;
 
     const socket = await (connecting ??
-      (connecting = new Promise<WebSocket>((resolve, reject) => {
+      (connecting = new Promise<WebSocket>(async (resolve, reject) => {
+        if (retrying) {
+          await retryWait(retries);
+          retries++;
+        }
+
         emitter.emit('connecting');
         const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
@@ -319,6 +325,7 @@ export function createClient(options: ClientOptions): Client {
               );
             }
             emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+            retries = 0; // reset the retries on connect
             resolve(socket);
           } catch (err) {
             // onclose listener will reject the promise
@@ -400,21 +407,14 @@ export function createClient(options: ClientOptions): Client {
       return false;
     }
 
-    // user cancelled early, shouldnt try again
-    if (errOrCloseEvent.code === 3499) {
-      return false;
+    // retries are not allowed or we tried to many times, report error
+    if (!retryAttempts || retries >= retryAttempts) {
+      throw errOrCloseEvent;
     }
 
-    // TODO-db-210119 implement retrying
-    // // retries are not allowed or we tried to many times, report error
-    // if (!retryAttempts || state.retries >= retryAttempts) {
-    //   throw errOrCloseEvent;
-    // }
-
-    // // looks good, start retrying
-    // state.retrying = true;
-
-    return false;
+    // looks good, start retrying
+    retrying = true;
+    return true;
   }
 
   // in non-lazy (hot?) mode always hold one connection lock to persist the socket
