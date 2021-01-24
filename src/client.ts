@@ -277,7 +277,7 @@ export function createClient(options: ClientOptions): Client {
     [
       socket: WebSocket,
       release: () => void,
-      throwOnCloseOrWaitForRelease: Promise<void>, // do cleanup in a `then` statement
+      throwOnCloseOrWaitForRelease: Promise<void>,
     ]
   > {
     locks++;
@@ -311,7 +311,6 @@ export function createClient(options: ClientOptions): Client {
                 }),
               );
             } catch (err) {
-              // onclose listener will reject the promise
               socket.close(
                 4400,
                 err instanceof Error ? err.message : new Error(err).message,
@@ -332,7 +331,6 @@ export function createClient(options: ClientOptions): Client {
               retries = 0; // reset the retries on connect
               resolve(socket);
             } catch (err) {
-              // onclose listener will reject the promise
               socket.close(
                 4400,
                 err instanceof Error ? err.message : new Error(err).message,
@@ -429,11 +427,9 @@ export function createClient(options: ClientOptions): Client {
         try {
           const [, , throwOnCloseOrWaitForRelease] = await connect();
           await throwOnCloseOrWaitForRelease;
-          // completed, shouldnt try again
-          return;
+          return; // completed, shouldnt try again
         } catch (errOrCloseEvent) {
           try {
-            // return and report if shouldnt try again
             if (!shouldRetryConnectOrThrow(errOrCloseEvent))
               return onNonLazyError?.(errOrCloseEvent);
           } catch {
@@ -464,7 +460,7 @@ export function createClient(options: ClientOptions): Client {
       let completed = false;
       const releaserRef = {
         current: () => {
-          // for handling early completions
+          // for handling completions before connect
           completed = true;
         },
       };
@@ -481,11 +477,8 @@ export function createClient(options: ClientOptions): Client {
           }
           case MessageType.Error: {
             if (message.id === id) {
+              completed = true;
               sink.error(message.payload);
-
-              // the releaser must be set at this point
-              // because you cannot receive a message
-              // if there is no existing connection
               releaserRef.current();
               // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
               // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
@@ -495,13 +488,7 @@ export function createClient(options: ClientOptions): Client {
           case MessageType.Complete: {
             if (message.id === id) {
               completed = true;
-
-              // the releaser must be set at this point
-              // because you cannot receive a message
-              // if there is no existing connection
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              releaserRef.current();
-              // calling releaser will complete the sink
+              releaserRef.current(); // release completes the sink
             }
             return;
           }
@@ -520,10 +507,8 @@ export function createClient(options: ClientOptions): Client {
             // if completed while waiting for connect, release the connection lock right away
             if (completed) return release();
 
-            // handle incoming messages
             socket.addEventListener('message', messageHandler);
 
-            // perform subscribe
             socket.send(
               stringifyMessage<MessageType.Subscribe>({
                 id: id,
@@ -532,10 +517,9 @@ export function createClient(options: ClientOptions): Client {
               }),
             );
 
-            // update releaser ref for established connections
             releaserRef.current = () => {
-              // if not completed already, send complete message to server on release
               if (!completed) {
+                // if not completed already, send complete message to server on release
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
                     id: id,
@@ -543,7 +527,6 @@ export function createClient(options: ClientOptions): Client {
                   }),
                 );
               }
-
               release();
             };
 
@@ -551,13 +534,10 @@ export function createClient(options: ClientOptions): Client {
             // the promise resolved or the socket closed and the promise rejected
             await throwOnCloseOrWaitForRelease;
 
-            // not interested in incoming messages anymore
             socket.removeEventListener('message', messageHandler);
 
-            // completed, shouldnt try again
-            return;
+            return; // completed, shouldnt try again
           } catch (errOrCloseEvent) {
-            // return if shouldnt try again
             if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
           }
         }
