@@ -29,7 +29,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: *undefined* \| *Record*<*string*, *unknown*\> \| () => *Record*<*string*, *unknown*\> \| *Promise*<*Record*<*string*, *unknown*\>\>
+• `Optional` **connectionParams**: *undefined* | *Record*<*string*, *unknown*\> | () => *Record*<*string*, *unknown*\> | *Promise*<*Record*<*string*, *unknown*\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
@@ -45,7 +45,7 @@ ___
 
 ### generateID
 
-• `Optional` **generateID**: *undefined* \| () => *string*
+• `Optional` **generateID**: *undefined* | () => *string*
 
 A custom ID generator for identifying subscriptions.
 
@@ -59,7 +59,7 @@ ___
 
 ### keepAlive
 
-• `Optional` **keepAlive**: *undefined* \| *number*
+• `Optional` **keepAlive**: *undefined* | *number*
 
 How long should the client wait before closing the socket after the last oparation has
 completed. This is meant to be used in combination with `lazy`. You might want to have
@@ -71,7 +71,7 @@ ___
 
 ### lazy
 
-• `Optional` **lazy**: *undefined* \| *boolean*
+• `Optional` **lazy**: *undefined* | *boolean*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -82,7 +82,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *undefined* \| *Partial*<{ `closed`:  ; `connected`:  ; `connecting`:   }\>
+• `Optional` **on**: *undefined* | *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<*string*, *unknown*\>) => *void* ; `connecting`: () => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -94,7 +94,7 @@ ___
 
 ### onNonLazyError
 
-• `Optional` **onNonLazyError**: *undefined* \| (`errorOrCloseEvent`: *unknown*) => *void*
+• `Optional` **onNonLazyError**: *undefined* | (`errorOrCloseEvent`: *unknown*) => *void*
 
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
 using this mode, the errors might have no sinks to report to; however,
@@ -118,7 +118,7 @@ ___
 
 ### retryAttempts
 
-• `Optional` **retryAttempts**: *undefined* \| *number*
+• `Optional` **retryAttempts**: *undefined* | *number*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -138,7 +138,7 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: *undefined* \| (`retries`: *number*) => *Promise*<*void*\>
+• `Optional` **retryWait**: *undefined* | (`retries`: *number*) => *Promise*<*void*\>
 
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.

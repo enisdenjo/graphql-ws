@@ -33,7 +33,7 @@ to validate agains the supported ones.
 
 ### close
 
-▸ **close**(`code`: *number*, `reason`: *string*): *void* \| *Promise*<*void*\>
+▸ **close**(`code`: *number*, `reason`: *string*): *void* | *Promise*<*void*\>
 
 Closes the socket gracefully. Will always provide
 the appropriate code and close reason. `onDisconnect`
@@ -49,7 +49,7 @@ Name | Type |
 `code` | *number* |
 `reason` | *string* |
 
-**Returns:** *void* \| *Promise*<*void*\>
+**Returns:** *void* | *Promise*<*void*\>
 
 ___
 
@@ -81,7 +81,7 @@ ___
 
 ### send
 
-▸ **send**(`data`: *string*): *void* \| *Promise*<*void*\>
+▸ **send**(`data`: *string*): *void* | *Promise*<*void*\>
 
 Sends a message through the socket. Will always
 provide a `string` message.
@@ -99,4 +99,4 @@ Name | Type |
 ------ | ------ |
 `data` | *string* |
 
-**Returns:** *void* \| *Promise*<*void*\>
+**Returns:** *void* | *Promise*<*void*\>

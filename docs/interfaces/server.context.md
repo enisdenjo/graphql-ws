@@ -49,7 +49,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: *undefined* \| *Readonly*<*Record*<*string*, *unknown*\>\>
+• `Optional` `Readonly` **connectionParams**: *undefined* | *Readonly*<*Record*<*string*, *unknown*\>\>
 
 The parameters passed during the connection initialisation.
 
@@ -66,7 +66,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: *Record*<*string*, *null* \| *AsyncIterator*<*unknown*, *any*, *undefined*\>\>
+• `Readonly` **subscriptions**: *Record*<*string*, *null* | *AsyncIterator*<*unknown*, *any*, *undefined*\>\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_

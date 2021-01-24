@@ -20,6 +20,6 @@
 
 ### dispose
 
-• **dispose**: () => *void* \| *Promise*<*void*\>
+• **dispose**: () => *void* | *Promise*<*void*\>
 
 Dispose of the instance and clear up resources.
