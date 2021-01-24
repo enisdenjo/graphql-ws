@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/enisdenjo/graphql-ws/compare/v4.1.1...v4.1.2) (2021-01-24)
+
+
+### Bug Fixes
+
+* **client:** Stabilize and simplify internals ([#100](https://github.com/enisdenjo/graphql-ws/issues/100)) ([5ff8f1d](https://github.com/enisdenjo/graphql-ws/commit/5ff8f1dfb34d1a063fdfff8893c789c8b2c60d6e)), closes [#99](https://github.com/enisdenjo/graphql-ws/issues/99) [#85](https://github.com/enisdenjo/graphql-ws/issues/85)
+
 ## [4.1.1](https://github.com/enisdenjo/graphql-ws/compare/v4.1.0...v4.1.1) (2021-01-19)
 
 
