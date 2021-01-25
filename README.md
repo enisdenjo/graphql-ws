@@ -755,7 +755,7 @@ const wsServer = new ws.Server({
   path: '/graphql',
 });
 
-server.listen(443, () => {
+app.listen(443, () => {
   useServer(
     {
       schema,
