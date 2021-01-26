@@ -110,11 +110,15 @@ const client = createClient({
 // subscription
 (async () => {
   const onNext = () => {
-    /**/
+    /* handle incoming values */
+  };
+
+  let unsubscribe = () => {
+    /* call me to complete the subscription (replaced by the actual unsubscribe in the promise below) */
   };
 
   await new Promise((resolve, reject) => {
-    client.subscribe(
+    unsubscribe = client.subscribe(
       {
         query: 'subscription { greetings }',
       },
