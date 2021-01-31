@@ -259,7 +259,13 @@ const client = createClient({
 });
 
 function toObservable(operation) {
-  return new Observable((observer) => client.subscribe(operation, observer));
+  return new Observable((observer) =>
+    client.subscribe(operation, {
+      next: (data) => observer.next(data),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete(),
+    }),
+  );
 }
 
 const observable = toObservable({ query: `subscription { ping }` });
