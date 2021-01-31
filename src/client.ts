@@ -337,8 +337,8 @@ export function createClient(options: ClientOptions): Client {
                   complete();
                 } else {
                   error(event);
-                  denied(event);
                 }
+                denied(event);
               };
             });
 
