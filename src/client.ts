@@ -277,7 +277,7 @@ export function createClient(options: ClientOptions): Client {
     [
       socket: WebSocket,
       release: () => void,
-      throwOnCloseOrWaitForRelease: Promise<void>,
+      waitForReleaseOrThrowOnClose: Promise<void>,
     ]
   > {
     locks++;
@@ -425,8 +425,8 @@ export function createClient(options: ClientOptions): Client {
     (async () => {
       for (;;) {
         try {
-          const [, , throwOnCloseOrWaitForRelease] = await connect();
-          await throwOnCloseOrWaitForRelease;
+          const [, , waitForReleaseOrThrowOnClose] = await connect();
+          await waitForReleaseOrThrowOnClose;
           return; // completed, shouldnt try again
         } catch (errOrCloseEvent) {
           try {
@@ -501,7 +501,7 @@ export function createClient(options: ClientOptions): Client {
             const [
               socket,
               release,
-              throwOnCloseOrWaitForRelease,
+              waitForReleaseOrThrowOnClose,
             ] = await connect();
 
             // if completed while waiting for connect, release the connection lock right away
@@ -532,7 +532,7 @@ export function createClient(options: ClientOptions): Client {
 
             // either the releaser will be called, connection completed and
             // the promise resolved or the socket closed and the promise rejected
-            await throwOnCloseOrWaitForRelease;
+            await waitForReleaseOrThrowOnClose;
 
             socket.removeEventListener('message', messageHandler);
 
