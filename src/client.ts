@@ -329,18 +329,11 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('error', err);
             };
 
-            const wait = new Promise<void>((complete, error) => {
-              socket.onclose = (event) => {
-                connecting = undefined;
-                emitter.emit('closed', event);
-                if (event.code === 1000) {
-                  complete();
-                } else {
-                  error(event);
-                }
-                denied(event);
-              };
-            });
+            socket.onclose = (event) => {
+              connecting = undefined;
+              emitter.emit('closed', event);
+              denied(event);
+            };
 
             socket.onopen = async () => {
               try {
@@ -372,7 +365,14 @@ export function createClient(options: ClientOptions): Client {
                 }
                 emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
                 retries = 0; // reset the retries on connect
-                connected([socket, wait]);
+                connected([
+                  socket,
+                  new Promise<void>((complete, error) =>
+                    socket.addEventListener('close', (event) =>
+                      event.code === 1000 ? complete() : error(event),
+                    ),
+                  ),
+                ]);
               } catch (err) {
                 socket.close(
                   4400,
