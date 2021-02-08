@@ -258,13 +258,6 @@ export function createClient(options: ClientOptions): Client {
           listener(...args);
         }
       },
-      reset() {
-        (Object.keys(listeners) as (keyof typeof listeners)[]).forEach(
-          (event) => {
-            listeners[event] = [];
-          },
-        );
-      },
     };
   })();
 
@@ -554,7 +547,6 @@ export function createClient(options: ClientOptions): Client {
         const socket = await connecting;
         socket.close(1000, 'Normal Closure');
       }
-      emitter.reset();
     },
   };
 }

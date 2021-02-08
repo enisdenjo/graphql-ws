@@ -1029,4 +1029,22 @@ describe('events', () => {
       expect(cal[0]).toHaveProperty('wasClean');
     });
   });
+
+  it('should emit closed event when disposing', async (done) => {
+    const { url, waitForClient } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      on: {
+        closed: () => done(),
+      },
+    });
+
+    await waitForClient();
+
+    client.dispose();
+  });
 });
