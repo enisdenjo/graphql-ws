@@ -360,15 +360,8 @@ export function createClient(options: ClientOptions): Client {
             }
           }
         }),
-        new Promise<void>((resolve, reject) =>
-          // avoid replacing the onclose above
-          socket.addEventListener('close', (event) =>
-            event.code === 1000
-              ? // normal close is completion
-                resolve()
-              : // all other close events are fatal
-                reject(event),
-          ),
+        new Promise<void>((_resolve, reject) =>
+          socket.addEventListener('close', reject, { once: true }),
         ),
       ]),
     ];
