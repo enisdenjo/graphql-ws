@@ -20,7 +20,7 @@
 
 ### operationName
 
-• `Optional` `Readonly` **operationName**: *undefined* | *null* | *string*
+• `Optional` `Readonly` **operationName**: *undefined* \| *null* \| *string*
 
 ___
 
@@ -32,4 +32,4 @@ ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: *undefined* | *null* | *Record*<*string*, *unknown*\>
+• `Optional` `Readonly` **variables**: *undefined* \| *null* \| *Record*<*string*, *unknown*\>

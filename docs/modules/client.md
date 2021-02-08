@@ -47,7 +47,7 @@
 
 ### Event
 
-Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) | [*EventConnected*](client.md#eventconnected) | [*EventClosed*](client.md#eventclosed)
+Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventClosed*](client.md#eventclosed)
 
 ___
 

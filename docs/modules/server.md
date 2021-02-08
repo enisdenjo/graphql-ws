@@ -24,7 +24,7 @@
 
 ### GraphQLExecutionContextValue
 
-Ƭ **GraphQLExecutionContextValue**: *object* | *symbol* | *number* | *string* | *boolean* | *undefined* | *null*
+Ƭ **GraphQLExecutionContextValue**: *object* \| *symbol* \| *number* \| *string* \| *boolean* \| *undefined* \| *null*
 
 A concrete GraphQL execution context value type.
 
@@ -37,7 +37,7 @@ ___
 
 ### OperationResult
 
-Ƭ **OperationResult**: *Promise*<*AsyncIterableIterator*<ExecutionResult\> | ExecutionResult\> | *AsyncIterableIterator*<ExecutionResult\> | ExecutionResult
+Ƭ **OperationResult**: *Promise*<*AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
 
 ## Functions
 
