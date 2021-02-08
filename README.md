@@ -717,7 +717,6 @@ server.listen(443);
 <summary><a href="#express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
 ```typescript
-import https from 'https';
 import ws from 'ws'; // yarn add ws
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
@@ -729,16 +728,13 @@ import { schema } from 'my-graphql-schema';
 const app = express();
 app.use('/graphql', graphqlHTTP({ schema }));
 
-// create a http server using express
-const server = https.createServer(app);
+const server = app.listen(443, () => {
+  // create and use the websocket server
+  const wsServer = new ws.Server({
+    server,
+    path: '/graphql',
+  });
 
-// create websocket server
-const wsServer = new ws.Server({
-  server,
-  path: '/graphql',
-});
-
-app.listen(443, () => {
   useServer(
     {
       schema,
@@ -756,7 +752,6 @@ app.listen(443, () => {
 <summary><a href="#apollo-server-express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
 
 ```typescript
-import https from 'https';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import ws from 'ws'; // yarn add ws
@@ -773,16 +768,13 @@ const apolloServer = new ApolloServer({ schema });
 // apply middleware
 apolloServer.applyMiddleware({ app });
 
-// create a http server using express
-const server = https.createServer(app);
+const server = app.listen(443, () => {
+  // create and use the websocket server
+  const wsServer = new ws.Server({
+    server,
+    path: '/graphql',
+  });
 
-// create websocket server
-const wsServer = new ws.Server({
-  server,
-  path: '/graphql',
-});
-
-app.listen(443, () => {
   useServer(
     {
       schema,
