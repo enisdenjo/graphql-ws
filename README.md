@@ -540,14 +540,20 @@ const client = createClient({
 ```ts
 // minimal version of `import { useServer } from 'graphql-ws/lib/use/ws';`
 
-import http from 'http';
+import https from 'https';
 import ws from 'ws'; // yarn add ws
-import { makeServer, ServerOptions } from 'graphql-ws';
+import { makeServer } from 'graphql-ws';
 import { execute, subscribe } from 'graphql';
 import { schema } from 'my-graphql-schema';
 
+// create https server
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
 // make
-const server = makeServer({
+const gqlServer = makeServer({
   schema,
   execute,
   subscribe,
@@ -562,7 +568,7 @@ const wsServer = new ws.Server({
 // implement
 wsServer.on('connection', (socket, request) => {
   // a new socket opened, let graphql-ws take over
-  const closed = server.opened(
+  const closed = gqlServer.opened(
     {
       protocol: socket.protocol, // will be validated
       send: (data) =>
@@ -589,8 +595,10 @@ wsServer.on('connection', (socket, request) => {
   );
 
   // notify server that the socket closed
-  socket.once('close', () => closed());
+  socket.once('close', (code, reason) => closed(code, reason));
 });
+
+server.listen(443);
 ```
 
 </details>
@@ -602,8 +610,9 @@ wsServer.on('connection', (socket, request) => {
 // check extended implementation at `{ useServer } from 'graphql-ws/lib/use/ws'`
 
 import http from 'http';
+import https from 'https';
 import ws from 'ws'; // yarn add ws
-import { makeServer } from '../index';
+import { makeServer } from 'graphql-ws';
 import { execute, subscribe } from 'graphql';
 import { schema } from 'my-graphql-schema';
 import { validate } from 'my-auth';
@@ -625,8 +634,14 @@ function handleAuth(request: http.IncomingMessage) {
   }
 }
 
-// make
-const server = makeServer<Extra>({
+// create https server
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+// make graphql server
+const gqlServer = makeServer<Extra>({
   schema,
   execute,
   subscribe,
@@ -656,7 +671,7 @@ wsServer.on('connection', (socket, request) => {
   // return socket.close(4403, 'Forbidden');
 
   // pass the connection to graphql-ws
-  const closed = server.opened(
+  const closed = gqlServer.opened(
     {
       protocol: socket.protocol, // will be validated
       send: (data) =>
@@ -690,8 +705,10 @@ wsServer.on('connection', (socket, request) => {
   );
 
   // notify server that the socket closed
-  socket.once('close', () => closed());
+  socket.once('close', (code, reason) => closed(code, reason));
 });
+
+server.listen(443);
 ```
 
 </details>
