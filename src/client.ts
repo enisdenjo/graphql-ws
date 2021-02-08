@@ -518,8 +518,8 @@ export function createClient(options: ClientOptions): Client {
             );
 
             releaserRef.current = () => {
-              if (!completed) {
-                // if not completed already, send complete message to server on release
+              if (!completed && socket.readyState === WebSocketImpl.OPEN) {
+                // if not completed already and socket is open, send complete message to server on release
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
                     id: id,

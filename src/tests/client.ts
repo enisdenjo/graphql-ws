@@ -284,6 +284,47 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   });
 });
 
+it('should not send the complete message if the socket is not open', async () => {
+  const {
+    url,
+    clients,
+    waitForOperation,
+    waitForClientClose,
+  } = await startTServer();
+
+  class MockWebSocket extends WebSocket {
+    constructor(...args: unknown[]) {
+      // @ts-expect-error Args will fit
+      super(...args);
+    }
+
+    public send(data: unknown) {
+      if (this.readyState !== WebSocket.OPEN)
+        fail("Shouldn't send anything through a non-OPEN socket");
+      super.send(data);
+    }
+  }
+
+  const client = createClient({
+    webSocketImpl: MockWebSocket,
+    url,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+  });
+  const sub = tsubscribe(client, { query: 'subscription { ping }' });
+  await waitForOperation();
+
+  // kick the client off
+  for (const client of clients) {
+    client.close();
+    await waitForClientClose();
+  }
+
+  // dispose of the subscription which should complete the connection
+  sub.dispose();
+  await sub.waitForComplete();
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
