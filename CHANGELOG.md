@@ -1,3 +1,11 @@
+## [4.1.3](https://github.com/enisdenjo/graphql-ws/compare/v4.1.2...v4.1.3) (2021-02-08)
+
+
+### Bug Fixes
+
+* **client:** Should emit `closed` event when disposing ([5800de8](https://github.com/enisdenjo/graphql-ws/commit/5800de8d343649bb4c93ca31c61911879123c736)), closes [#108](https://github.com/enisdenjo/graphql-ws/issues/108)
+* **client:** Shouldn’t send the `Complete` message if socket is not open ([cd12024](https://github.com/enisdenjo/graphql-ws/commit/cd12024c19bdcf859c5a9a6b7a072ea252401524))
+
 ## [4.1.2](https://github.com/enisdenjo/graphql-ws/compare/v4.1.1...v4.1.2) (2021-01-24)
 
 
