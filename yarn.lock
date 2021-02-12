@@ -4793,7 +4793,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:7.1.6, glob@npm:^7.0.0, glob@npm:^7.1.1, glob@npm:^7.1.2, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
+"glob@npm:^7.0.0, glob@npm:^7.1.1, glob@npm:^7.1.2, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
   version: 7.1.6
   resolution: "glob@npm:7.1.6"
   dependencies:
@@ -4894,11 +4894,11 @@ __metadata:
     eslint: ^7.19.0
     eslint-config-prettier: ^7.2.0
     eslint-plugin-prettier: ^3.3.1
-    glob: 7.1.6
+    glob: ^7.1.6
     graphql: ^15.5.0
     jest: ^26.6.3
     prettier: ^2.2.1
-    replacestream: 4.0.3
+    replacestream: ^4.0.3
     rollup: ^2.38.5
     rollup-plugin-terser: ^7.0.2
     semantic-release: ^17.3.8
@@ -9042,7 +9042,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"replacestream@npm:4.0.3":
+"replacestream@npm:^4.0.3":
   version: 4.0.3
   resolution: "replacestream@npm:4.0.3"
   dependencies:
