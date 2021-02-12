@@ -508,6 +508,74 @@ const client = createClient({
 
 </details>
 
+<details id="graceful-restart">
+<summary><a href="#graceful-restart">🔗</a> Client usage with graceful restart</summary>
+
+```typescript
+import { createClient, Client } from 'graphql-ws';
+import { giveMeAFreshToken } from './token-giver';
+
+let restartRequestedBeforeConnected = false;
+let gracefullyRestart = () => {
+  restartRequestedBeforeConnected = true;
+};
+
+const client = createClient({
+  url: 'wss://graceful.restart/is/a/non-fatal/close-code',
+  connectionParams: async () => {
+    const token = await giveMeAFreshToken();
+    return { token };
+  },
+  on: {
+    connected: (socket) => {
+      gracefullyRestart = () => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close(4205, 'Client Restart');
+        }
+      };
+
+      // just in case you were eager to restart
+      if (restartRequestedBeforeConnected) {
+        restartRequestedBeforeConnected = false;
+        gracefullyRestart();
+      }
+    },
+  },
+});
+
+// all subscriptions through `client.subscribe` will resubscribe on graceful restarts
+```
+
+</details>
+
+<details id="browser">
+<summary><a href="#browser">🔗</a> Client usage in browser</summary>
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>GraphQL over WebSocket</title>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/graphql-ws/umd/graphql-ws.min.js"
+    ></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      const client = graphqlWs.createClient({
+        url: 'wss://umdfor.the/win/graphql',
+      });
+
+      // consider other recipes for usage inspiration
+    </script>
+  </body>
+</html>
+```
+
+</details>
+
 <details id="node-client">
 <summary><a href="#node-client">🔗</a> Client usage in Node</summary>
 
