@@ -1,3 +1,10 @@
+## [4.1.5](https://github.com/enisdenjo/graphql-ws/compare/v4.1.4...v4.1.5) (2021-02-12)
+
+
+### Bug Fixes
+
+* Main entrypoint in `exports` is just `"."` ([8f70b02](https://github.com/enisdenjo/graphql-ws/commit/8f70b02ec1ed1b88fd80e7e04eecf4552b382bbc))
+
 ## [4.1.4](https://github.com/enisdenjo/graphql-ws/compare/v4.1.3...v4.1.4) (2021-02-12)
 
 
