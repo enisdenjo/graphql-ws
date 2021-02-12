@@ -480,34 +480,6 @@ const client = createClient({
 
 </details>
 
-<details id="browser">
-<summary><a href="#browser">🔗</a> Client usage in browser</summary>
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>GraphQL over WebSocket</title>
-    <script
-      type="text/javascript"
-      src="https://unpkg.com/graphql-ws/umd/graphql-ws.min.js"
-    ></script>
-  </head>
-  <body>
-    <script type="text/javascript">
-      const client = graphqlWs.createClient({
-        url: 'wss://umdfor.the/win/graphql',
-      });
-
-      // consider other recipes for usage inspiration
-    </script>
-  </body>
-</html>
-```
-
-</details>
-
 <details id="graceful-restart">
 <summary><a href="#graceful-restart">🔗</a> Client usage with graceful restart</summary>
 
