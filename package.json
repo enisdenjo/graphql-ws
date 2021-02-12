@@ -26,6 +26,16 @@
   },
   "main": "lib/index.js",
   "module": "lib/index.mjs",
+  "exports": {
+    "./": {
+      "require": "./lib/index.js",
+      "import": "./lib/index.mjs"
+    },
+    "./lib/use/ws": {
+      "require": "./lib/use/ws.js",
+      "import": "./lib/use/ws.mjs"
+    }
+  },
   "types": "lib/index.d.ts",
   "browser": "umd/graphql-ws.js",
   "files": [
@@ -43,7 +53,7 @@
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
     "test": "jest",
-    "build:esm": "tsc -b tsconfig.esm.json && find ./lib -name \"*.js\" -exec sh -c 'mv \"$0\" \"${0%.js}.mjs\"' \"{}\" \\;",
+    "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.js",
     "build:cjs": "tsc -b tsconfig.cjs.json",
     "build:umd": "rollup -c && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "build": "yarn build:esm && yarn build:cjs && yarn build:umd",
@@ -71,9 +81,11 @@
     "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "glob": "7.1.6",
     "graphql": "^15.5.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
+    "replacestream": "4.0.3",
     "rollup": "^2.38.5",
     "rollup-plugin-terser": "^7.0.2",
     "semantic-release": "^17.3.8",
