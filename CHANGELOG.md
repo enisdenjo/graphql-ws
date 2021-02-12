@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/enisdenjo/graphql-ws/compare/v4.1.3...v4.1.4) (2021-02-12)
+
+
+### Bug Fixes
+
+* Define entry points through the `exports`  field and use `.mjs` suffixed ESM imports ([#110](https://github.com/enisdenjo/graphql-ws/issues/110)) ([4196238](https://github.com/enisdenjo/graphql-ws/commit/4196238888bffe4fb958bc665512b79eb384a28e))
+
 ## [4.1.3](https://github.com/enisdenjo/graphql-ws/compare/v4.1.2...v4.1.3) (2021-02-08)
 
 
