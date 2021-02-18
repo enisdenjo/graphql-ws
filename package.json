@@ -26,10 +26,12 @@
   },
   "main": "lib/index.js",
   "module": "lib/index.mjs",
+  "browser": "umd/graphql-ws.js",
   "exports": {
     ".": {
       "require": "./lib/index.js",
-      "import": "./lib/index.mjs"
+      "import": "./lib/index.mjs",
+      "browser": "./umd/graphql-ws.js"
     },
     "./lib/use/ws": {
       "require": "./lib/use/ws.js",
@@ -38,7 +40,6 @@
     "./package.json": "./package.json"
   },
   "types": "lib/index.d.ts",
-  "browser": "umd/graphql-ws.js",
   "files": [
     "lib",
     "umd",
