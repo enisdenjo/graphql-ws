@@ -4,10 +4,6 @@
 
 [message](../modules/message.md).CompleteMessage
 
-## Hierarchy
-
-* **CompleteMessage**
-
 ## Table of contents
 
 ### Properties

@@ -9,12 +9,8 @@ A representation of any set of values over any amount of time.
 ## Type parameters
 
 Name | Default |
------- | ------ |
+:------ | :------ |
 `T` | *unknown* |
-
-## Hierarchy
-
-* **Sink**
 
 ## Table of contents
 
@@ -49,7 +45,7 @@ type during implementation.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `error` | *unknown* |
 
 **Returns:** *void*
@@ -65,7 +61,7 @@ Next value arriving.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `value` | T |
 
 **Returns:** *void*

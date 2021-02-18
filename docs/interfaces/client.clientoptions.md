@@ -6,10 +6,6 @@
 
 Configuration used for the GraphQL over WebSocket client.
 
-## Hierarchy
-
-* **ClientOptions**
-
 ## Table of contents
 
 ### Properties
@@ -29,7 +25,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: *undefined* \| *Record*<*string*, *unknown*\> \| () => *Record*<*string*, *unknown*\> \| *Promise*<*Record*<*string*, *unknown*\>\>
+• `Optional` **connectionParams**: *undefined* \| *Record*<string, unknown\> \| () => *Record*<string, unknown\> \| *Promise*<Record<string, unknown\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
@@ -82,7 +78,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *undefined* \| *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<*string*, *unknown*\>) => *void* ; `connecting`: () => *void*  }\>
+• `Optional` **on**: *undefined* \| *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -138,7 +134,7 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: *undefined* \| (`retries`: *number*) => *Promise*<*void*\>
+• `Optional` **retryWait**: *undefined* \| (`retries`: *number*) => *Promise*<void\>
 
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.

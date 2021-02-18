@@ -4,10 +4,6 @@
 
 [message](../modules/message.md).NextMessage
 
-## Hierarchy
-
-* **NextMessage**
-
 ## Table of contents
 
 ### Properties

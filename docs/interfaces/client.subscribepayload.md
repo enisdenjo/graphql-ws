@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).SubscribePayload
 
-## Hierarchy
-
-* **SubscribePayload**
-
 ## Table of contents
 
 ### Properties
@@ -32,4 +28,4 @@ ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: *undefined* \| *null* \| *Record*<*string*, *unknown*\>
+• `Optional` `Readonly` **variables**: *undefined* \| *null* \| *Record*<string, unknown\>

@@ -37,7 +37,7 @@ ___
 
 ### OperationResult
 
-Ƭ **OperationResult**: *Promise*<*AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
+Ƭ **OperationResult**: *Promise*<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
 
 ## Functions
 
@@ -54,13 +54,13 @@ Read more about the Protocol in the PROTOCOL.md documentation file.
 #### Type parameters:
 
 Name | Default |
------- | ------ |
+:------ | :------ |
 `E` | *unknown* |
 
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<E\> |
 
 **Returns:** [*Server*](../interfaces/server.server-1.md)<E\>

@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).ConnectionInitMessage
 
-## Hierarchy
-
-* **ConnectionInitMessage**
-
 ## Table of contents
 
 ### Properties
@@ -19,7 +15,7 @@
 
 ### payload
 
-• `Optional` `Readonly` **payload**: *undefined* \| *Record*<*string*, *unknown*\>
+• `Optional` `Readonly` **payload**: *undefined* \| *Record*<string, unknown\>
 
 ___
 

@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).ErrorMessage
 
-## Hierarchy
-
-* **ErrorMessage**
-
 ## Table of contents
 
 ### Properties

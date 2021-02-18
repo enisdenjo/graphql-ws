@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).SubscribeMessage
 
-## Hierarchy
-
-* **SubscribeMessage**
-
 ## Table of contents
 
 ### Properties

@@ -4,10 +4,6 @@
 
 [server](../modules/server.md).WebSocket
 
-## Hierarchy
-
-* **WebSocket**
-
 ## Table of contents
 
 ### Properties
@@ -33,7 +29,7 @@ to validate agains the supported ones.
 
 ### close
 
-▸ **close**(`code`: *number*, `reason`: *string*): *void* \| *Promise*<*void*\>
+▸ **close**(`code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
 
 Closes the socket gracefully. Will always provide
 the appropriate code and close reason. `onDisconnect`
@@ -45,17 +41,17 @@ closure.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `code` | *number* |
 `reason` | *string* |
 
-**Returns:** *void* \| *Promise*<*void*\>
+**Returns:** *void* \| *Promise*<void\>
 
 ___
 
 ### onMessage
 
-▸ **onMessage**(`cb`: (`data`: *string*) => *Promise*<*void*\>): *void*
+▸ **onMessage**(`cb`: (`data`: *string*) => *Promise*<void\>): *void*
 
 Called when message is received. The library requires the data
 to be a `string`.
@@ -72,8 +68,8 @@ to your clients however you wish.
 #### Parameters:
 
 Name | Type |
------- | ------ |
-`cb` | (`data`: *string*) => *Promise*<*void*\> |
+:------ | :------ |
+`cb` | (`data`: *string*) => *Promise*<void\> |
 
 **Returns:** *void*
 
@@ -81,7 +77,7 @@ ___
 
 ### send
 
-▸ **send**(`data`: *string*): *void* \| *Promise*<*void*\>
+▸ **send**(`data`: *string*): *void* \| *Promise*<void\>
 
 Sends a message through the socket. Will always
 provide a `string` message.
@@ -96,7 +92,7 @@ The returned promise is used to control the flow of data
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `data` | *string* |
 
-**Returns:** *void* \| *Promise*<*void*\>
+**Returns:** *void* \| *Promise*<void\>

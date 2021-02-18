@@ -4,10 +4,6 @@
 
 [message](../modules/message.md).SubscribeMessage
 
-## Hierarchy
-
-* **SubscribeMessage**
-
 ## Table of contents
 
 ### Properties

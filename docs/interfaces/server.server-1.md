@@ -7,12 +7,8 @@
 ## Type parameters
 
 Name | Default |
------- | ------ |
+:------ | :------ |
 `E` | *undefined* |
-
-## Hierarchy
-
-* **Server**
 
 ## Table of contents
 
@@ -24,7 +20,7 @@ Name | Default |
 
 ### opened
 
-▸ **opened**(`socket`: [*WebSocket*](server.websocket.md), `ctxExtra`: E): *function*
+▸ **opened**(`socket`: [*WebSocket*](server.websocket.md), `ctxExtra`: E): (`code`: *number*, `reason`: *string*) => *Promise*<void\>
 
 New socket has beeen established. The lib will validate
 the protocol and use the socket accordingly. Returned promise
@@ -42,7 +38,7 @@ promise will resolve once the internal cleanup is complete.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `socket` | [*WebSocket*](server.websocket.md) |
 `ctxExtra` | E |
 

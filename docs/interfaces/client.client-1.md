@@ -25,9 +25,15 @@
 
 ### dispose
 
-• **dispose**: () => *void* \| *Promise*<*void*\>
+• **dispose**: () => *void* \| *Promise*<void\>
 
 Dispose of the instance and clear up resources.
+
+#### Type declaration:
+
+▸ (): *void* \| *Promise*<void\>
+
+**Returns:** *void* \| *Promise*<void\>
 
 Inherited from: [Disposable](types.disposable.md).[dispose](types.disposable.md#dispose)
 
@@ -35,20 +41,20 @@ Inherited from: [Disposable](types.disposable.md).[dispose](types.disposable.md#
 
 ### on
 
-▸ **on**<E\>(`event`: E, `listener`: [*EventListener*](../modules/client.md#eventlistener)<E\>): *function*
+▸ **on**<E\>(`event`: E, `listener`: [*EventListener*](../modules/client.md#eventlistener)<E\>): () => *void*
 
 Listens on the client which dispatches events about the socket state.
 
 #### Type parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `E` | [*Event*](../modules/client.md#event) |
 
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `event` | E |
 `listener` | [*EventListener*](../modules/client.md#eventlistener)<E\> |
 
@@ -58,7 +64,7 @@ ___
 
 ### subscribe
 
-▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](message.subscribepayload.md), `sink`: [*Sink*](types.sink.md)<T\>): *function*
+▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](message.subscribepayload.md), `sink`: [*Sink*](types.sink.md)<T\>): () => *void*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -67,13 +73,13 @@ function used for dropping the subscription and cleaning stuff up.
 #### Type parameters:
 
 Name | Default |
------- | ------ |
+:------ | :------ |
 `T` | *unknown* |
 
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `payload` | [*SubscribePayload*](message.subscribepayload.md) |
 `sink` | [*Sink*](types.sink.md)<T\> |
 

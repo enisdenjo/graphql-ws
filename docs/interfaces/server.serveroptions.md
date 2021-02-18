@@ -7,12 +7,8 @@
 ## Type parameters
 
 Name | Default |
------- | ------ |
+:------ | :------ |
 `E` | *unknown* |
-
-## Hierarchy
-
-* **ServerOptions**
 
 ## Table of contents
 
@@ -83,11 +79,23 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`args` | ExecutionArgs |
+
+**Returns:** [*OperationResult*](../modules/server.md#operationresult)
+
 ___
 
 ### onClose
 
-• `Optional` **onClose**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<*void*\>
+• `Optional` **onClose**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
 
 Called when the socket closes for whatever reason, at any
 point in time. Provides the close event too. Beware
@@ -106,7 +114,7 @@ ___
 
 ### onComplete
 
-• `Optional` **onComplete**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<*void*\>
+• `Optional` **onComplete**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<void\>
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -124,7 +132,7 @@ ___
 
 ### onConnect
 
-• `Optional` **onConnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<*string*, *unknown*\> \| *Promise*<*boolean* \| *void* \| *Record*<*string*, *unknown*\>\>
+• `Optional` **onConnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -153,7 +161,7 @@ ___
 
 ### onDisconnect
 
-• `Optional` **onDisconnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<*void*\>
+• `Optional` **onDisconnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
 
 Called when the client disconnects for whatever reason after
 he successfully went through the connection initialisation phase.
@@ -174,7 +182,7 @@ ___
 
 ### onError
 
-• `Optional` **onError**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<*void* \| readonly *GraphQLError*[]\>
+• `Optional` **onError**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -192,7 +200,7 @@ ___
 
 ### onNext
 
-• `Optional` **onNext**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<*void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onNext**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -211,7 +219,7 @@ ___
 
 ### onOperation
 
-• `Optional` **onOperation**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<*AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<*void* \| *Promise*<*AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<*ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onOperation**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -236,7 +244,7 @@ ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<*void* \| readonly *GraphQLError*[] \| ExecutionArgs\>
+• `Optional` **onSubscribe**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -305,3 +313,15 @@ used to execute the subscription operation.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
+
+#### Type declaration:
+
+▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`args` | ExecutionArgs |
+
+**Returns:** [*OperationResult*](../modules/server.md#operationresult)

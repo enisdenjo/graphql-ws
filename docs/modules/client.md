@@ -65,6 +65,18 @@ The argument is actually the websocket `CloseEvent`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
+#### Type declaration:
+
+▸ (`event`: *unknown*): *void*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`event` | *unknown* |
+
+**Returns:** *void*
+
 ___
 
 ### EventConnected
@@ -75,7 +87,7 @@ ___
 
 ### EventConnectedListener
 
-Ƭ **EventConnectedListener**: (`socket`: *unknown*, `payload?`: *Record*<*string*, *unknown*\>) => *void*
+Ƭ **EventConnectedListener**: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void*
 
 The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
@@ -83,6 +95,19 @@ you should assert the websocket type during implementation.
 
 Also, the second argument is the optional payload that the server may
 send through the `ConnectionAck` message.
+
+#### Type declaration:
+
+▸ (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>): *void*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`socket` | *unknown* |
+`payload?` | *Record*<string, unknown\> |
+
+**Returns:** *void*
 
 ___
 
@@ -96,6 +121,12 @@ ___
 
 Ƭ **EventConnectingListener**: () => *void*
 
+#### Type declaration:
+
+▸ (): *void*
+
+**Returns:** *void*
+
 ___
 
 ### EventListener
@@ -105,7 +136,7 @@ ___
 #### Type parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `E` | [*Event*](client.md#event) |
 
 ___
@@ -117,7 +148,7 @@ ___
 #### Type parameters:
 
 Name | Type | Default |
------- | ------ | ------ |
+:------ | :------ | :------ |
 `T` | [*MessageType*](../enums/message.messagetype.md) | [*MessageType*](../enums/message.messagetype.md) |
 
 ## Variables
@@ -139,7 +170,7 @@ Creates a disposable GraphQL over WebSocket client.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `options` | [*ClientOptions*](../interfaces/client.clientoptions.md) |
 
 **Returns:** [*Client*](../interfaces/client.client-1.md)
@@ -155,7 +186,7 @@ Checks if the provided value is a message.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `val` | *unknown* |
 
 **Returns:** val is ConnectionInitMessage \| ConnectionAckMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
@@ -171,7 +202,7 @@ Parses the raw websocket message data to a valid message.
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `data` | *unknown* |
 
 **Returns:** [*Message*](message.md#message)
@@ -187,13 +218,13 @@ Stringifies a valid message ready to be sent through the socket.
 #### Type parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `T` | [*MessageType*](../enums/message.messagetype.md) |
 
 #### Parameters:
 
 Name | Type |
------- | ------ |
+:------ | :------ |
 `msg` | [*Message*](message.md#message)<T\> |
 
 **Returns:** *string*

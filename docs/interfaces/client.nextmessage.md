@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).NextMessage
 
-## Hierarchy
-
-* **NextMessage**
-
 ## Table of contents
 
 ### Properties

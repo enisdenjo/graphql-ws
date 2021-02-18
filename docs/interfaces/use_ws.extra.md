@@ -6,10 +6,6 @@
 
 The extra that will be put in the `Context`.
 
-## Hierarchy
-
-* **Extra**
-
 ## Table of contents
 
 ### Properties

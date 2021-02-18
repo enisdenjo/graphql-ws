@@ -4,10 +4,6 @@
 
 [client](../modules/client.md).CompleteMessage
 
-## Hierarchy
-
-* **CompleteMessage**
-
 ## Table of contents
 
 ### Properties
