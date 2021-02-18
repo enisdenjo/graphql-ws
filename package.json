@@ -34,7 +34,8 @@
     "./lib/use/ws": {
       "require": "./lib/use/ws.js",
       "import": "./lib/use/ws.mjs"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "types": "lib/index.d.ts",
   "browser": "umd/graphql-ws.js",
