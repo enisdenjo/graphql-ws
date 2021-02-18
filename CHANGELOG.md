@@ -1,3 +1,11 @@
+## [4.1.6](https://github.com/enisdenjo/graphql-ws/compare/v4.1.5...v4.1.6) (2021-02-18)
+
+
+### Bug Fixes
+
+* Add `browser` export map ([ea306db](https://github.com/enisdenjo/graphql-ws/commit/ea306db45a05ab712782b17c5a3a1ec60537eaa4))
+* Add `package.json` to exports map ([#119](https://github.com/enisdenjo/graphql-ws/issues/119)) ([1f09863](https://github.com/enisdenjo/graphql-ws/commit/1f09863de6b8731980dfc513708cd144a0d5bfbe)), closes [#118](https://github.com/enisdenjo/graphql-ws/issues/118)
+
 ## [4.1.5](https://github.com/enisdenjo/graphql-ws/compare/v4.1.4...v4.1.5) (2021-02-12)
 
 
