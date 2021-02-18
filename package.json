@@ -47,6 +47,9 @@
     "LICENSE.md",
     "PROTOCOL.md"
   ],
+  "sideEffects": [
+    "umd/*"
+  ],
   "publishConfig": {
     "access": "public"
   },
