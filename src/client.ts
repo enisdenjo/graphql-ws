@@ -128,6 +128,9 @@ export interface ClientOptions {
    * return `false`, the client will keep retrying until the `retryAttempts` have
    * been exceeded.
    *
+   * The argument is either a WebSocket `CloseEvent` or an error thrown during
+   * the connection phase.
+   *
    * @default
    * Non close events and the following close events are fatal:
    * - `1002: Protocol Error`
