@@ -12,6 +12,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 - [connectionParams](client.clientoptions.md#connectionparams)
 - [generateID](client.clientoptions.md#generateid)
+- [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
 - [keepAlive](client.clientoptions.md#keepalive)
 - [lazy](client.clientoptions.md#lazy)
 - [on](client.clientoptions.md#on)
@@ -50,6 +51,26 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://stackoverflow.com/a/2117523/709884
+
+___
+
+### isFatalConnectionProblem
+
+• `Optional` **isFatalConnectionProblem**: *undefined* \| (`errOrCloseEvent`: *unknown*) => *boolean*
+
+Check if the close event or connection error is fatal. If you return `true`,
+the client will fail immediately without additional retries; however, if you
+return `false`, the client will keep retrying until the `retryAttempts` have
+been exceeded.
+
+**`default`** 
+Non close events and the following close events are fatal:
+- `1002: Protocol Error`
+- `1011: Internal Error`
+- `4400: Bad Request`
+- `4401: Unauthorized` _tried subscribing before connect ack_
+- `4409: Subscriber for <id> already exists` _distinction is very important_
+- `4429: Too many initialisation requests`
 
 ___
 
@@ -117,16 +138,6 @@ ___
 • `Optional` **retryAttempts**: *undefined* \| *number*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
-
-The library classifies the following close events as fatal:
-- `1002: Protocol Error`
-- `1011: Internal Error`
-- `4400: Bad Request`
-- `4401: Unauthorized` _tried subscribing before connect ack_
-- `4409: Subscriber for <id> already exists` _distinction is very important_
-- `4429: Too many initialisation requests`
-
-These events are reported immediately and the client will not reconnect.
 
 **`default`** 5
 
