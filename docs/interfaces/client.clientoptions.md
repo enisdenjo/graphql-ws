@@ -66,14 +66,11 @@ been exceeded.
 The argument is either a WebSocket `CloseEvent` or an error thrown during
 the connection phase.
 
-**`default`** 
-Non close events and the following close events are fatal:
-- `1002: Protocol Error`
-- `1011: Internal Error`
-- `4400: Bad Request`
-- `4401: Unauthorized` _tried subscribing before connect ack_
-- `4409: Subscriber for <id> already exists` _distinction is very important_
-- `4429: Too many initialisation requests`
+Beware, the library classifies a few close events as fatal regardless of
+what is returned. They are listed in the documentation of the `retryAttempts`
+option.
+
+**`default`** Non close events
 
 ___
 
@@ -141,6 +138,16 @@ ___
 • `Optional` **retryAttempts**: *undefined* \| *number*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
+
+The library classifies the following close events as fatal:
+- `1002: Protocol Error`
+- `1011: Internal Error`
+- `4400: Bad Request`
+- `4401: Unauthorized` _tried subscribing before connect ack_
+- `4409: Subscriber for <id> already exists` _distinction is very important_
+- `4429: Too many initialisation requests`
+
+These events are reported immediately and the client will not reconnect.
 
 **`default`** 5
 
