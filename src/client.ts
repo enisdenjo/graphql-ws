@@ -110,16 +110,6 @@ export interface ClientOptions {
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
-   * The library classifies the following close events as fatal:
-   * - `1002: Protocol Error`
-   * - `1011: Internal Error`
-   * - `4400: Bad Request`
-   * - `4401: Unauthorized` _tried subscribing before connect ack_
-   * - `4409: Subscriber for <id> already exists` _distinction is very important_
-   * - `4429: Too many initialisation requests`
-   *
-   * These events are reported immediately and the client will not reconnect.
-   *
    * @default 5
    */
   retryAttempts?: number;
@@ -132,6 +122,22 @@ export interface ClientOptions {
    * @default Randomised exponential backoff
    */
   retryWait?: (retries: number) => Promise<void>;
+  /**
+   * Check if the close event or connection error is fatal. If you return `true`,
+   * the client will fail immediately without additional retries; however, if you
+   * return `false`, the client will keep retrying until the `retryAttempts` have
+   * been exceeded.
+   *
+   * @default
+   * Non close events and the following close events are fatal:
+   * - `1002: Protocol Error`
+   * - `1011: Internal Error`
+   * - `4400: Bad Request`
+   * - `4401: Unauthorized` _tried subscribing before connect ack_
+   * - `4409: Subscriber for <id> already exists` _distinction is very important_
+   * - `4429: Too many initialisation requests`
+   */
+  isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
   /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
@@ -194,6 +200,18 @@ export function createClient(options: ClientOptions): Client {
         ),
       );
     },
+    isFatalConnectionProblem = (errOrCloseEvent) =>
+      // non `CloseEvent`s are fatal by nature
+      !isLikeCloseEvent(errOrCloseEvent) ||
+      // some close codes are worth reporting immediately
+      [
+        1002, // Protocol Error
+        1011, // Internal Error
+        4400, // Bad Request
+        4401, // Unauthorized (tried subscribing before connect ack)
+        4409, // Subscriber for <id> already exists (distinction is very important)
+        4429, // Too many initialisation requests
+      ].includes(errOrCloseEvent.code),
     on,
     webSocketImpl,
     /**
@@ -368,31 +386,19 @@ export function createClient(options: ClientOptions): Client {
   }
 
   /**
-   * Checks the `connect` problem and evaluates if the client should
-   * retry. If the problem is worth throwing, it will be thrown immediately.
+   * Checks the `connect` problem and evaluates if the client should retry.
    */
   function shouldRetryConnectOrThrow(errOrCloseEvent: unknown): boolean {
-    // throw non `CloseEvent`s immediately, something else is wrong
-    if (!isLikeCloseEvent(errOrCloseEvent)) {
-      throw errOrCloseEvent;
-    }
-
-    // some close codes are worth reporting immediately
-    if (
-      [
-        1002, // Protocol Error
-        1011, // Internal Error
-        4400, // Bad Request
-        4401, // Unauthorized (tried subscribing before connect ack)
-        4409, // Subscriber for <id> already exists (distinction is very important)
-        4429, // Too many initialisation requests
-      ].includes(errOrCloseEvent.code)
-    ) {
+    // throw fatal connection problems immediately
+    if (isFatalConnectionProblem(errOrCloseEvent)) {
       throw errOrCloseEvent;
     }
 
     // disposed or normal closure (completed), shouldnt try again
-    if (disposed || errOrCloseEvent.code === 1000) {
+    if (
+      disposed ||
+      (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
+    ) {
       return false;
     }
 
