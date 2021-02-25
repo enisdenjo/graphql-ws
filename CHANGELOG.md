@@ -1,3 +1,15 @@
+# [4.2.0](https://github.com/enisdenjo/graphql-ws/compare/v4.1.6...v4.2.0) (2021-02-25)
+
+
+### Bug Fixes
+
+* Only UMD build has side effects ([66ed43f](https://github.com/enisdenjo/graphql-ws/commit/66ed43fe60b57fa268490aec07c3254b06ab3473))
+
+
+### Features
+
+* **client:** `isFatalConnectionProblem` option for deciding if the connect error should be immediately reported or the connection retried ([#126](https://github.com/enisdenjo/graphql-ws/issues/126)) ([8115871](https://github.com/enisdenjo/graphql-ws/commit/81158711f9dba05588c656ed32c07331c9a5786d)), closes [#122](https://github.com/enisdenjo/graphql-ws/issues/122)
+
 ## [4.1.6](https://github.com/enisdenjo/graphql-ws/compare/v4.1.5...v4.1.6) (2021-02-18)
 
 
