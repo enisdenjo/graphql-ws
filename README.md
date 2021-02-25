@@ -325,24 +325,23 @@ function fetchOrSubscribe(operation: RequestParameters, variables: Variables) {
         ...sink,
         error: (err) => {
           if (err instanceof Error) {
-            sink.error(err);
-          } else if (err instanceof CloseEvent) {
-            sink.error(
+            return sink.error(err);
+          }
+
+          if (err instanceof CloseEvent) {
+            return sink.error(
+              // reason will be available on clean closes
               new Error(
-                `Socket closed with event ${err.code}` + err.reason
-                  ? `: ${err.reason}` // reason will be available on clean closes
-                  : '',
-              ),
-            );
-          } else {
-            sink.error(
-              new Error(
-                (err as GraphQLError[])
-                  .map(({ message }) => message)
-                  .join(', '),
+                `Socket closed with event ${err.code} ${err.reason || ''}`,
               ),
             );
           }
+
+          return sink.error(
+            new Error(
+              (err as GraphQLError[]).map(({ message }) => message).join(', '),
+            ),
+          );
         },
       },
     );
@@ -412,24 +411,25 @@ class WebSocketLink extends ApolloLink {
           complete: sink.complete.bind(sink),
           error: (err) => {
             if (err instanceof Error) {
-              sink.error(err);
-            } else if (err instanceof CloseEvent) {
-              sink.error(
+              return sink.error(err);
+            }
+
+            if (err instanceof CloseEvent) {
+              return sink.error(
+                // reason will be available on clean closes
                 new Error(
-                  `Socket closed with event ${err.code}` + err.reason
-                    ? `: ${err.reason}` // reason will be available on clean closes
-                    : '',
-                ),
-              );
-            } else {
-              sink.error(
-                new Error(
-                  (err as GraphQLError[])
-                    .map(({ message }) => message)
-                    .join(', '),
+                  `Socket closed with event ${err.code} ${err.reason || ''}`,
                 ),
               );
             }
+
+            return sink.error(
+              new Error(
+                (err as GraphQLError[])
+                  .map(({ message }) => message)
+                  .join(', '),
+              ),
+            );
           },
         },
       );
@@ -970,16 +970,18 @@ server.on('upgrade', (request, socket, head) => {
   const pathname = url.parse(request.url).pathname;
 
   if (pathname === '/wave') {
-    waveWS.handleUpgrade(request, socket, head, (client) => {
+    return waveWS.handleUpgrade(request, socket, head, (client) => {
       waveWS.emit('connection', client, request);
     });
-  } else if (pathname === '/graphql') {
-    graphqlWS.handleUpgrade(request, socket, head, (client) => {
+  } 
+    
+  if (pathname === '/graphql') {
+    return graphqlWS.handleUpgrade(request, socket, head, (client) => {
       graphqlWS.emit('connection', client, request);
     });
-  } else {
-    socket.destroy();
-  }
+  } 
+  
+  return socket.destroy();
 });
 
 // wave on connect
