@@ -928,6 +928,7 @@ describe('reconnecting', () => {
         createClient({
           url,
           retryAttempts: Infinity, // keep retrying forever
+          isFatalConnectionProblem: () => true, // even if all connection probles are fatal
         }),
         {
           query: 'subscription { ping }',
@@ -956,6 +957,33 @@ describe('reconnecting', () => {
     await testCloseCode(4401);
     await testCloseCode(4409);
     await testCloseCode(4429);
+  });
+
+  it('should report fatal connection problems immediately', async () => {
+    const { url, ...server } = await startTServer();
+
+    const sub = tsubscribe(
+      createClient({
+        url,
+        retryAttempts: Infinity, // keep retrying forever
+        isFatalConnectionProblem: (err) => {
+          expect((err as CloseEvent).code).toBe(4444);
+          expect((err as CloseEvent).reason).toBe('Is fatal?');
+          return true;
+        },
+      }),
+      {
+        query: 'subscription { ping }',
+      },
+    );
+
+    await server.waitForClient((client) => {
+      client.close(4444, 'Is fatal?');
+    });
+
+    await sub.waitForError((err) => {
+      expect((err as CloseEvent).code).toBe(4444);
+    }, 20);
   });
 
   it.todo(

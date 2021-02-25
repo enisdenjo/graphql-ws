@@ -12,6 +12,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 - [connectionParams](client.clientoptions.md#connectionparams)
 - [generateID](client.clientoptions.md#generateid)
+- [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
 - [keepAlive](client.clientoptions.md#keepalive)
 - [lazy](client.clientoptions.md#lazy)
 - [on](client.clientoptions.md#on)
@@ -50,6 +51,26 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://stackoverflow.com/a/2117523/709884
+
+___
+
+### isFatalConnectionProblem
+
+• `Optional` **isFatalConnectionProblem**: *undefined* \| (`errOrCloseEvent`: *unknown*) => *boolean*
+
+Check if the close event or connection error is fatal. If you return `true`,
+the client will fail immediately without additional retries; however, if you
+return `false`, the client will keep retrying until the `retryAttempts` have
+been exceeded.
+
+The argument is either a WebSocket `CloseEvent` or an error thrown during
+the connection phase.
+
+Beware, the library classifies a few close events as fatal regardless of
+what is returned. They are listed in the documentation of the `retryAttempts`
+option.
+
+**`default`** Non close events
 
 ___
 

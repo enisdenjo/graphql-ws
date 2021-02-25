@@ -133,6 +133,22 @@ export interface ClientOptions {
    */
   retryWait?: (retries: number) => Promise<void>;
   /**
+   * Check if the close event or connection error is fatal. If you return `true`,
+   * the client will fail immediately without additional retries; however, if you
+   * return `false`, the client will keep retrying until the `retryAttempts` have
+   * been exceeded.
+   *
+   * The argument is either a WebSocket `CloseEvent` or an error thrown during
+   * the connection phase.
+   *
+   * Beware, the library classifies a few close events as fatal regardless of
+   * what is returned. They are listed in the documentation of the `retryAttempts`
+   * option.
+   *
+   * @default Non close events
+   */
+  isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
+  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -194,6 +210,9 @@ export function createClient(options: ClientOptions): Client {
         ),
       );
     },
+    isFatalConnectionProblem = (errOrCloseEvent) =>
+      // non `CloseEvent`s are fatal by default
+      !isLikeCloseEvent(errOrCloseEvent),
     on,
     webSocketImpl,
     /**
@@ -368,17 +387,12 @@ export function createClient(options: ClientOptions): Client {
   }
 
   /**
-   * Checks the `connect` problem and evaluates if the client should
-   * retry. If the problem is worth throwing, it will be thrown immediately.
+   * Checks the `connect` problem and evaluates if the client should retry.
    */
   function shouldRetryConnectOrThrow(errOrCloseEvent: unknown): boolean {
-    // throw non `CloseEvent`s immediately, something else is wrong
-    if (!isLikeCloseEvent(errOrCloseEvent)) {
-      throw errOrCloseEvent;
-    }
-
     // some close codes are worth reporting immediately
     if (
+      isLikeCloseEvent(errOrCloseEvent) &&
       [
         1002, // Protocol Error
         1011, // Internal Error
@@ -392,12 +406,20 @@ export function createClient(options: ClientOptions): Client {
     }
 
     // disposed or normal closure (completed), shouldnt try again
-    if (disposed || errOrCloseEvent.code === 1000) {
+    if (
+      disposed ||
+      (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
+    ) {
       return false;
     }
 
     // retries are not allowed or we tried to many times, report error
     if (!retryAttempts || retries >= retryAttempts) {
+      throw errOrCloseEvent;
+    }
+
+    // throw fatal connection problems immediately
+    if (isFatalConnectionProblem(errOrCloseEvent)) {
       throw errOrCloseEvent;
     }
 
