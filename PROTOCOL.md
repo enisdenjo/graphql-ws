@@ -137,16 +137,16 @@ For the sake of clarity, the following examples demonstrate the communication pr
 
 <h3 id="successful-connection-initialisation">Successful connection initialisation</h3>
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
-1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
-1. _Client_ immediately dispatches a `ConnectionInit` message optionally providing a payload as agreed with the server
+1. _Client_ sends a WebSocket handshake request through HTTP with the sub-protocol: `graphql-transport-ws`
+1. _Server_ evaluates the request, checks the supported subprotocols and concludes the upgrade with an `101: Switching Protocols` response so accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ immediately dispatches a `ConnectionInit` message optionally providing a payload as agreed with the server. 
 1. _Server_ validates the connection initialisation request and dispatches a `ConnectionAck` message to the client on successful connection
-1. _Client_ has received the acknowledgement message and is now ready to request operation executions
+1. _Client_ has received the acknowledgement message and is now ready to request operation executions. At this point, both the server and the client can send each other messages whenever they wish for the whole duration of the socket connection
 
 ### Connection initialisation timeout
 
-1. _Client_ sends a WebSocket handshake request with the sub-protocol: `graphql-transport-ws`
-1. _Server_ accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
+1. _Client_ sends a WebSocket handshake request through HTTP with the sub-protocol: `graphql-transport-ws`
+1. _Server_ evaluates the request, checks the supported subprotocols and concludes the upgrade with an `101: Switching Protocols` response so accepts the handshake and establishes a WebSocket communication channel (which we call "socket")
 1. _Client_ does not dispatch a `ConnectionInit` message
 1. _Server_ waits for the `ConnectionInit` message for the duration specified in the `connectionInitWaitTimeout` parameter
 1. _Server_ waiting time has passed
