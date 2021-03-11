@@ -84,8 +84,11 @@ export interface ClientOptions {
     | Record<string, unknown>
     | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
   /**
-   * Should the connection be established immediately and persisted
-   * or after the first listener subscribed.
+   * Controls when should the connection be established.
+   *
+   * - `false`: Establish a connection immediately. Use `onNonLazyError` to handle errors.
+   * - `true`: Establish a connection on first subscribe and close on last unsubscribe. Use
+   * the subscription sink's `error` to handle errors.
    *
    * @default true
    */
