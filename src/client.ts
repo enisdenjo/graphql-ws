@@ -22,7 +22,8 @@ export * from './protocol';
 export type EventConnecting = 'connecting';
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
 export type EventClosed = 'closed';
-export type Event = EventConnecting | EventConnected | EventClosed;
+export type EventError = 'error';
+export type Event = EventConnecting | EventConnected | EventClosed | EventError;
 
 /**
  * The first argument is actually the `WebSocket`, but to avoid
@@ -46,12 +47,22 @@ export type EventConnectingListener = () => void;
  */
 export type EventClosedListener = (event: unknown) => void;
 
+/**
+ * The argument can be either an Error Event or an instance of Error, but to avoid
+ * bundling DOM typings because the client can run in Node env too, you should assert
+ * the type during implementation. Events dispatched from the WebSocket `onerror` can
+ * be handler in this listener.
+ */
+export type EventErrorListener = (error: unknown) => void;
+
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventConnected
   ? EventConnectedListener
   : E extends EventClosed
   ? EventClosedListener
+  : E extends EventError
+  ? EventErrorListener
   : never;
 
 /** Configuration used for the GraphQL over WebSocket client. */
@@ -261,6 +272,7 @@ export function createClient(options: ClientOptions): Client {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
       closed: on?.closed ? [on.closed] : [],
+      error: on?.error ? [on.error] : [],
     };
 
     return {
@@ -305,8 +317,10 @@ export function createClient(options: ClientOptions): Client {
           emitter.emit('connecting');
           const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
-          // in case of a connection error, onerror will be called first and then onclose (will always follow)
-          socket.onerror = reject;
+          socket.onerror = (err) => {
+            // we let the onclose reject the promise for correct retry handling
+            emitter.emit('error', err);
+          };
 
           socket.onclose = (event) => {
             connecting = undefined;
