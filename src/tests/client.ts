@@ -1075,4 +1075,65 @@ describe('events', () => {
 
     client.dispose();
   });
+
+  it('should emit the websocket connection error', (done) => {
+    expect.assertions(3);
+
+    createClient({
+      url: 'ws://localhost/i/dont/exist',
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: (err) => {
+        // handle the websocket close event
+        expect((err as CloseEvent).code).toBe(1006);
+        done();
+      },
+      on: {
+        closed: (err) => {
+          // websocket closed
+          expect((err as CloseEvent).code).toBe(1006);
+        },
+        error: (err) => {
+          // connection error
+          expect((err as ErrorEvent).message).toBe(
+            'connect ECONNREFUSED 127.0.0.1:80',
+          );
+        },
+      },
+    });
+  });
+
+  it('should emit the websocket connection error on first subscribe in lazy mode', (done) => {
+    expect.assertions(3);
+
+    const client = createClient({
+      url: 'ws://localhost/i/dont/exist',
+      retryAttempts: 0,
+    });
+
+    client.on('closed', (err) => {
+      // websocket closed
+      expect((err as CloseEvent).code).toBe(1006);
+    });
+
+    client.on('error', (err) => {
+      // connection error
+      expect((err as ErrorEvent).message).toBe(
+        'connect ECONNREFUSED 127.0.0.1:80',
+      );
+    });
+
+    client.subscribe(
+      { query: '' },
+      {
+        next: noop,
+        complete: noop,
+        error: (err) => {
+          // handle the websocket close event
+          expect((err as CloseEvent).code).toBe(1006);
+          done();
+        },
+      },
+    );
+  });
 });
