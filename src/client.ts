@@ -311,6 +311,9 @@ export function createClient(options: ClientOptions): Client {
             reject(event);
           };
 
+          // even with onerror, onclose will be always called after
+          socket.onerror = reject;
+
           socket.onopen = async () => {
             try {
               socket.send(
