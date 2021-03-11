@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/enisdenjo/graphql-ws/compare/v4.2.0...v4.2.1) (2021-03-11)
+
+
+### Bug Fixes
+
+* **client:** New `error` event listener for handling connection errors ([#136](https://github.com/enisdenjo/graphql-ws/issues/136)) ([127b69f](https://github.com/enisdenjo/graphql-ws/commit/127b69fa5df8765a4a17a928191baa6c85985409)), closes [#135](https://github.com/enisdenjo/graphql-ws/issues/135)
+
 # [4.2.0](https://github.com/enisdenjo/graphql-ws/compare/v4.1.6...v4.2.0) (2021-02-25)
 
 
