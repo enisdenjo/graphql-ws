@@ -45,7 +45,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: *undefined* \| *Readonly*<Record<string, unknown\>\>
+• `Optional` `Readonly` **connectionParams**: *Readonly*<Record<string, unknown\>\>
 
 The parameters passed during the connection initialisation.
 

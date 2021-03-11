@@ -26,7 +26,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: *undefined* \| *Record*<string, unknown\> \| () => *Record*<string, unknown\> \| *Promise*<Record<string, unknown\>\>
+• `Optional` **connectionParams**: *Record*<string, unknown\> \| () => *Record*<string, unknown\> \| *Promise*<Record<string, unknown\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
@@ -42,7 +42,7 @@ ___
 
 ### generateID
 
-• `Optional` **generateID**: *undefined* \| () => *string*
+• `Optional` **generateID**: () => *string*
 
 A custom ID generator for identifying subscriptions.
 
@@ -52,11 +52,17 @@ in case you need more uniqueness.
 
 Reference: https://stackoverflow.com/a/2117523/709884
 
+#### Type declaration:
+
+▸ (): *string*
+
+**Returns:** *string*
+
 ___
 
 ### isFatalConnectionProblem
 
-• `Optional` **isFatalConnectionProblem**: *undefined* \| (`errOrCloseEvent`: *unknown*) => *boolean*
+• `Optional` **isFatalConnectionProblem**: (`errOrCloseEvent`: *unknown*) => *boolean*
 
 Check if the close event or connection error is fatal. If you return `true`,
 the client will fail immediately without additional retries; however, if you
@@ -72,11 +78,23 @@ option.
 
 **`default`** Non close events
 
+#### Type declaration:
+
+▸ (`errOrCloseEvent`: *unknown*): *boolean*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`errOrCloseEvent` | *unknown* |
+
+**Returns:** *boolean*
+
 ___
 
 ### keepAlive
 
-• `Optional` **keepAlive**: *undefined* \| *number*
+• `Optional` **keepAlive**: *number*
 
 How long should the client wait before closing the socket after the last oparation has
 completed. This is meant to be used in combination with `lazy`. You might want to have
@@ -88,7 +106,7 @@ ___
 
 ### lazy
 
-• `Optional` **lazy**: *undefined* \| *boolean*
+• `Optional` **lazy**: *boolean*
 
 Should the connection be established immediately and persisted
 or after the first listener subscribed.
@@ -99,7 +117,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *undefined* \| *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void*  }\>
+• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -111,7 +129,7 @@ ___
 
 ### onNonLazyError
 
-• `Optional` **onNonLazyError**: *undefined* \| (`errorOrCloseEvent`: *unknown*) => *void*
+• `Optional` **onNonLazyError**: (`errorOrCloseEvent`: *unknown*) => *void*
 
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
 using this mode, the errors might have no sinks to report to; however,
@@ -131,11 +149,23 @@ fatal by nature.
 
 **`default`** console.error
 
+#### Type declaration:
+
+▸ (`errorOrCloseEvent`: *unknown*): *void*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`errorOrCloseEvent` | *unknown* |
+
+**Returns:** *void*
+
 ___
 
 ### retryAttempts
 
-• `Optional` **retryAttempts**: *undefined* \| *number*
+• `Optional` **retryAttempts**: *number*
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -155,7 +185,7 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: *undefined* \| (`retries`: *number*) => *Promise*<void\>
+• `Optional` **retryWait**: (`retries`: *number*) => *Promise*<void\>
 
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.
@@ -163,6 +193,18 @@ by timing the resolution of the returned promise with the retries count.
 0 after the first retryable disconnect.
 
 **`default`** Randomised exponential backoff
+
+#### Type declaration:
+
+▸ (`retries`: *number*): *Promise*<void\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`retries` | *number* |
+
+**Returns:** *Promise*<void\>
 
 ___
 

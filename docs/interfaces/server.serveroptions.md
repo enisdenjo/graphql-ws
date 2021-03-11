@@ -33,7 +33,7 @@ Name | Default |
 
 ### connectionInitWaitTimeout
 
-• `Optional` **connectionInitWaitTimeout**: *undefined* \| *number*
+• `Optional` **connectionInitWaitTimeout**: *number*
 
 The amount of time for which the server will wait
 for `ConnectionInit` message.
@@ -51,7 +51,7 @@ ___
 
 ### context
 
-• `Optional` **context**: *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -95,7 +95,7 @@ ___
 
 ### onClose
 
-• `Optional` **onClose**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
+• `Optional` **onClose**: (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
 
 Called when the socket closes for whatever reason, at any
 point in time. Provides the close event too. Beware
@@ -110,11 +110,25 @@ be called, regardless if the user succesfully went through
 the connection initialisation or not. `onConnect` might not
 called before the `onClose`.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`code` | *number* |
+`reason` | *string* |
+
+**Returns:** *void* \| *Promise*<void\>
+
 ___
 
 ### onComplete
 
-• `Optional` **onComplete**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<void\>
+• `Optional` **onComplete**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<void\>
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -128,11 +142,24 @@ Since the library makes sure to complete streaming
 operations even after an abrupt closure, this callback
 will still be called.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)): *void* \| *Promise*<void\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`message` | [*CompleteMessage*](message.completemessage.md) |
+
+**Returns:** *void* \| *Promise*<void\>
+
 ___
 
 ### onConnect
 
-• `Optional` **onConnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+• `Optional` **onConnect**: (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -157,11 +184,23 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>): *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+
+**Returns:** *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+
 ___
 
 ### onDisconnect
 
-• `Optional` **onDisconnect**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
+• `Optional` **onDisconnect**: (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
 
 Called when the client disconnects for whatever reason after
 he successfully went through the connection initialisation phase.
@@ -178,11 +217,25 @@ is acknowledged. Meaning, `onConnect` will be called before the `onDisconnect`.
 For tracking socket closures at any point in time, regardless
 of the connection state - consider using the `onClose` callback.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`code` | *number* |
+`reason` | *string* |
+
+**Returns:** *void* \| *Promise*<void\>
+
 ___
 
 ### onError
 
-• `Optional` **onError**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+• `Optional` **onError**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -196,11 +249,25 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]): *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`message` | [*ErrorMessage*](message.errormessage.md) |
+`errors` | readonly *GraphQLError*[] |
+
+**Returns:** *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+
 ___
 
 ### onNext
 
-• `Optional` **onNext**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onNext**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -215,11 +282,26 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>): *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`message` | [*NextMessage*](message.nextmessage.md) |
+`args` | ExecutionArgs |
+`result` | *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> |
+
+**Returns:** *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+
 ___
 
 ### onOperation
 
-• `Optional` **onOperation**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -240,11 +322,26 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`message` | [*SubscribeMessage*](message.subscribemessage.md) |
+`args` | ExecutionArgs |
+`result` | [*OperationResult*](../modules/server.md#operationresult) |
+
+**Returns:** *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+
 ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: *undefined* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+• `Optional` **onSubscribe**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -274,11 +371,24 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
+#### Type declaration:
+
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)): *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`ctx` | [*Context*](server.context.md)<E\> |
+`message` | [*SubscribeMessage*](message.subscribemessage.md) |
+
+**Returns:** *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+
 ___
 
 ### roots
 
-• `Optional` **roots**: *undefined* \| { `mutation`:  ; `query`:  ; `subscription`:   }
+• `Optional` **roots**: *object*
 
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
@@ -288,11 +398,19 @@ If you return from `onSubscribe`, and the returned value is
 missing the `rootValue` field, the relevant operation root
 will be used instead.
 
+#### Type declaration:
+
+Name | Type |
+:------ | :------ |
+`mutation` |  |
+`query` |  |
+`subscription` |  |
+
 ___
 
 ### schema
 
-• `Optional` **schema**: *undefined* \| *GraphQLSchema*
+• `Optional` **schema**: *GraphQLSchema*
 
 The GraphQL schema on which the operations
 will be executed and validated against.

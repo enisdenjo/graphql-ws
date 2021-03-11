@@ -41,7 +41,7 @@ Inherited from: [Disposable](types.disposable.md).[dispose](types.disposable.md#
 
 ### on
 
-▸ **on**<E\>(`event`: E, `listener`: [*EventListener*](../modules/client.md#eventlistener)<E\>): () => *void*
+▸ **on**<E\>(`event`: E, `listener`: [*EventListener*](../modules/client.md#eventlistener)<E\>): *function*
 
 Listens on the client which dispatches events about the socket state.
 
@@ -58,13 +58,13 @@ Name | Type |
 `event` | E |
 `listener` | [*EventListener*](../modules/client.md#eventlistener)<E\> |
 
-**Returns:** *function*
+**Returns:** () => *void*
 
 ___
 
 ### subscribe
 
-▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](message.subscribepayload.md), `sink`: [*Sink*](types.sink.md)<T\>): () => *void*
+▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](message.subscribepayload.md), `sink`: [*Sink*](types.sink.md)<T\>): *function*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -83,4 +83,4 @@ Name | Type |
 `payload` | [*SubscribePayload*](message.subscribepayload.md) |
 `sink` | [*Sink*](types.sink.md)<T\> |
 
-**Returns:** *function*
+**Returns:** () => *void*

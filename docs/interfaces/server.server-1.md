@@ -20,7 +20,7 @@ Name | Default |
 
 ### opened
 
-▸ **opened**(`socket`: [*WebSocket*](server.websocket.md), `ctxExtra`: E): (`code`: *number*, `reason`: *string*) => *Promise*<void\>
+▸ **opened**(`socket`: [*WebSocket*](server.websocket.md), `ctxExtra`: E): *function*
 
 New socket has beeen established. The lib will validate
 the protocol and use the socket accordingly. Returned promise
@@ -42,4 +42,4 @@ Name | Type |
 `socket` | [*WebSocket*](server.websocket.md) |
 `ctxExtra` | E |
 
-**Returns:** *function*
+**Returns:** (`code`: *number*, `reason`: *string*) => *Promise*<void\>
