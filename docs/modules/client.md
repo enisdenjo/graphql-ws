@@ -29,6 +29,8 @@
 - [EventConnectedListener](client.md#eventconnectedlistener)
 - [EventConnecting](client.md#eventconnecting)
 - [EventConnectingListener](client.md#eventconnectinglistener)
+- [EventError](client.md#eventerror)
+- [EventErrorListener](client.md#eventerrorlistener)
 - [EventListener](client.md#eventlistener)
 - [Message](client.md#message)
 
@@ -47,7 +49,7 @@
 
 ### Event
 
-Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventClosed*](client.md#eventclosed)
+Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventClosed*](client.md#eventclosed) \| [*EventError*](client.md#eventerror)
 
 ___
 
@@ -129,9 +131,38 @@ ___
 
 ___
 
+### EventError
+
+Ƭ **EventError**: *error*
+
+___
+
+### EventErrorListener
+
+Ƭ **EventErrorListener**: (`error`: *unknown*) => *void*
+
+The argument can be either an Error Event or an instance of Error, but to avoid
+bundling DOM typings because the client can run in Node env too, you should assert
+the type during implementation. Events dispatched from the WebSocket `onerror` can
+be handler in this listener.
+
+#### Type declaration:
+
+▸ (`error`: *unknown*): *void*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`error` | *unknown* |
+
+**Returns:** *void*
+
+___
+
 ### EventListener
 
-Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : *never*
+Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : E *extends* [*EventError*](client.md#eventerror) ? [*EventErrorListener*](client.md#eventerrorlistener) : *never*
 
 #### Type parameters:
 

@@ -99,7 +99,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *undefined* \| *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void*  }\>
+• `Optional` **on**: *undefined* \| *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
