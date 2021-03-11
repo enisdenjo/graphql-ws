@@ -305,14 +305,14 @@ export function createClient(options: ClientOptions): Client {
           emitter.emit('connecting');
           const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
+          // in case of a connection error, onerror will be called first and then onclose (will always follow)
+          socket.onerror = reject;
+
           socket.onclose = (event) => {
             connecting = undefined;
             emitter.emit('closed', event);
             reject(event);
           };
-
-          // even with onerror, onclose will be always called after
-          socket.onerror = reject;
 
           socket.onopen = async () => {
             try {
