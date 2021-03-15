@@ -817,9 +817,6 @@ describe('reconnecting', () => {
   });
 
   it('should resubscribe all subscribers on silent reconnects', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -830,7 +827,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -867,14 +864,9 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -885,7 +877,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -916,8 +908,6 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should report some close events immediately and not reconnect', async () => {
