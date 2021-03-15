@@ -997,30 +997,35 @@ describe('events', () => {
 
     const connectingFn = jest.fn(noop as EventListener<'connecting'>);
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
+    const messageFn = jest.fn(noop as EventListener<'message'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);
 
     // wait for connected
-    const client = await new Promise<Client>((resolve) => {
-      const client = createClient({
-        url,
-        retryAttempts: 0,
-        onNonLazyError: noop,
-        on: {
-          connecting: connectingFn,
-          connected: connectedFn,
-          closed: closedFn,
-        },
-      });
-      client.on('connecting', connectingFn);
-      client.on('connected', (...args) => {
-        connectedFn(...args);
-        resolve(client);
-      });
-      client.on('closed', closedFn);
+    const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
+      (resolve) => {
+        const client = createClient({
+          url,
+          retryAttempts: 0,
+          onNonLazyError: noop,
+          on: {
+            connecting: connectingFn,
+            connected: connectedFn,
+            message: messageFn,
+            closed: closedFn,
+          },
+        });
+        client.on('connecting', connectingFn);
+        client.on('connected', connectedFn);
+        client.on('message', messageFn);
+        client.on('closed', closedFn);
 
-      // trigger connecting
-      tsubscribe(client, { query: 'subscription {ping}' });
-    });
+        // trigger connecting
+        const sub = tsubscribe(client, { query: 'subscription {ping}' });
+
+        // resolve once subscribed
+        server.waitForOperation().then(() => resolve([client, sub]));
+      },
+    );
 
     expect(connectingFn).toBeCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(0);
@@ -1029,6 +1034,11 @@ describe('events', () => {
     connectedFn.mock.calls.forEach((cal) => {
       expect(cal[0]).toBeInstanceOf(WebSocket);
     });
+
+    // (connection ack + pong) * 2
+    server.pong();
+    await sub.waitForNext();
+    expect(messageFn).toBeCalledTimes(4);
 
     expect(closedFn).not.toBeCalled();
 
