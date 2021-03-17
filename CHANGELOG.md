@@ -1,3 +1,10 @@
+## [4.2.2](https://github.com/enisdenjo/graphql-ws/compare/v4.2.1...v4.2.2) (2021-03-17)
+
+
+### Bug Fixes
+
+* **server:** `return` instead of `break` at switch case ends ([e9447e4](https://github.com/enisdenjo/graphql-ws/commit/e9447e45cfa572982e7fe0ffa32a113feac06b94)), closes [#140](https://github.com/enisdenjo/graphql-ws/issues/140)
+
 ## [4.2.1](https://github.com/enisdenjo/graphql-ws/compare/v4.2.0...v4.2.1) (2021-03-11)
 
 
