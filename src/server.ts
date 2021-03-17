@@ -515,7 +515,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
             // @ts-expect-error: I can write
             ctx.acknowledged = true;
-            break;
+            return;
           }
           case MessageType.Subscribe: {
             if (!ctx.acknowledged) {
@@ -687,12 +687,12 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             // completed the subscription, he doesnt need to be reminded
             await emit.complete(id in ctx.subscriptions);
             delete ctx.subscriptions[id];
-            break;
+            return;
           }
           case MessageType.Complete: {
             await ctx.subscriptions[message.id]?.return?.();
             delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
-            break;
+            return;
           }
           default:
             throw new Error(
