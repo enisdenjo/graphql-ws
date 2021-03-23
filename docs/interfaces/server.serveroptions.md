@@ -51,7 +51,7 @@ ___
 
 ### context
 
-• `Optional` **context**: *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => *undefined* \| *null* \| *string* \| *number* \| *boolean* \| *symbol* \| *object* \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -301,7 +301,7 @@ ___
 
 ### onOperation
 
-• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -324,7 +324,7 @@ in the close event reason.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
 #### Parameters:
 
@@ -335,7 +335,7 @@ Name | Type |
 `args` | ExecutionArgs |
 `result` | [*OperationResult*](../modules/server.md#operationresult) |
 
-**Returns:** *void* \| *Promise*<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *AsyncIterableIterator*<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| Promise<AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| AsyncIterableIterator<ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\> \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+**Returns:** *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
 ___
 
