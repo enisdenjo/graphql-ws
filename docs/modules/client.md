@@ -32,6 +32,8 @@
 - [EventError](client.md#eventerror)
 - [EventErrorListener](client.md#eventerrorlistener)
 - [EventListener](client.md#eventlistener)
+- [EventMessage](client.md#eventmessage)
+- [EventMessageListener](client.md#eventmessagelistener)
 - [Message](client.md#message)
 
 ### Variables
@@ -49,7 +51,7 @@
 
 ### Event
 
-Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventClosed*](client.md#eventclosed) \| [*EventError*](client.md#eventerror)
+Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventMessage*](client.md#eventmessage) \| [*EventClosed*](client.md#eventclosed) \| [*EventError*](client.md#eventerror)
 
 ___
 
@@ -162,13 +164,40 @@ ___
 
 ### EventListener
 
-Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : E *extends* [*EventError*](client.md#eventerror) ? [*EventErrorListener*](client.md#eventerrorlistener) : *never*
+Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventMessage*](client.md#eventmessage) ? [*EventMessageListener*](client.md#eventmessagelistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : E *extends* [*EventError*](client.md#eventerror) ? [*EventErrorListener*](client.md#eventerrorlistener) : *never*
 
 #### Type parameters:
 
 Name | Type |
 :------ | :------ |
 `E` | [*Event*](client.md#event) |
+
+___
+
+### EventMessage
+
+Ƭ **EventMessage**: *message*
+
+___
+
+### EventMessageListener
+
+Ƭ **EventMessageListener**: (`message`: [*Message*](message.md#message)) => *void*
+
+Called for all **valid** messages received by the client. Mainly useful for
+debugging and logging received messages.
+
+#### Type declaration:
+
+▸ (`message`: [*Message*](message.md#message)): *void*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`message` | [*Message*](message.md#message) |
+
+**Returns:** *void*
 
 ___
 

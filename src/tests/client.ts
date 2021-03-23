@@ -817,9 +817,6 @@ describe('reconnecting', () => {
   });
 
   it('should resubscribe all subscribers on silent reconnects', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -830,7 +827,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -867,14 +864,9 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -885,7 +877,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -916,8 +908,6 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should report some close events immediately and not reconnect', async () => {
@@ -997,30 +987,35 @@ describe('events', () => {
 
     const connectingFn = jest.fn(noop as EventListener<'connecting'>);
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
+    const messageFn = jest.fn(noop as EventListener<'message'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);
 
     // wait for connected
-    const client = await new Promise<Client>((resolve) => {
-      const client = createClient({
-        url,
-        retryAttempts: 0,
-        onNonLazyError: noop,
-        on: {
-          connecting: connectingFn,
-          connected: connectedFn,
-          closed: closedFn,
-        },
-      });
-      client.on('connecting', connectingFn);
-      client.on('connected', (...args) => {
-        connectedFn(...args);
-        resolve(client);
-      });
-      client.on('closed', closedFn);
+    const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
+      (resolve) => {
+        const client = createClient({
+          url,
+          retryAttempts: 0,
+          onNonLazyError: noop,
+          on: {
+            connecting: connectingFn,
+            connected: connectedFn,
+            message: messageFn,
+            closed: closedFn,
+          },
+        });
+        client.on('connecting', connectingFn);
+        client.on('connected', connectedFn);
+        client.on('message', messageFn);
+        client.on('closed', closedFn);
 
-      // trigger connecting
-      tsubscribe(client, { query: 'subscription {ping}' });
-    });
+        // trigger connecting
+        const sub = tsubscribe(client, { query: 'subscription {ping}' });
+
+        // resolve once subscribed
+        server.waitForOperation().then(() => resolve([client, sub]));
+      },
+    );
 
     expect(connectingFn).toBeCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(0);
@@ -1029,6 +1024,11 @@ describe('events', () => {
     connectedFn.mock.calls.forEach((cal) => {
       expect(cal[0]).toBeInstanceOf(WebSocket);
     });
+
+    // (connection ack + pong) * 2
+    server.pong();
+    await sub.waitForNext();
+    expect(messageFn).toBeCalledTimes(4);
 
     expect(closedFn).not.toBeCalled();
 

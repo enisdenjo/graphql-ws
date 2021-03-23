@@ -120,7 +120,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void*  }\>
+• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void* ; `message`: (`message`: [*ConnectionInitMessage*](message.connectioninitmessage.md) \| [*ConnectionAckMessage*](message.connectionackmessage.md) \| [*SubscribeMessage*](message.subscribemessage.md) \| [*NextMessage*](message.nextmessage.md) \| [*ErrorMessage*](message.errormessage.md) \| [*CompleteMessage*](message.completemessage.md)) => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
