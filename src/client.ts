@@ -369,15 +369,15 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('message', message);
               if (hasConnected) return;
 
-              // hasnt connected yet, this is the first message
+              // havent connected yet. expect the acknowledgement message and proceed
               if (message.type !== MessageType.ConnectionAck) {
                 throw new Error(
                   `First message cannot be of type ${message.type}`,
                 );
               }
+              hasConnected = true;
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retries = 0; // reset the retries on connect
-              hasConnected = true;
               connected([
                 socket,
                 new Promise<void>((_, closed) =>
