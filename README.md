@@ -1065,6 +1065,80 @@ useServer(
 
 </details>
 
+<details id="only-subscriptions">
+<summary><a href="#only-subscriptions">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage accepting only `subscription` operations</summary>
+
+```typescript
+import {
+  parse,
+  validate,
+  execute,
+  subscribe,
+  getOperationAST,
+  GraphQLError,
+} from 'graphql';
+import https from 'https';
+import ws from 'ws'; // yarn add ws
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema } from './my-graphql';
+
+const server = https.createServer(function weServeSocketsOnly(_, res) {
+  res.writeHead(404);
+  res.end();
+});
+
+const wsServer = new ws.Server({
+  server,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    execute,
+    subscribe,
+    onSubscribe: (_ctx, msg) => {
+      // construct the execution arguments
+      const args = {
+        schema,
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.query),
+        variableValues: msg.payload.variables,
+      };
+
+      const operationAST = getOperationAST(args.document, args.operationName);
+      if (!operationAST) {
+        // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
+        return [new GraphQLError('Unable to identify operation')];
+      }
+
+      // handle mutation and query requests
+      if (operationAST.operation !== 'subscription') {
+        // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
+        return [new GraphQLError('Only subscription operations are supported')];
+
+        // or if you want to be strict and terminate the connection on illegal operations
+        throw new Error('Only subscription operations are supported');
+      }
+
+      // dont forget to validate
+      const errors = validate(args.schema, args.document);
+      if (errors.length > 0) {
+        // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
+        return errors;
+      }
+
+      // ready execution arguments
+      return args;
+    },
+  },
+  wsServer,
+);
+
+server.listen(443);
+```
+
+</details>
+
 <details id="persisted">
 <summary><a href="#persisted">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client usage with persisted queries</summary>
 
