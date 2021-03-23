@@ -561,13 +561,13 @@ export function createClient(options: ClientOptions): Client {
                   }),
                 );
               }
-              unlisten();
               release();
             };
 
             // either the releaser will be called, connection completed and
-            // the promise resolved or the socket closed and the promise rejected
-            await waitForReleaseOrThrowOnClose;
+            // the promise resolved or the socket closed and the promise rejected.
+            // whatever happens though, we want to stop listening for messages
+            await waitForReleaseOrThrowOnClose.finally(unlisten);
 
             return; // completed, shouldnt try again
           } catch (errOrCloseEvent) {
