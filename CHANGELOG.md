@@ -1,3 +1,10 @@
+## [4.2.3](https://github.com/enisdenjo/graphql-ws/compare/v4.2.2...v4.2.3) (2021-03-23)
+
+
+### Bug Fixes
+
+* **client:** Reduce WebSocket event listeners and add new client `message` event ([#104](https://github.com/enisdenjo/graphql-ws/issues/104)) ([68d0e20](https://github.com/enisdenjo/graphql-ws/commit/68d0e20674488e8792a61d07f068233d78acaa3a)), closes [#102](https://github.com/enisdenjo/graphql-ws/issues/102)
+
 ## [4.2.2](https://github.com/enisdenjo/graphql-ws/compare/v4.2.1...v4.2.2) (2021-03-17)
 
 
