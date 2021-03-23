@@ -310,7 +310,8 @@ export function createClient(options: ClientOptions): Client {
     };
   })();
 
-  let connecting: Promise<[socket: WebSocket, wait: Promise<void>]> | undefined,
+  type Connected = [socket: WebSocket, throwOnClose: Promise<void>];
+  let connecting: Promise<Connected> | undefined,
     locks = 0,
     retrying = false,
     retries = 0,
@@ -321,79 +322,76 @@ export function createClient(options: ClientOptions): Client {
     locks++;
 
     const [socket, throwOnClose] = await (connecting ??
-      (connecting = new Promise<[WebSocket, Promise<void>]>(
-        (connected, denied) =>
-          (async () => {
-            if (retrying) {
-              await retryWait(retries);
-              retries++;
+      (connecting = new Promise<Connected>((connected, denied) =>
+        (async () => {
+          if (retrying) {
+            await retryWait(retries);
+            retries++;
+          }
+
+          emitter.emit('connecting');
+          const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+
+          socket.onerror = (err) => {
+            // we let the onclose reject the promise for correct retry handling
+            emitter.emit('error', err);
+          };
+
+          socket.onclose = (event) => {
+            connecting = undefined;
+            emitter.emit('closed', event);
+            denied(event);
+          };
+
+          socket.onopen = async () => {
+            try {
+              socket.send(
+                stringifyMessage<MessageType.ConnectionInit>({
+                  type: MessageType.ConnectionInit,
+                  payload:
+                    typeof connectionParams === 'function'
+                      ? await connectionParams()
+                      : connectionParams,
+                }),
+              );
+            } catch (err) {
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
+              );
             }
+          };
 
-            emitter.emit('connecting');
-            const socket = new WebSocketImpl(
-              url,
-              GRAPHQL_TRANSPORT_WS_PROTOCOL,
-            );
+          let hasConnected = false;
+          socket.onmessage = ({ data }) => {
+            try {
+              const message = parseMessage(data);
+              emitter.emit('message', message);
+              if (hasConnected) return;
 
-            socket.onerror = (err) => {
-              // we let the onclose reject the promise for correct retry handling
-              emitter.emit('error', err);
-            };
-
-            socket.onclose = (event) => {
-              connecting = undefined;
-              emitter.emit('closed', event);
-              denied(event);
-            };
-
-            socket.onopen = async () => {
-              try {
-                socket.send(
-                  stringifyMessage<MessageType.ConnectionInit>({
-                    type: MessageType.ConnectionInit,
-                    payload:
-                      typeof connectionParams === 'function'
-                        ? await connectionParams()
-                        : connectionParams,
-                  }),
-                );
-              } catch (err) {
-                socket.close(
-                  4400,
-                  err instanceof Error ? err.message : new Error(err).message,
+              // hasnt connected yet, this is the first message
+              if (message.type !== MessageType.ConnectionAck) {
+                throw new Error(
+                  `First message cannot be of type ${message.type}`,
                 );
               }
-            };
-
-            let hasConnected = false;
-            socket.onmessage = ({ data }) => {
-              try {
-                const message = parseMessage(data);
-                emitter.emit('message', message);
-
-                if (hasConnected) return;
-                if (message.type !== MessageType.ConnectionAck) {
-                  throw new Error(
-                    `First message cannot be of type ${message.type}`,
-                  );
-                }
-                emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
-                retries = 0; // reset the retries on connect
-                hasConnected = true;
-                connected([
-                  socket,
-                  new Promise<void>((_, throwOnClose) =>
-                    socket.addEventListener('close', throwOnClose),
-                  ),
-                ]);
-              } catch (err) {
-                socket.close(
-                  4400,
-                  err instanceof Error ? err.message : new Error(err).message,
-                );
-              }
-            };
-          })(),
+              emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+              retries = 0; // reset the retries on connect
+              hasConnected = true;
+              connected([
+                socket,
+                new Promise<void>((_, closed) =>
+                  socket.addEventListener('close', closed),
+                ),
+              ]);
+            } catch (err) {
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
+              );
+            }
+          };
+        })(),
       )));
 
     let release = () => {
@@ -405,7 +403,6 @@ export function createClient(options: ClientOptions): Client {
       socket,
       release,
       Promise.race([
-        throwOnClose,
         released.then(() => {
           if (--locks === 0) {
             // if no more connection locks are present, complete the connection
@@ -424,6 +421,7 @@ export function createClient(options: ClientOptions): Client {
             }
           }
         }),
+        throwOnClose,
       ]),
     ];
   }
