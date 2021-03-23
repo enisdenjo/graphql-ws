@@ -1068,7 +1068,7 @@ useServer(
 </details>
 
 <details id="only-subscriptions">
-<summary><a href="#only-subscriptions">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage accepting only `subscription` operations</summary>
+<summary><a href="#only-subscriptions">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage accepting only subscription operations</summary>
 
 ```typescript
 import {
