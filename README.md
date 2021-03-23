@@ -897,16 +897,10 @@ server.on('upgrade', (req, socket, head) => {
 <summary><a href="#logging">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with console logging</summary>
 
 ```typescript
-import https from 'https';
 import { execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from 'my-graphql-schema';
-
-const server = https.createServer(function weServeSocketsOnly(_, res) {
-  res.writeHead(404);
-  res.end();
-});
 
 const wsServer = new ws.Server({
   server,
@@ -934,8 +928,6 @@ useServer(
   },
   wsServer,
 );
-
-server.listen(443);
 ```
 
 </details>
@@ -973,14 +965,14 @@ server.on('upgrade', (request, socket, head) => {
     return waveWS.handleUpgrade(request, socket, head, (client) => {
       waveWS.emit('connection', client, request);
     });
-  } 
-    
+  }
+
   if (pathname === '/graphql') {
     return graphqlWS.handleUpgrade(request, socket, head, (client) => {
       graphqlWS.emit('connection', client, request);
     });
-  } 
-  
+  }
+
   return socket.destroy();
 });
 
@@ -1013,6 +1005,11 @@ import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema, roots, getDynamicContext } from 'my-graphql';
 
+const wsServer = new ws.Server({
+  server,
+  path: '/graphql',
+});
+
 useServer(
   {
     context: (ctx, msg, args) => {
@@ -1037,6 +1034,11 @@ import { parse, validate, execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema, myValidationRules } from 'my-graphql';
+
+const wsServer = new ws.Server({
+  server,
+  path: '/graphql',
+});
 
 useServer(
   {
@@ -1077,15 +1079,9 @@ import {
   getOperationAST,
   GraphQLError,
 } from 'graphql';
-import https from 'https';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql';
-
-const server = https.createServer(function weServeSocketsOnly(_, res) {
-  res.writeHead(404);
-  res.end();
-});
 
 const wsServer = new ws.Server({
   server,
@@ -1133,8 +1129,6 @@ useServer(
   },
   wsServer,
 );
-
-server.listen(443);
 ```
 
 </details>
