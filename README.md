@@ -1198,8 +1198,6 @@ const client = createClient({
 // 🛸 server
 
 import {
-  parse,
-  validate,
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLNonNull,
@@ -1231,27 +1229,9 @@ const wsServer = new WebSocket.Server({
 
 useServer(
   {
-    onSubscribe: (_ctx, msg) => {
-      const args = {
-        schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
-      };
-
-      // if the query is just a ping, use the pinger schema instead
-      if (msg.payload.query === '{ ping }') {
-        return { schema: pinger, ...args };
-      }
-
-      // dont forget to validate other requests
-      const errors = validate(args.schema, args.document);
-      if (errors.length > 0) {
-        // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
-        return errors;
-      }
-
-      return args;
+    schema: (_ctx, msg) => {
+      if (msg.payload.query === '{ ping }') return pinger;
+      return schema;
     },
   },
   wsServer,
