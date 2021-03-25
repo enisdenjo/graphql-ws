@@ -1009,6 +1009,41 @@ useServer(
 
 </details>
 
+<details id="dynamic-schema">
+<summary><a href="#dynamic-schema">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with dynamic schema</summary>
+
+```typescript
+import { execute, subscribe } from 'graphql';
+import ws from 'ws'; // yarn add ws
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema, checkIsAdmin, getDebugSchema } from './my-graphql';
+
+const wsServer = new ws.Server({
+  port: 443,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    execute,
+    subscribe,
+    schema: async (ctx, msg, executionArgsWithoutSchema) => {
+      // will be called on every subscribe request
+      // allowing you to dynamically supply the schema
+      // using the depending on the provided arguments.
+      // throwing an error here closes the socket with
+      // the `Error` message in the close event reason
+      const isAdmin = await checkIsAdmin(ctx.request);
+      if (isAdmin) return getDebugSchema(ctx, msg, executionArgsWithoutSchema);
+      return schema;
+    },
+  },
+  wsServer,
+);
+```
+
+</details>
+
 <details id="custom-exec">
 <summary><a href="#custom-exec">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with custom execution arguments and validation</summary>
 

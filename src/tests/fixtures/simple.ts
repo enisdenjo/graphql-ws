@@ -5,6 +5,7 @@ import {
   execute,
   subscribe,
   GraphQLNonNull,
+  GraphQLSchemaConfig,
 } from 'graphql';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
@@ -57,7 +58,7 @@ function pong(key = 'global'): void {
   }
 }
 
-export const schema = new GraphQLSchema({
+export const schemaConfig: GraphQLSchemaConfig = {
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
@@ -116,7 +117,9 @@ export const schema = new GraphQLSchema({
       },
     },
   }),
-});
+};
+
+export const schema = new GraphQLSchema(schemaConfig);
 
 export async function startTServer(
   options: Partial<ServerOptions<Extra>> = {},
