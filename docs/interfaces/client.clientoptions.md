@@ -213,12 +213,17 @@ ___
 
 ### url
 
-• **url**: *string* \| (() => *Promise*<*string*> | <*string*>)
+• **url**: *string* \| () => *string* \| *Promise*<string\>
 
 URL of the GraphQL over WebSocket Protocol compliant server to connect.
 
-The case of returning a Promise can be used together with automatic reconnect upon abnormal
-socket closure if you need your url to be dynamically changing each time it reconnects. 
+If the option is a function, it will be called on every WebSocket connection attempt.
+Returning a promise is supported too and the connecting phase will stall until it
+resolves with the URL.
+
+A good use-case for having a function is when using the URL for authentication,
+where subsequent reconnects (due to auth) may have a refreshed identity token in
+the URL.
 
 ___
 
