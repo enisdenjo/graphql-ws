@@ -71,7 +71,7 @@ ___
 
 ### execute
 
-• **execute**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
+• `Optional` **execute**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
 
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
@@ -432,7 +432,7 @@ ___
 
 ### subscribe
 
-• **subscribe**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
+• `Optional` **subscribe**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.

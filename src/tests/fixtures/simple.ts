@@ -2,8 +2,6 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLString,
-  execute,
-  subscribe,
   GraphQLNonNull,
   GraphQLSchemaConfig,
 } from 'graphql';
@@ -152,8 +150,6 @@ export async function startTServer(
   const server = useServer(
     {
       schema,
-      execute,
-      subscribe,
       ...options,
       onConnect: async (...args) => {
         pendingConnections.push(args[0]);
