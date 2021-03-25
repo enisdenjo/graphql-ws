@@ -81,8 +81,12 @@ export type EventListener<E extends Event> = E extends EventConnecting
 
 /** Configuration used for the GraphQL over WebSocket client. */
 export interface ClientOptions {
-  /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
-  url: string;
+  /** URL of the GraphQL over WebSocket Protocol compliant server to connect.
+   *
+   * The case of returning a Promise can be used together with automatic reconnect upon abnormal
+   * socket closure if you need your url to be dynamically changing each time it reconnects.
+   */
+  url: string | (() => Promise<string> | string);
   /**
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
@@ -330,7 +334,11 @@ export function createClient(options: ClientOptions): Client {
           }
 
           emitter.emit('connecting');
-          const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+          const socket = new WebSocketImpl(
+              typeof url === 'function'
+                  ? await url()
+                  : url,
+              GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
           socket.onerror = (err) => {
             // we let the onclose reject the promise for correct retry handling
