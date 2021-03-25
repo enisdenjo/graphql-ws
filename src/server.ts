@@ -522,7 +522,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               return socket.close(4401, 'Unauthorized');
             }
 
-            const id = message.id;
+            const { id } = message;
             if (id in ctx.subscriptions) {
               return socket.close(4409, `Subscriber for ${id} already exists`);
             }
@@ -538,19 +538,17 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                   type: MessageType.Next,
                   payload: result,
                 };
-                if (onNext) {
-                  const maybeResult = await onNext(
-                    ctx,
-                    nextMessage,
-                    args,
-                    result,
-                  );
-                  if (maybeResult) {
-                    nextMessage = {
-                      ...nextMessage,
-                      payload: maybeResult,
-                    };
-                  }
+                const maybeResult = await onNext?.(
+                  ctx,
+                  nextMessage,
+                  args,
+                  result,
+                );
+                if (maybeResult) {
+                  nextMessage = {
+                    ...nextMessage,
+                    payload: maybeResult,
+                  };
                 }
                 await socket.send(
                   stringifyMessage<MessageType.Next>(nextMessage),
@@ -562,14 +560,12 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                   type: MessageType.Error,
                   payload: errors,
                 };
-                if (onError) {
-                  const maybeErrors = await onError(ctx, errorMessage, errors);
-                  if (maybeErrors) {
-                    errorMessage = {
-                      ...errorMessage,
-                      payload: maybeErrors,
-                    };
-                  }
+                const maybeErrors = await onError?.(ctx, errorMessage, errors);
+                if (maybeErrors) {
+                  errorMessage = {
+                    ...errorMessage,
+                    payload: maybeErrors,
+                  };
                 }
                 await socket.send(
                   stringifyMessage<MessageType.Error>(errorMessage),
@@ -657,16 +653,14 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               operationResult = await execute(execArgs);
             }
 
-            if (onOperation) {
-              const maybeResult = await onOperation(
-                ctx,
-                message,
-                execArgs,
-                operationResult,
-              );
-              if (maybeResult) {
-                operationResult = maybeResult;
-              }
+            const maybeResult = await onOperation?.(
+              ctx,
+              message,
+              execArgs,
+              operationResult,
+            );
+            if (maybeResult) {
+              operationResult = maybeResult;
             }
 
             if (isAsyncIterable(operationResult)) {

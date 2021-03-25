@@ -327,7 +327,11 @@ export function createClient(options: ClientOptions): Client {
     retries = 0,
     disposed = false;
   async function connect(): Promise<
-    [socket: WebSocket, release: () => void, throwOnClose: Promise<void>]
+    [
+      socket: WebSocket,
+      release: () => void,
+      waitForReleaseOrThrowOnClose: Promise<void>,
+    ]
   > {
     locks++;
 
@@ -375,20 +379,19 @@ export function createClient(options: ClientOptions): Client {
             }
           };
 
-          let hasConnected = false;
+          let acknowledged = false;
           socket.onmessage = ({ data }) => {
             try {
               const message = parseMessage(data);
               emitter.emit('message', message);
-              if (hasConnected) return;
+              if (acknowledged) return; // already connected and acknowledged
 
-              // havent connected yet. expect the acknowledgement message and proceed
               if (message.type !== MessageType.ConnectionAck) {
                 throw new Error(
                   `First message cannot be of type ${message.type}`,
                 );
               }
-              hasConnected = true;
+              acknowledged = true;
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retries = 0; // reset the retries on connect
               connected([
@@ -416,8 +419,9 @@ export function createClient(options: ClientOptions): Client {
       socket,
       release,
       Promise.race([
+        // wait for
         released.then(() => {
-          if (--locks === 0) {
+          if (!--locks) {
             // if no more connection locks are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
             if (isFinite(keepAlive) && keepAlive > 0) {
@@ -434,6 +438,7 @@ export function createClient(options: ClientOptions): Client {
             }
           }
         }),
+        // or
         throwOnClose,
       ]),
     ];
@@ -477,8 +482,7 @@ export function createClient(options: ClientOptions): Client {
     }
 
     // looks good, start retrying
-    retrying = true;
-    return true;
+    return (retrying = true);
   }
 
   // in non-lazy (hot?) mode always hold one connection lock to persist the socket
@@ -491,9 +495,8 @@ export function createClient(options: ClientOptions): Client {
           return; // completed, shouldnt try again
         } catch (errOrCloseEvent) {
           try {
-            if (!shouldRetryConnectOrThrow(errOrCloseEvent))
-              return onNonLazyError?.(errOrCloseEvent);
-          } catch {
+            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
+          } catch (errOrCloseEvent) {
             // report thrown error, no further retries
             return onNonLazyError?.(errOrCloseEvent);
           }
