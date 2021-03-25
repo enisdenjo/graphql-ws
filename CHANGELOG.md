@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/enisdenjo/graphql-ws/compare/v4.3.0...v4.3.1) (2021-03-25)
+
+
+### Bug Fixes
+
+* Close the details tag in the README ([84144c4](https://github.com/enisdenjo/graphql-ws/commit/84144c4c958674c4549cc48e84563bcb9f7c5e9d))
+
 # [4.3.0](https://github.com/enisdenjo/graphql-ws/compare/v4.2.3...v4.3.0) (2021-03-25)
 
 
