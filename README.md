@@ -991,6 +991,8 @@ useServer(
 );
 ```
 
+</details>
+
 <details id="custom-validation">
 <summary><a href="#custom-validation">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with custom validation</summary>
 
