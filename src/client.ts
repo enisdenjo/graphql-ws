@@ -335,10 +335,9 @@ export function createClient(options: ClientOptions): Client {
 
           emitter.emit('connecting');
           const socket = new WebSocketImpl(
-              typeof url === 'function'
-                  ? await url()
-                  : url,
-              GRAPHQL_TRANSPORT_WS_PROTOCOL);
+            typeof url === 'function' ? await url() : url,
+            GRAPHQL_TRANSPORT_WS_PROTOCOL,
+          );
 
           socket.onerror = (err) => {
             // we let the onclose reject the promise for correct retry handling

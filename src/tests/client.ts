@@ -148,7 +148,11 @@ it('should use the provided WebSocket implementation with url as a function that
   });
 
   createClient({
-    url: () => {return new Promise((resolve) => {resolve(url)})},
+    url: () => {
+      return new Promise((resolve) => {
+        resolve(url);
+      });
+    },
     retryAttempts: 0,
     onNonLazyError: noop,
     lazy: false,
