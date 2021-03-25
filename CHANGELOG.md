@@ -1,3 +1,18 @@
+# [4.3.0](https://github.com/enisdenjo/graphql-ws/compare/v4.2.3...v4.3.0) (2021-03-25)
+
+
+### Bug Fixes
+
+* **server:** Respect completed subscriptions even if `subscribe` or `onOperation` didnt resolve yet ([4700154](https://github.com/enisdenjo/graphql-ws/commit/4700154566deb6b7d58a15a78ca57f830af40fe6))
+
+
+### Features
+
+* **client:** `url` option accepts a function or a Promise ([#143](https://github.com/enisdenjo/graphql-ws/issues/143)) ([76f522f](https://github.com/enisdenjo/graphql-ws/commit/76f522fc60e130f83032a1a0a61b741eb5b2f76f)), closes [#145](https://github.com/enisdenjo/graphql-ws/issues/145) [#146](https://github.com/enisdenjo/graphql-ws/issues/146)
+* **server:** `execute` and `subscribe` are optional ([#148](https://github.com/enisdenjo/graphql-ws/issues/148)) ([af748b0](https://github.com/enisdenjo/graphql-ws/commit/af748b0fd34da44950bd7fbbaeeebf743ff6973e))
+* **server:** Dynamic `schema` support by accepting a function or a Promise ([#147](https://github.com/enisdenjo/graphql-ws/issues/147)) ([6a0bf94](https://github.com/enisdenjo/graphql-ws/commit/6a0bf9473e6bc77afdaf81d16eeeeddcbe97276f)), closes [#127](https://github.com/enisdenjo/graphql-ws/issues/127)
+* **server:** Use `validate` option for custom GraphQL validation ([b68d56c](https://github.com/enisdenjo/graphql-ws/commit/b68d56ca1ffb8c7375d4292f716a63326d9d712f))
+
 ## [4.2.3](https://github.com/enisdenjo/graphql-ws/compare/v4.2.2...v4.2.3) (2021-03-23)
 
 
