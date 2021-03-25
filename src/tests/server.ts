@@ -6,10 +6,11 @@ import {
   GraphQLError,
   ExecutionArgs,
   ExecutionResult,
+  GraphQLSchema,
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
-import { schema, startTServer } from './fixtures/simple';
+import { schema, schemaConfig, startTServer } from './fixtures/simple';
 import { createTClient } from './utils';
 
 /**
@@ -55,6 +56,41 @@ it('should allow connections with valid protocols only', async () => {
   );
 
   console.warn = warn;
+});
+
+it('should use the schema resolved from a promise on subscribe', async (done) => {
+  expect.assertions(2);
+
+  const schema = new GraphQLSchema(schemaConfig);
+
+  const { url } = await startTServer({
+    schema: (_, msg) => {
+      expect(msg.id).toBe('1');
+      return Promise.resolve(schema);
+    },
+    execute: (args) => {
+      expect(args.schema).toBe(schema);
+      return execute(args);
+    },
+    onComplete: () => done(),
+  });
+  const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(); // ack
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: '{ getValue }',
+      },
+    }),
+  );
 });
 
 it('should use the provided roots as resolvers', async () => {
