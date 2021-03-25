@@ -57,9 +57,17 @@ export interface ServerOptions<E = unknown> {
    * The GraphQL schema on which the operations
    * will be executed and validated against.
    *
+   * If a function is provided, it will be called on
+   * every subscription request allowing you to manipulate
+   * schema dynamically.
+   *
    * If the schema is left undefined, you're trusted to
    * provide one in the returned `ExecutionArgs` from the
    * `onSubscribe` callback.
+   *
+   * Throwing an error from within this function will
+   * close the socket with the `Error` message
+   * in the close event reason.
    */
   schema?:
     | GraphQLSchema

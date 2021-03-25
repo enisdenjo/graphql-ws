@@ -410,14 +410,22 @@ ___
 
 ### schema
 
-• `Optional` **schema**: *GraphQLSchema*
+• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: *Omit*<ExecutionArgs, *schema*\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.
 
+If a function is provided, it will be called on
+every subscription request allowing you to manipulate
+schema dynamically.
+
 If the schema is left undefined, you're trusted to
 provide one in the returned `ExecutionArgs` from the
 `onSubscribe` callback.
+
+Throwing an error from within this function will
+close the socket with the `Error` message
+in the close event reason.
 
 ___
 
