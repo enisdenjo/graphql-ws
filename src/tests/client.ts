@@ -140,6 +140,19 @@ it('should use the provided WebSocket implementation', async () => {
   await server.waitForClient();
 });
 
+it('should accept a function for the url', async () => {
+  const { url, ...server } = await startTServer();
+
+  createClient({
+    url: () => Promise.resolve(url),
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    lazy: false,
+  });
+
+  await server.waitForClient();
+});
+
 it('should not accept invalid WebSocket implementations', async () => {
   const { url } = await startTServer();
 
