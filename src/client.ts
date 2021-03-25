@@ -501,13 +501,11 @@ export function createClient(options: ClientOptions): Client {
     subscribe(payload, sink) {
       const id = generateID();
 
-      let completed = false;
-      const releaserRef = {
-        current: () => {
+      let completed = false,
+        releaser = () => {
           // for handling completions before connect
           completed = true;
-        },
-      };
+        };
 
       (async () => {
         for (;;) {
@@ -532,7 +530,7 @@ export function createClient(options: ClientOptions): Client {
                   if (message.id === id) {
                     completed = true;
                     sink.error(message.payload);
-                    releaserRef.current();
+                    releaser();
                     // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
                     // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
                   }
@@ -541,7 +539,7 @@ export function createClient(options: ClientOptions): Client {
                 case MessageType.Complete: {
                   if (message.id === id) {
                     completed = true;
-                    releaserRef.current(); // release completes the sink
+                    releaser(); // release completes the sink
                   }
                   return;
                 }
@@ -556,7 +554,7 @@ export function createClient(options: ClientOptions): Client {
               }),
             );
 
-            releaserRef.current = () => {
+            releaser = () => {
               if (!completed && socket.readyState === WebSocketImpl.OPEN)
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
@@ -582,7 +580,7 @@ export function createClient(options: ClientOptions): Client {
         .catch(sink.error)
         .then(sink.complete); // resolves on release or normal closure
 
-      return () => releaserRef.current();
+      return () => releaser();
     },
     async dispose() {
       disposed = true;
