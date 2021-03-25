@@ -39,7 +39,7 @@ const roots = {
     hello: () => 'Hello World!',
   },
   subscription: {
-    greetings: async function* sayHiIn5Languages() {
+    greetings: function* sayHiIn5Languages() {
       for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
         yield { greetings: hi };
       }
@@ -458,7 +458,7 @@ const link = new WebSocketLink({
 
 ```typescript
 import { createClient } from 'graphql-ws';
-import { waitForHealthy } from 'my-servers';
+import { waitForHealthy } from './my-servers';
 
 const url = 'wss://i.want.retry/control/graphql';
 
@@ -469,7 +469,7 @@ const client = createClient({
     // healthy before retrying after an abrupt disconnect (most commonly a restart)
     await waitForHealthy(url);
 
-    // after the server becomes ready, wait for a second + random 0-3s timeout
+    // after the server becomes ready, wait for a second + random 1-4s timeout
     // (avoid DDoSing yourself) and try connecting again
     await new Promise((resolve) =>
       setTimeout(resolve, 1000 + Math.random() * 3000),
@@ -561,7 +561,7 @@ const client = createClient({
   webSocketImpl: ws,
   /**
    * Generates a v4 UUID to be used as the ID.
-   * Reference: https://stackoverflow.com/a/2117523/709884
+   * Reference: https://gist.github.com/jed/982883
    */
   generateID: () =>
     ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -583,7 +583,7 @@ const client = createClient({
 import ws from 'ws'; // yarn add ws
 import { makeServer } from 'graphql-ws';
 import { execute, subscribe } from 'graphql';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // make
 const server = makeServer({
@@ -607,18 +607,19 @@ wsServer.on('connection', (socket, request) => {
       send: (data) =>
         new Promise((resolve, reject) => {
           socket.send(data, (err) => (err ? reject(err) : resolve()));
-        }), // control your data flow by timing the promise resole
+        }), // control your data flow by timing the promise resolve
       close: (code, reason) => socket.close(code, reason), // there are protocol standard closures
       onMessage: (cb) =>
         socket.on('message', async (event) => {
           try {
             // wait for the the operation to complete
+            // - if init message, waits for connect
             // - if query/mutation, waits for result
             // - if subscription, waits for complete
             await cb(event.toString());
           } catch (err) {
             // all errors that could be thrown during the
-            // execution of operations, will be caught here
+            // execution of operations will be caught here
             socket.close(1011, err.message);
           }
         }),
@@ -644,8 +645,8 @@ import http from 'http';
 import ws from 'ws'; // yarn add ws
 import { makeServer } from 'graphql-ws';
 import { execute, subscribe } from 'graphql';
-import { schema } from 'my-graphql-schema';
-import { validate } from 'my-auth';
+import { schema } from './my-graphql-schema';
+import { validate } from './my-auth';
 
 // extra in the context
 interface Extra {
@@ -714,7 +715,7 @@ wsServer.on('connection', (socket, request) => {
             await cb(event.toString());
           } catch (err) {
             // all errors that could be thrown during the
-            // execution of operations, will be caught here
+            // execution of operations will be caught here
             if (err instanceof Forbidden) {
               // your magic
             } else {
@@ -744,7 +745,7 @@ import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { execute, subscribe } from 'graphql';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // create express and middleware
 const app = express();
@@ -779,7 +780,7 @@ import { ApolloServer } from 'apollo-server-express';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { execute, subscribe } from 'graphql';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // create express
 const app = express();
@@ -820,7 +821,7 @@ import { execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { SubscriptionServer, GRAPHQL_WS } from 'subscriptions-transport-ws';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // graphql-ws
 const graphqlWs = new ws.Server({ noServer: true });
@@ -882,7 +883,7 @@ server.on('upgrade', (req, socket, head) => {
 import { execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 const wsServer = new ws.Server({
   port: 443,
@@ -924,7 +925,7 @@ import url from 'url';
 import { execute, subscribe } from 'graphql';
 import { createClient } from 'graphql-ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 const server = https.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
@@ -985,7 +986,7 @@ server.listen(443);
 import { validate, execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema, roots, getDynamicContext } from 'my-graphql';
+import { schema, roots, getDynamicContext } from './my-graphql';
 
 const wsServer = new ws.Server({
   port: 443,
@@ -1015,7 +1016,7 @@ useServer(
 import { parse, validate, execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema, myValidationRules } from 'my-graphql';
+import { schema, myValidationRules } from './my-graphql';
 
 const wsServer = new ws.Server({
   port: 443,
@@ -1066,7 +1067,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql';
 
 const wsServer = new ws.Server({
-  server,
+  port: 443,
   path: '/graphql',
 });
 
@@ -1124,7 +1125,7 @@ useServer(
 import { parse, execute, subscribe } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // a unique GraphQL execution ID used for representing
 // a query in the persisted queries store. when subscribing
@@ -1214,7 +1215,7 @@ import {
 } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema } from 'my-graphql-schema';
+import { schema } from './my-graphql-schema';
 
 // a custom graphql schema that holds just the ping query.
 // used exclusively when the client sends a ping to the server.
@@ -1250,10 +1251,10 @@ useServer(
 
       // if the query is just a ping, use the pinger schema instead
       if (msg.payload.query === '{ ping }') {
-        args.schema = pinger;
+        return { schema: pinger, ...args };
       }
 
-      // dont forget to validate
+      // dont forget to validate other requests
       const errors = validate(args.schema, args.document);
       if (errors.length > 0) {
         // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
@@ -1272,11 +1273,12 @@ useServer(
 
 import { createClient } from 'graphql-ws';
 
-let connection: WebSocket;
+let connection: WebSocket | undefined;
 const client = createClient({
   url: 'wss://client.can/send-pings/too',
   on: {
     connected: (socket) => (connection = socket as WebSocket),
+    closed: () => (connection = undefined),
   },
 });
 
@@ -1295,10 +1297,7 @@ async function ping() {
   // if you do not want this, simply dispose of the ping subscription
   // as soon as the pong timeout is exceeded
   const pongTimeout = setTimeout(
-    () => {
-      if (connection?.readyState === WebSocket.OPEN)
-        connection.close(4408, 'Pong Timeout');
-    },
+    () => connection?.close(4408, 'Pong Timeout'),
     2000, // expect a pong within 2 seconds of the ping
   );
 
@@ -1314,11 +1313,11 @@ async function ping() {
         complete: resolve,
       },
     );
-  });
+    // whatever happens to the promise, clear the pong timeout
+  }).finally(() => clearTimeout(pongTimeout));
 
-  // pong has been received, clear the timeout
+  // record when pong has been received
   const ponged = Date.now();
-  clearTimeout(pongTimeout);
 
   // how long it took for the pong to arrive after sending the ping
   return ponged - pinged;

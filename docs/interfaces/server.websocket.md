@@ -58,7 +58,7 @@ to be a `string`.
 
 All operations requested from the client will block the promise until
 completed, this means that the callback will not resolve until all
-subscription events have been emittet (or until the client has completed
+subscription events have been emitted (or until the client has completed
 the stream), or until the query/mutation resolves.
 
 Exceptions raised during any phase of operation processing will

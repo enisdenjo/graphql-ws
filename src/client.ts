@@ -207,7 +207,7 @@ export interface ClientOptions {
    * as the random number generator. Supply your own generator
    * in case you need more uniqueness.
    *
-   * Reference: https://stackoverflow.com/a/2117523/709884
+   * Reference: https://gist.github.com/jed/982883
    */
   generateID?: () => ID;
 }
@@ -258,7 +258,7 @@ export function createClient(options: ClientOptions): Client {
      * as the random number generator. Supply your own generator
      * in case you need more uniqueness.
      *
-     * Reference: https://stackoverflow.com/a/2117523/709884
+     * Reference: https://gist.github.com/jed/982883
      */
     generateID = function generateUUID() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

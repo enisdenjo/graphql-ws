@@ -50,7 +50,7 @@ The default generates a v4 UUID to be used as the ID using `Math`
 as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
-Reference: https://stackoverflow.com/a/2117523/709884
+Reference: https://gist.github.com/jed/982883
 
 #### Type declaration:
 
