@@ -64,16 +64,13 @@ function tsubscribe<T = unknown>(
           test?.(result);
           resolve();
         }
-        if (results.length > 0) {
-          return done();
-        }
+        if (results.length > 0) return done();
         emitter.once('next', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('next', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForError: (test, expire) => {
@@ -83,16 +80,13 @@ function tsubscribe<T = unknown>(
           test?.(error);
           resolve();
         }
-        if (error) {
-          return done();
-        }
+        if (error) return done();
         emitter.once('err', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('err', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForComplete: (test, expire) => {
@@ -102,16 +96,13 @@ function tsubscribe<T = unknown>(
           test?.();
           resolve();
         }
-        if (completed) {
-          return done();
-        }
+        if (completed) return done();
         emitter.once('complete', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('complete', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     dispose,

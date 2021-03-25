@@ -468,9 +468,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       const connectionInitWait =
         connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
           ? setTimeout(() => {
-              if (!ctx.connectionInitReceived) {
+              if (!ctx.connectionInitReceived)
                 socket.close(4408, 'Connection initialisation timeout');
-              }
             }, connectionInitWaitTimeout)
           : null;
 
@@ -483,21 +482,19 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
         }
         switch (message.type) {
           case MessageType.ConnectionInit: {
-            if (ctx.connectionInitReceived) {
+            if (ctx.connectionInitReceived)
               return socket.close(4429, 'Too many initialisation requests');
-            }
+
             // @ts-expect-error: I can write
             ctx.connectionInitReceived = true;
 
-            if (isObject(message.payload)) {
+            if (isObject(message.payload))
               // @ts-expect-error: I can write
               ctx.connectionParams = message.payload;
-            }
 
             const permittedOrPayload = await onConnect?.(ctx);
-            if (permittedOrPayload === false) {
+            if (permittedOrPayload === false)
               return socket.close(4403, 'Forbidden');
-            }
 
             await socket.send(
               stringifyMessage<MessageType.ConnectionAck>(
@@ -518,14 +515,11 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             return;
           }
           case MessageType.Subscribe: {
-            if (!ctx.acknowledged) {
-              return socket.close(4401, 'Unauthorized');
-            }
+            if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
 
             const { id } = message;
-            if (id in ctx.subscriptions) {
+            if (id in ctx.subscriptions)
               return socket.close(4409, `Subscriber for ${id} already exists`);
-            }
 
             // if this turns out to be a streaming operation, the subscription value
             // will change to an `AsyncIterable`, otherwise it will stay as is
@@ -544,12 +538,11 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                   args,
                   result,
                 );
-                if (maybeResult) {
+                if (maybeResult)
                   nextMessage = {
                     ...nextMessage,
                     payload: maybeResult,
                   };
-                }
                 await socket.send(
                   stringifyMessage<MessageType.Next>(nextMessage),
                 );
@@ -561,12 +554,11 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                   payload: errors,
                 };
                 const maybeErrors = await onError?.(ctx, errorMessage, errors);
-                if (maybeErrors) {
+                if (maybeErrors)
                   errorMessage = {
                     ...errorMessage,
                     payload: maybeErrors,
                   };
-                }
                 await socket.send(
                   stringifyMessage<MessageType.Error>(errorMessage),
                 );
@@ -577,32 +569,29 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                   type: MessageType.Complete,
                 };
                 await onComplete?.(ctx, completeMessage);
-                if (notifyClient) {
+                if (notifyClient)
                   await socket.send(
                     stringifyMessage<MessageType.Complete>(completeMessage),
                   );
-                }
               },
             };
 
             let execArgs: ExecutionArgs;
             const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
             if (maybeExecArgsOrErrors) {
-              if (areGraphQLErrors(maybeExecArgsOrErrors)) {
+              if (areGraphQLErrors(maybeExecArgsOrErrors))
                 return await emit.error(maybeExecArgsOrErrors);
-              } else if (Array.isArray(maybeExecArgsOrErrors)) {
+              else if (Array.isArray(maybeExecArgsOrErrors))
                 throw new Error(
                   'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
                 );
-              }
               // not errors, is exec args
               execArgs = maybeExecArgsOrErrors;
             } else {
-              if (!schema) {
-                // you either provide a schema dynamically through
-                // `onSubscribe` or you set one up during the server setup
+              // you either provide a schema dynamically through
+              // `onSubscribe` or you set one up during the server setup
+              if (!schema)
                 throw new Error('The GraphQL schema is not provided');
-              }
 
               const { operationName, query, variables } = message.payload;
               execArgs = {
@@ -615,43 +604,37 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                 execArgs.schema,
                 execArgs.document,
               );
-              if (validationErrors.length > 0) {
+              if (validationErrors.length > 0)
                 return await emit.error(validationErrors);
-              }
             }
 
             const operationAST = getOperationAST(
               execArgs.document,
               execArgs.operationName,
             );
-            if (!operationAST) {
+            if (!operationAST)
               return await emit.error([
                 new GraphQLError('Unable to identify operation'),
               ]);
-            }
 
             // if `onSubscribe` didnt specify a rootValue, inject one
-            if (!('rootValue' in execArgs)) {
+            if (!('rootValue' in execArgs))
               execArgs.rootValue = roots?.[operationAST.operation];
-            }
 
             // if `onSubscribe` didn't specify a context, inject one
-            if (!('contextValue' in execArgs)) {
+            if (!('contextValue' in execArgs))
               execArgs.contextValue =
                 typeof context === 'function'
                   ? await context(ctx, message, execArgs)
                   : context;
-            }
 
             // the execution arguments have been prepared
             // perform the operation and act accordingly
             let operationResult;
-            if (operationAST.operation === 'subscription') {
+            if (operationAST.operation === 'subscription')
               operationResult = await subscribe(execArgs);
-            } else {
-              // operation === 'query' || 'mutation'
-              operationResult = await execute(execArgs);
-            }
+            // operation === 'query' || 'mutation'
+            else operationResult = await execute(execArgs);
 
             const maybeResult = await onOperation?.(
               ctx,
@@ -659,9 +642,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               execArgs,
               operationResult,
             );
-            if (maybeResult) {
-              operationResult = maybeResult;
-            }
+            if (maybeResult) operationResult = maybeResult;
 
             if (isAsyncIterable(operationResult)) {
               /** multiple emitted results */

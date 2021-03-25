@@ -288,9 +288,7 @@ export function createClient(options: ClientOptions): Client {
       // @ts-expect-error: Support more browsers
       window.MozWebSocket;
   }
-  if (!ws) {
-    throw new Error('WebSocket implementation missing');
-  }
+  if (!ws) throw new Error('WebSocket implementation missing');
   const WebSocketImpl = ws;
 
   // websocket status emitter, subscriptions are handled differently
@@ -386,11 +384,10 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('message', message);
               if (acknowledged) return; // already connected and acknowledged
 
-              if (message.type !== MessageType.ConnectionAck) {
+              if (message.type !== MessageType.ConnectionAck)
                 throw new Error(
                   `First message cannot be of type ${message.type}`,
                 );
-              }
               acknowledged = true;
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retries = 0; // reset the retries on connect
@@ -459,27 +456,21 @@ export function createClient(options: ClientOptions): Client {
         4409, // Subscriber for <id> already exists (distinction is very important)
         4429, // Too many initialisation requests
       ].includes(errOrCloseEvent.code)
-    ) {
+    )
       throw errOrCloseEvent;
-    }
 
     // disposed or normal closure (completed), shouldnt try again
     if (
       disposed ||
       (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
-    ) {
+    )
       return false;
-    }
 
     // retries are not allowed or we tried to many times, report error
-    if (!retryAttempts || retries >= retryAttempts) {
-      throw errOrCloseEvent;
-    }
+    if (!retryAttempts || retries >= retryAttempts) throw errOrCloseEvent;
 
     // throw fatal connection problems immediately
-    if (isFatalConnectionProblem(errOrCloseEvent)) {
-      throw errOrCloseEvent;
-    }
+    if (isFatalConnectionProblem(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
     return (retrying = true);
@@ -533,10 +524,8 @@ export function createClient(options: ClientOptions): Client {
             const unlisten = emitter.on('message', (message) => {
               switch (message.type) {
                 case MessageType.Next: {
-                  if (message.id === id) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    sink.next(message.payload as any);
-                  }
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  if (message.id === id) sink.next(message.payload as any);
                   return;
                 }
                 case MessageType.Error: {
@@ -568,7 +557,7 @@ export function createClient(options: ClientOptions): Client {
             );
 
             releaserRef.current = () => {
-              if (!completed && socket.readyState === WebSocketImpl.OPEN) {
+              if (!completed && socket.readyState === WebSocketImpl.OPEN)
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
@@ -576,7 +565,6 @@ export function createClient(options: ClientOptions): Client {
                     type: MessageType.Complete,
                   }),
                 );
-              }
               release();
             };
 
