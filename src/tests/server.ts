@@ -1512,6 +1512,8 @@ describe('Subscribe', () => {
     await client.waitForMessage(() => {
       fail("Shouldn't have received a message");
     }, 30);
+
+    await server.waitForComplete();
   });
 });
 
