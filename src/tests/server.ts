@@ -93,6 +93,37 @@ it('should use the schema resolved from a promise on subscribe', async (done) =>
   );
 });
 
+it('should use the provided validate function', async () => {
+  const { url } = await startTServer({
+    schema,
+    validate: () => [new GraphQLError('Nothing is valid')],
+  });
+  const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(); // ack
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: '{ getValue }',
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '1',
+      type: MessageType.Error,
+      payload: [{ message: 'Nothing is valid' }],
+    });
+  });
+});
+
 it('should use the provided roots as resolvers', async () => {
   const schema = buildSchema(`
     type Query {

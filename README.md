@@ -1042,10 +1042,35 @@ useServer(
 );
 ```
 
+<details id="custom-validation">
+<summary><a href="#custom-validation">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with custom validation</summary>
+
+```typescript
+import { execute, subscribe, validate } from 'graphql';
+import ws from 'ws'; // yarn add ws
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema, myValidationRules } from './my-graphql';
+
+const wsServer = new ws.Server({
+  port: 443,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    execute,
+    subscribe,
+    validate: (schema, document) =>
+      validate(schema, document, myValidationRules),
+  },
+  wsServer,
+);
+```
+
 </details>
 
 <details id="custom-exec">
-<summary><a href="#custom-exec">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with custom execution arguments and validation</summary>
+<summary><a href="#custom-exec">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with custom execution arguments</summary>
 
 ```typescript
 import { parse, validate, execute, subscribe } from 'graphql';

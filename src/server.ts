@@ -9,11 +9,14 @@ import {
   GraphQLSchema,
   ExecutionArgs,
   parse,
-  validate,
+  validate as graphqlValidate,
   getOperationAST,
   GraphQLError,
   SubscriptionArgs,
   ExecutionResult,
+  DocumentNode,
+  ValidationRule,
+  TypeInfo,
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
@@ -114,6 +117,26 @@ export interface ServerOptions<E = unknown> {
       NonNullable<SubscriptionArgs['rootValue']>
     >;
   };
+  /**
+   * A custom GraphQL validate function allowing you to apply your
+   * own validation rules.
+   *
+   * Returned, non-empty, array of `GraphQLError`s will be communicated
+   * to the client through the `ErrorMessage`. Use an empty array if the
+   * document is valid and no errors have been encountered.
+   *
+   * Will not be used when implementing a custom `onSubscribe`.
+   *
+   * Throwing an error from within this function will close the socket
+   * with the `Error` message in the close event reason.
+   */
+  validate?: (
+    schema: GraphQLSchema,
+    documentAST: DocumentNode,
+    rules?: ReadonlyArray<ValidationRule>,
+    typeInfo?: TypeInfo,
+    options?: { maxErrors?: number },
+  ) => ReadonlyArray<GraphQLError>;
   /**
    * Is the `execute` function from GraphQL which is
    * used to execute the query and mutation operations.
@@ -447,6 +470,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     schema,
     context,
     roots,
+    validate,
     execute,
     subscribe,
     connectionInitWaitTimeout = 3 * 1000, // 3 seconds
@@ -619,7 +643,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                     ? await schema(ctx, message, args)
                     : schema,
               };
-              const validationErrors = validate(
+              const validationErrors = (validate ?? graphqlValidate)(
                 execArgs.schema,
                 execArgs.document,
               );

@@ -28,6 +28,7 @@ Name | Default |
 - [roots](server.serveroptions.md#roots)
 - [schema](server.serveroptions.md#schema)
 - [subscribe](server.serveroptions.md#subscribe)
+- [validate](server.serveroptions.md#validate)
 
 ## Properties
 
@@ -451,3 +452,38 @@ Name | Type |
 `args` | ExecutionArgs |
 
 **Returns:** [*OperationResult*](../modules/server.md#operationresult)
+
+___
+
+### validate
+
+• `Optional` **validate**: (`schema`: *GraphQLSchema*, `documentAST`: DocumentNode, `rules?`: readonly ValidationRule[], `typeInfo?`: *TypeInfo*, `options?`: { `maxErrors?`: *number*  }) => readonly *GraphQLError*[]
+
+A custom GraphQL validate function allowing you to apply your
+own validation rules.
+
+Returned, non-empty, array of `GraphQLError`s will be communicated
+to the client through the `ErrorMessage`. Use an empty array if the
+document is valid and no errors have been encountered.
+
+Will not be used when implementing a custom `onSubscribe`.
+
+Throwing an error from within this function will close the socket
+with the `Error` message in the close event reason.
+
+#### Type declaration:
+
+▸ (`schema`: *GraphQLSchema*, `documentAST`: DocumentNode, `rules?`: readonly ValidationRule[], `typeInfo?`: *TypeInfo*, `options?`: { `maxErrors?`: *number*  }): readonly *GraphQLError*[]
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`schema` | *GraphQLSchema* |
+`documentAST` | DocumentNode |
+`rules?` | readonly ValidationRule[] |
+`typeInfo?` | *TypeInfo* |
+`options?` | *object* |
+`options.maxErrors?` | *number* |
+
+**Returns:** readonly *GraphQLError*[]
