@@ -10,6 +10,8 @@ import {
   ExecutionArgs,
   parse,
   validate as graphqlValidate,
+  execute as graphqlExecute,
+  subscribe as graphqlSubscribe,
   getOperationAST,
   GraphQLError,
   SubscriptionArgs,
@@ -145,7 +147,7 @@ export interface ServerOptions<E = unknown> {
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  execute: (args: ExecutionArgs) => OperationResult;
+  execute?: (args: ExecutionArgs) => OperationResult;
   /**
    * Is the `subscribe` function from GraphQL which is
    * used to execute the subscription operation.
@@ -154,7 +156,7 @@ export interface ServerOptions<E = unknown> {
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  subscribe: (args: ExecutionArgs) => OperationResult;
+  subscribe?: (args: ExecutionArgs) => OperationResult;
   /**
    * The amount of time for which the server will wait
    * for `ConnectionInit` message.
@@ -675,9 +677,9 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             // perform the operation and act accordingly
             let operationResult;
             if (operationAST.operation === 'subscription')
-              operationResult = await subscribe(execArgs);
+              operationResult = await (subscribe ?? graphqlSubscribe)(execArgs);
             // operation === 'query' || 'mutation'
-            else operationResult = await execute(execArgs);
+            else operationResult = await (execute ?? graphqlExecute)(execArgs);
 
             const maybeResult = await onOperation?.(
               ctx,
