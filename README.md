@@ -114,7 +114,7 @@ const client = createClient({
   };
 
   let unsubscribe = () => {
-    /* call me to complete the subscription (replaced by the actual unsubscribe in the promise below) */
+    /* complete the subscription */
   };
 
   await new Promise((resolve, reject) => {
