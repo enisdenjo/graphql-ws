@@ -61,7 +61,13 @@ export interface ServerOptions<E = unknown> {
    * provide one in the returned `ExecutionArgs` from the
    * `onSubscribe` callback.
    */
-  schema?: GraphQLSchema;
+  schema?:
+    | GraphQLSchema
+    | ((
+        ctx: Context<E>,
+        message: SubscribeMessage,
+        args: Omit<ExecutionArgs, 'schema'>,
+      ) => Promise<GraphQLSchema> | GraphQLSchema);
   /**
    * A value which is provided to every resolver and holds
    * important contextual information like the currently
@@ -517,7 +523,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
           case MessageType.Subscribe: {
             if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
 
-            const { id } = message;
+            const { id, payload } = message;
             if (id in ctx.subscriptions)
               return socket.close(4409, `Subscriber for ${id} already exists`);
 
@@ -593,12 +599,17 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               if (!schema)
                 throw new Error('The GraphQL schema is not provided');
 
-              const { operationName, query, variables } = message.payload;
+              const args = {
+                operationName: payload.operationName,
+                document: parse(payload.query),
+                variableValues: payload.variables,
+              };
               execArgs = {
-                schema,
-                operationName,
-                document: parse(query),
-                variableValues: variables,
+                ...args,
+                schema:
+                  typeof schema === 'function'
+                    ? await schema(ctx, message, args)
+                    : schema,
               };
               const validationErrors = validate(
                 execArgs.schema,
