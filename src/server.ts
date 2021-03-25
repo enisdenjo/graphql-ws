@@ -689,9 +689,14 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
             if (isAsyncIterable(operationResult)) {
               /** multiple emitted results */
-              ctx.subscriptions[id] = operationResult;
-              for await (const result of operationResult) {
-                await emit.next(result, execArgs);
+              if (!(id in ctx.subscriptions)) {
+                // subscription was completed/canceled before the operation settled
+                operationResult.return?.();
+              } else {
+                ctx.subscriptions[id] = operationResult;
+                for await (const result of operationResult) {
+                  await emit.next(result, execArgs);
+                }
               }
             } else {
               /** single emitted result */

@@ -1456,6 +1456,63 @@ describe('Subscribe', () => {
     // terminate socket abruptly
     client.ws.terminate();
   });
+
+  it('should respect completed subscriptions even if subscribe operation stalls', async () => {
+    let continueSubscribe: (() => void) | undefined = undefined;
+    const server = await startTServer({
+      subscribe: async (...args) => {
+        await new Promise<void>((resolve) => (continueSubscribe = resolve));
+        return subscribe(...args);
+      },
+    });
+
+    const client = await createTClient(server.url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // ack
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { ping }',
+        },
+      }),
+    );
+
+    // wait for the subscribe lock
+    while (!continueSubscribe) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    // send complete
+    client.ws.send(
+      stringifyMessage<MessageType.Complete>({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+
+    // wait for complete message
+    for (const client of server.ws.clients) {
+      await new Promise((resolve) => client.once('message', resolve));
+    }
+
+    // then continue
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    continueSubscribe!();
+
+    // emit
+    server.pong();
+
+    await client.waitForMessage(() => {
+      fail("Shouldn't have received a message");
+    }, 30);
+  });
 });
 
 describe('Disconnect/close', () => {
