@@ -293,15 +293,35 @@ export function createClient(options: ClientOptions): Client {
 
   // websocket status emitter, subscriptions are handled differently
   const emitter = (() => {
+    const message = (() => {
+      const listeners: { [key: string]: EventMessageListener } = {};
+      return {
+        on(id: string, listener: EventMessageListener) {
+          listeners[id] = listener;
+          return () => {
+            delete listeners[id];
+          };
+        },
+        emit(message: Message) {
+          if (message.hasOwnProperty('id')) {
+            const id = (message as any).id;
+            if (listeners[id]) {
+              listeners[id](message);
+            }
+          }
+        },
+      };
+    })();
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
-      message: on?.message ? [on.message] : [],
+      message: on?.message ? [on.message, message.emit] : [message.emit],
       closed: on?.closed ? [on.closed] : [],
       error: on?.error ? [on.error] : [],
     };
 
     return {
+      onMessage: message.on,
       on<E extends Event>(event: E, listener: EventListener<E>) {
         const l = listeners[event] as EventListener<E>[];
         l.push(listener);
@@ -518,29 +538,25 @@ export function createClient(options: ClientOptions): Client {
             // if completed while waiting for connect, release the connection lock right away
             if (completed) return release();
 
-            const unlisten = emitter.on('message', (message) => {
+            const unlisten = emitter.onMessage(id, (message) => {
               switch (message.type) {
                 case MessageType.Next: {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  if (message.id === id) sink.next(message.payload as any);
-                  return;
+                  sink.next(message.payload as any);
+                  break;
                 }
                 case MessageType.Error: {
-                  if (message.id === id) {
-                    completed = true;
-                    sink.error(message.payload);
-                    releaser();
-                    // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
-                    // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
-                  }
-                  return;
+                  completed = true;
+                  sink.error(message.payload);
+                  releaser();
+                  // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
+                  // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
+                  break;
                 }
                 case MessageType.Complete: {
-                  if (message.id === id) {
-                    completed = true;
-                    releaser(); // release completes the sink
-                  }
-                  return;
+                  completed = true;
+                  releaser(); // release completes the sink
+                  break;
                 }
               }
             });
