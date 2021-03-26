@@ -547,7 +547,7 @@ export function createClient(options: ClientOptions): Client {
 
             socket.send(
               stringifyMessage<MessageType.Subscribe>({
-                id: id,
+                id,
                 type: MessageType.Subscribe,
                 payload,
               }),
@@ -558,7 +558,7 @@ export function createClient(options: ClientOptions): Client {
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
-                    id: id,
+                    id,
                     type: MessageType.Complete,
                   }),
                 );
