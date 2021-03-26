@@ -576,7 +576,7 @@ export function createClient(options: ClientOptions): Client {
           }
         }
       })()
-        .catch(sink.error)
+        .catch(sink.error) // rejects on close events and errors
         .then(sink.complete); // resolves on release or normal closure
 
       return () => releaser();
