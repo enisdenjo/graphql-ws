@@ -309,7 +309,7 @@ export function createClient(options: ClientOptions): Client {
               listener(message);
             }
           }
-        }
+        },
       };
     })();
     const listeners: { [event in Event]: EventListener<event>[] } = {
