@@ -308,7 +308,8 @@ export function createClient(options: ClientOptions): Client {
             if (listener) {
               listener(message);
             }
-        },
+          }
+        }
       };
     })();
     const listeners: { [event in Event]: EventListener<event>[] } = {
