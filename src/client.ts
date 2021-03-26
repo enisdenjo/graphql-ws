@@ -481,9 +481,8 @@ export function createClient(options: ClientOptions): Client {
     (async () => {
       for (;;) {
         try {
-          const [, , waitForReleaseOrThrowOnClose] = await connect();
-          await waitForReleaseOrThrowOnClose;
-          return; // completed, shouldnt try again
+          const [, , throwOnClose] = await connect();
+          await throwOnClose; // will always throw because releaser is not used
         } catch (errOrCloseEvent) {
           try {
             if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
