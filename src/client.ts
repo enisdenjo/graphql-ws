@@ -13,7 +13,7 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from './message';
-import { isObject } from './utils';
+import { hasOwnStringProperty, isObject } from './utils';
 
 // this file is the entry point for browsers, re-export relevant elements
 export * from './message';
@@ -303,10 +303,10 @@ export function createClient(options: ClientOptions): Client {
           };
         },
         emit(message: Message) {
-          if (message.hasOwnProperty('id')) {
-            const id = (message as any).id;
-            if (listeners[id]) {
-              listeners[id](message);
+          if (isObject(message) && hasOwnStringProperty(message, 'id')) {
+            const listener = listeners[message.id];
+            if (listener) {
+              listener(message);
             }
           }
         },
