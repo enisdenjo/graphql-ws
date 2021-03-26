@@ -308,7 +308,6 @@ export function createClient(options: ClientOptions): Client {
             if (listener) {
               listener(message);
             }
-          }
         },
       };
     })();
