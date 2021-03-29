@@ -304,10 +304,7 @@ export function createClient(options: ClientOptions): Client {
         },
         emit(message: Message) {
           if (isObject(message) && hasOwnStringProperty(message, 'id')) {
-            const listener = listeners[message.id];
-            if (listener) {
-              listener(message);
-            }
+            listeners[message.id]?.(message);
           }
         },
       };
