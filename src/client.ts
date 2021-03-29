@@ -543,7 +543,7 @@ export function createClient(options: ClientOptions): Client {
                 case MessageType.Next: {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   sink.next(message.payload as any);
-                  break;
+                  return;
                 }
                 case MessageType.Error: {
                   completed = true;
@@ -551,12 +551,12 @@ export function createClient(options: ClientOptions): Client {
                   releaser();
                   // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
                   // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
-                  break;
+                  return;
                 }
                 case MessageType.Complete: {
                   completed = true;
                   releaser(); // release completes the sink
-                  break;
+                  return;
                 }
               }
             });
