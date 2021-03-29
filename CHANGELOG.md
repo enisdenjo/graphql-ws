@@ -1,3 +1,15 @@
+## [4.3.2](https://github.com/enisdenjo/graphql-ws/compare/v4.3.1...v4.3.2) (2021-03-29)
+
+
+### Bug Fixes
+
+* **server:** Async iterator must implement `return` ([d99982b](https://github.com/enisdenjo/graphql-ws/commit/d99982b1fc887d913cb1b3a031b1c5c3706b4a35)), closes [#149](https://github.com/enisdenjo/graphql-ws/issues/149)
+
+
+### Performance Improvements
+
+* **client:** Focus subscription message listeners on `id` ([#150](https://github.com/enisdenjo/graphql-ws/issues/150)) ([32c2268](https://github.com/enisdenjo/graphql-ws/commit/32c22686984e6f3c98388b31a08471c3e4ee96a6))
+
 ## [4.3.1](https://github.com/enisdenjo/graphql-ws/compare/v4.3.0...v4.3.1) (2021-03-25)
 
 
