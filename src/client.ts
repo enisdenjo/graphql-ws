@@ -315,7 +315,7 @@ export function createClient(options: ClientOptions): Client {
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
-      message: on?.message ? [on.message, message.emit] : [message.emit],
+      message: on?.message ? [message.emit, on.message] : [message.emit],
       closed: on?.closed ? [on.closed] : [],
       error: on?.error ? [on.error] : [],
     };
