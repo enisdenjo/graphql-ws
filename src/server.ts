@@ -693,7 +693,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               /** multiple emitted results */
               if (!(id in ctx.subscriptions)) {
                 // subscription was completed/canceled before the operation settled
-                operationResult.return?.();
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                operationResult.return!(); // iterator must implement the return method
               } else {
                 ctx.subscriptions[id] = operationResult;
                 for await (const result of operationResult) {
@@ -715,7 +716,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             return;
           }
           case MessageType.Complete: {
-            await ctx.subscriptions[message.id]?.return?.();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            await ctx.subscriptions[message.id]?.return!(); // iterator must implement the return method
             delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
             return;
           }
@@ -730,7 +732,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          await sub?.return?.();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          await sub?.return!(); // iterator must implement the return method
         }
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
         await onClose?.(ctx, code, reason);
