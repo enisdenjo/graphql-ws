@@ -3,8 +3,8 @@ import http from 'http';
 import { schema, pong } from '../fixtures/simple';
 import { ServerOptions, Context } from '../../server';
 
-import WebSocket from 'ws';
-import uws from 'uWebSockets.js';
+import ws from 'ws';
+import uWS from 'uWebSockets.js';
 
 import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
 import {
@@ -95,11 +95,11 @@ export async function startWSTServer(
   const path = '/simple';
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
-  const ws = new WebSocket.Server({ port, path });
+  const wsServer = new ws.Server({ port, path });
 
   // sockets to kick off on teardown
-  const sockets = new Set<WebSocket>();
-  ws.on('connection', (socket) => {
+  const sockets = new Set<ws>();
+  wsServer.on('connection', (socket) => {
     sockets.add(socket);
     socket.once('close', () => sockets.delete(socket));
   });
@@ -134,7 +134,7 @@ export async function startWSTServer(
         emitter.emit('compl');
       },
     },
-    ws,
+    wsServer,
     keepAlive,
   );
 
@@ -147,7 +147,7 @@ export async function startWSTServer(
         }
       const disposing = server.dispose() as Promise<void>;
       disposing.catch(reject).then(() => {
-        ws.close(() => {
+        wsServer.close(() => {
           leftovers.splice(leftovers.indexOf(dispose), 1);
           resolve();
         });
@@ -158,8 +158,8 @@ export async function startWSTServer(
 
   // pending websocket clients
   let pendingCloses = 0;
-  const pendingClients: WebSocket[] = [];
-  ws.on('connection', (client) => {
+  const pendingClients: ws[] = [];
+  wsServer.on('connection', (client) => {
     pendingClients.push(client);
     client.once('close', () => {
       pendingCloses++;
@@ -170,7 +170,7 @@ export async function startWSTServer(
   return {
     url: `ws://localhost:${port}${path}`,
     get clients() {
-      return ws.clients;
+      return wsServer.clients;
     },
     waitForClient(test, expire) {
       return new Promise((resolve) => {
@@ -182,10 +182,10 @@ export async function startWSTServer(
           resolve();
         }
         if (pendingClients.length > 0) return done();
-        ws.once('connection', done);
+        wsServer.once('connection', done);
         if (expire)
           setTimeout(() => {
-            ws.off('connection', done); // expired
+            wsServer.off('connection', done); // expired
             resolve();
           }, expire);
       });
