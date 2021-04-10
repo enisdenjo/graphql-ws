@@ -1,14 +1,12 @@
 import http from 'http';
+import ws from 'ws';
 import {
   MessageType,
   stringifyMessage,
   parseMessage,
   SubscribePayload,
 } from '../message';
-import { createTClient } from './utils';
-
-import { tServers, WSExtra, UWSExtra } from './fixtures/simple';
-import WebSocket from 'ws';
+import { createTClient, tServers, WSExtra, UWSExtra } from './utils';
 
 for (const { tServer, startTServer } of tServers) {
   describe(tServer, () => {
@@ -44,7 +42,7 @@ for (const { tServer, startTServer } of tServers) {
               'uWS.HttpRequest',
             );
           } else if (tServer === 'ws') {
-            expect((ctx.extra as WSExtra).socket).toBeInstanceOf(WebSocket);
+            expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);
             expect((ctx.extra as WSExtra).request).toBeInstanceOf(
               http.IncomingMessage,
             );

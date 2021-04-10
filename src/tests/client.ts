@@ -4,9 +4,9 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { startWSTServer as startTServer } from './fixtures/simple';
 import { createClient, Client, EventListener } from '../client';
 import { SubscribePayload } from '../message';
+import { startWSTServer as startTServer } from './utils';
 
 // simulate browser environment for easier client testing
 beforeEach(() => {
