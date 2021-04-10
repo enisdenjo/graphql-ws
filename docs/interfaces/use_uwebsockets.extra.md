@@ -1,8 +1,8 @@
-[graphql-ws](../README.md) / [use/uws](../modules/use_uws.md) / Extra
+[graphql-ws](../README.md) / [use/uWebSockets](../modules/use_uwebsockets.md) / Extra
 
 # Interface: Extra
 
-[use/uws](../modules/use_uws.md).Extra
+[use/uWebSockets](../modules/use_uwebsockets.md).Extra
 
 The extra that will be put in the `Context`.
 
@@ -10,8 +10,8 @@ The extra that will be put in the `Context`.
 
 ### Properties
 
-- [request](use_uws.extra.md#request)
-- [socket](use_uws.extra.md#socket)
+- [request](use_uwebsockets.extra.md#request)
+- [socket](use_uwebsockets.extra.md#socket)
 
 ## Properties
 

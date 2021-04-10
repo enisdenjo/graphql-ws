@@ -11,5 +11,5 @@ graphql-ws
 - [protocol](modules/protocol.md)
 - [server](modules/server.md)
 - [types](modules/types.md)
-- [use/uws](modules/use_uws.md)
+- [use/uWebSockets](modules/use_uwebsockets.md)
 - [use/ws](modules/use_ws.md)

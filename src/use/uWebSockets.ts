@@ -23,6 +23,10 @@ interface Client {
   closed: (code: number, reason: string) => Promise<void>;
 }
 
+/**
+ * Make the behaviour for using a [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) WebSocket server.
+ * This is a basic starter, feel free to copy the code over and adjust it to your needs
+ */
 export function makeBehavior(
   options: ServerOptions<Extra>,
   behavior: uWS.WebSocketBehavior = {},
