@@ -7,7 +7,10 @@ import WebSocket from 'ws';
 import uws from 'uWebSockets.js';
 
 import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
-import { useServer as useUWSServer, Extra as UWSExtra } from '../../use/uws';
+import {
+  useServer as useUWSServer,
+  Extra as UWSExtra,
+} from '../../use/uWebSockets';
 export { WSExtra, UWSExtra };
 
 // distinct server for each test; if you forget to dispose, the fixture wont
