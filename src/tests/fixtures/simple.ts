@@ -8,11 +8,13 @@ import {
 import { EventEmitter } from 'events';
 import http from 'http';
 import { ServerOptions, Context } from '../../server';
-import { useServer as useWSServer, Extra as wsExtra } from '../../use/ws';
-import { useServer as useUWSServer, Extra as uWSExtra } from '../../use/uws';
 
 import WebSocket from 'ws';
 import uws from 'uWebSockets.js';
+
+import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
+import { useServer as useUWSServer, Extra as UWSExtra } from '../../use/uws';
+export { WSExtra, UWSExtra };
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -25,17 +27,20 @@ afterEach(async () => {
   }
 });
 
+export interface TServerClient {
+  close(code?: number, data?: string): void;
+}
+
 export interface TServer {
   url: string;
-  ws: WebSocket.Server;
-  clients: Set<WebSocket>;
+  clients: Set<TServerClient>;
   pong: (key?: string) => void;
   waitForClient: (
-    test?: (client: WebSocket) => void,
+    test?: (client: TServerClient) => void,
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<wsExtra>) => void,
+    test?: (ctx: Context<WSExtra | UWSExtra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -162,7 +167,7 @@ async function getAvailablePort() {
 }
 
 export async function startWSTServer(
-  options: Partial<ServerOptions<wsExtra>> = {},
+  options: Partial<ServerOptions> = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
@@ -177,7 +182,7 @@ export async function startWSTServer(
     socket.once('close', () => sockets.delete(socket));
   });
 
-  const pendingConnections: Context<wsExtra>[] = [];
+  const pendingConnections: Context<WSExtra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
   const server = useWSServer(
@@ -242,11 +247,9 @@ export async function startWSTServer(
 
   return {
     url: `ws://localhost:${port}${path}`,
-    ws,
     get clients() {
       return ws.clients;
     },
-    pong,
     waitForClient(test, expire) {
       return new Promise((resolve) => {
         function done() {
@@ -265,6 +268,24 @@ export async function startWSTServer(
           }, expire);
       });
     },
+    waitForClientClose(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingCloses--;
+          test?.();
+          resolve();
+        }
+        if (pendingCloses > 0) return done();
+
+        emitter.once('close', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('close', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    pong,
     waitForConnect(test, expire) {
       return new Promise((resolve) => {
         function done() {
@@ -315,54 +336,47 @@ export async function startWSTServer(
           }, expire);
       });
     },
-    waitForClientClose(test, expire) {
-      return new Promise((resolve) => {
-        function done() {
-          pendingCloses--;
-          test?.();
-          resolve();
-        }
-        if (pendingCloses > 0) return done();
-
-        emitter.once('close', done);
-        if (expire)
-          setTimeout(() => {
-            emitter.off('close', done); // expired
-            resolve();
-          }, expire);
-      });
-    },
     dispose,
   };
 }
 
 export async function startUWSTServer(
-  options: Partial<ServerOptions<uWSExtra>> = {},
+  options: Partial<ServerOptions> = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
+  const emitter = new EventEmitter();
   const port = await getAvailablePort();
   const app = uws.App();
 
+  const pendingConnections: Context<UWSExtra>[] = [];
+  let pendingOperations = 0,
+    pendingCompletes = 0;
   const server = useUWSServer(
     {
       schema,
       ...options,
       onConnect: async (...args) => {
+        pendingConnections.push(args[0]);
         const permitted = await options?.onConnect?.(...args);
+        emitter.emit('conn');
         return permitted;
       },
       onOperation: async (ctx, msg, args, result) => {
+        pendingOperations++;
         const maybeResult = await options?.onOperation?.(
           ctx,
           msg,
           args,
           result,
         );
+        emitter.emit('operation');
         return maybeResult;
       },
       onComplete: async (...args) => {
+        pendingCompletes++;
         await options?.onComplete?.(...args);
+        emitter.emit('compl');
       },
     },
     {
@@ -382,16 +396,72 @@ export async function startUWSTServer(
     });
   });
 
-  const dispose: Dispose = () => {
-    server.dispose();
+  const dispose: Dispose = async () => {
+    await server.dispose();
     uws.us_listen_socket_close(socket);
     leftovers.splice(leftovers.indexOf(dispose), 1);
   };
-
   leftovers.push(dispose);
 
   return {
     url: `ws://localhost:${port}${path}`,
+    // @ts-expect-error TODO-db-210410
+    clients: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClient: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClientClose: null,
+    pong,
+    waitForConnect(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const ctx = pendingConnections.shift()!;
+          test?.(ctx);
+          resolve();
+        }
+        if (pendingConnections.length > 0) return done();
+        emitter.once('conn', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('conn', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForOperation(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingOperations--;
+          test?.();
+          resolve();
+        }
+        if (pendingOperations > 0) return done();
+        emitter.once('operation', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForComplete(test, expire) {
+      return new Promise((resolve) => {
+        function done() {
+          pendingCompletes--;
+          test?.();
+          resolve();
+        }
+        if (pendingCompletes > 0) return done();
+        emitter.once('compl', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('compl', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
     dispose,
   };
 }
@@ -400,9 +470,13 @@ export const tServers = [
   {
     tServer: 'ws' as const,
     startTServer: startWSTServer,
+    itForWS: it,
+    itForUWS: it.skip,
   },
   {
     tServer: 'uWebSockets.js' as const,
     startTServer: startUWSTServer,
+    itForWS: it.skip,
+    itForUWS: it,
   },
 ];

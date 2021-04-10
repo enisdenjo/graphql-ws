@@ -1031,7 +1031,7 @@ describe('Subscribe', () => {
       };
     const waitForExecute = new Promise<void>((resolve) => (execute = resolve));
 
-    const { url, ws } = await startTServer({
+    const { url, clients } = await startTServer({
       schema,
       execute: () =>
         new Promise<ExecutionResult>((resolve) => {
@@ -1071,7 +1071,7 @@ describe('Subscribe', () => {
     );
 
     // will be just one client and the only next message can be "complete"
-    for (const client of ws.clients) {
+    for (const client of clients) {
       await new Promise<void>((resolve) =>
         client.once('message', () => resolve()),
       );
@@ -1502,7 +1502,7 @@ describe('Subscribe', () => {
     );
 
     // wait for complete message
-    for (const client of server.ws.clients) {
+    for (const client of server.clients) {
       await new Promise((resolve) => client.once('message', resolve));
     }
 
