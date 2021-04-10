@@ -1,6 +1,5 @@
-import type * as uws from 'uWebSockets.js';
+import type * as uWS from 'uWebSockets.js';
 import { makeServer, ServerOptions } from '../server';
-import { Disposable } from '../types';
 
 /**
  * The extra that will be put in the `Context`.
@@ -9,31 +8,24 @@ export interface Extra {
   /**
    * The actual socket connection between the server and the client.
    */
-  readonly socket: uws.WebSocket;
-
+  readonly socket: uWS.WebSocket;
   /**
    * The initial HTTP request before the actual
    * socket and connection is established.
    */
-  readonly request: uws.HttpRequest;
-}
-
-export interface UwsOptions {
-  app: uws.TemplatedApp;
-  path: string;
-  config?: uws.WebSocketBehavior;
+  readonly request: uWS.HttpRequest;
 }
 
 interface Client {
-  messageHandler?: (data: string) => Promise<void>;
-  closeHandler?: () => void;
-  pingInterval?: NodeJS.Timeout | null;
-  pongWaitTimeout?: NodeJS.Timeout | null;
+  pingInterval: NodeJS.Timeout | null;
+  pongWaitTimeout: NodeJS.Timeout | null;
+  handleMessage: (data: string) => Promise<void>;
+  closed: (code: number, reason: string) => Promise<void>;
 }
 
-export function useServer(
+export function makeBehavior(
   options: ServerOptions<Extra>,
-  uwsOptions: UwsOptions,
+  behavior: uWS.WebSocketBehavior = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
    * to check that the link between the clients and the server is operating and to prevent the link
@@ -42,122 +34,98 @@ export function useServer(
    * @default 12 * 1000 // 12 seconds
    */
   keepAlive = 12 * 1000,
-): Disposable {
+): uWS.WebSocketBehavior {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer<Extra>(options);
-  const clients = new Map<uws.WebSocket, Client>();
+  const clients = new Map<uWS.WebSocket, Client>();
 
-  const { app, path, config } = uwsOptions;
-
-  app.ws(path, {
-    ...config,
-
+  return {
+    ...behavior,
     pong(socket) {
-      const client = clients.get(socket);
+      behavior.pong?.(socket);
 
-      if (client?.pongWaitTimeout) {
+      const client = clients.get(socket);
+      if (!client) throw new Error('Pong received for a missing client');
+
+      if (client.pongWaitTimeout) {
         clearTimeout(client.pongWaitTimeout);
         client.pongWaitTimeout = null;
       }
     },
-
     upgrade(res, req, context) {
+      behavior.upgrade?.(res, req, context);
+
       res.upgrade(
-        {
-          upgradeReq: req,
-        },
+        { upgradeReq: req },
         req.getHeader('sec-websocket-key'),
         req.getHeader('sec-websocket-protocol'),
         req.getHeader('sec-websocket-extensions'),
         context,
       );
     },
+    open(socket) {
+      behavior.open?.(socket);
 
-    async open(socket) {
-      const client: Client = {};
-      const request = socket.upgradeReq as uws.HttpRequest;
+      // prepare client object
+      const client: Client = {
+        pingInterval: null,
+        pongWaitTimeout: null,
+        handleMessage: () => {
+          throw new Error('Message received before handler was registered');
+        },
+        closed: () => {
+          throw new Error('Closed before handler was registered');
+        },
+      };
+
+      const request = socket.upgradeReq as uWS.HttpRequest;
+      client.closed = server.opened(
+        {
+          protocol: request.getHeader('sec-websocket-protocol'),
+          send: (message) => {
+            // TODO-db-210410 handle backpressure
+            socket.send(message, false, true);
+          },
+          close: (code, reason) => {
+            socket.end(code, reason);
+          },
+          onMessage: (cb) => (client.handleMessage = cb),
+        },
+        { socket, request },
+      );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
         client.pingInterval = setInterval(() => {
           // terminate the connection after pong wait has passed because the client is idle
-          const pongWaitTimeout = setTimeout(() => {
-            socket.close();
-          }, keepAlive);
-
-          clients.set(socket, {
-            ...clients.get(socket),
-            pongWaitTimeout,
-          });
-
+          client.pongWaitTimeout = setTimeout(() => socket.close(), keepAlive);
           socket.ping();
         }, keepAlive);
       }
 
-      client.closeHandler = server.opened(
-        {
-          protocol: request.getHeader('sec-websocket-protocol'),
-          send(message) {
-            if (clients.has(socket)) {
-              socket.send(message, false, true);
-            }
-          },
-          close(code, reason) {
-            socket.end(code, reason);
-          },
-          onMessage(cb) {
-            client.messageHandler = cb;
-          },
-        },
-        {
-          socket,
-          request,
-        },
-      );
-
       clients.set(socket, client);
     },
+    async message(socket, message, isBinary) {
+      behavior.message?.(socket, message, isBinary);
 
-    async message(socket, message) {
-      const msg = Buffer.from(message).toString();
       const client = clients.get(socket);
+      if (!client) throw new Error('Message received for a missing client');
 
-      if (client?.messageHandler) {
-        try {
-          await client.messageHandler(msg);
-        } catch (err) {
-          socket.end(1011, isProd ? 'Internal Error' : err.message);
-        }
+      try {
+        await client.handleMessage(Buffer.from(message).toString());
+      } catch (err) {
+        socket.end(1011, isProd ? 'Internal Error' : err.message);
       }
     },
+    close(socket, code, message) {
+      behavior.close?.(socket, code, message);
 
-    close(socket) {
       const client = clients.get(socket);
+      if (!client) throw new Error('Closing a missing client');
 
-      if (!client) {
-        return;
-      }
-
-      if (client.closeHandler) {
-        client.closeHandler();
-      }
-
-      if (client.pingInterval) {
-        clearTimeout(client.pingInterval);
-      }
-
-      if (client.pongWaitTimeout) {
-        clearTimeout(client.pongWaitTimeout);
-      }
-
+      if (client.pongWaitTimeout) clearTimeout(client.pongWaitTimeout);
+      if (client.pingInterval) clearTimeout(client.pingInterval);
+      client.closed(code, Buffer.from(message).toString());
       clients.delete(socket);
-    },
-  });
-
-  return {
-    dispose() {
-      for (const [socket] of clients) {
-        socket.end(1001, 'Going away');
-      }
     },
   };
 }

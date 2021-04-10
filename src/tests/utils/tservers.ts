@@ -8,7 +8,7 @@ import uWS from 'uWebSockets.js';
 
 import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
 import {
-  useServer as useUWSServer,
+  makeBehavior as makeUWSBehavior,
   Extra as UWSExtra,
 } from '../../use/uWebSockets';
 export { WSExtra, UWSExtra };
@@ -269,58 +269,65 @@ export async function startUWSTServer(
   const path = '/simple';
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
-  const app = uws.App();
+
+  // sockets to kick off on teardown
+  const sockets = new Set<uWS.WebSocket>();
 
   const pendingConnections: Context<UWSExtra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
-  const server = useUWSServer(
-    {
-      schema,
-      ...options,
-      onConnect: async (...args) => {
-        pendingConnections.push(args[0]);
-        const permitted = await options?.onConnect?.(...args);
-        emitter.emit('conn');
-        return permitted;
-      },
-      onOperation: async (ctx, msg, args, result) => {
-        pendingOperations++;
-        const maybeResult = await options?.onOperation?.(
-          ctx,
-          msg,
-          args,
-          result,
-        );
-        emitter.emit('operation');
-        return maybeResult;
-      },
-      onComplete: async (...args) => {
-        pendingCompletes++;
-        await options?.onComplete?.(...args);
-        emitter.emit('compl');
-      },
+  const listenSocket = await new Promise<uWS.us_listen_socket>(
+    (resolve, reject) => {
+      uWS
+        .App()
+        .ws(
+          path,
+          makeUWSBehavior(
+            {
+              schema,
+              ...options,
+              onConnect: async (...args) => {
+                pendingConnections.push(args[0]);
+                const permitted = await options?.onConnect?.(...args);
+                emitter.emit('conn');
+                return permitted;
+              },
+              onOperation: async (ctx, msg, args, result) => {
+                pendingOperations++;
+                const maybeResult = await options?.onOperation?.(
+                  ctx,
+                  msg,
+                  args,
+                  result,
+                );
+                emitter.emit('operation');
+                return maybeResult;
+              },
+              onComplete: async (...args) => {
+                pendingCompletes++;
+                await options?.onComplete?.(...args);
+                emitter.emit('compl');
+              },
+            },
+            {
+              open: (socket) => sockets.add(socket),
+              close: (socket) => sockets.delete(socket),
+            },
+            keepAlive,
+          ),
+        )
+        .listen(port, (listenSocket: uWS.us_listen_socket) => {
+          if (listenSocket) resolve(listenSocket);
+          else reject('There is no UWS socket');
+        });
     },
-    {
-      app,
-      path,
-    },
-    keepAlive,
   );
 
-  const socket = await new Promise<uws.us_listen_socket>((resolve, reject) => {
-    app.listen(port, (socket: uws.us_listen_socket) => {
-      if (socket) {
-        resolve(socket);
-      } else {
-        reject('There is no UWS socket');
-      }
-    });
-  });
-
   const dispose: Dispose = async () => {
-    await server.dispose();
-    uws.us_listen_socket_close(socket);
+    for (const socket of sockets) {
+      socket.end(1001, 'Going away');
+    }
+    uWS.us_listen_socket_close(listenSocket);
     leftovers.splice(leftovers.indexOf(dispose), 1);
   };
   leftovers.push(dispose);

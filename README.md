@@ -1315,35 +1315,28 @@ async function ping() {
 <summary><a href="#uws">🔗</a> Server usage with <a href="https://github.com/uNetworking/uWebSockets.js">uWebSockets.js</a></summary>
 
 ```ts
-import uws from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#v18.12.0
-import { useServer } from 'graphql-ws/lib/use/uws';
-import { execute, subscribe } from 'graphql';
+import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
+import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
 import { schema } from './my-graphql-schema';
 
-const app = uws.App();
-
-useServer(
-  {
-    schema,
-    execute,
-    subscribe,
-  },
-  {
-    app,
-    path: '/*',
-    config: {
-      maxBackpressure: 1024,
-      maxPayloadLength: 512,
-      compression: uws.DEDICATED_COMPRESSOR_4KB, // See https://github.com/uNetworking/uWebSockets.js/discussions/418#discussioncomment-230712
-    },
-  },
-);
-
-app.listen(443, (listenSocket) => {
-  if (listenSocket) {
-    console.log('Listening to port 443');
-  }
-});
+uWS
+  .App()
+  .ws(
+    '/*',
+    makeUWSBehavior(
+      { schema },
+      {
+        maxBackpressure: 1024,
+        maxPayloadLength: 512,
+        compression: uWS.DEDICATED_COMPRESSOR_4KB, // See https://github.com/uNetworking/uWebSockets.js/discussions/418#discussioncomment-230712
+      },
+    ),
+  )
+  .listen(80, (listenSocket) => {
+    if (listenSocket) {
+      console.log('Listening to port 80');
+    }
+  });
 ```
 
 </details>
