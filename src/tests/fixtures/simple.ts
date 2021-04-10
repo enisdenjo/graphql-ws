@@ -395,3 +395,14 @@ export async function startUWSTServer(
     dispose,
   };
 }
+
+export const tServers = [
+  {
+    tServer: 'ws' as const,
+    startTServer: startWSTServer,
+  },
+  {
+    tServer: 'uWebSockets.js' as const,
+    startTServer: startUWSTServer,
+  },
+];
