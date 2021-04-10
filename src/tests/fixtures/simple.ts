@@ -2,9 +2,8 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLString,
-  execute,
-  subscribe,
   GraphQLNonNull,
+  GraphQLSchemaConfig,
 } from 'graphql';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
@@ -57,7 +56,7 @@ function pong(key = 'global'): void {
   }
 }
 
-export const schema = new GraphQLSchema({
+export const schemaConfig: GraphQLSchemaConfig = {
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
@@ -99,9 +98,8 @@ export const schema = new GraphQLSchema({
               }
               if (
                 await new Promise((resolve) => (pongListeners[key] = resolve))
-              ) {
+              )
                 return { done: true };
-              }
               return { value: { ping: 'pong' } };
             },
             async return() {
@@ -117,7 +115,9 @@ export const schema = new GraphQLSchema({
       },
     },
   }),
-});
+};
+
+export const schema = new GraphQLSchema(schemaConfig);
 
 export async function startTServer(
   options: Partial<ServerOptions<Extra>> = {},
@@ -150,8 +150,6 @@ export async function startTServer(
   const server = useServer(
     {
       schema,
-      execute,
-      subscribe,
       ...options,
       onConnect: async (...args) => {
         pendingConnections.push(args[0]);
@@ -183,12 +181,11 @@ export async function startTServer(
   // disposes of all started servers
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve, reject) => {
-      if (!beNice) {
+      if (!beNice)
         for (const socket of sockets) {
           socket.destroy();
           sockets.delete(socket);
         }
-      }
       const disposing = server.dispose() as Promise<void>;
       disposing.catch(reject).then(() => {
         httpServer.close(() => {
@@ -217,11 +214,10 @@ export async function startTServer(
     } catch (err) {
       if ('code' in err && err.code === 'EADDRINUSE') {
         tried++;
-        if (tried > 10) {
+        if (tried > 10)
           throw new Error(
             `Cant find open port, stopping search after ${tried} tries`,
           );
-        }
         continue; // try another one if this port is in use
       } else {
         throw err; // throw all other errors immediately
@@ -241,9 +237,8 @@ export async function startTServer(
   });
 
   const addr = httpServer.address();
-  if (!addr || typeof addr !== 'object') {
+  if (!addr || typeof addr !== 'object')
     throw new Error(`Unexpected http server address ${addr}`);
-  }
 
   return {
     url: `ws://localhost:${addr.port}${path}`,
@@ -261,16 +256,13 @@ export async function startTServer(
           test?.(client);
           resolve();
         }
-        if (pendingClients.length > 0) {
-          return done();
-        }
+        if (pendingClients.length > 0) return done();
         ws.once('connection', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             ws.off('connection', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForConnect(test, expire) {
@@ -282,16 +274,13 @@ export async function startTServer(
           test?.(ctx);
           resolve();
         }
-        if (pendingConnections.length > 0) {
-          return done();
-        }
+        if (pendingConnections.length > 0) return done();
         emitter.once('conn', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('conn', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForOperation(test, expire) {
@@ -301,16 +290,13 @@ export async function startTServer(
           test?.();
           resolve();
         }
-        if (pendingOperations > 0) {
-          return done();
-        }
+        if (pendingOperations > 0) return done();
         emitter.once('operation', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('operation', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForComplete(test, expire) {
@@ -320,16 +306,13 @@ export async function startTServer(
           test?.();
           resolve();
         }
-        if (pendingCompletes > 0) {
-          return done();
-        }
+        if (pendingCompletes > 0) return done();
         emitter.once('compl', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('compl', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForClientClose(test, expire) {
@@ -339,16 +322,14 @@ export async function startTServer(
           test?.();
           resolve();
         }
-        if (pendingCloses > 0) {
-          return done();
-        }
+        if (pendingCloses > 0) return done();
+
         emitter.once('close', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('close', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     dispose,

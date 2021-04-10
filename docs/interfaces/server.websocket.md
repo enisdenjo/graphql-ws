@@ -1,30 +1,26 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["server"](../modules/_server_.md) / WebSocket
+[graphql-ws](../README.md) / [server](../modules/server.md) / WebSocket
 
 # Interface: WebSocket
 
-## Hierarchy
+[server](../modules/server.md).WebSocket
 
-* **WebSocket**
-
-## Index
+## Table of contents
 
 ### Properties
 
-* [protocol](_server_.websocket.md#protocol)
+- [protocol](server.websocket.md#protocol)
 
 ### Methods
 
-* [close](_server_.websocket.md#close)
-* [onMessage](_server_.websocket.md#onmessage)
-* [send](_server_.websocket.md#send)
+- [close](server.websocket.md#close)
+- [onMessage](server.websocket.md#onmessage)
+- [send](server.websocket.md#send)
 
 ## Properties
 
 ### protocol
 
-• `Readonly` **protocol**: string
+• `Readonly` **protocol**: *string*
 
 The subprotocol of the WebSocket. Will be used
 to validate agains the supported ones.
@@ -33,10 +29,11 @@ to validate agains the supported ones.
 
 ### close
 
-▸ **close**(`code`: number, `reason`: string): Promise<void\> \| void
+▸ **close**(`code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
 
 Closes the socket gracefully. Will always provide
-the appropriate code and close reason.
+the appropriate code and close reason. `onDisconnect`
+callback will be called.
 
 The returned promise is used to control the graceful
 closure.
@@ -44,24 +41,24 @@ closure.
 #### Parameters:
 
 Name | Type |
------- | ------ |
-`code` | number |
-`reason` | string |
+:------ | :------ |
+`code` | *number* |
+`reason` | *string* |
 
-**Returns:** Promise<void\> \| void
+**Returns:** *void* \| *Promise*<void\>
 
 ___
 
 ### onMessage
 
-▸ **onMessage**(`cb`: (data: string) => Promise<void\>): void
+▸ **onMessage**(`cb`: (`data`: *string*) => *Promise*<void\>): *void*
 
 Called when message is received. The library requires the data
 to be a `string`.
 
 All operations requested from the client will block the promise until
 completed, this means that the callback will not resolve until all
-subscription events have been emittet (or until the client has completed
+subscription events have been emitted (or until the client has completed
 the stream), or until the query/mutation resolves.
 
 Exceptions raised during any phase of operation processing will
@@ -71,16 +68,16 @@ to your clients however you wish.
 #### Parameters:
 
 Name | Type |
------- | ------ |
-`cb` | (data: string) => Promise<void\> |
+:------ | :------ |
+`cb` | (`data`: *string*) => *Promise*<void\> |
 
-**Returns:** void
+**Returns:** *void*
 
 ___
 
 ### send
 
-▸ **send**(`data`: string): Promise<void\> \| void
+▸ **send**(`data`: *string*): *void* \| *Promise*<void\>
 
 Sends a message through the socket. Will always
 provide a `string` message.
@@ -95,7 +92,7 @@ The returned promise is used to control the flow of data
 #### Parameters:
 
 Name | Type |
------- | ------ |
-`data` | string |
+:------ | :------ |
+`data` | *string* |
 
-**Returns:** Promise<void\> \| void
+**Returns:** *void* \| *Promise*<void\>

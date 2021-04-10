@@ -2,6 +2,7 @@ import type * as http from 'http';
 import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
 import { Disposable } from '../types';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 
 // for nicer documentation
 type WebSocket = typeof ws.prototype;
@@ -54,9 +55,7 @@ export function useServer(
       }
     }
 
-    if (firstErr) {
-      throw firstErr;
-    }
+    if (firstErr) throw firstErr;
   });
 
   ws.on('connection', (socket, request) => {
@@ -105,10 +104,17 @@ export function useServer(
       { socket, request },
     );
 
-    socket.once('close', () => {
+    socket.once('close', (code, reason) => {
       if (pongWait) clearTimeout(pongWait);
       if (pingInterval) clearInterval(pingInterval);
-      closed();
+      if (!isProd && code === 1002)
+        console.warn(
+          `WebSocket protocol error occured. It was most likely caused due to an ` +
+            `unsupported subprotocol "${socket.protocol}" requested by the client. ` +
+            `graphql-ws implements exclusively the "${GRAPHQL_TRANSPORT_WS_PROTOCOL}" subprotocol, ` +
+            'please make sure that the client implements it too.',
+        );
+      closed(code, reason);
     });
   });
 

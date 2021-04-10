@@ -34,16 +34,13 @@ export function createTClient(
               test?.(next);
               resolve();
             };
-            if (queue.length > 0) {
-              return done();
-            }
+            if (queue.length > 0) return done();
             ws.once('message', done);
-            if (expire) {
+            if (expire)
               setTimeout(() => {
                 ws.removeListener('message', done); // expired
                 resolve();
               }, expire);
-            }
           });
         },
         async waitForClose(
@@ -60,13 +57,12 @@ export function createTClient(
               test?.(event);
               resolve();
             };
-            if (expire) {
+            if (expire)
               setTimeout(() => {
                 // @ts-expect-error: its ok
                 ws.onclose = null; // expired
                 resolve();
               }, expire);
-            }
           });
         },
       }),

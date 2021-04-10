@@ -62,7 +62,7 @@ Direction: **Client -> Server**
 
 Requests an operation specified in the message `payload`. This message provides a unique ID field to connect published messages to the operation requested by this message.
 
-If there is already an active subscriber for a streaming operation matching the provided ID, the server will close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`. The server may not assert this rule for operations returning a single result as they do not require reservations for additional future events.
+If there is already an active subscriber for an operation matching the provided ID, regardless of the operation type, the server must close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`.
 
 ```typescript
 interface SubscribeMessage {
@@ -116,7 +116,7 @@ Direction: **bidirectional**
 
 - **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
 
-- **Client -> Server** indicates that the client has stopped listening and wants to complete the source stream. No further events, relevant to the original subscription, should be sent through.
+- **Client -> Server** indicates that the client has stopped listening and wants to complete the subscription. No further events, relevant to the original subscription, should be sent through. Even if the client completed a single result operation before it resolved, the result should not be sent through once it does.
 
 ```typescript
 interface CompleteMessage {

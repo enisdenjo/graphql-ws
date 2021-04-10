@@ -1,3 +1,147 @@
+## [4.3.2](https://github.com/enisdenjo/graphql-ws/compare/v4.3.1...v4.3.2) (2021-03-29)
+
+
+### Bug Fixes
+
+* **server:** Async iterator must implement `return` ([d99982b](https://github.com/enisdenjo/graphql-ws/commit/d99982b1fc887d913cb1b3a031b1c5c3706b4a35)), closes [#149](https://github.com/enisdenjo/graphql-ws/issues/149)
+
+
+### Performance Improvements
+
+* **client:** Focus subscription message listeners on `id` ([#150](https://github.com/enisdenjo/graphql-ws/issues/150)) ([32c2268](https://github.com/enisdenjo/graphql-ws/commit/32c22686984e6f3c98388b31a08471c3e4ee96a6))
+
+## [4.3.1](https://github.com/enisdenjo/graphql-ws/compare/v4.3.0...v4.3.1) (2021-03-25)
+
+
+### Bug Fixes
+
+* Close the details tag in the README ([84144c4](https://github.com/enisdenjo/graphql-ws/commit/84144c4c958674c4549cc48e84563bcb9f7c5e9d))
+
+# [4.3.0](https://github.com/enisdenjo/graphql-ws/compare/v4.2.3...v4.3.0) (2021-03-25)
+
+
+### Bug Fixes
+
+* **server:** Respect completed subscriptions even if `subscribe` or `onOperation` didnt resolve yet ([4700154](https://github.com/enisdenjo/graphql-ws/commit/4700154566deb6b7d58a15a78ca57f830af40fe6))
+
+
+### Features
+
+* **client:** `url` option accepts a function or a Promise ([#143](https://github.com/enisdenjo/graphql-ws/issues/143)) ([76f522f](https://github.com/enisdenjo/graphql-ws/commit/76f522fc60e130f83032a1a0a61b741eb5b2f76f)), closes [#145](https://github.com/enisdenjo/graphql-ws/issues/145) [#146](https://github.com/enisdenjo/graphql-ws/issues/146)
+* **server:** `execute` and `subscribe` are optional ([#148](https://github.com/enisdenjo/graphql-ws/issues/148)) ([af748b0](https://github.com/enisdenjo/graphql-ws/commit/af748b0fd34da44950bd7fbbaeeebf743ff6973e))
+* **server:** Dynamic `schema` support by accepting a function or a Promise ([#147](https://github.com/enisdenjo/graphql-ws/issues/147)) ([6a0bf94](https://github.com/enisdenjo/graphql-ws/commit/6a0bf9473e6bc77afdaf81d16eeeeddcbe97276f)), closes [#127](https://github.com/enisdenjo/graphql-ws/issues/127)
+* **server:** Use `validate` option for custom GraphQL validation ([b68d56c](https://github.com/enisdenjo/graphql-ws/commit/b68d56ca1ffb8c7375d4292f716a63326d9d712f))
+
+## [4.2.3](https://github.com/enisdenjo/graphql-ws/compare/v4.2.2...v4.2.3) (2021-03-23)
+
+
+### Bug Fixes
+
+* **client:** Reduce WebSocket event listeners and add new client `message` event ([#104](https://github.com/enisdenjo/graphql-ws/issues/104)) ([68d0e20](https://github.com/enisdenjo/graphql-ws/commit/68d0e20674488e8792a61d07f068233d78acaa3a)), closes [#102](https://github.com/enisdenjo/graphql-ws/issues/102)
+
+## [4.2.2](https://github.com/enisdenjo/graphql-ws/compare/v4.2.1...v4.2.2) (2021-03-17)
+
+
+### Bug Fixes
+
+* **server:** `return` instead of `break` at switch case ends ([e9447e4](https://github.com/enisdenjo/graphql-ws/commit/e9447e45cfa572982e7fe0ffa32a113feac06b94)), closes [#140](https://github.com/enisdenjo/graphql-ws/issues/140)
+
+## [4.2.1](https://github.com/enisdenjo/graphql-ws/compare/v4.2.0...v4.2.1) (2021-03-11)
+
+
+### Bug Fixes
+
+* **client:** New `error` event listener for handling connection errors ([#136](https://github.com/enisdenjo/graphql-ws/issues/136)) ([127b69f](https://github.com/enisdenjo/graphql-ws/commit/127b69fa5df8765a4a17a928191baa6c85985409)), closes [#135](https://github.com/enisdenjo/graphql-ws/issues/135)
+
+# [4.2.0](https://github.com/enisdenjo/graphql-ws/compare/v4.1.6...v4.2.0) (2021-02-25)
+
+
+### Bug Fixes
+
+* Only UMD build has side effects ([66ed43f](https://github.com/enisdenjo/graphql-ws/commit/66ed43fe60b57fa268490aec07c3254b06ab3473))
+
+
+### Features
+
+* **client:** `isFatalConnectionProblem` option for deciding if the connect error should be immediately reported or the connection retried ([#126](https://github.com/enisdenjo/graphql-ws/issues/126)) ([8115871](https://github.com/enisdenjo/graphql-ws/commit/81158711f9dba05588c656ed32c07331c9a5786d)), closes [#122](https://github.com/enisdenjo/graphql-ws/issues/122)
+
+## [4.1.6](https://github.com/enisdenjo/graphql-ws/compare/v4.1.5...v4.1.6) (2021-02-18)
+
+
+### Bug Fixes
+
+* Add `browser` export map ([ea306db](https://github.com/enisdenjo/graphql-ws/commit/ea306db45a05ab712782b17c5a3a1ec60537eaa4))
+* Add `package.json` to exports map ([#119](https://github.com/enisdenjo/graphql-ws/issues/119)) ([1f09863](https://github.com/enisdenjo/graphql-ws/commit/1f09863de6b8731980dfc513708cd144a0d5bfbe)), closes [#118](https://github.com/enisdenjo/graphql-ws/issues/118)
+
+## [4.1.5](https://github.com/enisdenjo/graphql-ws/compare/v4.1.4...v4.1.5) (2021-02-12)
+
+
+### Bug Fixes
+
+* Main entrypoint in `exports` is just `"."` ([8f70b02](https://github.com/enisdenjo/graphql-ws/commit/8f70b02ec1ed1b88fd80e7e04eecf4552b382bbc))
+
+## [4.1.4](https://github.com/enisdenjo/graphql-ws/compare/v4.1.3...v4.1.4) (2021-02-12)
+
+
+### Bug Fixes
+
+* Define entry points through the `exports`  field and use `.mjs` suffixed ESM imports ([#110](https://github.com/enisdenjo/graphql-ws/issues/110)) ([4196238](https://github.com/enisdenjo/graphql-ws/commit/4196238888bffe4fb958bc665512b79eb384a28e))
+
+## [4.1.3](https://github.com/enisdenjo/graphql-ws/compare/v4.1.2...v4.1.3) (2021-02-08)
+
+
+### Bug Fixes
+
+* **client:** Should emit `closed` event when disposing ([5800de8](https://github.com/enisdenjo/graphql-ws/commit/5800de8d343649bb4c93ca31c61911879123c736)), closes [#108](https://github.com/enisdenjo/graphql-ws/issues/108)
+* **client:** Shouldn’t send the `Complete` message if socket is not open ([cd12024](https://github.com/enisdenjo/graphql-ws/commit/cd12024c19bdcf859c5a9a6b7a072ea252401524))
+
+## [4.1.2](https://github.com/enisdenjo/graphql-ws/compare/v4.1.1...v4.1.2) (2021-01-24)
+
+
+### Bug Fixes
+
+* **client:** Stabilize and simplify internals ([#100](https://github.com/enisdenjo/graphql-ws/issues/100)) ([5ff8f1d](https://github.com/enisdenjo/graphql-ws/commit/5ff8f1dfb34d1a063fdfff8893c789c8b2c60d6e)), closes [#99](https://github.com/enisdenjo/graphql-ws/issues/99) [#85](https://github.com/enisdenjo/graphql-ws/issues/85)
+
+## [4.1.1](https://github.com/enisdenjo/graphql-ws/compare/v4.1.0...v4.1.1) (2021-01-19)
+
+
+### Bug Fixes
+
+* **client:** Export relevant elements from the browser bundle ([b106dbe](https://github.com/enisdenjo/graphql-ws/commit/b106dbed1440488692a5588dcfd73f2f5a855a74)), closes [#97](https://github.com/enisdenjo/graphql-ws/issues/97)
+* **client:** Wait for server acknowledgement indefinitely ([a4bd602](https://github.com/enisdenjo/graphql-ws/commit/a4bd6029916e26a48b3f1acbbf9d741775e34baa)), closes [#98](https://github.com/enisdenjo/graphql-ws/issues/98)
+
+# [4.1.0](https://github.com/enisdenjo/graphql-ws/compare/v4.0.0...v4.1.0) (2021-01-13)
+
+
+### Bug Fixes
+
+* **server:** `onDisconnect` is called exclusively if the connection is acknowledged ([33ed5f2](https://github.com/enisdenjo/graphql-ws/commit/33ed5f227a787773a6661d4e5efce1be5e500525))
+
+
+### Features
+
+* **server:** Add `onClose` callback for closures at _any_ point in time ([dd0d4fa](https://github.com/enisdenjo/graphql-ws/commit/dd0d4fa7828974b27876e138c0d09f78b2721d2d))
+
+# [4.0.0](https://github.com/enisdenjo/graphql-ws/compare/v3.2.0...v4.0.0) (2021-01-13)
+
+
+### Bug Fixes
+
+* **server:** Client can complete/cancel any operation ([0ad1c4c](https://github.com/enisdenjo/graphql-ws/commit/0ad1c4c174d13effc185de49b42c64cdfd54a7ec))
+* **server:** Enforce ID uniqueness across all operations and during the whole subscription life ([#96](https://github.com/enisdenjo/graphql-ws/issues/96)) ([65d1bfa](https://github.com/enisdenjo/graphql-ws/commit/65d1bfa876fa5ff724c736b7ce958a1b1c9b0dc3))
+
+
+### Features
+
+* **server:** Add `onDisconnect` callback ([#94](https://github.com/enisdenjo/graphql-ws/issues/94)) ([2a61268](https://github.com/enisdenjo/graphql-ws/commit/2a612687d2b3fe7dc9a62dca5a171a52c28b99ab))
+* **server:** Log a warning for unsupported subprotocols ([88a12ef](https://github.com/enisdenjo/graphql-ws/commit/88a12ef3d9261e787a150d226210856688bf97da)), closes [#92](https://github.com/enisdenjo/graphql-ws/issues/92)
+
+
+### BREAKING CHANGES
+
+* **server:** The return function of `server.opened` (`closed`) now requires the close event code and reason for reporting to the `onDisconnect` callback.
+* **server:** The `Context.subscriptions` record value can be either an `AsyncIterator` or a `Promise`.
+
 # [3.2.0](https://github.com/enisdenjo/graphql-ws/compare/v3.1.0...v3.2.0) (2020-12-17)
 
 

@@ -35,8 +35,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
     needs: [build]
+    environment: npm
     steps:
       - name: Checkout
         uses: actions/checkout@v2

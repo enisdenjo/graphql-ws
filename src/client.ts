@@ -15,10 +15,21 @@ import {
 } from './message';
 import { isObject } from './utils';
 
+// this file is the entry point for browsers, re-export relevant elements
+export * from './message';
+export * from './protocol';
+
 export type EventConnecting = 'connecting';
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
+export type EventMessage = 'message';
 export type EventClosed = 'closed';
-export type Event = EventConnecting | EventConnected | EventClosed;
+export type EventError = 'error';
+export type Event =
+  | EventConnecting
+  | EventConnected
+  | EventMessage
+  | EventClosed
+  | EventError;
 
 /**
  * The first argument is actually the `WebSocket`, but to avoid
@@ -36,26 +47,52 @@ export type EventConnectedListener = (
 export type EventConnectingListener = () => void;
 
 /**
+ * Called for all **valid** messages received by the client. Mainly useful for
+ * debugging and logging received messages.
+ */
+export type EventMessageListener = (message: Message) => void;
+
+/**
  * The argument is actually the websocket `CloseEvent`, but to avoid
  * bundling DOM typings because the client can run in Node env too,
  * you should assert the websocket type during implementation.
  */
 export type EventClosedListener = (event: unknown) => void;
 
+/**
+ * The argument can be either an Error Event or an instance of Error, but to avoid
+ * bundling DOM typings because the client can run in Node env too, you should assert
+ * the type during implementation. Events dispatched from the WebSocket `onerror` can
+ * be handler in this listener.
+ */
+export type EventErrorListener = (error: unknown) => void;
+
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventConnected
   ? EventConnectedListener
+  : E extends EventMessage
+  ? EventMessageListener
   : E extends EventClosed
   ? EventClosedListener
+  : E extends EventError
+  ? EventErrorListener
   : never;
-
-type CancellerRef = { current: (() => void) | null };
 
 /** Configuration used for the GraphQL over WebSocket client. */
 export interface ClientOptions {
-  /** URL of the GraphQL over WebSocket Protocol compliant server to connect. */
-  url: string;
+  /**
+   * URL of the GraphQL over WebSocket Protocol compliant server to connect.
+   *
+   * If the option is a function, it will be called on every WebSocket connection attempt.
+   * Returning a promise is supported too and the connecting phase will stall until it
+   * resolves with the URL.
+   *
+   * A good use-case for having a function is when using the URL for authentication,
+   * where subsequent reconnects (due to auth) may have a refreshed identity token in
+   * the URL.
+   */
+  url: string | (() => Promise<string> | string);
   /**
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
@@ -71,8 +108,11 @@ export interface ClientOptions {
     | Record<string, unknown>
     | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
   /**
-   * Should the connection be established immediately and persisted
-   * or after the first listener subscribed.
+   * Controls when should the connection be established.
+   *
+   * - `false`: Establish a connection immediately. Use `onNonLazyError` to handle errors.
+   * - `true`: Establish a connection on first subscribe and close on last unsubscribe. Use
+   * the subscription sink's `error` to handle errors.
    *
    * @default true
    */
@@ -131,6 +171,22 @@ export interface ClientOptions {
    */
   retryWait?: (retries: number) => Promise<void>;
   /**
+   * Check if the close event or connection error is fatal. If you return `true`,
+   * the client will fail immediately without additional retries; however, if you
+   * return `false`, the client will keep retrying until the `retryAttempts` have
+   * been exceeded.
+   *
+   * The argument is either a WebSocket `CloseEvent` or an error thrown during
+   * the connection phase.
+   *
+   * Beware, the library classifies a few close events as fatal regardless of
+   * what is returned. They are listed in the documentation of the `retryAttempts`
+   * option.
+   *
+   * @default Non close events
+   */
+  isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
+  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -151,7 +207,7 @@ export interface ClientOptions {
    * as the random number generator. Supply your own generator
    * in case you need more uniqueness.
    *
-   * Reference: https://stackoverflow.com/a/2117523/709884
+   * Reference: https://gist.github.com/jed/982883
    */
   generateID?: () => ID;
 }
@@ -192,6 +248,9 @@ export function createClient(options: ClientOptions): Client {
         ),
       );
     },
+    isFatalConnectionProblem = (errOrCloseEvent) =>
+      // non `CloseEvent`s are fatal by default
+      !isLikeCloseEvent(errOrCloseEvent),
     on,
     webSocketImpl,
     /**
@@ -199,7 +258,7 @@ export function createClient(options: ClientOptions): Client {
      * as the random number generator. Supply your own generator
      * in case you need more uniqueness.
      *
-     * Reference: https://stackoverflow.com/a/2117523/709884
+     * Reference: https://gist.github.com/jed/982883
      */
     generateID = function generateUUID() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -229,20 +288,35 @@ export function createClient(options: ClientOptions): Client {
       // @ts-expect-error: Support more browsers
       window.MozWebSocket;
   }
-  if (!ws) {
-    throw new Error('WebSocket implementation missing');
-  }
+  if (!ws) throw new Error('WebSocket implementation missing');
   const WebSocketImpl = ws;
 
   // websocket status emitter, subscriptions are handled differently
   const emitter = (() => {
+    const message = (() => {
+      const listeners: { [key: string]: EventMessageListener } = {};
+      return {
+        on(id: string, listener: EventMessageListener) {
+          listeners[id] = listener;
+          return () => {
+            delete listeners[id];
+          };
+        },
+        emit(message: Message) {
+          if ('id' in message) listeners[message.id]?.(message);
+        },
+      };
+    })();
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
+      message: on?.message ? [message.emit, on.message] : [message.emit],
       closed: on?.closed ? [on.closed] : [],
+      error: on?.error ? [on.error] : [],
     };
 
     return {
+      onMessage: message.on,
       on<E extends Event>(event: E, listener: EventListener<E>) {
         const l = listeners[event] as EventListener<E>[];
         l.push(listener);
@@ -256,250 +330,139 @@ export function createClient(options: ClientOptions): Client {
           listener(...args);
         }
       },
-      reset() {
-        (Object.keys(listeners) as (keyof typeof listeners)[]).forEach(
-          (event) => {
-            listeners[event] = [];
-          },
-        );
-      },
     };
   })();
 
-  let state = {
-    disposed: false,
-    socket: null as WebSocket | null,
-    acknowledged: false,
-    locks: 0,
-    retrying: false,
-    retries: 0,
-  };
-
-  // all those waiting for the `retryWait` to resolve
-  const retryWaiting: (() => void)[] = [];
-
-  type ConnectReturn = Promise<
+  type Connected = [socket: WebSocket, throwOnClose: Promise<void>];
+  let connecting: Promise<Connected> | undefined,
+    locks = 0,
+    retrying = false,
+    retries = 0,
+    disposed = false;
+  async function connect(): Promise<
     [
       socket: WebSocket,
-      throwOnCloseOrWaitForCancel: (cleanup?: () => void) => Promise<void>,
+      release: () => void,
+      waitForReleaseOrThrowOnClose: Promise<void>,
     ]
-  >;
-  async function connect(
-    cancellerRef: CancellerRef,
-    callDepth = 0,
-  ): ConnectReturn {
-    if (callDepth) {
-      // prevents too many recursive calls when reavaluating/re-connecting
-      if (callDepth > 10) {
-        throw new Error('Kept trying to connect but the socket never settled.');
-      }
-      // wait a bit for socket state changes in recursive calls
-      await new Promise((resolve) => setTimeout(resolve, callDepth * 50));
-    }
+  > {
+    locks++;
 
-    // retry wait strategy for all callers
-    if (state.retrying) {
-      if (retryWaiting.length) {
-        // if others are waiting for retry, I'll wait too
-        await new Promise<void>((resolve) => retryWaiting.push(resolve));
-      } else {
-        retryWaiting.push(() => {
-          /** fake waiter to lead following connects in the `retryWaiting` queue */
-        });
-        // use retry wait strategy
-        await retryWait(state.retries);
-        state = {
-          ...state,
-          retrying: false, // avoid leading to waiting queue
-          retries: state.retries + 1, // is about to create a new WebSocket
-        };
-        // complete all waiting and clear the queue
-        while (retryWaiting.length) {
-          retryWaiting.pop()?.();
-        }
-      }
-    }
-
-    // socket already exists. can be ready or pending, check and behave accordingly
-    if (state.socket) {
-      switch (state.socket.readyState) {
-        case WebSocketImpl.OPEN: {
-          // if the socket is not acknowledged, wait a bit and reavaluate
-          if (!state.acknowledged) return connect(cancellerRef, callDepth + 1);
-          return makeConnectReturn(state.socket, cancellerRef);
-        }
-        case WebSocketImpl.CONNECTING: {
-          // if the socket is in the connecting phase, wait a bit and reavaluate
-          return connect(cancellerRef, callDepth + 1);
-        }
-        case WebSocketImpl.CLOSED:
-          break; // just continue, we'll make a new one
-        case WebSocketImpl.CLOSING: {
-          // if the socket is in the closing phase, wait a bit and connect
-          return connect(cancellerRef, callDepth + 1);
-        }
-        default:
-          throw new Error(`Impossible ready state ${state.socket.readyState}`);
-      }
-    }
-
-    // establish connection and assign to singleton
-    const socket = new WebSocketImpl(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-    state = {
-      ...state,
-      acknowledged: false,
-      socket,
-    };
-    emitter.emit('connecting');
-
-    await new Promise<void>((resolve, reject) => {
-      let cancelled = false;
-      cancellerRef.current = () => (cancelled = true);
-
-      const tooLong = setTimeout(() => {
-        socket.close(3408, 'Waited 5 seconds but socket connect never settled');
-      }, 5 * 1000);
-
-      /**
-       * `onerror` handler is unnecessary because even if an error occurs, the `onclose` handler will be called
-       *
-       * From: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
-       * > If an error occurs while attempting to connect, first a simple event with the name error is sent to the
-       * > WebSocket object (thereby invoking its onerror handler), and then the CloseEvent is sent to the WebSocket
-       * > object (thereby invoking its onclose handler) to indicate the reason for the connection's closing.
-       */
-
-      socket.onclose = (event) => {
-        socket.onclose = null;
-        clearTimeout(tooLong);
-        state = { ...state, acknowledged: false, socket: null };
-        emitter.emit('closed', event);
-        return reject(event);
-      };
-
-      socket.onmessage = (event: MessageEvent) => {
-        socket.onmessage = null;
-        if (cancelled) {
-          socket.close(3499, 'Client cancelled the socket before connecting');
-          return;
-        }
-
-        try {
-          const message = parseMessage(event.data);
-          if (message.type !== MessageType.ConnectionAck) {
-            throw new Error(`First message cannot be of type ${message.type}`);
-          }
-
-          clearTimeout(tooLong);
-          state = {
-            ...state,
-            acknowledged: true,
-            socket,
-            retrying: false,
-            retries: 0,
-          };
-          emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
-          return resolve();
-        } catch (err) {
-          socket.close(
-            4400,
-            err instanceof Error ? err.message : new Error(err).message,
-          );
-        }
-      };
-
-      // as soon as the socket opens and the connectionParams
-      // resolve, send the connection initalisation request
-      socket.onopen = () => {
-        socket.onopen = null;
-        if (cancelled) {
-          socket.close(3499, 'Client cancelled the socket before connecting');
-          return;
-        }
-
+    const [socket, throwOnClose] = await (connecting ??
+      (connecting = new Promise<Connected>((connected, denied) =>
         (async () => {
-          try {
-            socket.send(
-              stringifyMessage<MessageType.ConnectionInit>({
-                type: MessageType.ConnectionInit,
-                payload:
-                  typeof connectionParams === 'function'
-                    ? await connectionParams()
-                    : connectionParams,
-              }),
-            );
-          } catch (err) {
-            // even if not open, call close again to report error
-            socket.close(
-              4400,
-              err instanceof Error ? err.message : new Error(err).message,
-            );
+          if (retrying) {
+            await retryWait(retries);
+            retries++;
           }
-        })();
-      };
-    });
 
-    return makeConnectReturn(socket, cancellerRef);
-  }
-  async function makeConnectReturn(
-    socket: WebSocket,
-    cancellerRef: CancellerRef,
-  ): ConnectReturn {
+          emitter.emit('connecting');
+          const socket = new WebSocketImpl(
+            typeof url === 'function' ? await url() : url,
+            GRAPHQL_TRANSPORT_WS_PROTOCOL,
+          );
+
+          socket.onerror = (err) => {
+            // we let the onclose reject the promise for correct retry handling
+            emitter.emit('error', err);
+          };
+
+          socket.onclose = (event) => {
+            connecting = undefined;
+            emitter.emit('closed', event);
+            denied(event);
+          };
+
+          socket.onopen = async () => {
+            try {
+              socket.send(
+                stringifyMessage<MessageType.ConnectionInit>({
+                  type: MessageType.ConnectionInit,
+                  payload:
+                    typeof connectionParams === 'function'
+                      ? await connectionParams()
+                      : connectionParams,
+                }),
+              );
+            } catch (err) {
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
+              );
+            }
+          };
+
+          let acknowledged = false;
+          socket.onmessage = ({ data }) => {
+            try {
+              const message = parseMessage(data);
+              emitter.emit('message', message);
+              if (acknowledged) return; // already connected and acknowledged
+
+              if (message.type !== MessageType.ConnectionAck)
+                throw new Error(
+                  `First message cannot be of type ${message.type}`,
+                );
+              acknowledged = true;
+              emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+              retries = 0; // reset the retries on connect
+              connected([
+                socket,
+                new Promise<void>((_, closed) =>
+                  socket.addEventListener('close', closed),
+                ),
+              ]);
+            } catch (err) {
+              socket.close(
+                4400,
+                err instanceof Error ? err.message : new Error(err).message,
+              );
+            }
+          };
+        })(),
+      )));
+
+    let release = () => {
+      // releases this connection lock
+    };
+    const released = new Promise<void>((resolve) => (release = resolve));
+
     return [
       socket,
-      (cleanup) =>
-        new Promise((resolve, reject) => {
-          if (socket.readyState === WebSocketImpl.CLOSED) {
-            return reject(new Error('Socket has already been closed'));
-          }
-
-          state.locks++;
-
-          socket.addEventListener('close', listener);
-          function listener(event: LikeCloseEvent) {
-            cancellerRef.current = null;
-            state.locks--;
-            socket.removeEventListener('close', listener);
-            return reject(event);
-          }
-
-          cancellerRef.current = () => {
-            cancellerRef.current = null;
-            cleanup?.();
-            state.locks--;
-            if (!state.locks) {
-              if (keepAlive > 0 && isFinite(keepAlive)) {
-                // if the keepalive is set, allow for the specified calmdown
-                // time and then close. but only if no lock got created in the
-                // meantime and if the socket is still open
-                setTimeout(() => {
-                  if (!state.locks && socket.OPEN) {
-                    socket.close(1000, 'Normal Closure');
-                  }
-                }, keepAlive);
-              } else {
-                // otherwise close immediately
-                socket.close(1000, 'Normal Closure');
-              }
+      release,
+      Promise.race([
+        // wait for
+        released.then(() => {
+          if (!--locks) {
+            // if no more connection locks are present, complete the connection
+            const complete = () => socket.close(1000, 'Normal Closure');
+            if (isFinite(keepAlive) && keepAlive > 0) {
+              // if the keepalive is set, allow for the specified calmdown time and
+              // then complete. but only if no lock got created in the meantime and
+              // if the socket is still open
+              setTimeout(() => {
+                if (!locks && socket.readyState === WebSocketImpl.OPEN)
+                  complete();
+              }, keepAlive);
+            } else {
+              // otherwise complete immediately
+              complete();
             }
-            socket.removeEventListener('close', listener);
-            return resolve();
-          };
+          }
         }),
+        // or
+        throwOnClose,
+      ]),
     ];
   }
+
   /**
-   * Checks the `connect` problem and evaluates if the client should
-   * retry. If the problem is worth throwing, it will be thrown immediately.
+   * Checks the `connect` problem and evaluates if the client should retry.
    */
   function shouldRetryConnectOrThrow(errOrCloseEvent: unknown): boolean {
-    // throw non `CloseEvent`s immediately, something else is wrong
-    if (!isLikeCloseEvent(errOrCloseEvent)) {
-      throw errOrCloseEvent;
-    }
-
     // some close codes are worth reporting immediately
     if (
+      isLikeCloseEvent(errOrCloseEvent) &&
       [
         1002, // Protocol Error
         1011, // Internal Error
@@ -508,28 +471,24 @@ export function createClient(options: ClientOptions): Client {
         4409, // Subscriber for <id> already exists (distinction is very important)
         4429, // Too many initialisation requests
       ].includes(errOrCloseEvent.code)
-    ) {
+    )
       throw errOrCloseEvent;
-    }
 
-    // already disposed or normal closure, shouldnt try again
-    if (state.disposed || errOrCloseEvent.code === 1000) {
+    // disposed or normal closure (completed), shouldnt try again
+    if (
+      disposed ||
+      (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
+    )
       return false;
-    }
-
-    // user cancelled early, shouldnt try again
-    if (errOrCloseEvent.code === 3499) {
-      return false;
-    }
 
     // retries are not allowed or we tried to many times, report error
-    if (!retryAttempts || state.retries >= retryAttempts) {
-      throw errOrCloseEvent;
-    }
+    if (!retryAttempts || retries >= retryAttempts) throw errOrCloseEvent;
+
+    // throw fatal connection problems immediately
+    if (isFatalConnectionProblem(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
-    state.retrying = true;
-    return true;
+    return (retrying = true);
   }
 
   // in non-lazy (hot?) mode always hold one connection lock to persist the socket
@@ -537,18 +496,12 @@ export function createClient(options: ClientOptions): Client {
     (async () => {
       for (;;) {
         try {
-          const [, throwOnCloseOrWaitForCancel] = await connect({
-            current: null,
-          });
-          await throwOnCloseOrWaitForCancel();
-          // cancelled, shouldnt try again
-          return;
+          const [, , throwOnClose] = await connect();
+          await throwOnClose; // will always throw because releaser is not used
         } catch (errOrCloseEvent) {
           try {
-            // return and report if shouldnt try again
-            if (!shouldRetryConnectOrThrow(errOrCloseEvent))
-              return onNonLazyError?.(errOrCloseEvent);
-          } catch {
+            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
+          } catch (errOrCloseEvent) {
             // report thrown error, no further retries
             return onNonLazyError?.(errOrCloseEvent);
           }
@@ -557,114 +510,95 @@ export function createClient(options: ClientOptions): Client {
     })();
   }
 
-  // to avoid parsing the same message in each
-  // subscriber, we memo one on the last received data
-  let lastData: unknown, lastMessage: Message;
-  function memoParseMessage(data: unknown) {
-    if (data !== lastData) {
-      lastMessage = parseMessage(data);
-      lastData = data;
-    }
-    return lastMessage;
-  }
-
   return {
     on: emitter.on,
     subscribe(payload, sink) {
       const id = generateID();
-      let completed = false;
-      const cancellerRef: CancellerRef = { current: null };
 
-      const messageListener = ({ data }: MessageEvent) => {
-        const message = memoParseMessage(data);
-        switch (message.type) {
-          case MessageType.Next: {
-            if (message.id === id) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              sink.next(message.payload as any);
-            }
-            return;
-          }
-          case MessageType.Error: {
-            if (message.id === id) {
-              sink.error(message.payload);
-
-              // the canceller must be set at this point
-              // because you cannot receive a message
-              // if there is no existing connection
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!();
-              // TODO-db-201025 calling canceller will complete the sink, meaning that both the `error` and `complete` will be
-              // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
-            }
-            return;
-          }
-          case MessageType.Complete: {
-            if (message.id === id) {
-              completed = true;
-              // the canceller must be set at this point
-              // because you cannot receive a message
-              // if there is no existing connection
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              cancellerRef.current!();
-              // calling canceller will complete the sink
-            }
-            return;
-          }
-        }
-      };
+      let completed = false,
+        releaser = () => {
+          // for handling completions before connect
+          completed = true;
+        };
 
       (async () => {
         for (;;) {
           try {
-            const [socket, throwOnCloseOrWaitForCancel] = await connect(
-              cancellerRef,
-            );
-            socket.addEventListener('message', messageListener);
+            const [
+              socket,
+              release,
+              waitForReleaseOrThrowOnClose,
+            ] = await connect();
+
+            // if completed while waiting for connect, release the connection lock right away
+            if (completed) return release();
+
+            const unlisten = emitter.onMessage(id, (message) => {
+              switch (message.type) {
+                case MessageType.Next: {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  sink.next(message.payload as any);
+                  return;
+                }
+                case MessageType.Error: {
+                  completed = true;
+                  sink.error(message.payload);
+                  releaser();
+                  // TODO-db-201025 calling releaser will complete the sink, meaning that both the `error` and `complete` will be
+                  // called. neither promises or observables care; once they settle, additional calls to the resolvers will be ignored
+                  return;
+                }
+                case MessageType.Complete: {
+                  completed = true;
+                  releaser(); // release completes the sink
+                  return;
+                }
+              }
+            });
 
             socket.send(
               stringifyMessage<MessageType.Subscribe>({
-                id: id,
+                id,
                 type: MessageType.Subscribe,
                 payload,
               }),
             );
 
-            // either the canceller will be called and the promise resolved
-            // or the socket closed and the promise rejected
-            await throwOnCloseOrWaitForCancel(() => {
-              // if not completed already, send complete message to server on cancel
-              if (!completed) {
+            releaser = () => {
+              if (!completed && socket.readyState === WebSocketImpl.OPEN)
+                // if not completed already and socket is open, send complete message to server on release
                 socket.send(
                   stringifyMessage<MessageType.Complete>({
-                    id: id,
+                    id,
                     type: MessageType.Complete,
                   }),
                 );
-              }
-            });
+              release();
+            };
 
-            socket.removeEventListener('message', messageListener);
+            // either the releaser will be called, connection completed and
+            // the promise resolved or the socket closed and the promise rejected.
+            // whatever happens though, we want to stop listening for messages
+            await waitForReleaseOrThrowOnClose.finally(unlisten);
 
-            // cancelled, shouldnt try again
-            return;
+            return; // completed, shouldnt try again
           } catch (errOrCloseEvent) {
-            // return if shouldnt try again
             if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
           }
         }
       })()
-        .catch(sink.error)
-        .then(sink.complete); // resolves on cancel or normal closure
+        .catch(sink.error) // rejects on close events and errors
+        .then(sink.complete); // resolves on release or normal closure
 
-      return () => {
-        cancellerRef.current?.();
-      };
+      return () => releaser();
     },
-    dispose() {
-      state.disposed = true;
-      state.socket?.close(1000, 'Normal Closure');
-      emitter.reset();
+    async dispose() {
+      disposed = true;
+      if (connecting) {
+        // if there is a connection, close it
+        const [socket] = await connecting;
+        socket.close(1000, 'Normal Closure');
+      }
     },
   };
 }

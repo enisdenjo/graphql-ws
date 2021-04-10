@@ -64,16 +64,13 @@ function tsubscribe<T = unknown>(
           test?.(result);
           resolve();
         }
-        if (results.length > 0) {
-          return done();
-        }
+        if (results.length > 0) return done();
         emitter.once('next', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('next', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForError: (test, expire) => {
@@ -83,16 +80,13 @@ function tsubscribe<T = unknown>(
           test?.(error);
           resolve();
         }
-        if (error) {
-          return done();
-        }
+        if (error) return done();
         emitter.once('err', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('err', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     waitForComplete: (test, expire) => {
@@ -102,16 +96,13 @@ function tsubscribe<T = unknown>(
           test?.();
           resolve();
         }
-        if (completed) {
-          return done();
-        }
+        if (completed) return done();
         emitter.once('complete', done);
-        if (expire) {
+        if (expire)
           setTimeout(() => {
             emitter.off('complete', done); // expired
             resolve();
           }, expire);
-        }
       });
     },
     dispose,
@@ -135,6 +126,19 @@ it('should use the provided WebSocket implementation', async () => {
     onNonLazyError: noop,
     lazy: false,
     webSocketImpl: WebSocket,
+  });
+
+  await server.waitForClient();
+});
+
+it('should accept a function for the url', async () => {
+  const { url, ...server } = await startTServer();
+
+  createClient({
+    url: () => Promise.resolve(url),
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    lazy: false,
   });
 
   await server.waitForClient();
@@ -282,6 +286,47 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
     expect(event.reason).toBe('No auth?');
     expect(event.wasClean).toBeTruthy();
   });
+});
+
+it('should not send the complete message if the socket is not open', async () => {
+  const {
+    url,
+    clients,
+    waitForOperation,
+    waitForClientClose,
+  } = await startTServer();
+
+  class MockWebSocket extends WebSocket {
+    constructor(...args: unknown[]) {
+      // @ts-expect-error Args will fit
+      super(...args);
+    }
+
+    public send(data: unknown) {
+      if (this.readyState !== WebSocket.OPEN)
+        fail("Shouldn't send anything through a non-OPEN socket");
+      super.send(data);
+    }
+  }
+
+  const client = createClient({
+    webSocketImpl: MockWebSocket,
+    url,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+  });
+  const sub = tsubscribe(client, { query: 'subscription { ping }' });
+  await waitForOperation();
+
+  // kick the client off
+  for (const client of clients) {
+    client.close();
+    await waitForClientClose();
+  }
+
+  // dispose of the subscription which should complete the connection
+  sub.dispose();
+  await sub.waitForComplete();
 });
 
 describe('query operation', () => {
@@ -776,9 +821,6 @@ describe('reconnecting', () => {
   });
 
   it('should resubscribe all subscribers on silent reconnects', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -789,7 +831,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -826,14 +868,9 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async () => {
-    const defaultMaxListeners = EventEmitter.defaultMaxListeners;
-    EventEmitter.defaultMaxListeners = 50; // for test
-
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -844,7 +881,7 @@ describe('reconnecting', () => {
 
     // add subscribers
     const subs: TSubscribe<unknown>[] = [];
-    for (let i = 0; i < EventEmitter.defaultMaxListeners - 1; i++) {
+    for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
           query: `subscription Sub${i} { ping(key: "${i}") }`,
@@ -875,8 +912,6 @@ describe('reconnecting', () => {
     }
 
     client.dispose();
-
-    EventEmitter.defaultMaxListeners = defaultMaxListeners; // reset
   });
 
   it('should report some close events immediately and not reconnect', async () => {
@@ -887,6 +922,7 @@ describe('reconnecting', () => {
         createClient({
           url,
           retryAttempts: Infinity, // keep retrying forever
+          isFatalConnectionProblem: () => true, // even if all connection probles are fatal
         }),
         {
           query: 'subscription { ping }',
@@ -904,12 +940,44 @@ describe('reconnecting', () => {
     }
 
     expect.assertions(6);
+    const warn = console.warn;
+    console.warn = () => {
+      /* hide warnings for test */
+    };
     await testCloseCode(1002);
+    console.warn = warn;
     await testCloseCode(1011);
     await testCloseCode(4400);
     await testCloseCode(4401);
     await testCloseCode(4409);
     await testCloseCode(4429);
+  });
+
+  it('should report fatal connection problems immediately', async () => {
+    const { url, ...server } = await startTServer();
+
+    const sub = tsubscribe(
+      createClient({
+        url,
+        retryAttempts: Infinity, // keep retrying forever
+        isFatalConnectionProblem: (err) => {
+          expect((err as CloseEvent).code).toBe(4444);
+          expect((err as CloseEvent).reason).toBe('Is fatal?');
+          return true;
+        },
+      }),
+      {
+        query: 'subscription { ping }',
+      },
+    );
+
+    await server.waitForClient((client) => {
+      client.close(4444, 'Is fatal?');
+    });
+
+    await sub.waitForError((err) => {
+      expect((err as CloseEvent).code).toBe(4444);
+    }, 20);
   });
 
   it.todo(
@@ -923,30 +991,35 @@ describe('events', () => {
 
     const connectingFn = jest.fn(noop as EventListener<'connecting'>);
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
+    const messageFn = jest.fn(noop as EventListener<'message'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);
 
     // wait for connected
-    const client = await new Promise<Client>((resolve) => {
-      const client = createClient({
-        url,
-        retryAttempts: 0,
-        onNonLazyError: noop,
-        on: {
-          connecting: connectingFn,
-          connected: connectedFn,
-          closed: closedFn,
-        },
-      });
-      client.on('connecting', connectingFn);
-      client.on('connected', (...args) => {
-        connectedFn(...args);
-        resolve(client);
-      });
-      client.on('closed', closedFn);
+    const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
+      (resolve) => {
+        const client = createClient({
+          url,
+          retryAttempts: 0,
+          onNonLazyError: noop,
+          on: {
+            connecting: connectingFn,
+            connected: connectedFn,
+            message: messageFn,
+            closed: closedFn,
+          },
+        });
+        client.on('connecting', connectingFn);
+        client.on('connected', connectedFn);
+        client.on('message', messageFn);
+        client.on('closed', closedFn);
 
-      // trigger connecting
-      tsubscribe(client, { query: 'subscription {ping}' });
-    });
+        // trigger connecting
+        const sub = tsubscribe(client, { query: 'subscription {ping}' });
+
+        // resolve once subscribed
+        server.waitForOperation().then(() => resolve([client, sub]));
+      },
+    );
 
     expect(connectingFn).toBeCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(0);
@@ -955,6 +1028,11 @@ describe('events', () => {
     connectedFn.mock.calls.forEach((cal) => {
       expect(cal[0]).toBeInstanceOf(WebSocket);
     });
+
+    // (connection ack + pong) * 2
+    server.pong();
+    await sub.waitForNext();
+    expect(messageFn).toBeCalledTimes(4);
 
     expect(closedFn).not.toBeCalled();
 
@@ -982,5 +1060,84 @@ describe('events', () => {
       expect(cal[0]).toHaveProperty('reason');
       expect(cal[0]).toHaveProperty('wasClean');
     });
+  });
+
+  it('should emit closed event when disposing', async (done) => {
+    const { url, waitForClient } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      on: {
+        closed: () => done(),
+      },
+    });
+
+    await waitForClient();
+
+    client.dispose();
+  });
+
+  it('should emit the websocket connection error', (done) => {
+    expect.assertions(3);
+
+    createClient({
+      url: 'ws://localhost/i/dont/exist',
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: (err) => {
+        // handle the websocket close event
+        expect((err as CloseEvent).code).toBe(1006);
+        done();
+      },
+      on: {
+        closed: (err) => {
+          // websocket closed
+          expect((err as CloseEvent).code).toBe(1006);
+        },
+        error: (err) => {
+          // connection error
+          expect((err as ErrorEvent).message).toBe(
+            'connect ECONNREFUSED 127.0.0.1:80',
+          );
+        },
+      },
+    });
+  });
+
+  it('should emit the websocket connection error on first subscribe in lazy mode', (done) => {
+    expect.assertions(3);
+
+    const client = createClient({
+      url: 'ws://localhost/i/dont/exist',
+      retryAttempts: 0,
+    });
+
+    client.on('closed', (err) => {
+      // websocket closed
+      expect((err as CloseEvent).code).toBe(1006);
+    });
+
+    client.on('error', (err) => {
+      // connection error
+      expect((err as ErrorEvent).message).toBe(
+        'connect ECONNREFUSED 127.0.0.1:80',
+      );
+    });
+
+    client.subscribe(
+      { query: '' },
+      {
+        next: noop,
+        complete: noop,
+        error: (err) => {
+          // handle the websocket close event
+          expect((err as CloseEvent).code).toBe(1006);
+          done();
+        },
+      },
+    );
   });
 });

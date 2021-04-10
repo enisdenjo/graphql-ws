@@ -1,21 +1,17 @@
-**[graphql-ws](../README.md)**
-
-> [Globals](../README.md) / ["use/uws"](../modules/_use_uws_.md) / Extra
+[graphql-ws](../README.md) / [use/uws](../modules/use_uws.md) / Extra
 
 # Interface: Extra
 
+[use/uws](../modules/use_uws.md).Extra
+
 The extra that will be put in the `Context`.
 
-## Hierarchy
-
-* **Extra**
-
-## Index
+## Table of contents
 
 ### Properties
 
-* [request](_use_uws_.extra.md#request)
-* [socket](_use_uws_.extra.md#socket)
+- [request](use_uws.extra.md#request)
+- [socket](use_uws.extra.md#socket)
 
 ## Properties
 
