@@ -1,13 +1,14 @@
 import http from 'http';
-import WebSocket from 'ws';
 import {
   MessageType,
   stringifyMessage,
   parseMessage,
   SubscribePayload,
 } from '../message';
-import { tServers } from './fixtures/simple';
 import { createTClient } from './utils';
+
+import { tServers } from './fixtures/simple';
+import WebSocket from 'ws';
 
 for (const { tServer, startTServer } of tServers) {
   const itForWS = tServer === 'ws' ? it : it.skip,
@@ -38,6 +39,7 @@ for (const { tServer, startTServer } of tServers) {
       const server = await startTServer({
         onConnect: (ctx) => {
           if (tServer === 'uWebSockets.js') {
+            // uWebSocket.js does not export classes, we can rely on the name only
             expect(ctx.extra.socket.constructor.name).toEqual('uWS.WebSocket');
             expect(ctx.extra.request.constructor.name).toEqual(
               'uWS.HttpRequest',
