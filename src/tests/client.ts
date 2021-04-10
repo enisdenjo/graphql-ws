@@ -4,7 +4,7 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { startTServer } from './fixtures/simple';
+import { startWSTServer as startTServer } from './fixtures/simple';
 import { createClient, Client, EventListener } from '../client';
 import { SubscribePayload } from '../message';
 

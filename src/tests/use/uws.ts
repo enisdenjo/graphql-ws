@@ -4,7 +4,7 @@ import {
   parseMessage,
   SubscribePayload,
 } from '../../message';
-import { startTServer } from '../fixtures/simple_uws';
+import { startUWSTServer as startTServer } from '../fixtures/simple';
 import { createTClient } from '../utils';
 
 it('should gracefully go away when disposing', async () => {

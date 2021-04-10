@@ -6,11 +6,13 @@ import {
   GraphQLSchemaConfig,
 } from 'graphql';
 import { EventEmitter } from 'events';
-import WebSocket from 'ws';
-import net from 'net';
 import http from 'http';
 import { ServerOptions, Context } from '../../server';
-import { useServer, Extra } from '../../use/ws';
+import { useServer as useWSServer, Extra as wsExtra } from '../../use/ws';
+import { useServer as useUWSServer, Extra as uWSExtra } from '../../use/uws';
+
+import WebSocket from 'ws';
+import uws from 'uWebSockets.js';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -33,7 +35,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<Extra>) => void,
+    test?: (ctx: Context<wsExtra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -119,35 +121,66 @@ export const schemaConfig: GraphQLSchemaConfig = {
 
 export const schema = new GraphQLSchema(schemaConfig);
 
-export async function startTServer(
-  options: Partial<ServerOptions<Extra>> = {},
+async function getAvailablePort() {
+  const httpServer = http.createServer();
+
+  let tried = 0;
+  for (;;) {
+    try {
+      await new Promise((resolve, reject) => {
+        httpServer.once('error', reject);
+        httpServer.once('listening', resolve);
+        try {
+          httpServer.listen(0);
+        } catch (err) {
+          reject(err);
+        }
+      });
+      break; // listening
+    } catch (err) {
+      if ('code' in err && err.code === 'EADDRINUSE') {
+        tried++;
+        if (tried > 10)
+          throw new Error(
+            `Cant find open port, stopping search after ${tried} tries`,
+          );
+        continue; // try another one if this port is in use
+      } else {
+        throw err; // throw all other errors immediately
+      }
+    }
+  }
+
+  const addr = httpServer.address();
+  if (!addr || typeof addr !== 'object')
+    throw new Error(`Unexpected http server address ${addr}`);
+
+  // port found, stop server
+  await new Promise<void>((resolve) => httpServer.close(() => resolve()));
+
+  return addr.port;
+}
+
+export async function startWSTServer(
+  options: Partial<ServerOptions<wsExtra>> = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
+  const port = await getAvailablePort();
+  const ws = new WebSocket.Server({ port, path });
 
-  // prepare http server
-  const httpServer = http.createServer((_req, res) => {
-    res.writeHead(404);
-    res.end();
-  });
-
-  // http sockets to kick off on teardown
-  const sockets = new Set<net.Socket>();
-  httpServer.on('connection', (socket) => {
+  // sockets to kick off on teardown
+  const sockets = new Set<WebSocket>();
+  ws.on('connection', (socket) => {
     sockets.add(socket);
-    httpServer.once('close', () => sockets.delete(socket));
+    socket.once('close', () => sockets.delete(socket));
   });
 
-  // create server and hook up for tracking operations
-  const pendingConnections: Context<Extra>[] = [];
+  const pendingConnections: Context<wsExtra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
-  const ws = new WebSocket.Server({
-    server: httpServer,
-    path,
-  });
-  const server = useServer(
+  const server = useWSServer(
     {
       schema,
       ...options,
@@ -178,17 +211,16 @@ export async function startTServer(
     keepAlive,
   );
 
-  // disposes of all started servers
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve, reject) => {
       if (!beNice)
         for (const socket of sockets) {
-          socket.destroy();
+          socket.terminate();
           sockets.delete(socket);
         }
       const disposing = server.dispose() as Promise<void>;
       disposing.catch(reject).then(() => {
-        httpServer.close(() => {
+        ws.close(() => {
           leftovers.splice(leftovers.indexOf(dispose), 1);
           resolve();
         });
@@ -196,34 +228,6 @@ export async function startTServer(
     });
   };
   leftovers.push(dispose);
-
-  // search for open port from the starting port
-  let tried = 0;
-  for (;;) {
-    try {
-      await new Promise((resolve, reject) => {
-        httpServer.once('error', reject);
-        httpServer.once('listening', resolve);
-        try {
-          httpServer.listen(0);
-        } catch (err) {
-          reject(err);
-        }
-      });
-      break; // listening
-    } catch (err) {
-      if ('code' in err && err.code === 'EADDRINUSE') {
-        tried++;
-        if (tried > 10)
-          throw new Error(
-            `Cant find open port, stopping search after ${tried} tries`,
-          );
-        continue; // try another one if this port is in use
-      } else {
-        throw err; // throw all other errors immediately
-      }
-    }
-  }
 
   // pending websocket clients
   let pendingCloses = 0;
@@ -236,12 +240,8 @@ export async function startTServer(
     });
   });
 
-  const addr = httpServer.address();
-  if (!addr || typeof addr !== 'object')
-    throw new Error(`Unexpected http server address ${addr}`);
-
   return {
-    url: `ws://localhost:${addr.port}${path}`,
+    url: `ws://localhost:${port}${path}`,
     ws,
     get clients() {
       return ws.clients;
@@ -332,6 +332,66 @@ export async function startTServer(
           }, expire);
       });
     },
+    dispose,
+  };
+}
+
+export async function startUWSTServer(
+  options: Partial<ServerOptions<uWSExtra>> = {},
+  keepAlive?: number, // for ws tests sake
+): Promise<TServer> {
+  const path = '/simple';
+  const port = await getAvailablePort();
+  const app = uws.App();
+
+  const server = useUWSServer(
+    {
+      schema,
+      ...options,
+      onConnect: async (...args) => {
+        const permitted = await options?.onConnect?.(...args);
+        return permitted;
+      },
+      onOperation: async (ctx, msg, args, result) => {
+        const maybeResult = await options?.onOperation?.(
+          ctx,
+          msg,
+          args,
+          result,
+        );
+        return maybeResult;
+      },
+      onComplete: async (...args) => {
+        await options?.onComplete?.(...args);
+      },
+    },
+    {
+      app,
+      path,
+    },
+    keepAlive,
+  );
+
+  const socket = await new Promise<uws.us_listen_socket>((resolve, reject) => {
+    app.listen(port, (socket: uws.us_listen_socket) => {
+      if (socket) {
+        resolve(socket);
+      } else {
+        reject('There is no UWS socket');
+      }
+    });
+  });
+
+  const dispose: Dispose = () => {
+    server.dispose();
+    uws.us_listen_socket_close(socket);
+    leftovers.splice(leftovers.indexOf(dispose), 1);
+  };
+
+  leftovers.push(dispose);
+
+  return {
+    url: `ws://localhost:${port}${path}`,
     dispose,
   };
 }
