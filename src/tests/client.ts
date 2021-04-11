@@ -1062,7 +1062,7 @@ describe('reconnecting', () => {
     }, 10);
 
     // and client should still be connected
-    expect(server.clients.size).toBe(1);
+    expect(server.getClients().length).toBe(1);
 
     // dispose of the last subscription
     sub2.dispose();
@@ -1072,7 +1072,7 @@ describe('reconnecting', () => {
     await server.waitForClientClose();
 
     // and all connections are gone
-    expect(server.clients.size).toBe(0);
+    expect(server.getClients().length).toBe(0);
   });
 });
 
