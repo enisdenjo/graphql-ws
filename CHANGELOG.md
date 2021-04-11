@@ -1,3 +1,10 @@
+## [4.3.4](https://github.com/enisdenjo/graphql-ws/compare/v4.3.3...v4.3.4) (2021-04-11)
+
+
+### Bug Fixes
+
+* **client:** Subscriptions acquire locks ([eb6cb2a](https://github.com/enisdenjo/graphql-ws/commit/eb6cb2a0654489e1210a8db93f90bfc3ebfe94e4))
+
 ## [4.3.3](https://github.com/enisdenjo/graphql-ws/compare/v4.3.2...v4.3.3) (2021-04-11)
 
 
