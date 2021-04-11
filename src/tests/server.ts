@@ -10,8 +10,8 @@ import {
 } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
 import { MessageType, parseMessage, stringifyMessage } from '../message';
-import { schema, schemaConfig, startTServer } from './fixtures/simple';
-import { createTClient } from './utils';
+import { schema, schemaConfig } from './fixtures/simple';
+import { createTClient, startWSTServer as startTServer } from './utils';
 
 /**
  * Tests
@@ -1027,7 +1027,7 @@ describe('Subscribe', () => {
       };
     const waitForExecute = new Promise<void>((resolve) => (execute = resolve));
 
-    const { url, ws } = await startTServer({
+    const { url, getClients } = await startTServer({
       schema,
       execute: () =>
         new Promise<ExecutionResult>((resolve) => {
@@ -1067,10 +1067,13 @@ describe('Subscribe', () => {
     );
 
     // will be just one client and the only next message can be "complete"
-    for (const client of ws.clients) {
-      await new Promise<void>((resolve) =>
-        client.once('message', () => resolve()),
-      );
+    for (const client of getClients()) {
+      await new Promise<void>((resolve) => {
+        const off = client.onMessage(() => {
+          off();
+          resolve();
+        });
+      });
     }
 
     // result became available after complete
@@ -1498,8 +1501,13 @@ describe('Subscribe', () => {
     );
 
     // wait for complete message
-    for (const client of server.ws.clients) {
-      await new Promise((resolve) => client.once('message', resolve));
+    for (const client of server.getClients()) {
+      await new Promise<void>((resolve) => {
+        const off = client.onMessage(() => {
+          off();
+          resolve();
+        });
+      });
     }
 
     // then continue
