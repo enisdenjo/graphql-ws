@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/enisdenjo/graphql-ws/compare/v4.3.4...v4.4.0) (2021-04-11)
+
+
+### Features
+
+* **server:** Use uWebSockets ([#89](https://github.com/enisdenjo/graphql-ws/issues/89)) ([45d08fc](https://github.com/enisdenjo/graphql-ws/commit/45d08fcb9fde4159dea3f131f865f5d5bf5041d2)), closes [#61](https://github.com/enisdenjo/graphql-ws/issues/61)
+
 ## [4.3.4](https://github.com/enisdenjo/graphql-ws/compare/v4.3.3...v4.3.4) (2021-04-11)
 
 
