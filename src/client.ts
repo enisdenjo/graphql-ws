@@ -346,10 +346,6 @@ export function createClient(options: ClientOptions): Client {
       waitForReleaseOrThrowOnClose: Promise<void>,
     ]
   > {
-    // locks increment only when not retrying because
-    // the same lock retries connect on abrupt closures
-    if (!retrying) locks++;
-
     const [socket, throwOnClose] = await (connecting ??
       (connecting = new Promise<Connected>((connected, denied) =>
         (async () => {
@@ -425,7 +421,7 @@ export function createClient(options: ClientOptions): Client {
       )));
 
     let release = () => {
-      // releases this connection lock
+      // releases this connection
     };
     const released = new Promise<void>((resolve) => (release = resolve));
 
@@ -435,8 +431,9 @@ export function createClient(options: ClientOptions): Client {
       Promise.race([
         // wait for
         released.then(() => {
+          // decrement the subscription locks
           if (!--locks) {
-            // if no more connection locks are present, complete the connection
+            // and if no more are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
             if (isFinite(keepAlive) && keepAlive > 0) {
               // if the keepalive is set, allow for the specified calmdown time and
@@ -496,6 +493,7 @@ export function createClient(options: ClientOptions): Client {
   // in non-lazy (hot?) mode always hold one connection lock to persist the socket
   if (!lazy) {
     (async () => {
+      locks++;
       for (;;) {
         try {
           const [, , throwOnClose] = await connect();
@@ -524,6 +522,7 @@ export function createClient(options: ClientOptions): Client {
         };
 
       (async () => {
+        locks++;
         for (;;) {
           try {
             const [
