@@ -1020,6 +1020,60 @@ describe('reconnecting', () => {
     // and no clients should be left
     expect(server.clients.size).toBe(0);
   });
+
+  it('should lazy disconnect even if subscription is created during retries after all get completed', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // behavior on lazy only
+      retryAttempts: Infinity, // keep retrying forever
+      retryWait: () => Promise.resolve(),
+    });
+
+    const sub1 = tsubscribe(client, {
+      query: 'subscription { ping(key: "1") }',
+    });
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    const sub2 = tsubscribe(client, {
+      query: 'subscription { ping(key: "2") }',
+    });
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    // allow both subs on the 3rd retry
+    await server.waitForOperation();
+    await server.waitForOperation();
+
+    // dispose of the first subscription
+    sub1.dispose();
+    await sub1.waitForComplete();
+
+    // client should NOT leave yet
+    await server.waitForClientClose(() => {
+      fail("Client should've stayed connected");
+    }, 10);
+
+    // and client should still be connected
+    expect(server.clients.size).toBe(1);
+
+    // dispose of the last subscription
+    sub2.dispose();
+    await sub2.waitForComplete();
+
+    // client should leave now
+    await server.waitForClientClose();
+
+    // and all connections are gone
+    expect(server.clients.size).toBe(0);
+  });
 });
 
 describe('events', () => {
