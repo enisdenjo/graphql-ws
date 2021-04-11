@@ -1,3 +1,10 @@
+## [4.3.3](https://github.com/enisdenjo/graphql-ws/compare/v4.3.2...v4.3.3) (2021-04-11)
+
+
+### Bug Fixes
+
+* **client:** Connection locks dont increment on retries ([1e7bd97](https://github.com/enisdenjo/graphql-ws/commit/1e7bd97d47525040dd88803039b17f77db1c6c2a)), closes [#153](https://github.com/enisdenjo/graphql-ws/issues/153)
+
 ## [4.3.2](https://github.com/enisdenjo/graphql-ws/compare/v4.3.1...v4.3.2) (2021-03-29)
 
 
