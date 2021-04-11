@@ -1322,8 +1322,8 @@ import { schema } from './my-graphql-schema';
 uWS
   .App()
   .ws(
-    '/*',
-    makeUWSBehavior(
+    '/graphql/is-performant',
+    makeBehavior(
       { schema },
       {
         maxBackpressure: 1024,
