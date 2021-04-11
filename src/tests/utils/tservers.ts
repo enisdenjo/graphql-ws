@@ -334,9 +334,10 @@ export async function startUWSTServer(
     },
   );
 
-  const dispose: Dispose = async () => {
+  const dispose: Dispose = async (beNice) => {
     for (const socket of sockets) {
-      socket.end(1001, 'Going away');
+      if (beNice) socket.end(1001, 'Going away');
+      else socket.close();
     }
     uWS.us_listen_socket_close(listenSocket);
     leftovers.splice(leftovers.indexOf(dispose), 1);
