@@ -25,12 +25,13 @@ afterEach(async () => {
 });
 
 export interface TServerClient {
+  onMessage(cb: (message: string) => void): () => void;
   close(code?: number, data?: string): void;
 }
 
 export interface TServer {
   url: string;
-  clients: Set<TServerClient>;
+  getClients: () => TServerClient[];
   pong: (key?: string) => void;
   waitForClient: (
     test?: (client: TServerClient) => void,
@@ -158,19 +159,29 @@ export async function startWSTServer(
 
   // pending websocket clients
   let pendingCloses = 0;
-  const pendingClients: ws[] = [];
+  const pendingClients: TServerClient[] = [];
   wsServer.on('connection', (client) => {
-    pendingClients.push(client);
+    pendingClients.push(toClient(client));
     client.once('close', () => {
       pendingCloses++;
       emitter.emit('close');
     });
   });
 
+  function toClient(socket: ws): TServerClient {
+    return {
+      onMessage: (cb) => {
+        socket.on('message', cb);
+        return () => socket.off('message', cb);
+      },
+      close: (...args) => socket.close(...args),
+    };
+  }
+
   return {
     url: `ws://localhost:${port}${path}`,
-    get clients() {
-      return wsServer.clients;
+    getClients() {
+      return Array.from(wsServer.clients, toClient);
     },
     waitForClient(test, expire) {
       return new Promise((resolve) => {
@@ -335,7 +346,7 @@ export async function startUWSTServer(
   return {
     url: `ws://localhost:${port}${path}`,
     // @ts-expect-error TODO-db-210410
-    clients: null,
+    getClients: null,
     // @ts-expect-error TODO-db-210410
     waitForClient: null,
     // @ts-expect-error TODO-db-210410

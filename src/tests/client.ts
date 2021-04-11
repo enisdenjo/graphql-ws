@@ -291,7 +291,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
 it('should not send the complete message if the socket is not open', async () => {
   const {
     url,
-    clients,
+    getClients,
     waitForOperation,
     waitForClientClose,
   } = await startTServer();
@@ -319,7 +319,7 @@ it('should not send the complete message if the socket is not open', async () =>
   await waitForOperation();
 
   // kick the client off
-  for (const client of clients) {
+  for (const client of getClients()) {
     client.close();
     await waitForClientClose();
   }
@@ -514,7 +514,7 @@ describe('subscription operation', () => {
 
     await server.waitForClientClose();
 
-    expect(server.clients.size).toBe(0);
+    expect(server.getClients().length).toBe(0);
   });
 
   it('should dispose of the subscription on error', async () => {
@@ -534,13 +534,13 @@ describe('subscription operation', () => {
 
     await server.waitForClientClose();
 
-    expect(server.clients.size).toBe(0);
+    expect(server.getClients().length).toBe(0);
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
     const {
       url,
-      clients,
+      getClients,
       waitForOperation,
       waitForComplete,
     } = await startTServer();
@@ -553,8 +553,8 @@ describe('subscription operation', () => {
     );
     await waitForOperation();
 
-    for (const client of clients) {
-      client.once('message', () => {
+    for (const client of getClients()) {
+      client.onMessage(() => {
         // no more messages from the client
         fail("Shouldn't have dispatched a message");
       });
@@ -597,7 +597,7 @@ describe('"concurrency"', () => {
     }, 10);
     await sub1.waitForComplete();
 
-    expect(server.clients.size).toBe(1);
+    expect(server.getClients().length).toBe(1);
   });
 });
 
@@ -1018,7 +1018,7 @@ describe('reconnecting', () => {
     await server.waitForClientClose();
 
     // and no clients should be left
-    expect(server.clients.size).toBe(0);
+    expect(server.getClients().length).toBe(0);
   });
 });
 
@@ -1073,7 +1073,7 @@ describe('events', () => {
 
     expect(closedFn).not.toBeCalled();
 
-    server.clients.forEach((client) => {
+    server.getClients().forEach((client) => {
       client.close();
     });
 
