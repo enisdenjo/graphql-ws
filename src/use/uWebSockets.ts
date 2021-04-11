@@ -45,8 +45,8 @@ export function makeBehavior(
 
   return {
     ...behavior,
-    pong(socket) {
-      behavior.pong?.(socket);
+    pong(socket, message) {
+      behavior.pong?.(socket, message);
 
       const client = clients.get(socket);
       if (!client) throw new Error('Pong received for a missing client');
