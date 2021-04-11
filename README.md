@@ -1321,17 +1321,7 @@ import { schema } from './my-graphql-schema';
 
 uWS
   .App()
-  .ws(
-    '/graphql/is-performant',
-    makeBehavior(
-      { schema },
-      {
-        maxBackpressure: 1024,
-        maxPayloadLength: 512,
-        compression: uWS.DEDICATED_COMPRESSOR_4KB, // See https://github.com/uNetworking/uWebSockets.js/discussions/418#discussioncomment-230712
-      },
-    ),
-  )
+  .ws('/graphql/is-performant', makeBehavior({ schema }))
   .listen(80, (listenSocket) => {
     if (listenSocket) {
       console.log('Listening to port 80');
