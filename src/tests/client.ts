@@ -983,6 +983,43 @@ describe('reconnecting', () => {
   it.todo(
     'should attempt reconnecting silently a few times before closing for good',
   );
+
+  it('should lazy disconnect after retries when all subscriptions are completed', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // behavior on lazy only
+      retryAttempts: Infinity, // keep retrying forever
+      retryWait: () => Promise.resolve(),
+    });
+
+    const sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    await server.waitForClient((client) => client.close());
+    await server.waitForClientClose();
+
+    // allow sub on the 3rd retry
+    await server.waitForOperation();
+
+    // dispose of the last and only subscription
+    sub.dispose();
+    await sub.waitForComplete();
+
+    // client should now leave
+    await server.waitForClientClose();
+
+    // and no clients should be left
+    expect(server.clients.size).toBe(0);
+  });
 });
 
 describe('events', () => {

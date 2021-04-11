@@ -346,7 +346,9 @@ export function createClient(options: ClientOptions): Client {
       waitForReleaseOrThrowOnClose: Promise<void>,
     ]
   > {
-    locks++;
+    // locks increment only when not retrying because
+    // the same lock retries connect on abrupt closures
+    if (!retrying) locks++;
 
     const [socket, throwOnClose] = await (connecting ??
       (connecting = new Promise<Connected>((connected, denied) =>
