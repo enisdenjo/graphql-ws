@@ -45,8 +45,9 @@ export function makeBehavior(
 
   return {
     ...behavior,
-    pong(socket, message) {
-      behavior.pong?.(socket, message);
+    pong(...args) {
+      behavior.pong?.(...args);
+      const [socket] = args;
 
       const client = clients.get(socket);
       if (!client) throw new Error('Pong received for a missing client');
@@ -56,8 +57,9 @@ export function makeBehavior(
         client.pongWaitTimeout = null;
       }
     },
-    upgrade(res, req, context) {
-      behavior.upgrade?.(res, req, context);
+    upgrade(...args) {
+      behavior.upgrade?.(...args);
+      const [res, req, context] = args;
 
       res.upgrade(
         { upgradeReq: req },
@@ -67,8 +69,9 @@ export function makeBehavior(
         context,
       );
     },
-    open(socket) {
-      behavior.open?.(socket);
+    open(...args) {
+      behavior.open?.(...args);
+      const [socket] = args;
 
       // prepare client object
       const client: Client = {
@@ -108,8 +111,9 @@ export function makeBehavior(
 
       clients.set(socket, client);
     },
-    async message(socket, message, isBinary) {
-      behavior.message?.(socket, message, isBinary);
+    async message(...args) {
+      behavior.message?.(...args);
+      const [socket, message] = args;
 
       const client = clients.get(socket);
       if (!client) throw new Error('Message received for a missing client');
@@ -120,8 +124,9 @@ export function makeBehavior(
         socket.end(1011, isProd ? 'Internal Error' : err.message);
       }
     },
-    close(socket, code, message) {
-      behavior.close?.(socket, code, message);
+    close(...args) {
+      behavior.close?.(...args);
+      const [socket, code, message] = args;
 
       const client = clients.get(socket);
       if (!client) throw new Error('Closing a missing client');
