@@ -43,6 +43,10 @@ export function makeBehavior(
   const server = makeServer<Extra>(options);
   const clients = new Map<uWS.WebSocket, Client>();
 
+  let onDrain = () => {
+    // gets called when backpressure drains
+  };
+
   return {
     ...behavior,
     pong(...args) {
@@ -89,9 +93,13 @@ export function makeBehavior(
       client.closed = server.opened(
         {
           protocol: request.getHeader('sec-websocket-protocol'),
-          send: (message) => {
-            // TODO-db-210410 handle backpressure
-            socket.send(message, false, true);
+          send: async (message) => {
+            // send to available/open clients only
+            if (!clients.has(socket)) return;
+
+            if (!socket.send(message))
+              // if backpressure is built up wait for drain
+              await new Promise<void>((resolve) => (onDrain = resolve));
           },
           close: (code, reason) => {
             socket.end(code, reason);
@@ -110,6 +118,10 @@ export function makeBehavior(
       }
 
       clients.set(socket, client);
+    },
+    drain(...args) {
+      behavior.drain?.(...args);
+      onDrain();
     },
     async message(...args) {
       behavior.message?.(...args);
