@@ -37,6 +37,10 @@
       "require": "./lib/use/ws.js",
       "import": "./lib/use/ws.mjs"
     },
+    "./lib/use/uWebSockets": {
+      "require": "./lib/use/uWebSockets.js",
+      "import": "./lib/use/uWebSockets.mjs"
+    },
     "./package.json": "./package.json"
   },
   "types": "lib/index.d.ts",
