@@ -1,3 +1,10 @@
+## [4.4.1](https://github.com/enisdenjo/graphql-ws/compare/v4.4.0...v4.4.1) (2021-04-14)
+
+
+### Bug Fixes
+
+* Add `uWebSockets` exports path ([36247cb](https://github.com/enisdenjo/graphql-ws/commit/36247cbce31b6d049a58622df58a9b5fb3dafbd6)), closes [#155](https://github.com/enisdenjo/graphql-ws/issues/155)
+
 # [4.4.0](https://github.com/enisdenjo/graphql-ws/compare/v4.3.4...v4.4.0) (2021-04-11)
 
 
