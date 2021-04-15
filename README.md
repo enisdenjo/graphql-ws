@@ -51,27 +51,19 @@ const roots = {
 #### Start the server
 
 ```ts
-import https from 'https';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 
-const server = https.createServer(function weServeSocketsOnly(_, res) {
-  res.writeHead(404);
-  res.end();
-});
-
-const wsServer = new ws.Server({
-  server,
+const server = new ws.Server({
+  port: 443,
   path: '/graphql',
 });
 
 useServer(
   // from the previous step
   { schema, roots },
-  wsServer,
+  server,
 );
-
-server.listen(443);
 ```
 
 #### Use the client
