@@ -1142,6 +1142,48 @@ describe('reconnecting', () => {
       fail("Client shouldn't have reconnected");
     }, 20);
   });
+
+  it('should not count lazy connect after succesful reconnect as another retry', async () => {
+    const { url, ...server } = await startTServer();
+
+    const retry = jest.fn();
+    const client = createClient({
+      url,
+      retryAttempts: 1,
+      retryWait: () => {
+        retry();
+        return Promise.resolve();
+      },
+    });
+
+    let sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+
+    // closed connection, retried and successfully subscribed
+    await server.waitForClient((client) => {
+      client.close();
+    });
+    await server.waitForClientClose();
+    await server.waitForClient();
+
+    // complete subscription and close connection (because lazy)
+    sub.dispose();
+    await server.waitForClientClose();
+
+    // new subscription, connect again
+    sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForClient();
+
+    // complete subscription and close connection (because lazy)
+    sub.dispose();
+    await server.waitForClientClose();
+
+    // only one retry had happened (for first subscription)
+    expect(retry).toBeCalledTimes(1);
+  });
 });
 
 describe('events', () => {

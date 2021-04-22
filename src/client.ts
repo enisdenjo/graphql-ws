@@ -410,6 +410,7 @@ export function createClient(options: ClientOptions): Client {
                 );
               acknowledged = true;
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+              retrying = false; // future lazy connects are not retries
               retries = 0; // reset the retries on connect
               connected([
                 socket,
