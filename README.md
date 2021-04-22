@@ -50,12 +50,14 @@ const roots = {
 
 #### Start the server
 
+##### Using [ws](https://github.com/websockets/ws)
+
 ```ts
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 
 const server = new ws.Server({
-  port: 443,
+  port: 80,
   path: '/graphql',
 });
 
@@ -64,6 +66,30 @@ useServer(
   { schema, roots },
   server,
 );
+
+console.log('Listening to port 80');
+```
+
+##### Using [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
+
+```ts
+import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
+import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+
+uWS
+  .App()
+  .ws(
+    '/graphql',
+    makeBehavior(
+      // from the previous step
+      { schema, roots },
+    ),
+  )
+  .listen(80, (listenSocket) => {
+    if (listenSocket) {
+      console.log('Listening to port 80');
+    }
+  });
 ```
 
 #### Use the client
@@ -1299,26 +1325,6 @@ async function ping() {
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 })();
-```
-
-</details>
-
-<details id="uws">
-<summary><a href="#uws">🔗</a> Server usage with <a href="https://github.com/uNetworking/uWebSockets.js">uWebSockets.js</a></summary>
-
-```ts
-import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
-import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
-import { schema } from './my-graphql-schema';
-
-uWS
-  .App()
-  .ws('/graphql/is-performant', makeBehavior({ schema }))
-  .listen(80, (listenSocket) => {
-    if (listenSocket) {
-      console.log('Listening to port 80');
-    }
-  });
 ```
 
 </details>
