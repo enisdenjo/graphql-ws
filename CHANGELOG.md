@@ -1,3 +1,11 @@
+## [4.4.2](https://github.com/enisdenjo/graphql-ws/compare/v4.4.1...v4.4.2) (2021-04-22)
+
+
+### Bug Fixes
+
+* **client:** Lazy connects after successful reconnects are not retries ([99b85a3](https://github.com/enisdenjo/graphql-ws/commit/99b85a3bebfdc4fada03e6c71c2703807ac6d3cd))
+* **client:** Shouldn't reconnect if all subscriptions complete while waiting for retry ([2826c10](https://github.com/enisdenjo/graphql-ws/commit/2826c103a2f5786575157c6aa9cbd270746b57ca)), closes [#163](https://github.com/enisdenjo/graphql-ws/issues/163)
+
 ## [4.4.1](https://github.com/enisdenjo/graphql-ws/compare/v4.4.0...v4.4.1) (2021-04-14)
 
 
