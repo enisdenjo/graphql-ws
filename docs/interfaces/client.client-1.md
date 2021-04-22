@@ -47,16 +47,16 @@ Listens on the client which dispatches events about the socket state.
 
 #### Type parameters:
 
-Name | Type |
-:------ | :------ |
-`E` | [*Event*](../modules/client.md#event) |
+| Name | Type |
+| :------ | :------ |
+| `E` | [*Event*](../modules/client.md#event) |
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`event` | E |
-`listener` | [*EventListener*](../modules/client.md#eventlistener)<E\> |
+| Name | Type |
+| :------ | :------ |
+| `event` | E |
+| `listener` | [*EventListener*](../modules/client.md#eventlistener)<E\> |
 
 **Returns:** () => *void*
 
@@ -72,15 +72,15 @@ function used for dropping the subscription and cleaning stuff up.
 
 #### Type parameters:
 
-Name | Default |
-:------ | :------ |
-`T` | *unknown* |
+| Name | Default |
+| :------ | :------ |
+| `T` | *unknown* |
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`payload` | [*SubscribePayload*](message.subscribepayload.md) |
-`sink` | [*Sink*](types.sink.md)<T\> |
+| Name | Type |
+| :------ | :------ |
+| `payload` | [*SubscribePayload*](message.subscribepayload.md) |
+| `sink` | [*Sink*](types.sink.md)<T\> |
 
 **Returns:** () => *void*

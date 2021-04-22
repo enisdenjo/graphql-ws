@@ -16,7 +16,7 @@
 
 ### operationName
 
-• `Optional` `Readonly` **operationName**: *null* \| *string*
+• `Optional` `Readonly` **operationName**: ``null`` \| *string*
 
 ___
 
@@ -28,4 +28,4 @@ ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: *null* \| *Record*<string, unknown\>
+• `Optional` `Readonly` **variables**: ``null`` \| *Record*<string, unknown\>

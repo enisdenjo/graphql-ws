@@ -132,7 +132,7 @@ ___
 
 ### EventClosed
 
-Ƭ **EventClosed**: *closed*
+Ƭ **EventClosed**: ``"closed"``
 
 ___
 
@@ -150,9 +150,9 @@ you should assert the websocket type during implementation.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`event` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `event` | *unknown* |
 
 **Returns:** *void*
 
@@ -160,7 +160,7 @@ ___
 
 ### EventConnected
 
-Ƭ **EventConnected**: *connected*
+Ƭ **EventConnected**: ``"connected"``
 
 ___
 
@@ -181,10 +181,10 @@ send through the `ConnectionAck` message.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`socket` | *unknown* |
-`payload?` | *Record*<string, unknown\> |
+| Name | Type |
+| :------ | :------ |
+| `socket` | *unknown* |
+| `payload?` | *Record*<string, unknown\> |
 
 **Returns:** *void*
 
@@ -192,7 +192,7 @@ ___
 
 ### EventConnecting
 
-Ƭ **EventConnecting**: *connecting*
+Ƭ **EventConnecting**: ``"connecting"``
 
 ___
 
@@ -210,7 +210,7 @@ ___
 
 ### EventError
 
-Ƭ **EventError**: *error*
+Ƭ **EventError**: ``"error"``
 
 ___
 
@@ -229,9 +229,9 @@ be handler in this listener.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`error` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `error` | *unknown* |
 
 **Returns:** *void*
 
@@ -243,15 +243,15 @@ ___
 
 #### Type parameters:
 
-Name | Type |
-:------ | :------ |
-`E` | [*Event*](client.md#event) |
+| Name | Type |
+| :------ | :------ |
+| `E` | [*Event*](client.md#event) |
 
 ___
 
 ### EventMessage
 
-Ƭ **EventMessage**: *message*
+Ƭ **EventMessage**: ``"message"``
 
 ___
 
@@ -268,9 +268,9 @@ debugging and logging received messages.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`message` | [*Message*](message.md#message) |
+| Name | Type |
+| :------ | :------ |
+| `message` | [*Message*](message.md#message) |
 
 **Returns:** *void*
 
@@ -284,8 +284,8 @@ Creates a disposable GraphQL over WebSocket client.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`options` | [*ClientOptions*](../interfaces/client.clientoptions.md) |
+| Name | Type |
+| :------ | :------ |
+| `options` | [*ClientOptions*](../interfaces/client.clientoptions.md) |
 
 **Returns:** [*Client*](../interfaces/client.client-1.md)

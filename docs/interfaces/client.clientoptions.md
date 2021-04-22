@@ -84,9 +84,9 @@ option.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`errOrCloseEvent` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `errOrCloseEvent` | *unknown* |
 
 **Returns:** *boolean*
 
@@ -158,9 +158,9 @@ fatal by nature.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`errorOrCloseEvent` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `errorOrCloseEvent` | *unknown* |
 
 **Returns:** *void*
 
@@ -203,9 +203,9 @@ by timing the resolution of the returned promise with the retries count.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`retries` | *number* |
+| Name | Type |
+| :------ | :------ |
+| `retries` | *number* |
 
 **Returns:** *Promise*<void\>
 

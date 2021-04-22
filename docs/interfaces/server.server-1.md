@@ -6,9 +6,9 @@
 
 ## Type parameters
 
-Name | Default |
-:------ | :------ |
-`E` | *undefined* |
+| Name | Default |
+| :------ | :------ |
+| `E` | *undefined* |
 
 ## Table of contents
 
@@ -37,9 +37,9 @@ promise will resolve once the internal cleanup is complete.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`socket` | [*WebSocket*](server.websocket.md) |
-`ctxExtra` | E |
+| Name | Type |
+| :------ | :------ |
+| `socket` | [*WebSocket*](server.websocket.md) |
+| `ctxExtra` | E |
 
 **Returns:** (`code`: *number*, `reason`: *string*) => *Promise*<void\>

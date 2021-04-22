@@ -36,9 +36,9 @@
 
 #### Type parameters:
 
-Name | Type | Default |
-:------ | :------ | :------ |
-`T` | [*MessageType*](../enums/message.messagetype.md) | [*MessageType*](../enums/message.messagetype.md) |
+| Name | Type | Default |
+| :------ | :------ | :------ |
+| `T` | [*MessageType*](../enums/message.messagetype.md) | [*MessageType*](../enums/message.messagetype.md) |
 
 ## Functions
 
@@ -50,9 +50,9 @@ Checks if the provided value is a message.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`val` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `val` | *unknown* |
 
 **Returns:** val is ConnectionInitMessage \| ConnectionAckMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
@@ -66,9 +66,9 @@ Parses the raw websocket message data to a valid message.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`data` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `data` | *unknown* |
 
 **Returns:** [*Message*](message.md#message)
 
@@ -82,14 +82,14 @@ Stringifies a valid message ready to be sent through the socket.
 
 #### Type parameters:
 
-Name | Type |
-:------ | :------ |
-`T` | [*MessageType*](../enums/message.messagetype.md) |
+| Name | Type |
+| :------ | :------ |
+| `T` | [*MessageType*](../enums/message.messagetype.md) |
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`msg` | [*Message*](message.md#message)<T\> |
+| Name | Type |
+| :------ | :------ |
+| `msg` | [*Message*](message.md#message)<T\> |
 
 **Returns:** *string*

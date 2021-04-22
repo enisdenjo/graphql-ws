@@ -23,10 +23,10 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<[*Extra*](../interfaces/use_uwebsockets.extra.md)\> | - |
-`behavior` | uWS.WebSocketBehavior | {} |
-`keepAlive` | *number* | - |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<[*Extra*](../interfaces/use_uwebsockets.extra.md)\> | - |
+| `behavior` | uWS.WebSocketBehavior | {} |
+| `keepAlive` | *number* | - |
 
 **Returns:** uWS.WebSocketBehavior

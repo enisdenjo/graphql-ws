@@ -40,10 +40,10 @@ closure.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`code` | *number* |
-`reason` | *string* |
+| Name | Type |
+| :------ | :------ |
+| `code` | *number* |
+| `reason` | *string* |
 
 **Returns:** *void* \| *Promise*<void\>
 
@@ -67,9 +67,9 @@ to your clients however you wish.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`cb` | (`data`: *string*) => *Promise*<void\> |
+| Name | Type |
+| :------ | :------ |
+| `cb` | (`data`: *string*) => *Promise*<void\> |
 
 **Returns:** *void*
 
@@ -91,8 +91,8 @@ The returned promise is used to control the flow of data
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`data` | *string* |
+| Name | Type |
+| :------ | :------ |
+| `data` | *string* |
 
 **Returns:** *void* \| *Promise*<void\>

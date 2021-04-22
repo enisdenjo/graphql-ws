@@ -24,7 +24,7 @@
 
 ### GraphQLExecutionContextValue
 
-Ƭ **GraphQLExecutionContextValue**: *object* \| *symbol* \| *number* \| *string* \| *boolean* \| *undefined* \| *null*
+Ƭ **GraphQLExecutionContextValue**: *object* \| *symbol* \| *number* \| *string* \| *boolean* \| *undefined* \| ``null``
 
 A concrete GraphQL execution context value type.
 
@@ -53,14 +53,14 @@ Read more about the Protocol in the PROTOCOL.md documentation file.
 
 #### Type parameters:
 
-Name | Default |
-:------ | :------ |
-`E` | *unknown* |
+| Name | Default |
+| :------ | :------ |
+| `E` | *unknown* |
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<E\> |
+| Name | Type |
+| :------ | :------ |
+| `options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<E\> |
 
 **Returns:** [*Server*](../interfaces/server.server-1.md)<E\>

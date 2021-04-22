@@ -8,9 +8,9 @@ A representation of any set of values over any amount of time.
 
 ## Type parameters
 
-Name | Default |
-:------ | :------ |
-`T` | *unknown* |
+| Name | Default |
+| :------ | :------ |
+| `T` | *unknown* |
 
 ## Table of contents
 
@@ -44,9 +44,9 @@ type during implementation.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`error` | *unknown* |
+| Name | Type |
+| :------ | :------ |
+| `error` | *unknown* |
 
 **Returns:** *void*
 
@@ -60,8 +60,8 @@ Next value arriving.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`value` | T |
+| Name | Type |
+| :------ | :------ |
+| `value` | T |
 
 **Returns:** *void*

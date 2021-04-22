@@ -6,9 +6,9 @@
 
 ## Type parameters
 
-Name | Default |
-:------ | :------ |
-`E` | *unknown* |
+| Name | Default |
+| :------ | :------ |
+| `E` | *unknown* |
 
 ## Table of contents
 
@@ -86,9 +86,9 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`args` | ExecutionArgs |
+| Name | Type |
+| :------ | :------ |
+| `args` | ExecutionArgs |
 
 **Returns:** [*OperationResult*](../modules/server.md#operationresult)
 
@@ -117,11 +117,11 @@ called before the `onClose`.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`code` | *number* |
-`reason` | *string* |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `code` | *number* |
+| `reason` | *string* |
 
 **Returns:** *void* \| *Promise*<void\>
 
@@ -149,10 +149,10 @@ will still be called.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`message` | [*CompleteMessage*](message.completemessage.md) |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `message` | [*CompleteMessage*](message.completemessage.md) |
 
 **Returns:** *void* \| *Promise*<void\>
 
@@ -191,9 +191,9 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
 
 **Returns:** *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
 
@@ -224,11 +224,11 @@ of the connection state - consider using the `onClose` callback.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`code` | *number* |
-`reason` | *string* |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `code` | *number* |
+| `reason` | *string* |
 
 **Returns:** *void* \| *Promise*<void\>
 
@@ -256,11 +256,11 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`message` | [*ErrorMessage*](message.errormessage.md) |
-`errors` | readonly *GraphQLError*[] |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `message` | [*ErrorMessage*](message.errormessage.md) |
+| `errors` | readonly *GraphQLError*[] |
 
 **Returns:** *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
@@ -289,12 +289,12 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`message` | [*NextMessage*](message.nextmessage.md) |
-`args` | ExecutionArgs |
-`result` | *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `message` | [*NextMessage*](message.nextmessage.md) |
+| `args` | ExecutionArgs |
+| `result` | *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> |
 
 **Returns:** *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
@@ -329,12 +329,12 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`message` | [*SubscribeMessage*](message.subscribemessage.md) |
-`args` | ExecutionArgs |
-`result` | [*OperationResult*](../modules/server.md#operationresult) |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `message` | [*SubscribeMessage*](message.subscribemessage.md) |
+| `args` | ExecutionArgs |
+| `result` | [*OperationResult*](../modules/server.md#operationresult) |
 
 **Returns:** *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
@@ -378,10 +378,10 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`ctx` | [*Context*](server.context.md)<E\> |
-`message` | [*SubscribeMessage*](message.subscribemessage.md) |
+| Name | Type |
+| :------ | :------ |
+| `ctx` | [*Context*](server.context.md)<E\> |
+| `message` | [*SubscribeMessage*](message.subscribemessage.md) |
 
 **Returns:** *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
@@ -401,17 +401,17 @@ will be used instead.
 
 #### Type declaration:
 
-Name | Type |
-:------ | :------ |
-`mutation` |  |
-`query` |  |
-`subscription` |  |
+| Name | Type |
+| :------ | :------ |
+| `mutation` |  |
+| `query` |  |
+| `subscription` |  |
 
 ___
 
 ### schema
 
-• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: *Omit*<ExecutionArgs, *schema*\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
+• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: *Omit*<ExecutionArgs, ``"schema"``\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.
@@ -447,9 +447,9 @@ in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`args` | ExecutionArgs |
+| Name | Type |
+| :------ | :------ |
+| `args` | ExecutionArgs |
 
 **Returns:** [*OperationResult*](../modules/server.md#operationresult)
 
@@ -477,13 +477,13 @@ with the `Error` message in the close event reason.
 
 #### Parameters:
 
-Name | Type |
-:------ | :------ |
-`schema` | *GraphQLSchema* |
-`documentAST` | DocumentNode |
-`rules?` | readonly ValidationRule[] |
-`typeInfo?` | *TypeInfo* |
-`options?` | *object* |
-`options.maxErrors?` | *number* |
+| Name | Type |
+| :------ | :------ |
+| `schema` | *GraphQLSchema* |
+| `documentAST` | DocumentNode |
+| `rules?` | readonly ValidationRule[] |
+| `typeInfo?` | *TypeInfo* |
+| `options?` | *object* |
+| `options.maxErrors?` | *number* |
 
 **Returns:** readonly *GraphQLError*[]
