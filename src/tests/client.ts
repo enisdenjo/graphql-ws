@@ -1074,6 +1074,74 @@ describe('reconnecting', () => {
     // and all connections are gone
     expect(server.getClients().length).toBe(0);
   });
+
+  it('should not reconnect if the subscription completes while waiting for a retry', async () => {
+    const { url, ...server } = await startTServer();
+
+    let retryAttempt = () => {
+      /**/
+    };
+    const waitForRetryAttempt = () =>
+      new Promise<void>((resolve) => (retryAttempt = resolve));
+    let retry = () => {
+      /**/
+    };
+    const client = createClient({
+      url,
+      retryAttempts: 2,
+      retryWait: () => {
+        retryAttempt();
+        return new Promise((resolve) => (retry = resolve));
+      },
+    });
+
+    // case 1
+
+    // subscribe and wait for operation
+    let sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    // close client then wait for retry attempt
+    await server.waitForClient((client) => {
+      client.close();
+    });
+    await waitForRetryAttempt();
+
+    // complete subscription while waiting
+    sub.dispose();
+
+    retry();
+
+    await server.waitForClient(() => {
+      fail("Client shouldn't have reconnected");
+    }, 20);
+
+    // case 2
+
+    // subscribe but close connection immediately (dont wait for operation)
+    sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    retry(); // this still counts as a retry, so retry
+    await server.waitForOperation();
+
+    // close client then wait for retry attempt
+    await server.waitForClient((client) => {
+      client.close();
+    });
+    await waitForRetryAttempt();
+
+    // complete subscription while waiting
+    sub.dispose();
+
+    retry();
+
+    await server.waitForClient(() => {
+      fail("Client shouldn't have reconnected");
+    }, 20);
+  });
 });
 
 describe('events', () => {

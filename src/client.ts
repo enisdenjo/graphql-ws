@@ -351,6 +351,13 @@ export function createClient(options: ClientOptions): Client {
         (async () => {
           if (retrying) {
             await retryWait(retries);
+
+            // subscriptions might complete while waiting for retry
+            if (!locks) {
+              connecting = undefined;
+              return denied({ code: 1000, reason: 'All Subscriptions Gone' });
+            }
+
             retries++;
           }
 
@@ -431,9 +438,8 @@ export function createClient(options: ClientOptions): Client {
       Promise.race([
         // wait for
         released.then(() => {
-          // decrement the subscription locks
-          if (!--locks) {
-            // and if no more are present, complete the connection
+          if (!locks) {
+            // and if no more locks are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
             if (isFinite(keepAlive) && keepAlive > 0) {
               // if the keepalive is set, allow for the specified calmdown time and
@@ -518,6 +524,7 @@ export function createClient(options: ClientOptions): Client {
       let completed = false,
         releaser = () => {
           // for handling completions before connect
+          locks--;
           completed = true;
         };
 
@@ -566,6 +573,7 @@ export function createClient(options: ClientOptions): Client {
             );
 
             releaser = () => {
+              locks--;
               if (!completed && socket.readyState === WebSocketImpl.OPEN)
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
