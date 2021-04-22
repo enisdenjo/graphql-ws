@@ -50,7 +50,7 @@ const roots = {
 
 #### Start the server
 
-##### Using [ws](https://github.com/websockets/ws)
+##### With [ws](https://github.com/websockets/ws)
 
 ```ts
 import ws from 'ws'; // yarn add ws
@@ -70,7 +70,7 @@ useServer(
 console.log('Listening to port 80');
 ```
 
-##### Using [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
+##### With [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
 
 ```ts
 import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
