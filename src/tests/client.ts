@@ -1125,7 +1125,6 @@ describe('reconnecting', () => {
       query: 'subscription { ping }',
     });
     retry(); // this still counts as a retry, so retry
-    await server.waitForOperation();
 
     // close client then wait for retry attempt
     await server.waitForClient((client) => {
