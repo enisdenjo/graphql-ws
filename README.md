@@ -1329,8 +1329,8 @@ async function ping() {
 
 </details>
 
-<details id="persisted">
-<summary><a href="#persisted">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client auth usage with token expiration, validation and refresh</summary>
+<details id="auth-token">
+<summary><a href="#auth-token">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client auth usage with token expiration, validation and refresh</summary>
 
 ```typescript
 // 🛸 server
