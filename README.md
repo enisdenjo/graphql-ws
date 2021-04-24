@@ -1351,17 +1351,19 @@ useServer(
     onConnect: async (ctx) => {
       // do your auth check on every connect
       if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(4401, 'Unauthorized');
+        // returning false from the onConnect callback will close with `4403: Forbidden`;
+        // therefore, being synonymous to ctx.extra.socket.close(4403, 'Forbidden');
+        return false;
     },
     onSubscribe: async (ctx) => {
       // or maybe on every subscribe
       if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(4401, 'Unauthorized');
+        return ctx.extra.socket.close(4403, 'Forbidden');
     },
     onNext: async (ctx) => {
       // why not on every result emission? lol
       if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(4401, 'Unauthorized');
+        return ctx.extra.socket.close(4403, 'Forbidden');
     },
   },
   wsServer,
@@ -1410,19 +1412,19 @@ const client = createClient({
       clearTimeout(tokenExpiryTimeout);
 
       // set a token expiry timeout for closing the socket
-      // with an `4401: Unauthorized` close event indicating
+      // with an `4403: Forbidden` close event indicating
       // that the token expired. the `closed` event listner below
       // will set the token refresh flag to true
       tokenExpiryTimeout = setTimeout(() => {
         if (socket.readyState === WebSocket.OPEN)
-          socket.close(4401, 'Unauthorized');
+          socket.close(4403, 'Unauthorized');
       }, getCurrentTokenExpiresIn());
     },
     closed: (event) => {
-      // if closed with the `4401: Unauthorized` close event
+      // if closed with the `4403: Forbidden` close event
       // the client or the server is communicating that the token
       // is no longer valid and should be therefore refreshed
-      if (event.code === 4401) shouldRefreshToken = true;
+      if (event.code === 4403) shouldRefreshToken = true;
     },
   },
 });
