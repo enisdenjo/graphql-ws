@@ -1329,6 +1329,98 @@ async function ping() {
 
 </details>
 
+<details id="persisted">
+<summary><a href="#persisted">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client auth usage with token expiration, validation and refresh</summary>
+
+```typescript
+// 🛸 server
+
+import ws from 'ws'; // yarn add ws
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema } from './my-graphql-schema';
+import { isTokenValid } from './my-auth';
+
+const wsServer = new WebSocket.Server({
+  port: 443,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    schema,
+    onConnect: async (ctx) => {
+      // do your auth check on every connect
+      if (!(await isTokenValid(ctx.connectionParams?.token)))
+        return ctx.extra.socket.close(4401, 'Unauthorized');
+    },
+    onSubscribe: async (ctx) => {
+      // or maybe on every subscribe
+      if (!(await isTokenValid(ctx.connectionParams?.token)))
+        return ctx.extra.socket.close(4401, 'Unauthorized');
+    },
+    onNext: async (ctx) => {
+      // why not on every result emission? lol
+      if (!(await isTokenValid(ctx.connectionParams?.token)))
+        return ctx.extra.socket.close(4401, 'Unauthorized');
+    },
+  },
+  wsServer,
+);
+```
+
+```typescript
+// 📺 client
+
+import { createClient } from 'graphql-ws';
+import {
+  getCurrentToken,
+  getCurrentTokenExpiresIn,
+  refreshCurrentToken,
+} from './my-auth';
+
+// indicates that the server closed the connection because of
+// an auth problem. it indicates that the token should refresh
+let shouldRefreshToken = false,
+  // the socket close timeout due to token expiry
+  tokenExpiryTimeout = null;
+
+const client = createClient({
+  url: 'wss://server-validates.auth/graphql',
+  connectionParams: async () => {
+    if (shouldRefreshToken) {
+      // refresh the token because it is no longer valid
+      await refreshCurrentToken();
+      // and reset the flag to avoid refreshing too many times
+      shouldRefreshToken = false;
+    }
+    return { token: getCurrentToken() };
+  },
+  on: {
+    connected: (socket) => {
+      // clear timeout on every connect for debouncing the expiry
+      clearTimeout(tokenExpiryTimeout);
+
+      // set a token expiry timeout for closing the socket
+      // with an `4401: Unauthorized` close event indicating
+      // that the token expired. the `closed` event listner below
+      // will set the token refresh flag to true
+      tokenExpiryTimeout = setTimeout(() => {
+        if (socket.readyState === WebSocket.OPEN)
+          socket.close(4401, 'Unauthorized');
+      }, getCurrentTokenExpiresIn());
+    },
+    closed: (event) => {
+      // if closed with the `4401: Unauthorized` close event
+      // the client or the server is communicating that the token
+      // is no longer valid and should be therefore refreshed
+      if (event.code === 4401) shouldRefreshToken = true;
+    },
+  },
+});
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
