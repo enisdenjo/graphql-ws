@@ -1378,6 +1378,15 @@ import {
   refreshCurrentToken,
 } from './my-auth';
 
+// non-fatal WebSocket connection close events will cause the
+// client to automatically reconnect. the retries are silent, meaning
+// that the client will not error out unless the retry attempts have been
+// exceeded or the close event was fatal (read more about the fatal
+// close events in the documentation). additionally, all active subscriptions
+// will automatically resubscribe upon successful reconnect. this behaviour
+// can be leveraged to implement a secure and sound way of authentication;
+// handling server-side validation, expiry indication and timely token refreshes
+
 // indicates that the server closed the connection because of
 // an auth problem. it indicates that the token should refresh
 let shouldRefreshToken = false,
