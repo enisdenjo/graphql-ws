@@ -1523,6 +1523,46 @@ describe('Subscribe', () => {
 
     await server.waitForComplete();
   });
+
+  it('should use a custom stringifyMessage function', async () => {
+    const { url } = await startTServer({
+      schema,
+      stringifyMessage: (message) => JSON.stringify(message).toUpperCase(),
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(data).toMatchInlineSnapshot(`"{\\"TYPE\\":\\"CONNECTION_ACK\\"}"`);
+    });
+
+    client.ws.close(4321, 'Byebye');
+  });
+
+  it('should use a custom parseMessage function', async () => {
+    const { url } = await startTServer({
+      schema,
+      parseMessage: (data) => parseMessage((data as string).toLowerCase()),
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }).toUpperCase(),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.close(4321, 'Byebye');
+  });
 });
 
 describe('Disconnect/close', () => {

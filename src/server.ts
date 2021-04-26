@@ -24,8 +24,8 @@ import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
   Message,
   MessageType,
-  stringifyMessage,
-  parseMessage,
+  stringifyMessage as defaultStringifyMessage,
+  parseMessage as defaultParseMessage,
   SubscribeMessage,
   NextMessage,
   ErrorMessage,
@@ -360,6 +360,21 @@ export interface ServerOptions<E = unknown> {
     ctx: Context<E>,
     message: CompleteMessage,
   ) => Promise<void> | void;
+  /**
+   * An optional message stringifier override.
+   * Used to serialize messages for sending out from this server
+   * to the client. Defaults to `JSON.stringify`, but can be
+   * overridden for custom serialization logic.
+   */
+  stringifyMessage?: <T extends MessageType>(message: Message<T>) => string;
+  /**
+   * An optional message parser override.
+   * Used to interpret string messages coming from the client
+   * to this server. Defaults to `parseMessage` which uses
+   * `JSON.parse` and then validates the shape of the incoming
+   * message.
+   */
+  parseMessage?: (data: unknown) => Message;
 }
 
 export interface Server<E = undefined> {
@@ -484,6 +499,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     onNext,
     onError,
     onComplete,
+    stringifyMessage = defaultStringifyMessage,
+    parseMessage = defaultParseMessage,
   } = options;
 
   return {
