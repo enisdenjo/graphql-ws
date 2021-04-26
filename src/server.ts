@@ -432,6 +432,7 @@ export interface WebSocket {
   onMessage(cb: (data: string) => Promise<void>): void;
 }
 
+/** @category Server */
 export interface Context<E = unknown> {
   /**
    * Indicates that the `ConnectionInit` message
