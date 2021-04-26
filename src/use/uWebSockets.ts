@@ -3,6 +3,8 @@ import { makeServer, ServerOptions } from '../server';
 
 /**
  * The extra that will be put in the `Context`.
+ * 
+ * @category Server/Use
  */
 export interface Extra {
   /**
@@ -26,6 +28,8 @@ interface Client {
 /**
  * Make the behaviour for using a [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) WebSocket server.
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
+ *
+ * @category Server/Use
  */
 export function makeBehavior(
   options: ServerOptions<Extra>,

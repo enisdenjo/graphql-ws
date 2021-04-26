@@ -4,23 +4,26 @@
 
 ## Table of contents
 
-### Interfaces
+### Other Interfaces
 
 - [Context](../interfaces/server.context.md)
+
+### Server Interfaces
+
 - [Server](../interfaces/server.server-1.md)
 - [ServerOptions](../interfaces/server.serveroptions.md)
 - [WebSocket](../interfaces/server.websocket.md)
 
-### Type aliases
+### Server Type aliases
 
 - [GraphQLExecutionContextValue](server.md#graphqlexecutioncontextvalue)
 - [OperationResult](server.md#operationresult)
 
-### Functions
+### Server Functions
 
 - [makeServer](server.md#makeserver)
 
-## Type aliases
+## Server Type aliases
 
 ### GraphQLExecutionContextValue
 
@@ -39,7 +42,7 @@ ___
 
 Ƭ **OperationResult**: *Promise*<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
 
-## Functions
+## Server Functions
 
 ### makeServer
 

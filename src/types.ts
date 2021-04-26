@@ -8,9 +8,12 @@
  * ID is a string type alias representing
  * the globally unique ID used for identifying
  * subscriptions established by the client.
+ *
+ * @category Common
  */
 export type ID = string;
 
+/** @category Common */
 export interface Disposable {
   /** Dispose of the instance and clear up resources. */
   dispose: () => void | Promise<void>;
@@ -18,6 +21,8 @@ export interface Disposable {
 
 /**
  * A representation of any set of values over any amount of time.
+ *
+ * @category Common
  */
 export interface Sink<T = unknown> {
   /** Next value arriving. */

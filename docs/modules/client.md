@@ -20,12 +20,12 @@
 - [parseMessage](client.md#parsemessage)
 - [stringifyMessage](client.md#stringifymessage)
 
-### Interfaces
+### Client Interfaces
 
 - [Client](../interfaces/client.client-1.md)
 - [ClientOptions](../interfaces/client.clientoptions.md)
 
-### Type aliases
+### Client Type aliases
 
 - [Event](client.md#event)
 - [EventClosed](client.md#eventclosed)
@@ -40,7 +40,7 @@
 - [EventMessage](client.md#eventmessage)
 - [EventMessageListener](client.md#eventmessagelistener)
 
-### Functions
+### Client Functions
 
 - [createClient](client.md#createclient)
 
@@ -122,7 +122,7 @@ ___
 
 Re-exports: [stringifyMessage](message.md#stringifymessage)
 
-## Type aliases
+## Client Type aliases
 
 ### Event
 
@@ -274,7 +274,7 @@ debugging and logging received messages.
 
 **Returns:** *void*
 
-## Functions
+## Client Functions
 
 ### createClient
 

@@ -14,7 +14,11 @@ import {
   hasOwnStringProperty,
 } from './utils';
 
-/** Types of messages allowed to be sent by the client/server over the WS protocol. */
+/**
+ * Types of messages allowed to be sent by the client/server over the WS protocol.
+ *
+ * @category Common
+ */
 export enum MessageType {
   ConnectionInit = 'connection_init', // Client -> Server
   ConnectionAck = 'connection_ack', // Server -> Client
@@ -25,45 +29,53 @@ export enum MessageType {
   Complete = 'complete', // bidirectional
 }
 
+/** @category Common */
 export interface ConnectionInitMessage {
   readonly type: MessageType.ConnectionInit;
   readonly payload?: Record<string, unknown>;
 }
 
+/** @category Common */
 export interface ConnectionAckMessage {
   readonly type: MessageType.ConnectionAck;
   readonly payload?: Record<string, unknown>;
 }
 
+/** @category Common */
 export interface SubscribeMessage {
   readonly id: ID;
   readonly type: MessageType.Subscribe;
   readonly payload: SubscribePayload;
 }
 
+/** @category Common */
 export interface SubscribePayload {
   readonly operationName?: string | null;
   readonly query: string;
   readonly variables?: Record<string, unknown> | null;
 }
 
+/** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
   readonly payload: ExecutionResult;
 }
 
+/** @category Common */
 export interface ErrorMessage {
   readonly id: ID;
   readonly type: MessageType.Error;
   readonly payload: readonly GraphQLError[];
 }
 
+/** @category Common */
 export interface CompleteMessage {
   readonly id: ID;
   readonly type: MessageType.Complete;
 }
 
+/** @category Common */
 export type Message<
   T extends MessageType = MessageType
 > = T extends MessageType.ConnectionAck
@@ -80,7 +92,11 @@ export type Message<
   ? CompleteMessage
   : never;
 
-/** Checks if the provided value is a message. */
+/**
+ * Checks if the provided value is a message.
+ *
+ * @category Common
+ */
 export function isMessage(val: unknown): val is Message {
   if (isObject(val)) {
     // all messages must have the `type` prop
@@ -133,7 +149,11 @@ export function isMessage(val: unknown): val is Message {
   return false;
 }
 
-/** Parses the raw websocket message data to a valid message. */
+/**
+ * Parses the raw websocket message data to a valid message.
+ *
+ * @category Common
+ */
 export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
@@ -148,7 +168,11 @@ export function parseMessage(data: unknown): Message {
   return message;
 }
 
-/** Stringifies a valid message ready to be sent through the socket. */
+/**
+ * Stringifies a valid message ready to be sent through the socket.
+ *
+ * @category Common
+ */
 export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
 ): string {

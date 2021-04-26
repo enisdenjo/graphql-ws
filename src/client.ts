@@ -19,11 +19,22 @@ import { isObject } from './utils';
 export * from './message';
 export * from './protocol';
 
+/** @category Client */
 export type EventConnecting = 'connecting';
+
+/** @category Client */
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
+
+/** @category Client */
 export type EventMessage = 'message';
+
+/** @category Client */
 export type EventClosed = 'closed';
+
+/** @category Client */
 export type EventError = 'error';
+
+/** @category Client */
 export type Event =
   | EventConnecting
   | EventConnected
@@ -38,17 +49,22 @@ export type Event =
  *
  * Also, the second argument is the optional payload that the server may
  * send through the `ConnectionAck` message.
+ *
+ * @category Client
  */
 export type EventConnectedListener = (
   socket: unknown,
   payload?: Record<string, unknown>,
 ) => void;
 
+/** @category Client */
 export type EventConnectingListener = () => void;
 
 /**
  * Called for all **valid** messages received by the client. Mainly useful for
  * debugging and logging received messages.
+ *
+ * @category Client
  */
 export type EventMessageListener = (message: Message) => void;
 
@@ -56,6 +72,8 @@ export type EventMessageListener = (message: Message) => void;
  * The argument is actually the websocket `CloseEvent`, but to avoid
  * bundling DOM typings because the client can run in Node env too,
  * you should assert the websocket type during implementation.
+ *
+ * @category Client
  */
 export type EventClosedListener = (event: unknown) => void;
 
@@ -64,9 +82,12 @@ export type EventClosedListener = (event: unknown) => void;
  * bundling DOM typings because the client can run in Node env too, you should assert
  * the type during implementation. Events dispatched from the WebSocket `onerror` can
  * be handler in this listener.
+ *
+ * @category Client
  */
 export type EventErrorListener = (error: unknown) => void;
 
+/** @category Client */
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventConnected
@@ -79,7 +100,11 @@ export type EventListener<E extends Event> = E extends EventConnecting
   ? EventErrorListener
   : never;
 
-/** Configuration used for the GraphQL over WebSocket client. */
+/**
+ * Configuration used for the GraphQL over WebSocket client.
+ *
+ * @category Client
+ */
 export interface ClientOptions {
   /**
    * URL of the GraphQL over WebSocket Protocol compliant server to connect.
@@ -212,6 +237,7 @@ export interface ClientOptions {
   generateID?: () => ID;
 }
 
+/** @category Client */
 export interface Client extends Disposable {
   /**
    * Listens on the client which dispatches events about the socket state.
@@ -225,7 +251,11 @@ export interface Client extends Disposable {
   subscribe<T = unknown>(payload: SubscribePayload, sink: Sink<T>): () => void;
 }
 
-/** Creates a disposable GraphQL over WebSocket client. */
+/**
+ * Creates a disposable GraphQL over WebSocket client.
+ * 
+ * @category Client
+ */
 export function createClient(options: ClientOptions): Client {
   const {
     url,

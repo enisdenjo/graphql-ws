@@ -6,11 +6,11 @@ protocol
 
 ## Table of contents
 
-### Variables
+### Common Variables
 
 - [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](protocol.md#graphql_transport_ws_protocol)
 
-## Variables
+## Common Variables
 
 ### GRAPHQL\_TRANSPORT\_WS\_PROTOCOL
 

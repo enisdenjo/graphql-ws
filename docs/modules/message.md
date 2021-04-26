@@ -4,11 +4,11 @@
 
 ## Table of contents
 
-### Enumerations
+### Common Enumerations
 
 - [MessageType](../enums/message.messagetype.md)
 
-### Interfaces
+### Common Interfaces
 
 - [CompleteMessage](../interfaces/message.completemessage.md)
 - [ConnectionAckMessage](../interfaces/message.connectionackmessage.md)
@@ -18,17 +18,17 @@
 - [SubscribeMessage](../interfaces/message.subscribemessage.md)
 - [SubscribePayload](../interfaces/message.subscribepayload.md)
 
-### Type aliases
+### Common Type aliases
 
 - [Message](message.md#message)
 
-### Functions
+### Common Functions
 
 - [isMessage](message.md#ismessage)
 - [parseMessage](message.md#parsemessage)
 - [stringifyMessage](message.md#stringifymessage)
 
-## Type aliases
+## Common Type aliases
 
 ### Message
 
@@ -40,7 +40,7 @@
 | :------ | :------ | :------ |
 | `T` | [*MessageType*](../enums/message.messagetype.md) | [*MessageType*](../enums/message.messagetype.md) |
 
-## Functions
+## Common Functions
 
 ### isMessage
 

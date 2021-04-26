@@ -6,16 +6,16 @@ types
 
 ## Table of contents
 
-### Interfaces
+### Common Interfaces
 
 - [Disposable](../interfaces/types.disposable.md)
 - [Sink](../interfaces/types.sink.md)
 
-### Type aliases
+### Common Type aliases
 
 - [ID](types.md#id)
 
-## Type aliases
+## Common Type aliases
 
 ### ID
 

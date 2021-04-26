@@ -4,15 +4,15 @@
 
 ## Table of contents
 
-### Interfaces
+### Server/Use Interfaces
 
 - [Extra](../interfaces/use_uwebsockets.extra.md)
 
-### Functions
+### Server/Use Functions
 
 - [makeBehavior](use_uwebsockets.md#makebehavior)
 
-## Functions
+## Server/Use Functions
 
 ### makeBehavior
 
