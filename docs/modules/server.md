@@ -4,12 +4,9 @@
 
 ## Table of contents
 
-### Other Interfaces
-
-- [Context](../interfaces/server.context.md)
-
 ### Server Interfaces
 
+- [Context](../interfaces/server.context.md)
 - [Server](../interfaces/server.server-1.md)
 - [ServerOptions](../interfaces/server.serveroptions.md)
 - [WebSocket](../interfaces/server.websocket.md)

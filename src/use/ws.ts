@@ -11,7 +11,7 @@ type WebSocketServer = ws.Server;
 /**
  * The extra that will be put in the `Context`.
  *
- * @category Server/Use
+ * @category Server/ws
  */
 export interface Extra {
   /**
@@ -29,7 +29,7 @@ export interface Extra {
  * Use the server on a [ws](https://github.com/websockets/ws) ws server.
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
  *
- * @category Server/Use
+ * @category Server/ws
  */
 export function useServer(
   options: ServerOptions<Extra>,
