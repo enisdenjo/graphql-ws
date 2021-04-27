@@ -4,11 +4,11 @@
 
 ## Table of contents
 
-### Common Enumerations
+### Enumerations
 
 - [MessageType](../enums/common.messagetype.md)
 
-### Common Interfaces
+### Interfaces
 
 - [CompleteMessage](../interfaces/common.completemessage.md)
 - [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)
@@ -20,22 +20,22 @@
 - [SubscribeMessage](../interfaces/common.subscribemessage.md)
 - [SubscribePayload](../interfaces/common.subscribepayload.md)
 
-### Common Type aliases
+### Type aliases
 
 - [ID](common.md#id)
 - [Message](common.md#message)
 
-### Common Variables
+### Variables
 
 - [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](common.md#graphql_transport_ws_protocol)
 
-### Common Functions
+### Functions
 
 - [isMessage](common.md#ismessage)
 - [parseMessage](common.md#parsemessage)
 - [stringifyMessage](common.md#stringifymessage)
 
-## Common Type aliases
+## Common
 
 ### ID
 
@@ -57,7 +57,7 @@ ___
 | :------ | :------ | :------ |
 | `T` | [*MessageType*](../enums/common.messagetype.md) | [*MessageType*](../enums/common.messagetype.md) |
 
-## Common Variables
+___
 
 ### GRAPHQL\_TRANSPORT\_WS\_PROTOCOL
 
@@ -65,7 +65,7 @@ ___
 
 The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
 
-## Common Functions
+___
 
 ### isMessage
 

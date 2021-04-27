@@ -23,12 +23,12 @@
 - [parseMessage](client.md#parsemessage)
 - [stringifyMessage](client.md#stringifymessage)
 
-### Client Interfaces
+### Interfaces
 
 - [Client](../interfaces/client.client-1.md)
 - [ClientOptions](../interfaces/client.clientoptions.md)
 
-### Client Type aliases
+### Type aliases
 
 - [Event](client.md#event)
 - [EventClosed](client.md#eventclosed)
@@ -43,107 +43,11 @@
 - [EventMessage](client.md#eventmessage)
 - [EventMessageListener](client.md#eventmessagelistener)
 
-### Client Functions
+### Functions
 
 - [createClient](client.md#createclient)
 
-## References
-
-### CompleteMessage
-
-Re-exports: [CompleteMessage](../interfaces/common.completemessage.md)
-
-___
-
-### ConnectionAckMessage
-
-Re-exports: [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)
-
-___
-
-### ConnectionInitMessage
-
-Re-exports: [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md)
-
-___
-
-### Disposable
-
-Re-exports: [Disposable](../interfaces/common.disposable.md)
-
-___
-
-### ErrorMessage
-
-Re-exports: [ErrorMessage](../interfaces/common.errormessage.md)
-
-___
-
-### GRAPHQL\_TRANSPORT\_WS\_PROTOCOL
-
-Re-exports: [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](common.md#graphql_transport_ws_protocol)
-
-___
-
-### ID
-
-Re-exports: [ID](common.md#id)
-
-___
-
-### Message
-
-Re-exports: [Message](common.md#message)
-
-___
-
-### MessageType
-
-Re-exports: [MessageType](../enums/common.messagetype.md)
-
-___
-
-### NextMessage
-
-Re-exports: [NextMessage](../interfaces/common.nextmessage.md)
-
-___
-
-### Sink
-
-Re-exports: [Sink](../interfaces/common.sink.md)
-
-___
-
-### SubscribeMessage
-
-Re-exports: [SubscribeMessage](../interfaces/common.subscribemessage.md)
-
-___
-
-### SubscribePayload
-
-Re-exports: [SubscribePayload](../interfaces/common.subscribepayload.md)
-
-___
-
-### isMessage
-
-Re-exports: [isMessage](common.md#ismessage)
-
-___
-
-### parseMessage
-
-Re-exports: [parseMessage](common.md#parsemessage)
-
-___
-
-### stringifyMessage
-
-Re-exports: [stringifyMessage](common.md#stringifymessage)
-
-## Client Type aliases
+## Client
 
 ### Event
 
@@ -295,7 +199,7 @@ debugging and logging received messages.
 
 **Returns:** *void*
 
-## Client Functions
+___
 
 ### createClient
 
@@ -310,3 +214,99 @@ Creates a disposable GraphQL over WebSocket client.
 | `options` | [*ClientOptions*](../interfaces/client.clientoptions.md) |
 
 **Returns:** [*Client*](../interfaces/client.client-1.md)
+
+## Other
+
+### CompleteMessage
+
+Re-exports: [CompleteMessage](../interfaces/common.completemessage.md)
+
+___
+
+### ConnectionAckMessage
+
+Re-exports: [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)
+
+___
+
+### ConnectionInitMessage
+
+Re-exports: [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md)
+
+___
+
+### Disposable
+
+Re-exports: [Disposable](../interfaces/common.disposable.md)
+
+___
+
+### ErrorMessage
+
+Re-exports: [ErrorMessage](../interfaces/common.errormessage.md)
+
+___
+
+### GRAPHQL\_TRANSPORT\_WS\_PROTOCOL
+
+Re-exports: [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](common.md#graphql_transport_ws_protocol)
+
+___
+
+### ID
+
+Re-exports: [ID](common.md#id)
+
+___
+
+### Message
+
+Re-exports: [Message](common.md#message)
+
+___
+
+### MessageType
+
+Re-exports: [MessageType](../enums/common.messagetype.md)
+
+___
+
+### NextMessage
+
+Re-exports: [NextMessage](../interfaces/common.nextmessage.md)
+
+___
+
+### Sink
+
+Re-exports: [Sink](../interfaces/common.sink.md)
+
+___
+
+### SubscribeMessage
+
+Re-exports: [SubscribeMessage](../interfaces/common.subscribemessage.md)
+
+___
+
+### SubscribePayload
+
+Re-exports: [SubscribePayload](../interfaces/common.subscribepayload.md)
+
+___
+
+### isMessage
+
+Re-exports: [isMessage](common.md#ismessage)
+
+___
+
+### parseMessage
+
+Re-exports: [parseMessage](common.md#parsemessage)
+
+___
+
+### stringifyMessage
+
+Re-exports: [stringifyMessage](common.md#stringifymessage)

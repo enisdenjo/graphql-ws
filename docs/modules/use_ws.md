@@ -4,15 +4,15 @@
 
 ## Table of contents
 
-### Server/ws Interfaces
+### Interfaces
 
 - [Extra](../interfaces/use_ws.extra.md)
 
-### Server/ws Functions
+### Functions
 
 - [useServer](use_ws.md#useserver)
 
-## Server/ws Functions
+## Server/ws
 
 ### useServer
 
