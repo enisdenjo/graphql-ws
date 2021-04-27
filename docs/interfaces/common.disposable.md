@@ -1,8 +1,8 @@
-[graphql-ws](../README.md) / [types](../modules/types.md) / Disposable
+[graphql-ws](../README.md) / [common](../modules/common.md) / Disposable
 
 # Interface: Disposable
 
-[types](../modules/types.md).Disposable
+[common](../modules/common.md).Disposable
 
 ## Hierarchy
 
@@ -14,7 +14,7 @@
 
 ### Properties
 
-- [dispose](types.disposable.md#dispose)
+- [dispose](common.disposable.md#dispose)
 
 ## Properties
 

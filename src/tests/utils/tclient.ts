@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../protocol';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../common';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function createTClient(

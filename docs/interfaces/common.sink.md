@@ -1,8 +1,8 @@
-[graphql-ws](../README.md) / [types](../modules/types.md) / Sink
+[graphql-ws](../README.md) / [common](../modules/common.md) / Sink
 
 # Interface: Sink<T\>
 
-[types](../modules/types.md).Sink
+[common](../modules/common.md).Sink
 
 A representation of any set of values over any amount of time.
 
@@ -16,9 +16,9 @@ A representation of any set of values over any amount of time.
 
 ### Methods
 
-- [complete](types.sink.md#complete)
-- [error](types.sink.md#error)
-- [next](types.sink.md#next)
+- [complete](common.sink.md#complete)
+- [error](common.sink.md#error)
+- [next](common.sink.md#next)
 
 ## Methods
 

@@ -1,16 +1,16 @@
-[graphql-ws](../README.md) / [message](../modules/message.md) / SubscribePayload
+[graphql-ws](../README.md) / [common](../modules/common.md) / SubscribePayload
 
 # Interface: SubscribePayload
 
-[message](../modules/message.md).SubscribePayload
+[common](../modules/common.md).SubscribePayload
 
 ## Table of contents
 
 ### Properties
 
-- [operationName](message.subscribepayload.md#operationname)
-- [query](message.subscribepayload.md#query)
-- [variables](message.subscribepayload.md#variables)
+- [operationName](common.subscribepayload.md#operationname)
+- [query](common.subscribepayload.md#query)
+- [variables](common.subscribepayload.md#variables)
 
 ## Properties
 

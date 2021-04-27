@@ -1,11 +1,10 @@
 /**
  *
- * message
+ * common
  *
  */
 
 import { GraphQLError, ExecutionResult } from 'graphql';
-import { ID } from './types';
 import {
   isObject,
   areGraphQLErrors,
@@ -13,6 +12,48 @@ import {
   hasOwnObjectProperty,
   hasOwnStringProperty,
 } from './utils';
+
+/**
+ * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
+ *
+ * @category Common
+ */
+export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';
+
+/**
+ * ID is a string type alias representing
+ * the globally unique ID used for identifying
+ * subscriptions established by the client.
+ *
+ * @category Common
+ */
+export type ID = string;
+
+/** @category Common */
+export interface Disposable {
+  /** Dispose of the instance and clear up resources. */
+  dispose: () => void | Promise<void>;
+}
+
+/**
+ * A representation of any set of values over any amount of time.
+ *
+ * @category Common
+ */
+export interface Sink<T = unknown> {
+  /** Next value arriving. */
+  next(value: T): void;
+  /**
+   * An error that has occured. Calling this function "closes" the sink.
+   * Besides the errors being `Error` and `readonly GraphQLError[]`, it
+   * can also be a `CloseEvent`, but to avoid bundling DOM typings because
+   * the client can run in Node env too, you should assert the close event
+   * type during implementation.
+   */
+  error(error: unknown): void;
+  /** The sink has completed. This function "closes" the sink. */
+  complete(): void;
+}
 
 /**
  * Types of messages allowed to be sent by the client/server over the WS protocol.

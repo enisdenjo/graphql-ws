@@ -1,8 +1,7 @@
 import type * as http from 'http';
 import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
-import { Disposable } from '../types';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL, Disposable } from '../common';
 
 // for nicer documentation
 type WebSocket = typeof ws.prototype;

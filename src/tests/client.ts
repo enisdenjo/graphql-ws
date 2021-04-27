@@ -5,7 +5,7 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { createClient, Client, EventListener } from '../client';
-import { SubscribePayload } from '../message';
+import { SubscribePayload } from '../common';
 import { startWSTServer as startTServer } from './utils';
 
 // simulate browser environment for easier client testing

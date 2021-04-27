@@ -4,20 +4,21 @@
  *
  */
 
-import { Sink, ID, Disposable } from './types';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  Sink,
+  ID,
+  Disposable,
   Message,
   MessageType,
   parseMessage,
   stringifyMessage,
   SubscribePayload,
-} from './message';
+} from './common';
 import { isObject } from './utils';
 
-// this file is the entry point for browsers, re-export relevant elements
-export * from './message';
-export * from './protocol';
+/** This file is the entry point for browsers, re-export common elements. */
+export * from './common';
 
 /** @category Client */
 export type EventConnecting = 'connecting';
@@ -253,7 +254,7 @@ export interface Client extends Disposable {
 
 /**
  * Creates a disposable GraphQL over WebSocket client.
- * 
+ *
  * @category Client
  */
 export function createClient(options: ClientOptions): Client {

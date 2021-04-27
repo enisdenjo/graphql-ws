@@ -20,8 +20,9 @@ import {
   ValidationRule,
   TypeInfo,
 } from 'graphql';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  ID,
   Message,
   MessageType,
   stringifyMessage,
@@ -30,9 +31,8 @@ import {
   NextMessage,
   ErrorMessage,
   CompleteMessage,
-} from './message';
+} from './common';
 import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
-import { ID } from './types';
 
 /** @category Server */
 export type OperationResult =

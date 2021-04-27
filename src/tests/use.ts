@@ -5,7 +5,7 @@ import {
   stringifyMessage,
   parseMessage,
   SubscribePayload,
-} from '../message';
+} from '../common';
 import { createTClient, tServers, WSExtra, UWSExtra } from './utils';
 
 for (const { tServer, startTServer } of tServers) {

@@ -8,8 +8,12 @@ import {
   ExecutionResult,
   GraphQLSchema,
 } from 'graphql';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
-import { MessageType, parseMessage, stringifyMessage } from '../message';
+import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+} from '../common';
 import { schema, schemaConfig } from './fixtures/simple';
 import { createTClient, startWSTServer as startTServer } from './utils';
 
