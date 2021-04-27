@@ -1,3 +1,10 @@
+## [4.4.3](https://github.com/enisdenjo/graphql-ws/compare/v4.4.2...v4.4.3) (2021-04-27)
+
+
+### Bug Fixes
+
+* **client:** Subscribes even if socket is in CLOSING state due to all subscriptions being completed ([3e3b8b7](https://github.com/enisdenjo/graphql-ws/commit/3e3b8b771d571f9beaee72d22481aac976af663e)), closes [#173](https://github.com/enisdenjo/graphql-ws/issues/173) [#170](https://github.com/enisdenjo/graphql-ws/issues/170)
+
 ## [4.4.2](https://github.com/enisdenjo/graphql-ws/compare/v4.4.1...v4.4.2) (2021-04-22)
 
 
