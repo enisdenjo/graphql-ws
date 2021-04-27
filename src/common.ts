@@ -191,23 +191,48 @@ export function isMessage(val: unknown): val is Message {
 }
 
 /**
+ * Function for transforming values within a message during JSON parsing
+ * The values are produced by parsing the incoming raw JSON.
+ *
+ * Read more about using it:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#using_the_reviver_parameter
+ *
+ * @category Common
+ */
+export type JSONMessageReviver = (this: any, key: string, value: any) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
  * Parses the raw websocket message data to a valid message.
  *
  * @category Common
  */
-export function parseMessage(data: unknown): Message {
+export function parseMessage(
+  data: unknown,
+  reviver?: JSONMessageReviver,
+): Message {
   if (isMessage(data)) {
     return data;
   }
   if (typeof data !== 'string') {
     throw new Error('Message not parsable');
   }
-  const message = JSON.parse(data);
+  const message = JSON.parse(data, reviver);
   if (!isMessage(message)) {
     throw new Error('Invalid message');
   }
   return message;
 }
+
+/**
+ * Function that allows customization of the produced JSON string
+ * for the elements of an outgoing `Message` object.
+ *
+ * Read more about using it:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
+ *
+ * @category Common
+ */
+export type JSONMessageReplacer = (this: any, key: string, value: any) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /**
  * Stringifies a valid message ready to be sent through the socket.
@@ -216,9 +241,10 @@ export function parseMessage(data: unknown): Message {
  */
 export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
+  replacer?: JSONMessageReplacer,
 ): string {
   if (!isMessage(msg)) {
     throw new Error('Cannot stringify invalid message');
   }
-  return JSON.stringify(msg);
+  return JSON.stringify(msg, replacer);
 }

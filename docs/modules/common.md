@@ -23,6 +23,8 @@
 ### Type aliases
 
 - [ID](common.md#id)
+- [JSONMessageReplacer](common.md#jsonmessagereplacer)
+- [JSONMessageReviver](common.md#jsonmessagereviver)
 - [Message](common.md#message)
 
 ### Variables
@@ -44,6 +46,58 @@
 ID is a string type alias representing
 the globally unique ID used for identifying
 subscriptions established by the client.
+
+___
+
+### JSONMessageReplacer
+
+Ƭ **JSONMessageReplacer**: (`this`: *any*, `key`: *string*, `value`: *any*) => *any*
+
+Function that allows customization of the produced JSON string
+for the elements of an outgoing `Message` object.
+
+Read more about using it:
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
+
+#### Type declaration:
+
+▸ (`this`: *any*, `key`: *string*, `value`: *any*): *any*
+
+#### Parameters:
+
+| Name | Type |
+| :------ | :------ |
+| `this` | *any* |
+| `key` | *string* |
+| `value` | *any* |
+
+**Returns:** *any*
+
+___
+
+### JSONMessageReviver
+
+Ƭ **JSONMessageReviver**: (`this`: *any*, `key`: *string*, `value`: *any*) => *any*
+
+Function for transforming values within a message during JSON parsing
+The values are produced by parsing the incoming raw JSON.
+
+Read more about using it:
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#using_the_reviver_parameter
+
+#### Type declaration:
+
+▸ (`this`: *any*, `key`: *string*, `value`: *any*): *any*
+
+#### Parameters:
+
+| Name | Type |
+| :------ | :------ |
+| `this` | *any* |
+| `key` | *string* |
+| `value` | *any* |
+
+**Returns:** *any*
 
 ___
 
@@ -85,7 +139,7 @@ ___
 
 ### parseMessage
 
-▸ **parseMessage**(`data`: *unknown*): [*Message*](common.md#message)
+▸ **parseMessage**(`data`: *unknown*, `reviver?`: [*JSONMessageReviver*](common.md#jsonmessagereviver)): [*Message*](common.md#message)
 
 Parses the raw websocket message data to a valid message.
 
@@ -94,6 +148,7 @@ Parses the raw websocket message data to a valid message.
 | Name | Type |
 | :------ | :------ |
 | `data` | *unknown* |
+| `reviver?` | [*JSONMessageReviver*](common.md#jsonmessagereviver) |
 
 **Returns:** [*Message*](common.md#message)
 
@@ -101,7 +156,7 @@ ___
 
 ### stringifyMessage
 
-▸ **stringifyMessage**<T\>(`msg`: [*Message*](common.md#message)<T\>): *string*
+▸ **stringifyMessage**<T\>(`msg`: [*Message*](common.md#message)<T\>, `replacer?`: [*JSONMessageReplacer*](common.md#jsonmessagereplacer)): *string*
 
 Stringifies a valid message ready to be sent through the socket.
 
@@ -116,5 +171,6 @@ Stringifies a valid message ready to be sent through the socket.
 | Name | Type |
 | :------ | :------ |
 | `msg` | [*Message*](common.md#message)<T\> |
+| `replacer?` | [*JSONMessageReplacer*](common.md#jsonmessagereplacer) |
 
 **Returns:** *string*

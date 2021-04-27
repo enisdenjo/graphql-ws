@@ -31,6 +31,8 @@ import {
   NextMessage,
   ErrorMessage,
   CompleteMessage,
+  JSONMessageReplacer,
+  JSONMessageReviver,
 } from './common';
 import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
 
@@ -364,6 +366,18 @@ export interface ServerOptions<E = unknown> {
     ctx: Context<E>,
     message: CompleteMessage,
   ) => Promise<void> | void;
+  /**
+   * An optional override for the JSON.parse function used to hydrate
+   * incoming messages to this server. Useful for parsing custom datatypes
+   * out of the incoming JSON.
+   */
+  jsonMessageReviver?: JSONMessageReviver;
+  /**
+   * An optional override for the JSON.stringify function used to serialize
+   * outgoing messages to from server. Useful for serializing custom
+   * datatypes out to the client.
+   */
+  jsonMessageReplacer?: JSONMessageReplacer;
 }
 
 /** @category Server */
@@ -493,6 +507,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     onNext,
     onError,
     onComplete,
+    jsonMessageReviver: reviver,
+    jsonMessageReplacer: replacer,
   } = options;
 
   return {
@@ -525,7 +541,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       socket.onMessage(async function onMessage(data) {
         let message: Message;
         try {
-          message = parseMessage(data);
+          message = parseMessage(data, reviver);
         } catch (err) {
           return socket.close(4400, 'Invalid message received');
         }
@@ -556,6 +572,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                       type: MessageType.ConnectionAck,
                       // payload is completely absent if not provided
                     },
+                replacer,
               ),
             );
 
@@ -593,7 +610,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                     payload: maybeResult,
                   };
                 await socket.send(
-                  stringifyMessage<MessageType.Next>(nextMessage),
+                  stringifyMessage<MessageType.Next>(nextMessage, replacer),
                 );
               },
               error: async (errors: readonly GraphQLError[]) => {
@@ -609,7 +626,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                     payload: maybeErrors,
                   };
                 await socket.send(
-                  stringifyMessage<MessageType.Error>(errorMessage),
+                  stringifyMessage<MessageType.Error>(errorMessage, replacer),
                 );
               },
               complete: async (notifyClient: boolean) => {
@@ -620,7 +637,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
                 await onComplete?.(ctx, completeMessage);
                 if (notifyClient)
                   await socket.send(
-                    stringifyMessage<MessageType.Complete>(completeMessage),
+                    stringifyMessage<MessageType.Complete>(
+                      completeMessage,
+                      replacer,
+                    ),
                   );
               },
             };

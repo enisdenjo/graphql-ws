@@ -14,6 +14,8 @@ import {
   parseMessage,
   stringifyMessage,
   SubscribePayload,
+  JSONMessageReviver,
+  JSONMessageReplacer,
 } from './common';
 import { isObject } from './utils';
 
@@ -236,6 +238,18 @@ export interface ClientOptions {
    * Reference: https://gist.github.com/jed/982883
    */
   generateID?: () => ID;
+  /**
+   * An optional override for the JSON.parse function used to hydrate
+   * incoming messages to this client. Useful for parsing custom datatypes
+   * out of the incoming JSON.
+   */
+  jsonMessageReviver?: JSONMessageReviver;
+  /**
+   * An optional override for the JSON.stringify function used to serialize
+   * outgoing messages from this client. Useful for serializing custom
+   * datatypes out to the client.
+   */
+  jsonMessageReplacer?: JSONMessageReplacer;
 }
 
 /** @category Client */
@@ -298,6 +312,8 @@ export function createClient(options: ClientOptions): Client {
         return v.toString(16);
       });
     },
+    jsonMessageReplacer: replacer,
+    jsonMessageReviver: reviver,
   } = options;
 
   let ws;
@@ -412,13 +428,16 @@ export function createClient(options: ClientOptions): Client {
           socket.onopen = async () => {
             try {
               socket.send(
-                stringifyMessage<MessageType.ConnectionInit>({
-                  type: MessageType.ConnectionInit,
-                  payload:
-                    typeof connectionParams === 'function'
-                      ? await connectionParams()
-                      : connectionParams,
-                }),
+                stringifyMessage<MessageType.ConnectionInit>(
+                  {
+                    type: MessageType.ConnectionInit,
+                    payload:
+                      typeof connectionParams === 'function'
+                        ? await connectionParams()
+                        : connectionParams,
+                  },
+                  replacer,
+                ),
               );
             } catch (err) {
               socket.close(
@@ -431,7 +450,7 @@ export function createClient(options: ClientOptions): Client {
           let acknowledged = false;
           socket.onmessage = ({ data }) => {
             try {
-              const message = parseMessage(data);
+              const message = parseMessage(data, reviver);
               emitter.emit('message', message);
               if (acknowledged) return; // already connected and acknowledged
 
@@ -600,21 +619,27 @@ export function createClient(options: ClientOptions): Client {
             });
 
             socket.send(
-              stringifyMessage<MessageType.Subscribe>({
-                id,
-                type: MessageType.Subscribe,
-                payload,
-              }),
+              stringifyMessage<MessageType.Subscribe>(
+                {
+                  id,
+                  type: MessageType.Subscribe,
+                  payload,
+                },
+                replacer,
+              ),
             );
 
             releaser = () => {
               if (!done && socket.readyState === WebSocketImpl.OPEN)
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
-                  stringifyMessage<MessageType.Complete>({
-                    id,
-                    type: MessageType.Complete,
-                  }),
+                  stringifyMessage<MessageType.Complete>(
+                    {
+                      id,
+                      type: MessageType.Complete,
+                    },
+                    replacer,
+                  ),
                 );
               locks--;
               done = true;

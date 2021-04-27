@@ -1527,6 +1527,56 @@ describe('Subscribe', () => {
 
     await server.waitForComplete();
   });
+
+  it('should use a custom JSON message replacer function', async () => {
+    const { url } = await startTServer({
+      schema,
+      jsonMessageReplacer: (_, value) => {
+        if (typeof value == 'string') {
+          return value.toUpperCase();
+        }
+        return value;
+      },
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(data).toBe('{"type":"CONNECTION_ACK"}');
+    });
+
+    client.ws.close(4321, 'Byebye');
+  });
+
+  it('should use a custom JSON message reviver function', async () => {
+    const { url } = await startTServer({
+      schema,
+      jsonMessageReviver: (_, value) => {
+        if (typeof value == 'string') {
+          return value.toLowerCase();
+        }
+        return value;
+      },
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      JSON.stringify({
+        type: MessageType.ConnectionInit.toUpperCase(),
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.close(4321, 'Byebye');
+  });
 });
 
 describe('Disconnect/close', () => {
