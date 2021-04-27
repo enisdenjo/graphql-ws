@@ -1183,6 +1183,36 @@ describe('reconnecting', () => {
     // only one retry had happened (for first subscription)
     expect(retry).toBeCalledTimes(1);
   });
+
+  it('should subscribe even if socket is in CLOSING state due to all subscriptions being completed', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true,
+      retryAttempts: 0,
+    });
+
+    // subscribe and wait for operation
+    let sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+    await server.waitForOperation();
+
+    // complete the subscription
+    sub.dispose();
+
+    // give room for the socket close in the stack
+    await new Promise((resolve) => setImmediate(resolve));
+
+    // immediately subscribe again
+    sub = tsubscribe(client, {
+      query: 'subscription { ping }',
+    });
+
+    // the new subscription should go through
+    await server.waitForOperation();
+  });
 });
 
 describe('events', () => {

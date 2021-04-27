@@ -459,6 +459,9 @@ export function createClient(options: ClientOptions): Client {
         })(),
       )));
 
+    // if the provided socket is in a closing state, wait for the throw on close
+    if (socket.readyState === WebSocketImpl.CLOSING) await throwOnClose;
+
     let release = () => {
       // releases this connection
     };
@@ -511,12 +514,13 @@ export function createClient(options: ClientOptions): Client {
     )
       throw errOrCloseEvent;
 
-    // disposed or normal closure (completed), shouldnt try again
-    if (
-      disposed ||
-      (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
-    )
-      return false;
+    // client was disposed, no retries should proceed regardless
+    if (disposed) return false;
+
+    // normal closure (possibly all subscriptions have completed)
+    // if no locks were acquired in the meantime, shouldnt try again
+    if (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1000)
+      return locks > 0;
 
     // retries are not allowed or we tried to many times, report error
     if (!retryAttempts || retries >= retryAttempts) throw errOrCloseEvent;
