@@ -7,9 +7,7 @@ graphql-ws
 ### Modules
 
 - [client](modules/client.md)
-- [message](modules/message.md)
-- [protocol](modules/protocol.md)
+- [common](modules/common.md)
 - [server](modules/server.md)
-- [types](modules/types.md)
 - [use/uWebSockets](modules/use_uwebsockets.md)
 - [use/ws](modules/use_ws.md)

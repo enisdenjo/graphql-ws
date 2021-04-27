@@ -1,8 +1,7 @@
 import type * as http from 'http';
 import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
-import { Disposable } from '../types';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../protocol';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL, Disposable } from '../common';
 
 // for nicer documentation
 type WebSocket = typeof ws.prototype;
@@ -10,6 +9,8 @@ type WebSocketServer = ws.Server;
 
 /**
  * The extra that will be put in the `Context`.
+ *
+ * @category Server/ws
  */
 export interface Extra {
   /**
@@ -26,6 +27,8 @@ export interface Extra {
 /**
  * Use the server on a [ws](https://github.com/websockets/ws) ws server.
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
+ *
+ * @category Server/ws
  */
 export function useServer(
   options: ServerOptions<Extra>,

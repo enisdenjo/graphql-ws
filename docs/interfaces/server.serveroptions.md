@@ -52,7 +52,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs) => [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs) => [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -129,7 +129,7 @@ ___
 
 ### onComplete
 
-• `Optional` **onComplete**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)) => *void* \| *Promise*<void\>
+• `Optional` **onComplete**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](common.completemessage.md)) => *void* \| *Promise*<void\>
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -145,14 +145,14 @@ will still be called.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](message.completemessage.md)): *void* \| *Promise*<void\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](common.completemessage.md)): *void* \| *Promise*<void\>
 
 #### Parameters:
 
 | Name | Type |
 | :------ | :------ |
 | `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*CompleteMessage*](message.completemessage.md) |
+| `message` | [*CompleteMessage*](common.completemessage.md) |
 
 **Returns:** *void* \| *Promise*<void\>
 
@@ -236,7 +236,7 @@ ___
 
 ### onError
 
-• `Optional` **onError**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+• `Optional` **onError**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](common.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -252,14 +252,14 @@ in the close event reason.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](message.errormessage.md), `errors`: readonly *GraphQLError*[]): *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](common.errormessage.md), `errors`: readonly *GraphQLError*[]): *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
 #### Parameters:
 
 | Name | Type |
 | :------ | :------ |
 | `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*ErrorMessage*](message.errormessage.md) |
+| `message` | [*ErrorMessage*](common.errormessage.md) |
 | `errors` | readonly *GraphQLError*[] |
 
 **Returns:** *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
@@ -268,7 +268,7 @@ ___
 
 ### onNext
 
-• `Optional` **onNext**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onNext**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](common.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -285,14 +285,14 @@ in the close event reason.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](message.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>): *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](common.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>): *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
 #### Parameters:
 
 | Name | Type |
 | :------ | :------ |
 | `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*NextMessage*](message.nextmessage.md) |
+| `message` | [*NextMessage*](common.nextmessage.md) |
 | `args` | ExecutionArgs |
 | `result` | *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> |
 
@@ -302,7 +302,7 @@ ___
 
 ### onOperation
 
-• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
+• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -325,14 +325,14 @@ in the close event reason.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
 #### Parameters:
 
 | Name | Type |
 | :------ | :------ |
 | `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*SubscribeMessage*](message.subscribemessage.md) |
+| `message` | [*SubscribeMessage*](common.subscribemessage.md) |
 | `args` | ExecutionArgs |
 | `result` | [*OperationResult*](../modules/server.md#operationresult) |
 
@@ -342,7 +342,7 @@ ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+• `Optional` **onSubscribe**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -374,14 +374,14 @@ in the close event reason.
 
 #### Type declaration:
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md)): *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md)): *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
 #### Parameters:
 
 | Name | Type |
 | :------ | :------ |
 | `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*SubscribeMessage*](message.subscribemessage.md) |
+| `message` | [*SubscribeMessage*](common.subscribemessage.md) |
 
 **Returns:** *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
@@ -411,7 +411,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](message.subscribemessage.md), `args`: *Omit*<ExecutionArgs, ``"schema"``\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
+• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: *Omit*<ExecutionArgs, ``"schema"``\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.

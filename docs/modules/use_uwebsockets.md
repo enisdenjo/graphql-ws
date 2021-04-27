@@ -12,7 +12,7 @@
 
 - [makeBehavior](use_uwebsockets.md#makebehavior)
 
-## Functions
+## Server/uWebSockets
 
 ### makeBehavior
 

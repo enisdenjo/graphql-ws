@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* [*Disposable*](types.disposable.md)
+* [*Disposable*](common.disposable.md)
 
   ↳ **Client**
 
@@ -35,7 +35,7 @@ Dispose of the instance and clear up resources.
 
 **Returns:** *void* \| *Promise*<void\>
 
-Inherited from: [Disposable](types.disposable.md).[dispose](types.disposable.md#dispose)
+Inherited from: [Disposable](common.disposable.md).[dispose](common.disposable.md#dispose)
 
 ## Methods
 
@@ -64,7 +64,7 @@ ___
 
 ### subscribe
 
-▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](message.subscribepayload.md), `sink`: [*Sink*](types.sink.md)<T\>): *function*
+▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](common.subscribepayload.md), `sink`: [*Sink*](common.sink.md)<T\>): *function*
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -80,7 +80,7 @@ function used for dropping the subscription and cleaning stuff up.
 
 | Name | Type |
 | :------ | :------ |
-| `payload` | [*SubscribePayload*](message.subscribepayload.md) |
-| `sink` | [*Sink*](types.sink.md)<T\> |
+| `payload` | [*SubscribePayload*](common.subscribepayload.md) |
+| `sink` | [*Sink*](common.sink.md)<T\> |
 
 **Returns:** () => *void*

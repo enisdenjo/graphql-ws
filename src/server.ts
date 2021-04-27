@@ -20,8 +20,9 @@ import {
   ValidationRule,
   TypeInfo,
 } from 'graphql';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
 import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  ID,
   Message,
   MessageType,
   stringifyMessage,
@@ -30,10 +31,10 @@ import {
   NextMessage,
   ErrorMessage,
   CompleteMessage,
-} from './message';
+} from './common';
 import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
-import { ID } from './types';
 
+/** @category Server */
 export type OperationResult =
   | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
   | AsyncIterableIterator<ExecutionResult>
@@ -46,6 +47,8 @@ export type OperationResult =
  * with `any` or `unknown` to `any` or `unknown`. So,
  * we use a custom type to allow definitions such as
  * the `context` server option.
+ *
+ * @category Server
  */
 export type GraphQLExecutionContextValue =
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -57,6 +60,7 @@ export type GraphQLExecutionContextValue =
   | undefined
   | null;
 
+/** @category Server */
 export interface ServerOptions<E = unknown> {
   /**
    * The GraphQL schema on which the operations
@@ -362,6 +366,7 @@ export interface ServerOptions<E = unknown> {
   ) => Promise<void> | void;
 }
 
+/** @category Server */
 export interface Server<E = undefined> {
   /**
    * New socket has beeen established. The lib will validate
@@ -383,6 +388,7 @@ export interface Server<E = undefined> {
   ): (code: number, reason: string) => Promise<void>; // closed
 }
 
+/** @category Server */
 export interface WebSocket {
   /**
    * The subprotocol of the WebSocket. Will be used
@@ -426,6 +432,7 @@ export interface WebSocket {
   onMessage(cb: (data: string) => Promise<void>): void;
 }
 
+/** @category Server */
 export interface Context<E = unknown> {
   /**
    * Indicates that the `ConnectionInit` message
@@ -466,6 +473,8 @@ export interface Context<E = unknown> {
  * server library!
  *
  * Read more about the Protocol in the PROTOCOL.md documentation file.
+ *
+ * @category Server
  */
 export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
   const {

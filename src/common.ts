@@ -1,11 +1,10 @@
 /**
  *
- * message
+ * common
  *
  */
 
 import { GraphQLError, ExecutionResult } from 'graphql';
-import { ID } from './types';
 import {
   isObject,
   areGraphQLErrors,
@@ -14,7 +13,53 @@ import {
   hasOwnStringProperty,
 } from './utils';
 
-/** Types of messages allowed to be sent by the client/server over the WS protocol. */
+/**
+ * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
+ *
+ * @category Common
+ */
+export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';
+
+/**
+ * ID is a string type alias representing
+ * the globally unique ID used for identifying
+ * subscriptions established by the client.
+ *
+ * @category Common
+ */
+export type ID = string;
+
+/** @category Common */
+export interface Disposable {
+  /** Dispose of the instance and clear up resources. */
+  dispose: () => void | Promise<void>;
+}
+
+/**
+ * A representation of any set of values over any amount of time.
+ *
+ * @category Common
+ */
+export interface Sink<T = unknown> {
+  /** Next value arriving. */
+  next(value: T): void;
+  /**
+   * An error that has occured. Calling this function "closes" the sink.
+   * Besides the errors being `Error` and `readonly GraphQLError[]`, it
+   * can also be a `CloseEvent`, but to avoid bundling DOM typings because
+   * the client can run in Node env too, you should assert the close event
+   * type during implementation.
+   */
+  error(error: unknown): void;
+  /** The sink has completed. This function "closes" the sink. */
+  complete(): void;
+}
+
+/**
+ * Types of messages allowed to be sent by the client/server over the WS protocol.
+ *
+ * @category Common
+ */
 export enum MessageType {
   ConnectionInit = 'connection_init', // Client -> Server
   ConnectionAck = 'connection_ack', // Server -> Client
@@ -25,45 +70,53 @@ export enum MessageType {
   Complete = 'complete', // bidirectional
 }
 
+/** @category Common */
 export interface ConnectionInitMessage {
   readonly type: MessageType.ConnectionInit;
   readonly payload?: Record<string, unknown>;
 }
 
+/** @category Common */
 export interface ConnectionAckMessage {
   readonly type: MessageType.ConnectionAck;
   readonly payload?: Record<string, unknown>;
 }
 
+/** @category Common */
 export interface SubscribeMessage {
   readonly id: ID;
   readonly type: MessageType.Subscribe;
   readonly payload: SubscribePayload;
 }
 
+/** @category Common */
 export interface SubscribePayload {
   readonly operationName?: string | null;
   readonly query: string;
   readonly variables?: Record<string, unknown> | null;
 }
 
+/** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
   readonly payload: ExecutionResult;
 }
 
+/** @category Common */
 export interface ErrorMessage {
   readonly id: ID;
   readonly type: MessageType.Error;
   readonly payload: readonly GraphQLError[];
 }
 
+/** @category Common */
 export interface CompleteMessage {
   readonly id: ID;
   readonly type: MessageType.Complete;
 }
 
+/** @category Common */
 export type Message<
   T extends MessageType = MessageType
 > = T extends MessageType.ConnectionAck
@@ -80,7 +133,11 @@ export type Message<
   ? CompleteMessage
   : never;
 
-/** Checks if the provided value is a message. */
+/**
+ * Checks if the provided value is a message.
+ *
+ * @category Common
+ */
 export function isMessage(val: unknown): val is Message {
   if (isObject(val)) {
     // all messages must have the `type` prop
@@ -133,7 +190,11 @@ export function isMessage(val: unknown): val is Message {
   return false;
 }
 
-/** Parses the raw websocket message data to a valid message. */
+/**
+ * Parses the raw websocket message data to a valid message.
+ *
+ * @category Common
+ */
 export function parseMessage(data: unknown): Message {
   if (isMessage(data)) {
     return data;
@@ -148,7 +209,11 @@ export function parseMessage(data: unknown): Message {
   return message;
 }
 
-/** Stringifies a valid message ready to be sent through the socket. */
+/**
+ * Stringifies a valid message ready to be sent through the socket.
+ *
+ * @category Common
+ */
 export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
 ): string {

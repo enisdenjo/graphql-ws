@@ -120,7 +120,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void* ; `message`: (`message`: [*ConnectionInitMessage*](message.connectioninitmessage.md) \| [*ConnectionAckMessage*](message.connectionackmessage.md) \| [*SubscribeMessage*](message.subscribemessage.md) \| [*NextMessage*](message.nextmessage.md) \| [*ErrorMessage*](message.errormessage.md) \| [*CompleteMessage*](message.completemessage.md)) => *void*  }\>
+• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void* ; `message`: (`message`: [*ConnectionInitMessage*](common.connectioninitmessage.md) \| [*ConnectionAckMessage*](common.connectionackmessage.md) \| [*SubscribeMessage*](common.subscribemessage.md) \| [*NextMessage*](common.nextmessage.md) \| [*ErrorMessage*](common.errormessage.md) \| [*CompleteMessage*](common.completemessage.md)) => *void*  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.

@@ -20,7 +20,7 @@
 
 - [makeServer](server.md#makeserver)
 
-## Type aliases
+## Server
 
 ### GraphQLExecutionContextValue
 
@@ -39,7 +39,7 @@ ___
 
 Ƭ **OperationResult**: *Promise*<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
 
-## Functions
+___
 
 ### makeServer
 

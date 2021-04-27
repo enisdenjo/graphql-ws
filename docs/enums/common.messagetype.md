@@ -1,8 +1,8 @@
-[graphql-ws](../README.md) / [message](../modules/message.md) / MessageType
+[graphql-ws](../README.md) / [common](../modules/common.md) / MessageType
 
 # Enumeration: MessageType
 
-[message](../modules/message.md).MessageType
+[common](../modules/common.md).MessageType
 
 Types of messages allowed to be sent by the client/server over the WS protocol.
 
@@ -10,12 +10,12 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 
 ### Enumeration members
 
-- [Complete](message.messagetype.md#complete)
-- [ConnectionAck](message.messagetype.md#connectionack)
-- [ConnectionInit](message.messagetype.md#connectioninit)
-- [Error](message.messagetype.md#error)
-- [Next](message.messagetype.md#next)
-- [Subscribe](message.messagetype.md#subscribe)
+- [Complete](common.messagetype.md#complete)
+- [ConnectionAck](common.messagetype.md#connectionack)
+- [ConnectionInit](common.messagetype.md#connectioninit)
+- [Error](common.messagetype.md#error)
+- [Next](common.messagetype.md#next)
+- [Subscribe](common.messagetype.md#subscribe)
 
 ## Enumeration members
 
