@@ -1,3 +1,11 @@
+## [4.4.4](https://github.com/enisdenjo/graphql-ws/compare/v4.4.3...v4.4.4) (2021-04-28)
+
+
+### Bug Fixes
+
+* **client:** `complete` should not be called after subscription `error` ([1fba419](https://github.com/enisdenjo/graphql-ws/commit/1fba4196306991eab1ca74d710adb66e894692a0))
+* **client:** Subscription can be disposed only once ([abd9c28](https://github.com/enisdenjo/graphql-ws/commit/abd9c28a9d2c43de9babb3488d7cb9eb7f3d3e15)), closes [#170](https://github.com/enisdenjo/graphql-ws/issues/170)
+
 ## [4.4.3](https://github.com/enisdenjo/graphql-ws/compare/v4.4.2...v4.4.3) (2021-04-27)
 
 
