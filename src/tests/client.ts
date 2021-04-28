@@ -329,6 +329,29 @@ it('should not send the complete message if the socket is not open', async () =>
   await sub.waitForComplete();
 });
 
+it('should not call complete after subscription error', async () => {
+  const { url } = await startTServer();
+
+  const client = createClient({
+    url,
+    lazy: true,
+    retryAttempts: 0,
+  });
+
+  // invalid subscription
+  const sub = tsubscribe(client, {
+    query: '{ iDontExist }',
+  });
+
+  // report error
+  await sub.waitForError();
+
+  // but not complete
+  await sub.waitForComplete(() => {
+    fail("shouldn't have completed");
+  }, 20);
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();
