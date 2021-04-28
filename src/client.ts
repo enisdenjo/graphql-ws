@@ -609,7 +609,6 @@ export function createClient(options: ClientOptions): Client {
             );
 
             releaser = () => {
-              locks--;
               if (!completed && socket.readyState === WebSocketImpl.OPEN)
                 // if not completed already and socket is open, send complete message to server on release
                 socket.send(
@@ -618,6 +617,8 @@ export function createClient(options: ClientOptions): Client {
                     type: MessageType.Complete,
                   }),
                 );
+              locks--;
+              completed = true;
               release();
             };
 
@@ -635,7 +636,10 @@ export function createClient(options: ClientOptions): Client {
         .catch(sink.error) // rejects on close events and errors
         .then(sink.complete); // resolves on release or normal closure
 
-      return () => releaser();
+      return () => {
+        // allow disposing only if not already completed
+        if (!completed) releaser();
+      };
     },
     async dispose() {
       disposed = true;

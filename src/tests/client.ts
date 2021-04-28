@@ -754,6 +754,40 @@ describe('lazy', () => {
       client.close();
     });
   });
+
+  it('should not close connection if a subscription is disposed multiple times', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true,
+      retryAttempts: 0,
+    });
+
+    // create 2 subscriptions
+    const sub0 = tsubscribe(client, {
+      query: 'subscription { ping(key: "0") }',
+    });
+    await server.waitForOperation();
+
+    const sub1 = tsubscribe(client, {
+      query: 'subscription { ping(key: "1") }',
+    });
+    await server.waitForOperation();
+
+    // dispose of the 2nd subscription 2 times (try decrementing locks twice)
+    sub1.dispose();
+    sub1.dispose();
+
+    // first subscription shouldnt complete and the client shouldnt disconnect
+    await sub0.waitForComplete(() => {
+      fail("subscription shouldn't have completed");
+    }, 20);
+
+    await server.waitForClientClose(() => {
+      fail("client shouldn't have closed");
+    }, 20);
+  });
 });
 
 describe('reconnecting', () => {
