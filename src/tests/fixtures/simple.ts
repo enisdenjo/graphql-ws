@@ -26,10 +26,6 @@ export const schemaConfig: GraphQLSchemaConfig = {
         type: new GraphQLNonNull(GraphQLString),
         resolve: () => 'value',
       },
-      value: {
-        type: new GraphQLNonNull(GraphQLString),
-        resolve: () => 'value',
-      },
     },
   }),
   subscription: new GraphQLObjectType({
