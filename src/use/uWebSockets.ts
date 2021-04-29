@@ -98,9 +98,6 @@ export function makeBehavior(
         {
           protocol: request.getHeader('sec-websocket-protocol'),
           send: async (message) => {
-            // send to available/open clients only
-            if (!clients.has(socket)) return;
-
             if (!socket.send(message))
               // if backpressure is built up wait for drain
               await new Promise<void>((resolve) => (onDrain = resolve));
