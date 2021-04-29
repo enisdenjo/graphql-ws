@@ -352,49 +352,51 @@ it('should not call complete after subscription error', async () => {
   }, 20);
 });
 
-it('should use a custom json message reviver and replacer function', async () => {
-  const { url } = await startTServer({
-    jsonMessageReplacer: (_, value) => {
-      if (typeof value == 'string') {
-        return value.toUpperCase();
-      }
-      return value;
-    },
-    jsonMessageReviver: (_, value) => {
-      if (typeof value == 'string') {
-        return value.toLowerCase();
-      }
-      return value;
-    },
-  });
+it('should use a custom JSON message reviver function', async () => {
+  const { url } = await startTServer();
 
   const client = createClient({
     url,
+    lazy: false,
     retryAttempts: 0,
     onNonLazyError: noop,
-    jsonMessageReplacer: (_, value) => {
-      if (typeof value == 'string') {
-        return value.toUpperCase();
-      }
-      return value;
-    },
-    jsonMessageReviver: (_, value) => {
-      if (typeof value == 'string') {
-        return value.toLowerCase();
+    jsonMessageReviver: (key, value) => {
+      if (key === 'getValue') {
+        return 'VALUE';
       }
       return value;
     },
   });
 
-  const sub = tsubscribe(client, {
-    query: 'query { value }',
+  await tsubscribe(client, {
+    query: '{ getValue }',
+  }).waitForNext((data) => {
+    expect(data).toEqual({ data: { getValue: 'VALUE' } });
+  });
+});
+
+it('should use a custom JSON message replacer function', async (done) => {
+  const { url, waitForClient } = await startTServer();
+
+  createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    jsonMessageReplacer: (key, value) => {
+      if (key === 'type') {
+        return 'CONNECTION_INIT';
+      }
+      return value;
+    },
   });
 
-  await sub.waitForNext((result) => {
-    expect(result).toEqual({ data: { value: 'value' } });
+  await waitForClient((client) => {
+    client.onMessage((data) => {
+      expect(data).toBe('{"type":"CONNECTION_INIT"}');
+      done();
+    });
   });
-
-  await sub.waitForComplete();
 });
 
 describe('query operation', () => {
