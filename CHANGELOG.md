@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/enisdenjo/graphql-ws/compare/v4.4.4...v4.5.0) (2021-04-29)
+
+
+### Features
+
+* Support custom JSON message `reviver` and `replacer` ([#172](https://github.com/enisdenjo/graphql-ws/issues/172)) ([0a9894e](https://github.com/enisdenjo/graphql-ws/commit/0a9894e21c42e70158ad65f045c8467c7177d4fa))
+
 ## [4.4.4](https://github.com/enisdenjo/graphql-ws/compare/v4.4.3...v4.4.4) (2021-04-28)
 
 
