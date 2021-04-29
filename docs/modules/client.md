@@ -13,6 +13,8 @@
 - [ErrorMessage](client.md#errormessage)
 - [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](client.md#graphql_transport_ws_protocol)
 - [ID](client.md#id)
+- [JSONMessageReplacer](client.md#jsonmessagereplacer)
+- [JSONMessageReviver](client.md#jsonmessagereviver)
 - [Message](client.md#message)
 - [MessageType](client.md#messagetype)
 - [NextMessage](client.md#nextmessage)
@@ -256,6 +258,18 @@ ___
 ### ID
 
 Re-exports: [ID](common.md#id)
+
+___
+
+### JSONMessageReplacer
+
+Re-exports: [JSONMessageReplacer](common.md#jsonmessagereplacer)
+
+___
+
+### JSONMessageReviver
+
+Re-exports: [JSONMessageReviver](common.md#jsonmessagereviver)
 
 ___
 

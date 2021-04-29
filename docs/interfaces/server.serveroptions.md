@@ -17,6 +17,8 @@
 - [connectionInitWaitTimeout](server.serveroptions.md#connectioninitwaittimeout)
 - [context](server.serveroptions.md#context)
 - [execute](server.serveroptions.md#execute)
+- [jsonMessageReplacer](server.serveroptions.md#jsonmessagereplacer)
+- [jsonMessageReviver](server.serveroptions.md#jsonmessagereviver)
 - [onClose](server.serveroptions.md#onclose)
 - [onComplete](server.serveroptions.md#oncomplete)
 - [onConnect](server.serveroptions.md#onconnect)
@@ -91,6 +93,26 @@ in the close event reason.
 | `args` | ExecutionArgs |
 
 **Returns:** [*OperationResult*](../modules/server.md#operationresult)
+
+___
+
+### jsonMessageReplacer
+
+• `Optional` **jsonMessageReplacer**: [*JSONMessageReplacer*](../modules/common.md#jsonmessagereplacer)
+
+An optional override for the JSON.stringify function used to serialize
+outgoing messages to from server. Useful for serializing custom
+datatypes out to the client.
+
+___
+
+### jsonMessageReviver
+
+• `Optional` **jsonMessageReviver**: [*JSONMessageReviver*](../modules/common.md#jsonmessagereviver)
+
+An optional override for the JSON.parse function used to hydrate
+incoming messages to this server. Useful for parsing custom datatypes
+out of the incoming JSON.
 
 ___
 

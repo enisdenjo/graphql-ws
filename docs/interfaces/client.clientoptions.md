@@ -13,6 +13,8 @@ Configuration used for the GraphQL over WebSocket client.
 - [connectionParams](client.clientoptions.md#connectionparams)
 - [generateID](client.clientoptions.md#generateid)
 - [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
+- [jsonMessageReplacer](client.clientoptions.md#jsonmessagereplacer)
+- [jsonMessageReviver](client.clientoptions.md#jsonmessagereviver)
 - [keepAlive](client.clientoptions.md#keepalive)
 - [lazy](client.clientoptions.md#lazy)
 - [on](client.clientoptions.md#on)
@@ -89,6 +91,26 @@ option.
 | `errOrCloseEvent` | *unknown* |
 
 **Returns:** *boolean*
+
+___
+
+### jsonMessageReplacer
+
+• `Optional` **jsonMessageReplacer**: [*JSONMessageReplacer*](../modules/common.md#jsonmessagereplacer)
+
+An optional override for the JSON.stringify function used to serialize
+outgoing messages from this client. Useful for serializing custom
+datatypes out to the client.
+
+___
+
+### jsonMessageReviver
+
+• `Optional` **jsonMessageReviver**: [*JSONMessageReviver*](../modules/common.md#jsonmessagereviver)
+
+An optional override for the JSON.parse function used to hydrate
+incoming messages to this client. Useful for parsing custom datatypes
+out of the incoming JSON.
 
 ___
 

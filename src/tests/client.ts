@@ -352,6 +352,53 @@ it('should not call complete after subscription error', async () => {
   }, 20);
 });
 
+it('should use a custom JSON message reviver function', async () => {
+  const { url } = await startTServer();
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    jsonMessageReviver: (key, value) => {
+      if (key === 'getValue') {
+        return 'VALUE';
+      }
+      return value;
+    },
+  });
+
+  await tsubscribe(client, {
+    query: '{ getValue }',
+  }).waitForNext((data) => {
+    expect(data).toEqual({ data: { getValue: 'VALUE' } });
+  });
+});
+
+it('should use a custom JSON message replacer function', async (done) => {
+  const { url, waitForClient } = await startTServer();
+
+  createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    jsonMessageReplacer: (key, value) => {
+      if (key === 'type') {
+        return 'CONNECTION_INIT';
+      }
+      return value;
+    },
+  });
+
+  await waitForClient((client) => {
+    client.onMessage((data) => {
+      expect(data).toBe('{"type":"CONNECTION_INIT"}');
+      done();
+    });
+  });
+});
+
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
     const { url } = await startTServer();

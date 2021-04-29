@@ -416,6 +416,52 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
   );
 });
 
+it('should use a custom JSON message replacer function', async () => {
+  const { url } = await startTServer({
+    schema,
+    jsonMessageReplacer: (key, value) => {
+      if (key === 'type') {
+        return 'CONNECTION_ACK';
+      }
+      return value;
+    },
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+
+  await client.waitForMessage(({ data }) => {
+    expect(data).toBe('{"type":"CONNECTION_ACK"}');
+  });
+});
+
+it('should use a custom JSON message reviver function', async () => {
+  const { url } = await startTServer({
+    schema,
+    jsonMessageReviver: (key, value) => {
+      if (key === 'type') {
+        return MessageType.ConnectionInit;
+      }
+      return value;
+    },
+  });
+
+  const client = await createTClient(url);
+  client.ws.send(
+    JSON.stringify({
+      type: MessageType.ConnectionInit.toUpperCase(),
+    }),
+  );
+
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+  });
+});
+
 describe('Connect', () => {
   it('should refuse connection and close socket if returning `false`', async () => {
     const { url } = await startTServer({
