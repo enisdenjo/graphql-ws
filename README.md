@@ -260,7 +260,7 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
 ```ts
 import { Observable } from 'relay-runtime';
 // or
-import { Observable } from '@apollo/client';
+import { Observable } from '@apollo/client/core';
 // or
 import { Observable } from 'rxjs';
 // or
@@ -403,7 +403,7 @@ const client = createClient({
 <summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
-import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client';
+import { ApolloLink, Operation, FetchResult, Observable } from '@apollo/client/core';
 import { print, GraphQLError } from 'graphql';
 import { createClient, ClientOptions, Client } from 'graphql-ws';
 
