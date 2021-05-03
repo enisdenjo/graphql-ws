@@ -502,38 +502,63 @@ const client = createClient({
 <summary><a href="#graceful-restart">🔗</a> Client usage with graceful restart</summary>
 
 ```typescript
-import { createClient, Client } from 'graphql-ws';
+import { createClient, Client, ClientOptions } from 'graphql-ws';
 import { giveMeAFreshToken } from './token-giver';
 
-let restartRequestedBeforeConnected = false;
-let gracefullyRestart = () => {
-  restartRequestedBeforeConnected = true;
-};
+interface RestartableClient extends Client {
+  restart(): void;
+}
 
-const client = createClient({
+function createRestartableClient(options: ClientOptions): RestartableClient {
+  let restartRequested = false;
+  let restart = () => {
+    restartRequested = true;
+  };
+
+  const { on = undefined } = options;
+
+  const client = createClient({
+    ...options,
+    on: {
+      ...on,
+      connected: (socket) => {
+        on?.connected?.(socket);
+
+        restart = () => {
+          if (socket.readyState === WebSocket.OPEN) {
+            // if the socket is still open for the restart, do the restart
+            socket.close(4205, 'Client Restart');
+          } else {
+            // otherwise the socket might've closed, indicate that you want
+            // a restart on the next connected event
+            restartRequested = true;
+          }
+        };
+
+        // just in case you were eager to restart
+        if (restartRequested) {
+          restartRequested = false;
+          restart();
+        }
+      },
+    },
+  });
+
+  return {
+    ...client,
+    restart: () => restart(),
+  };
+}
+
+const client = createRestartableClient({
   url: 'wss://graceful.restart/is/a/non-fatal/close-code',
   connectionParams: async () => {
     const token = await giveMeAFreshToken();
     return { token };
   },
-  on: {
-    connected: (socket) => {
-      gracefullyRestart = () => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close(4205, 'Client Restart');
-        }
-      };
-
-      // just in case you were eager to restart
-      if (restartRequestedBeforeConnected) {
-        restartRequestedBeforeConnected = false;
-        gracefullyRestart();
-      }
-    },
-  },
 });
 
-// all subscriptions through `client.subscribe` will resubscribe on graceful restarts
+// all subscriptions from `client.subscribe` will resubscribe after `client.restart`
 ```
 
 </details>
