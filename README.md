@@ -515,14 +515,12 @@ function createRestartableClient(options: ClientOptions): RestartableClient {
     restartRequested = true;
   };
 
-  const { on = undefined } = options;
-
   const client = createClient({
     ...options,
     on: {
-      ...on,
+      ...options.on,
       connected: (socket) => {
-        on?.connected?.(socket);
+        options.on?.connected?.(socket);
 
         restart = () => {
           if (socket.readyState === WebSocket.OPEN) {
