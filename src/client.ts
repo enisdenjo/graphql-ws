@@ -90,6 +90,13 @@ export type EventClosedListener = (event: unknown) => void;
  */
 export type EventErrorListener = (error: unknown) => void;
 
+export type FileLike = File | Blob | FileList;
+export type SendMessage = (
+  socket: WebSocket,
+  message: string,
+  files: FileLike[],
+) => void;
+
 /** @category Client */
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
@@ -250,6 +257,7 @@ export interface ClientOptions {
    * datatypes out to the client.
    */
   jsonMessageReplacer?: JSONMessageReplacer;
+  sendMessage?: SendMessage;
 }
 
 /** @category Client */
@@ -314,6 +322,12 @@ export function createClient(options: ClientOptions): Client {
     },
     jsonMessageReplacer: replacer,
     jsonMessageReviver: reviver,
+    sendMessage = (socket, message, files) => {
+      if (files.length > 0) {
+        throw new Error('Cannot upload files with default sendMessage handler');
+      }
+      socket.send(message);
+    },
   } = options;
 
   let ws;
@@ -618,16 +632,31 @@ export function createClient(options: ClientOptions): Client {
               }
             });
 
-            socket.send(
-              stringifyMessage<MessageType.Subscribe>(
-                {
-                  id,
-                  type: MessageType.Subscribe,
-                  payload,
-                },
-                replacer,
-              ),
+            const files: FileLike[] = [];
+            const uploadReplacer = (key: string, originalValue: any) => {
+              let value = originalValue;
+              if (
+                value instanceof File ||
+                value instanceof Blob ||
+                value instanceof FileList
+              ) {
+                const fileUploadID = `#__graphql_file__:${files.length}`;
+                files.push(value);
+                value = fileUploadID;
+              }
+              return replacer ? replacer(key, value) : value;
+            };
+
+            const message = stringifyMessage<MessageType.Subscribe>(
+              {
+                id,
+                type: MessageType.Subscribe,
+                payload,
+              },
+              uploadReplacer,
             );
+
+            sendMessage(socket, message, files);
 
             releaser = () => {
               if (!done && socket.readyState === WebSocketImpl.OPEN)
