@@ -100,6 +100,12 @@ export interface ServerOptions<E = unknown> {
    * will be passed in (also the returned value from `onSubscribe`).
    * Since the context is injected on every subscribe, the `SubscribeMessage`
    * with the regular `Context` will be passed in through the arguments too.
+   *
+   * When using the function signature, a fresh context will be created for
+   * each query/mutation that is executed from the client over the WebSocket.
+   * However when pushing messages through an `AsyncIterator`, GraphQL will
+   * always use the old context created when the user first subscribed. See
+   * https://github.com/graphql/graphql-js/issues/894 for more info.
    */
   context?:
     | GraphQLExecutionContextValue
