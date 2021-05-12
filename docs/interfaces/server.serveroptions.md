@@ -69,6 +69,11 @@ will be passed in (also the returned value from `onSubscribe`).
 Since the context is injected on every subscribe, the `SubscribeMessage`
 with the regular `Context` will be passed in through the arguments too.
 
+Note that the context function is invoked on each operation only once.
+Meaning, for subscriptions, only at the point of initialising the subscription;
+not on every subscription event emission. Read more about the context lifecycle
+in subscriptions here: https://github.com/graphql/graphql-js/issues/894.
+
 ___
 
 ### execute
