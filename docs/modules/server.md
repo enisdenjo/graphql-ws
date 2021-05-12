@@ -51,13 +51,13 @@ server library!
 
 Read more about the Protocol in the PROTOCOL.md documentation file.
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Default |
 | :------ | :------ |
 | `E` | *unknown* |
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

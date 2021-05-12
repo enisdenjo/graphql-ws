@@ -117,21 +117,20 @@ export interface CompleteMessage {
 }
 
 /** @category Common */
-export type Message<
-  T extends MessageType = MessageType
-> = T extends MessageType.ConnectionAck
-  ? ConnectionAckMessage
-  : T extends MessageType.ConnectionInit
-  ? ConnectionInitMessage
-  : T extends MessageType.Subscribe
-  ? SubscribeMessage
-  : T extends MessageType.Next
-  ? NextMessage
-  : T extends MessageType.Error
-  ? ErrorMessage
-  : T extends MessageType.Complete
-  ? CompleteMessage
-  : never;
+export type Message<T extends MessageType = MessageType> =
+  T extends MessageType.ConnectionAck
+    ? ConnectionAckMessage
+    : T extends MessageType.ConnectionInit
+    ? ConnectionInitMessage
+    : T extends MessageType.Subscribe
+    ? SubscribeMessage
+    : T extends MessageType.Next
+    ? NextMessage
+    : T extends MessageType.Error
+    ? ErrorMessage
+    : T extends MessageType.Complete
+    ? CompleteMessage
+    : never;
 
 /**
  * Checks if the provided value is a message.

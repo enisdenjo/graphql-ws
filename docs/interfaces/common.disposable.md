@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* **Disposable**
+- **Disposable**
 
   ↳ [*Client*](client.client-1.md)
 
@@ -24,7 +24,7 @@
 
 Dispose of the instance and clear up resources.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (): *void* \| *Promise*<void\>
 

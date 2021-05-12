@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* [*Disposable*](common.disposable.md)
+- [*Disposable*](common.disposable.md)
 
   ↳ **Client**
 
@@ -29,7 +29,7 @@
 
 Dispose of the instance and clear up resources.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (): *void* \| *Promise*<void\>
 
@@ -45,13 +45,13 @@ Inherited from: [Disposable](common.disposable.md).[dispose](common.disposable.m
 
 Listens on the client which dispatches events about the socket state.
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Type |
 | :------ | :------ |
 | `E` | [*Event*](../modules/client.md#event) |
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -70,13 +70,13 @@ Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
 function used for dropping the subscription and cleaning stuff up.
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Default |
 | :------ | :------ |
 | `T` | *unknown* |
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

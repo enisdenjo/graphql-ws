@@ -87,11 +87,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -138,11 +138,11 @@ be called, regardless if the user succesfully went through
 the connection initialisation or not. `onConnect` might not
 called before the `onClose`.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -170,11 +170,11 @@ Since the library makes sure to complete streaming
 operations even after an abrupt closure, this callback
 will still be called.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](common.completemessage.md)): *void* \| *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -212,11 +212,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>): *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -245,11 +245,11 @@ is acknowledged. Meaning, `onConnect` will be called before the `onDisconnect`.
 For tracking socket closures at any point in time, regardless
 of the connection state - consider using the `onClose` callback.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -277,11 +277,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](common.errormessage.md), `errors`: readonly *GraphQLError*[]): *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -310,11 +310,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](common.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>): *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -350,11 +350,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -399,11 +399,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md)): *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -426,7 +426,7 @@ If you return from `onSubscribe`, and the returned value is
 missing the `rootValue` field, the relevant operation root
 will be used instead.
 
-#### Type declaration:
+#### Type declaration
 
 | Name | Type |
 | :------ | :------ |
@@ -468,11 +468,11 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -498,11 +498,11 @@ Will not be used when implementing a custom `onSubscribe`.
 Throwing an error from within this function will close the socket
 with the `Error` message in the close event reason.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`schema`: *GraphQLSchema*, `documentAST`: DocumentNode, `rules?`: readonly ValidationRule[], `typeInfo?`: *TypeInfo*, `options?`: { `maxErrors?`: *number*  }): readonly *GraphQLError*[]
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

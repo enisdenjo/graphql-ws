@@ -38,7 +38,7 @@ callback will be called.
 The returned promise is used to control the graceful
 closure.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -65,7 +65,7 @@ Exceptions raised during any phase of operation processing will
 reject the callback's promise, catch them and communicate them
 to your clients however you wish.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -89,7 +89,7 @@ method of the `Server`.
 The returned promise is used to control the flow of data
 (like handling backpressure).
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

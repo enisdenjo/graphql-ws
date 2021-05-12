@@ -54,7 +54,7 @@ in case you need more uniqueness.
 
 Reference: https://gist.github.com/jed/982883
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (): *string*
 
@@ -80,11 +80,11 @@ option.
 
 **`default`** Non close events
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`errOrCloseEvent`: *unknown*): *boolean*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -174,11 +174,11 @@ fatal by nature.
 
 **`default`** console.error
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`errorOrCloseEvent`: *unknown*): *void*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -219,11 +219,11 @@ by timing the resolution of the returned promise with the retries count.
 
 **`default`** Randomised exponential backoff
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`retries`: *number*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

@@ -573,7 +573,9 @@ describe('Connect', () => {
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
     const { url } = await startTServer({ connectionInitWaitTimeout: 10 });
 
-    await (await createTClient(url)).waitForClose((event) => {
+    await (
+      await createTClient(url)
+    ).waitForClose((event) => {
       expect(event.code).toBe(4408);
       expect(event.reason).toBe('Connection initialisation timeout');
       expect(event.wasClean).toBeTruthy();

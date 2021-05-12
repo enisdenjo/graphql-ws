@@ -42,7 +42,7 @@ can also be a `CloseEvent`, but to avoid bundling DOM typings because
 the client can run in Node env too, you should assert the close event
 type during implementation.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -58,7 +58,7 @@ ___
 
 Next value arriving.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

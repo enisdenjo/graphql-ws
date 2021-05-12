@@ -59,11 +59,11 @@ for the elements of an outgoing `Message` object.
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`this`: *any*, `key`: *string*, `value`: *any*): *any*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -85,11 +85,11 @@ The values are produced by parsing the incoming raw JSON.
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#using_the_reviver_parameter
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`this`: *any*, `key`: *string*, `value`: *any*): *any*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -105,7 +105,7 @@ ___
 
 Ƭ **Message**<T\>: T *extends* [*ConnectionAck*](../enums/common.messagetype.md#connectionack) ? [*ConnectionAckMessage*](../interfaces/common.connectionackmessage.md) : T *extends* [*ConnectionInit*](../enums/common.messagetype.md#connectioninit) ? [*ConnectionInitMessage*](../interfaces/common.connectioninitmessage.md) : T *extends* [*Subscribe*](../enums/common.messagetype.md#subscribe) ? [*SubscribeMessage*](../interfaces/common.subscribemessage.md) : T *extends* [*Next*](../enums/common.messagetype.md#next) ? [*NextMessage*](../interfaces/common.nextmessage.md) : T *extends* [*Error*](../enums/common.messagetype.md#error) ? [*ErrorMessage*](../interfaces/common.errormessage.md) : T *extends* [*Complete*](../enums/common.messagetype.md#complete) ? [*CompleteMessage*](../interfaces/common.completemessage.md) : *never*
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Type | Default |
 | :------ | :------ | :------ |
@@ -127,7 +127,7 @@ ___
 
 Checks if the provided value is a message.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -143,7 +143,7 @@ ___
 
 Parses the raw websocket message data to a valid message.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -160,13 +160,13 @@ ___
 
 Stringifies a valid message ready to be sent through the socket.
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Type |
 | :------ | :------ |
 | `T` | [*MessageType*](../enums/common.messagetype.md) |
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

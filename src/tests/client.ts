@@ -289,12 +289,8 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
 });
 
 it('should not send the complete message if the socket is not open', async () => {
-  const {
-    url,
-    getClients,
-    waitForOperation,
-    waitForClientClose,
-  } = await startTServer();
+  const { url, getClients, waitForOperation, waitForClientClose } =
+    await startTServer();
 
   class MockWebSocket extends WebSocket {
     constructor(...args: unknown[]) {
@@ -608,12 +604,8 @@ describe('subscription operation', () => {
   });
 
   it('should stop dispatching messages after completing a subscription', async () => {
-    const {
-      url,
-      getClients,
-      waitForOperation,
-      waitForComplete,
-    } = await startTServer();
+    const { url, getClients, waitForOperation, waitForComplete } =
+      await startTServer();
 
     const sub = tsubscribe(
       createClient({ url, retryAttempts: 0, onNonLazyError: noop }),

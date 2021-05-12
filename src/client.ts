@@ -588,11 +588,8 @@ export function createClient(options: ClientOptions): Client {
         locks++;
         for (;;) {
           try {
-            const [
-              socket,
-              release,
-              waitForReleaseOrThrowOnClose,
-            ] = await connect();
+            const [socket, release, waitForReleaseOrThrowOnClose] =
+              await connect();
 
             // if done while waiting for connect, release the connection lock right away
             if (done) return release();

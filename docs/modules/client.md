@@ -71,11 +71,11 @@ The argument is actually the websocket `CloseEvent`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`event`: *unknown*): *void*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -102,11 +102,11 @@ you should assert the websocket type during implementation.
 Also, the second argument is the optional payload that the server may
 send through the `ConnectionAck` message.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>): *void*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -127,7 +127,7 @@ ___
 
 Ƭ **EventConnectingListener**: () => *void*
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (): *void*
 
@@ -150,11 +150,11 @@ bundling DOM typings because the client can run in Node env too, you should asse
 the type during implementation. Events dispatched from the WebSocket `onerror` can
 be handler in this listener.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`error`: *unknown*): *void*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -168,7 +168,7 @@ ___
 
 Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventMessage*](client.md#eventmessage) ? [*EventMessageListener*](client.md#eventmessagelistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : E *extends* [*EventError*](client.md#eventerror) ? [*EventErrorListener*](client.md#eventerrorlistener) : *never*
 
-#### Type parameters:
+#### Type parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -189,11 +189,11 @@ ___
 Called for all **valid** messages received by the client. Mainly useful for
 debugging and logging received messages.
 
-#### Type declaration:
+#### Type declaration
 
 ▸ (`message`: [*Message*](common.md#message)): *void*
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
@@ -209,7 +209,7 @@ ___
 
 Creates a disposable GraphQL over WebSocket client.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

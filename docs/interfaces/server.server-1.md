@@ -35,7 +35,7 @@ has been closed, for whatever reason. The close code and reason
 must be passed for reporting to the `onDisconnect` callback. Returned
 promise will resolve once the internal cleanup is complete.
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |

@@ -21,7 +21,7 @@
 Use the server on a [ws](https://github.com/websockets/ws) ws server.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
 
-#### Parameters:
+#### Parameters
 
 | Name | Type |
 | :------ | :------ |
