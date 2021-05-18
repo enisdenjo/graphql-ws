@@ -518,6 +518,13 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
   return {
     opened(socket, extra) {
+      const ctx: Context<E> = {
+        connectionInitReceived: false,
+        acknowledged: false,
+        subscriptions: {},
+        extra,
+      };
+
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
         socket.close(1002, 'Protocol Error');
         return async (code, reason) => {
@@ -525,13 +532,6 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
           await onClose?.(ctx, code, reason);
         };
       }
-
-      const ctx: Context<E> = {
-        connectionInitReceived: false,
-        acknowledged: false,
-        subscriptions: {},
-        extra,
-      };
 
       // kick the client off (close socket) if the connection has
       // not been initialised after the specified wait timeout
