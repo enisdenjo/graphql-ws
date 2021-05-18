@@ -1,3 +1,10 @@
+## [4.5.1](https://github.com/enisdenjo/graphql-ws/compare/v4.5.0...v4.5.1) (2021-05-18)
+
+
+### Bug Fixes
+
+* **server:** Init context first on connection open ([a80e753](https://github.com/enisdenjo/graphql-ws/commit/a80e7534cc0570fa111e15f196ba53fdb5ced667)), closes [#181](https://github.com/enisdenjo/graphql-ws/issues/181)
+
 # [4.5.0](https://github.com/enisdenjo/graphql-ws/compare/v4.4.4...v4.5.0) (2021-04-29)
 
 
