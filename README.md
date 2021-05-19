@@ -39,7 +39,7 @@ const roots = {
     hello: () => 'Hello World!',
   },
   subscription: {
-    greetings: function* sayHiIn5Languages() {
+    greetings: async function* sayHiIn5Languages() {
       for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
         yield { greetings: hi };
       }
