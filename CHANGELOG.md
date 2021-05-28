@@ -1,3 +1,10 @@
+## [4.5.2](https://github.com/enisdenjo/graphql-ws/compare/v4.5.1...v4.5.2) (2021-05-28)
+
+
+### Bug Fixes
+
+* **uWebSockets:** Handle premature and abrupt socket closes ([9d3ff52](https://github.com/enisdenjo/graphql-ws/commit/9d3ff52e05420847eda9d0cf8d4730cafb9bcd36)), closes [#186](https://github.com/enisdenjo/graphql-ws/issues/186)
+
 ## [4.5.1](https://github.com/enisdenjo/graphql-ws/compare/v4.5.0...v4.5.1) (2021-05-18)
 
 
