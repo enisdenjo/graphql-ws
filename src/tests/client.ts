@@ -6,7 +6,7 @@ import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { createClient, Client, EventListener } from '../client';
 import { SubscribePayload } from '../common';
-import { startWSTServer as startTServer } from './utils';
+import { startWSTServer as startTServer, waitForDone } from './utils';
 
 // simulate browser environment for easier client testing
 beforeEach(() => {
@@ -162,28 +162,31 @@ it('should not accept invalid WebSocket implementations', async () => {
   ).toThrow();
 });
 
-it('should recieve optional connection ack payload in event handler', async (done) => {
-  const { url } = await startTServer({
-    onConnect: () => ({ itsa: 'me' }),
-  });
+it(
+  'should recieve optional connection ack payload in event handler',
+  waitForDone(async (done) => {
+    const { url } = await startTServer({
+      onConnect: () => ({ itsa: 'me' }),
+    });
 
-  createClient({
-    url,
-    retryAttempts: 0,
-    onNonLazyError: noop,
-    lazy: false,
-    on: {
-      connected: (_socket, payload) => {
-        try {
-          expect(payload).toEqual({ itsa: 'me' });
-        } catch (err) {
-          fail(err);
-        }
-        done();
+    createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      lazy: false,
+      on: {
+        connected: (_socket, payload) => {
+          try {
+            expect(payload).toEqual({ itsa: 'me' });
+          } catch (err) {
+            fail(err);
+          }
+          done();
+        },
       },
-    },
-  });
-});
+    });
+  }),
+);
 
 it('should close with error message during connecting issues', async () => {
   const { url } = await startTServer();
@@ -371,29 +374,32 @@ it('should use a custom JSON message reviver function', async () => {
   });
 });
 
-it('should use a custom JSON message replacer function', async (done) => {
-  const { url, waitForClient } = await startTServer();
+it(
+  'should use a custom JSON message replacer function',
+  waitForDone(async (done) => {
+    const { url, waitForClient } = await startTServer();
 
-  createClient({
-    url,
-    lazy: false,
-    retryAttempts: 0,
-    onNonLazyError: noop,
-    jsonMessageReplacer: (key, value) => {
-      if (key === 'type') {
-        return 'CONNECTION_INIT';
-      }
-      return value;
-    },
-  });
-
-  await waitForClient((client) => {
-    client.onMessage((data) => {
-      expect(data).toBe('{"type":"CONNECTION_INIT"}');
-      done();
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      jsonMessageReplacer: (key, value) => {
+        if (key === 'type') {
+          return 'CONNECTION_INIT';
+        }
+        return value;
+      },
     });
-  });
-});
+
+    await waitForClient((client) => {
+      client.onMessage((data) => {
+        expect(data).toBe('{"type":"CONNECTION_INIT"}');
+        done();
+      });
+    });
+  }),
+);
 
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
@@ -799,23 +805,26 @@ describe('lazy', () => {
     await server.waitForClientClose();
   });
 
-  it('should report errors to the `onNonLazyError` callback', async (done) => {
-    const { url, ...server } = await startTServer();
+  it(
+    'should report errors to the `onNonLazyError` callback',
+    waitForDone(async (done) => {
+      const { url, ...server } = await startTServer();
 
-    createClient({
-      url,
-      lazy: false,
-      retryAttempts: 0,
-      onNonLazyError: (err) => {
-        expect((err as CloseEvent).code).toBe(1005);
-        done();
-      },
-    });
+      createClient({
+        url,
+        lazy: false,
+        retryAttempts: 0,
+        onNonLazyError: (err) => {
+          expect((err as CloseEvent).code).toBe(1005);
+          done();
+        },
+      });
 
-    await server.waitForClient((client) => {
-      client.close();
-    });
-  });
+      await server.waitForClient((client) => {
+        client.close();
+      });
+    }),
+  );
 
   it('should not close connection if a subscription is disposed multiple times', async () => {
     const { url, ...server } = await startTServer();
@@ -1299,7 +1308,7 @@ describe('reconnecting', () => {
     sub.dispose();
 
     // give room for the socket close in the stack
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     // immediately subscribe again
     sub = tsubscribe(client, {
@@ -1388,23 +1397,26 @@ describe('events', () => {
     });
   });
 
-  it('should emit closed event when disposing', async (done) => {
-    const { url, waitForClient } = await startTServer();
+  it(
+    'should emit closed event when disposing',
+    waitForDone(async (done) => {
+      const { url, waitForClient } = await startTServer();
 
-    const client = createClient({
-      url,
-      lazy: false,
-      retryAttempts: 0,
-      onNonLazyError: noop,
-      on: {
-        closed: () => done(),
-      },
-    });
+      const client = createClient({
+        url,
+        lazy: false,
+        retryAttempts: 0,
+        onNonLazyError: noop,
+        on: {
+          closed: () => done(),
+        },
+      });
 
-    await waitForClient();
+      await waitForClient();
 
-    client.dispose();
-  });
+      client.dispose();
+    }),
+  );
 
   it('should emit the websocket connection error', (done) => {
     expect.assertions(3);

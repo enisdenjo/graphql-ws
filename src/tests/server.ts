@@ -15,46 +15,53 @@ import {
   stringifyMessage,
 } from '../common';
 import { schema, schemaConfig } from './fixtures/simple';
-import { createTClient, startWSTServer as startTServer } from './utils';
+import {
+  waitForDone,
+  createTClient,
+  startWSTServer as startTServer,
+} from './utils';
 
 /**
  * Tests
  */
 
-it('should use the schema resolved from a promise on subscribe', async (done) => {
-  expect.assertions(2);
+it(
+  'should use the schema resolved from a promise on subscribe',
+  waitForDone(async (done) => {
+    expect.assertions(2);
 
-  const schema = new GraphQLSchema(schemaConfig);
+    const schema = new GraphQLSchema(schemaConfig);
 
-  const { url } = await startTServer({
-    schema: (_, msg) => {
-      expect(msg.id).toBe('1');
-      return Promise.resolve(schema);
-    },
-    execute: (args) => {
-      expect(args.schema).toBe(schema);
-      return execute(args);
-    },
-    onComplete: () => done(),
-  });
-  const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-  client.ws.send(
-    stringifyMessage<MessageType.ConnectionInit>({
-      type: MessageType.ConnectionInit,
-    }),
-  );
-  await client.waitForMessage(); // ack
-
-  client.ws.send(
-    stringifyMessage<MessageType.Subscribe>({
-      id: '1',
-      type: MessageType.Subscribe,
-      payload: {
-        query: '{ getValue }',
+    const { url } = await startTServer({
+      schema: (_, msg) => {
+        expect(msg.id).toBe('1');
+        return Promise.resolve(schema);
       },
-    }),
-  );
-});
+      execute: (args) => {
+        expect(args.schema).toBe(schema);
+        return execute(args);
+      },
+      onComplete: () => done(),
+    });
+    const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // ack
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: '{ getValue }',
+        },
+      }),
+    );
+  }),
+);
 
 it('should use the provided validate function', async () => {
   const { url } = await startTServer({
@@ -241,139 +248,148 @@ it('should pass in the context value from the config', async () => {
   expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
 });
 
-it('should pass the `onSubscribe` exec args to the `context` option and use it', async (done) => {
-  const context = {};
-  const execArgs = {
-    // no context here
-    schema,
-    document: parse(`query { getValue }`),
-  };
+it(
+  'should pass the `onSubscribe` exec args to the `context` option and use it',
+  waitForDone(async (done) => {
+    const context = {};
+    const execArgs = {
+      // no context here
+      schema,
+      document: parse(`query { getValue }`),
+    };
 
-  const { url } = await startTServer({
-    onSubscribe: () => {
-      return execArgs;
-    },
-    context: (_ctx, _msg, args) => {
-      expect(args).toBe(args); // from `onSubscribe`
-      return context; // will be injected
-    },
-    execute: (args) => {
-      expect(args).toBe(execArgs); // from `onSubscribe`
-      expect(args.contextValue).toBe(context); // injected by `context`
-      done();
-      return execute(args);
-    },
-    subscribe,
-  });
-
-  const client = await createTClient(url);
-  client.ws.send(
-    stringifyMessage<MessageType.ConnectionInit>({
-      type: MessageType.ConnectionInit,
-    }),
-  );
-  await client.waitForMessage(({ data }) => {
-    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-  });
-
-  client.ws.send(
-    stringifyMessage<MessageType.Subscribe>({
-      id: '1',
-      type: MessageType.Subscribe,
-      payload: {
-        query: `{ getValue }`,
+    const { url } = await startTServer({
+      onSubscribe: () => {
+        return execArgs;
       },
-    }),
-  );
-});
-
-it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async (done) => {
-  const rootValue = {};
-  const execArgs = {
-    // no rootValue here
-    schema,
-    document: parse(`query { getValue }`),
-  };
-
-  const { url } = await startTServer({
-    roots: {
-      query: rootValue,
-    },
-    onSubscribe: () => {
-      return execArgs;
-    },
-    execute: (args) => {
-      expect(args).toBe(execArgs); // from `onSubscribe`
-      expect(args.rootValue).toBe(rootValue); // injected by `roots`
-      done();
-      return execute(args);
-    },
-    subscribe,
-  });
-
-  const client = await createTClient(url);
-  client.ws.send(
-    stringifyMessage<MessageType.ConnectionInit>({
-      type: MessageType.ConnectionInit,
-    }),
-  );
-  await client.waitForMessage(({ data }) => {
-    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-  });
-
-  client.ws.send(
-    stringifyMessage<MessageType.Subscribe>({
-      id: '1',
-      type: MessageType.Subscribe,
-      payload: {
-        query: `{ getValue }`,
+      context: (_ctx, _msg, args) => {
+        expect(args).toBe(args); // from `onSubscribe`
+        return context; // will be injected
       },
-    }),
-  );
-});
-
-it('should prefer the `onSubscribe` context value even if `context` option is set', async (done) => {
-  const context = 'not-me';
-  const execArgs = {
-    contextValue: 'me-me', // my custom context
-    schema,
-    document: parse(`query { getValue }`),
-  };
-
-  const { url } = await startTServer({
-    onSubscribe: () => {
-      return execArgs;
-    },
-    context, // should be ignored because there is one in `execArgs`
-    execute: (args) => {
-      expect(args).toBe(execArgs); // from `onSubscribe`
-      expect(args.contextValue).not.toBe(context); // from `onSubscribe`
-      done();
-      return execute(args);
-    },
-    subscribe,
-  });
-
-  const client = await createTClient(url);
-  client.ws.send(
-    stringifyMessage<MessageType.ConnectionInit>({
-      type: MessageType.ConnectionInit,
-    }),
-  );
-  await client.waitForMessage(({ data }) => {
-    expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-  });
-
-  client.ws.send(
-    stringifyMessage<MessageType.Subscribe>({
-      id: '1',
-      type: MessageType.Subscribe,
-      payload: {
-        query: `{ getValue }`,
+      execute: (args) => {
+        expect(args).toBe(execArgs); // from `onSubscribe`
+        expect(args.contextValue).toBe(context); // injected by `context`
+        done();
+        return execute(args);
       },
-    }),
-  );
-});
+      subscribe,
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `{ getValue }`,
+        },
+      }),
+    );
+  }),
+);
+
+it(
+  'should use the root from the `roots` option if the `onSubscribe` doesnt provide one',
+  waitForDone(async (done) => {
+    const rootValue = {};
+    const execArgs = {
+      // no rootValue here
+      schema,
+      document: parse(`query { getValue }`),
+    };
+
+    const { url } = await startTServer({
+      roots: {
+        query: rootValue,
+      },
+      onSubscribe: () => {
+        return execArgs;
+      },
+      execute: (args) => {
+        expect(args).toBe(execArgs); // from `onSubscribe`
+        expect(args.rootValue).toBe(rootValue); // injected by `roots`
+        done();
+        return execute(args);
+      },
+      subscribe,
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `{ getValue }`,
+        },
+      }),
+    );
+  }),
+);
+
+it(
+  'should prefer the `onSubscribe` context value even if `context` option is set',
+  waitForDone(async (done) => {
+    const context = 'not-me';
+    const execArgs = {
+      contextValue: 'me-me', // my custom context
+      schema,
+      document: parse(`query { getValue }`),
+    };
+
+    const { url } = await startTServer({
+      onSubscribe: () => {
+        return execArgs;
+      },
+      context, // should be ignored because there is one in `execArgs`
+      execute: (args) => {
+        expect(args).toBe(execArgs); // from `onSubscribe`
+        expect(args.contextValue).not.toBe(context); // from `onSubscribe`
+        done();
+        return execute(args);
+      },
+      subscribe,
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: `{ getValue }`,
+        },
+      }),
+    );
+  }),
+);
 
 it('should use a custom JSON message replacer function', async () => {
   const { url } = await startTServer({
@@ -504,30 +520,33 @@ describe('Connect', () => {
     });
   });
 
-  it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
-    const connectionParams = {
-      some: 'string',
-      with: 'a',
-      number: 10,
-    };
+  it(
+    'should pass in the `connectionParams` through the context and have other flags correctly set',
+    waitForDone(async (done) => {
+      const connectionParams = {
+        some: 'string',
+        with: 'a',
+        number: 10,
+      };
 
-    const { url } = await startTServer({
-      onConnect: (ctx) => {
-        expect(ctx.connectionParams).toEqual(connectionParams);
-        expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
-        expect(ctx.acknowledged).toBeFalsy(); // not yet acknowledged
-        done();
-        return true;
-      },
-    });
+      const { url } = await startTServer({
+        onConnect: (ctx) => {
+          expect(ctx.connectionParams).toEqual(connectionParams);
+          expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
+          expect(ctx.acknowledged).toBeFalsy(); // not yet acknowledged
+          done();
+          return true;
+        },
+      });
 
-    (await createTClient(url)).ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-        payload: connectionParams,
-      }),
-    );
-  });
+      (await createTClient(url)).ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+          payload: connectionParams,
+        }),
+      );
+    }),
+  );
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
     const { url } = await startTServer({ connectionInitWaitTimeout: 10 });
@@ -1388,88 +1407,94 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should call `onComplete` callback when client completes', async (done) => {
-    const server = await startTServer({
-      onComplete: () => {
-        done();
-      },
-    });
-
-    const client = await createTClient(server.url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-    });
-
-    client.ws.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: 'subscription { ping }',
+  it(
+    'should call `onComplete` callback when client completes',
+    waitForDone(async (done) => {
+      const server = await startTServer({
+        onComplete: () => {
+          done();
         },
-      }),
-    );
-    await server.waitForOperation();
+      });
 
-    // just to make sure we're streaming
-    server.pong();
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.Next);
-    });
+      const client = await createTClient(server.url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
 
-    // complete and done
-    client.ws.send(
-      stringifyMessage<MessageType.Complete>({
-        id: '1',
-        type: MessageType.Complete,
-      }),
-    );
-  });
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      });
 
-  it('should call `onComplete` callback even if socket terminates abruptly', async (done) => {
-    const server = await startTServer({
-      onComplete: () => {
-        done();
-      },
-    });
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'subscription { ping }',
+          },
+        }),
+      );
+      await server.waitForOperation();
 
-    const client = await createTClient(server.url);
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
+      // just to make sure we're streaming
+      server.pong();
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.Next);
+      });
 
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
-    });
+      // complete and done
+      client.ws.send(
+        stringifyMessage<MessageType.Complete>({
+          id: '1',
+          type: MessageType.Complete,
+        }),
+      );
+    }),
+  );
 
-    client.ws.send(
-      stringifyMessage<MessageType.Subscribe>({
-        id: '1',
-        type: MessageType.Subscribe,
-        payload: {
-          query: 'subscription { ping }',
+  it(
+    'should call `onComplete` callback even if socket terminates abruptly',
+    waitForDone(async (done) => {
+      const server = await startTServer({
+        onComplete: () => {
+          done();
         },
-      }),
-    );
-    await server.waitForOperation();
+      });
 
-    // just to make sure we're streaming
-    server.pong();
-    await client.waitForMessage(({ data }) => {
-      expect(parseMessage(data).type).toBe(MessageType.Next);
-    });
+      const client = await createTClient(server.url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
 
-    // terminate socket abruptly
-    client.ws.terminate();
-  });
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      });
+
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'subscription { ping }',
+          },
+        }),
+      );
+      await server.waitForOperation();
+
+      // just to make sure we're streaming
+      server.pong();
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.Next);
+      });
+
+      // terminate socket abruptly
+      client.ws.terminate();
+    }),
+  );
 
   it('should respect completed subscriptions even if subscribe operation stalls', async () => {
     let continueSubscribe: (() => void) | undefined = undefined;
@@ -1537,47 +1562,53 @@ describe('Subscribe', () => {
 });
 
 describe('Disconnect/close', () => {
-  it('should report close code and reason to disconnect and close callback after connection acknowledgement', async (done) => {
-    const { url, waitForConnect } = await startTServer({
-      // 1st
-      onDisconnect: (_ctx, code, reason) => {
-        expect(code).toBe(4321);
-        expect(reason).toBe('Byebye');
-      },
-      // 2nd
-      onClose: (_ctx, code, reason) => {
-        expect(code).toBe(4321);
-        expect(reason).toBe('Byebye');
-        done();
-      },
-    });
+  it(
+    'should report close code and reason to disconnect and close callback after connection acknowledgement',
+    waitForDone(async (done) => {
+      const { url, waitForConnect } = await startTServer({
+        // 1st
+        onDisconnect: (_ctx, code, reason) => {
+          expect(code).toBe(4321);
+          expect(reason).toBe('Byebye');
+        },
+        // 2nd
+        onClose: (_ctx, code, reason) => {
+          expect(code).toBe(4321);
+          expect(reason).toBe('Byebye');
+          done();
+        },
+      });
 
-    const client = await createTClient(url);
+      const client = await createTClient(url);
 
-    client.ws.send(
-      stringifyMessage<MessageType.ConnectionInit>({
-        type: MessageType.ConnectionInit,
-      }),
-    );
-    await waitForConnect();
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+      await waitForConnect();
 
-    client.ws.close(4321, 'Byebye');
-  });
+      client.ws.close(4321, 'Byebye');
+    }),
+  );
 
-  it('should trigger the close callback instead of disconnect if connection is not acknowledged', async (done) => {
-    const { url } = await startTServer({
-      onDisconnect: () => {
-        fail("Disconnect callback shouldn't be triggered");
-      },
-      onClose: (_ctx, code, reason) => {
-        expect(code).toBe(4321);
-        expect(reason).toBe('Byebye');
-        done();
-      },
-    });
+  it(
+    'should trigger the close callback instead of disconnect if connection is not acknowledged',
+    waitForDone(async (done) => {
+      const { url } = await startTServer({
+        onDisconnect: () => {
+          fail("Disconnect callback shouldn't be triggered");
+        },
+        onClose: (_ctx, code, reason) => {
+          expect(code).toBe(4321);
+          expect(reason).toBe('Byebye');
+          done();
+        },
+      });
 
-    const client = await createTClient(url);
+      const client = await createTClient(url);
 
-    client.ws.close(4321, 'Byebye');
-  });
+      client.ws.close(4321, 'Byebye');
+    }),
+  );
 });
