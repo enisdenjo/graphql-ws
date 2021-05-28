@@ -98,12 +98,18 @@ export function makeBehavior(
         {
           protocol: request.getHeader('sec-websocket-protocol'),
           send: async (message) => {
+            // the socket might have been destroyed in the meantime
+            if (!clients.has(socket)) return;
             if (!socket.send(message))
               // if backpressure is built up wait for drain
               await new Promise<void>((resolve) => (onDrain = resolve));
           },
           close: (code, reason) => {
-            socket.end(code, reason);
+            // end socket in next tick making sure the client is registered
+            setImmediate(() => {
+              // the socket might have been destroyed before issuing a close
+              if (clients.has(socket)) socket.end(code, reason);
+            });
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },

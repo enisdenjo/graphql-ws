@@ -5,11 +5,53 @@ import {
   stringifyMessage,
   parseMessage,
   SubscribePayload,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
 } from '../common';
 import { createTClient, tServers, WSExtra, UWSExtra } from './utils';
 
 for (const { tServer, startTServer } of tServers) {
   describe(tServer, () => {
+    it('should allow connections with valid protocols only', async () => {
+      const { url } = await startTServer();
+
+      const warn = console.warn;
+      console.warn = () => {
+        /* hide warnings for test */
+      };
+
+      let client = await createTClient(url, '');
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(1002);
+        expect(event.reason).toBe('Protocol Error');
+        expect(event.wasClean).toBeTruthy();
+      });
+
+      client = await createTClient(url, ['graphql', 'json']);
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(1002);
+        expect(event.reason).toBe('Protocol Error');
+        expect(event.wasClean).toBeTruthy();
+      });
+
+      client = await createTClient(
+        url,
+        GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
+      );
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(1002);
+        expect(event.reason).toBe('Protocol Error');
+        expect(event.wasClean).toBeTruthy();
+      });
+
+      client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+      await client.waitForClose(
+        () => fail('shouldnt close for valid protocol'),
+        30, // should be kicked off within this time
+      );
+
+      console.warn = warn;
+    });
+
     it('should gracefully go away when disposing', async () => {
       const server = await startTServer();
 
