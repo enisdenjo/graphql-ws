@@ -30,8 +30,10 @@ export interface Extra {
  *
  * @category Server/ws
  */
-export function useServer(
-  options: ServerOptions<Extra>,
+export function useServer<
+  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>
+>(
+  options: ServerOptions<Extra & Partial<E>>,
   ws: WebSocketServer,
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
@@ -43,7 +45,7 @@ export function useServer(
   keepAlive = 12 * 1000,
 ): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
-  const server = makeServer<Extra>(options);
+  const server = makeServer(options);
 
   ws.on('error', (err) => {
     // catch the first thrown error and re-throw it once all clients have been notified
@@ -104,7 +106,7 @@ export function useServer(
             }
           }),
       },
-      { socket, request },
+      { socket, request } as Extra & Partial<E>,
     );
 
     socket.once('close', (code, reason) => {

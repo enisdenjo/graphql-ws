@@ -31,8 +31,10 @@ interface Client {
  *
  * @category Server/uWebSockets
  */
-export function makeBehavior(
-  options: ServerOptions<Extra>,
+export function makeBehavior<
+  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>
+>(
+  options: ServerOptions<Extra & Partial<E>>,
   behavior: uWS.WebSocketBehavior = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
@@ -44,7 +46,7 @@ export function makeBehavior(
   keepAlive = 12 * 1000,
 ): uWS.WebSocketBehavior {
   const isProd = process.env.NODE_ENV === 'production';
-  const server = makeServer<Extra>(options);
+  const server = makeServer(options);
   const clients = new Map<uWS.WebSocket, Client>();
 
   let onDrain = () => {
@@ -113,7 +115,7 @@ export function makeBehavior(
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, request },
+        { socket, request } as Extra & Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
