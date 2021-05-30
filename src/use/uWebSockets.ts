@@ -32,7 +32,7 @@ interface Client {
  * @category Server/uWebSockets
  */
 export function makeBehavior<
-  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>
+  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
   options: ServerOptions<Extra & Partial<E>>,
   behavior: uWS.WebSocketBehavior = {},

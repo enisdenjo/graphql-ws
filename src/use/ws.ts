@@ -31,7 +31,7 @@ export interface Extra {
  * @category Server/ws
  */
 export function useServer<
-  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>
+  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
   options: ServerOptions<Extra & Partial<E>>,
   ws: WebSocketServer,
