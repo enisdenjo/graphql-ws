@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/enisdenjo/graphql-ws/compare/v4.5.2...v4.6.0) (2021-05-30)
+
+
+### Features
+
+* **use:** Generic for extending the context extras ([401cd4c](https://github.com/enisdenjo/graphql-ws/commit/401cd4ce335e11dcf139502da3aa7dc1f23651c5)), closes [#189](https://github.com/enisdenjo/graphql-ws/issues/189)
+
 ## [4.5.2](https://github.com/enisdenjo/graphql-ws/compare/v4.5.1...v4.5.2) (2021-05-28)
 
 

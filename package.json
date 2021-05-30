@@ -1,6 +1,6 @@
 {
   "name": "graphql-ws",
-  "version": "4.5.2",
+  "version": "4.6.0",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "keywords": [
     "protocol",
