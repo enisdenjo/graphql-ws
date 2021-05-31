@@ -1,3 +1,10 @@
+# [4.7.0](https://github.com/enisdenjo/graphql-ws/compare/v4.6.0...v4.7.0) (2021-05-31)
+
+
+### Features
+
+* Add `extensions` field to the subscribe message payload ([d86a8e4](https://github.com/enisdenjo/graphql-ws/commit/d86a8e472a32aa4a12f6794f90ca2419f9f87fdb))
+
 # [4.6.0](https://github.com/enisdenjo/graphql-ws/compare/v4.5.2...v4.6.0) (2021-05-30)
 
 
