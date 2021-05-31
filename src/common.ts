@@ -94,6 +94,7 @@ export interface SubscribePayload {
   readonly operationName?: string | null;
   readonly query: string;
   readonly variables?: Record<string, unknown> | null;
+  readonly extensions?: Record<string, unknown> | null;
 }
 
 /** @category Common */
@@ -171,7 +172,11 @@ export function isMessage(val: unknown): val is Message {
           (!hasOwnProperty(val.payload, 'variables') ||
             val.payload.variables === undefined ||
             val.payload.variables === null ||
-            hasOwnObjectProperty(val.payload, 'variables'))
+            hasOwnObjectProperty(val.payload, 'variables')) &&
+          (!hasOwnProperty(val.payload, 'extensions') ||
+            val.payload.extensions === undefined ||
+            val.payload.extensions === null ||
+            hasOwnObjectProperty(val.payload, 'extensions'))
         );
       case MessageType.Next:
         return (

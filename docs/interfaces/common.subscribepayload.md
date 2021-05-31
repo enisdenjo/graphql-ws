@@ -8,11 +8,18 @@
 
 ### Properties
 
+- [extensions](common.subscribepayload.md#extensions)
 - [operationName](common.subscribepayload.md#operationname)
 - [query](common.subscribepayload.md#query)
 - [variables](common.subscribepayload.md#variables)
 
 ## Properties
+
+### extensions
+
+• `Optional` `Readonly` **extensions**: ``null`` \| *Record*<string, unknown\>
+
+___
 
 ### operationName
 

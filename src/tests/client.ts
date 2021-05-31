@@ -422,7 +422,7 @@ describe('query operation', () => {
     await sub.waitForComplete();
   });
 
-  it('should accept nullish value for `operationName` and `variables`', async () => {
+  it('should accept nullish value for `operationName`, `variables` and `extensions`', async () => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -441,6 +441,7 @@ describe('query operation', () => {
       operationName: undefined,
       query: 'query { getValue }',
       variables: undefined,
+      extensions: undefined,
     }).waitForComplete();
 
     // null
@@ -448,6 +449,7 @@ describe('query operation', () => {
       operationName: null,
       query: 'query { getValue }',
       variables: null,
+      extensions: null,
     }).waitForComplete();
   });
 });

@@ -72,6 +72,7 @@ interface SubscribeMessage {
     operationName?: string | null;
     query: string;
     variables?: Record<string, unknown> | null;
+    extensions?: Record<string, unknown> | null;
   };
 }
 ```
