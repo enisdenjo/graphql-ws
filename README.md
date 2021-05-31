@@ -98,7 +98,7 @@ uWS
 import { createClient } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://welcomer.com/graphql',
+  url: 'ws://welcomer.com/graphql',
 });
 
 // query
@@ -156,7 +156,7 @@ const client = createClient({
 import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://hey.there/graphql',
+  url: 'ws://hey.there/graphql',
 });
 
 async function execute<T>(payload: SubscribePayload) {
@@ -193,7 +193,7 @@ async function execute<T>(payload: SubscribePayload) {
 import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://iterators.ftw/graphql',
+  url: 'ws://iterators.ftw/graphql',
 });
 
 function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
@@ -268,7 +268,7 @@ import Observable from 'zen-observable';
 // or any other lib which implements Observables as per the ECMAScript proposal: https://github.com/tc39/proposal-observable
 
 const client = createClient({
-  url: 'wss://graphql.loves/observables',
+  url: 'ws://graphql.loves/observables',
 });
 
 function toObservable(operation) {
@@ -310,7 +310,7 @@ import {
 import { createClient } from 'graphql-ws';
 
 const subscriptionsClient = createClient({
-  url: 'wss://i.love/graphql',
+  url: 'ws://i.love/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -374,7 +374,7 @@ import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
 import { createClient as createWSClient } from 'graphql-ws';
 
 const wsClient = createWSClient({
-  url: 'wss://its.urql/graphql',
+  url: 'ws://its.urql/graphql',
 });
 
 const client = createClient({
@@ -456,7 +456,7 @@ class WebSocketLink extends ApolloLink {
 }
 
 const link = new WebSocketLink({
-  url: 'wss://where.is/graphql',
+  url: 'ws://where.is/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -478,7 +478,7 @@ const link = new WebSocketLink({
 import { createClient } from 'graphql-ws';
 import { waitForHealthy } from './my-servers';
 
-const url = 'wss://i.want.retry/control/graphql';
+const url = 'ws://i.want.retry/control/graphql';
 
 const client = createClient({
   url,
@@ -549,7 +549,7 @@ function createRestartableClient(options: ClientOptions): RestartableClient {
 }
 
 const client = createRestartableClient({
-  url: 'wss://graceful.restart/is/a/non-fatal/close-code',
+  url: 'ws://graceful.restart/is/a/non-fatal/close-code',
   connectionParams: async () => {
     const token = await giveMeAFreshToken();
     return { token };
@@ -578,7 +578,7 @@ const client = createRestartableClient({
   <body>
     <script type="text/javascript">
       const client = graphqlWs.createClient({
-        url: 'wss://umdfor.the/win/graphql',
+        url: 'ws://umdfor.the/win/graphql',
       });
 
       // consider other recipes for usage inspiration
@@ -598,7 +598,7 @@ const Crypto = require('crypto');
 const { createClient } = require('graphql-ws');
 
 const client = createClient({
-  url: 'wss://no.browser/graphql',
+  url: 'ws://no.browser/graphql',
   webSocketImpl: ws,
   /**
    * Generates a v4 UUID to be used as the ID.
@@ -1212,7 +1212,7 @@ useServer(
 import { createClient } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://persisted.graphql/queries',
+  url: 'ws://persisted.graphql/queries',
 });
 
 (async () => {
@@ -1293,7 +1293,7 @@ import { createClient } from 'graphql-ws';
 
 let connection: WebSocket | undefined;
 const client = createClient({
-  url: 'wss://client.can/send-pings/too',
+  url: 'ws://client.can/send-pings/too',
   on: {
     connected: (socket) => (connection = socket as WebSocket),
     closed: () => (connection = undefined),
@@ -1424,7 +1424,7 @@ let shouldRefreshToken = false,
   tokenExpiryTimeout = null;
 
 const client = createClient({
-  url: 'wss://server-validates.auth/graphql',
+  url: 'ws://server-validates.auth/graphql',
   connectionParams: async () => {
     if (shouldRefreshToken) {
       // refresh the token because it is no longer valid
