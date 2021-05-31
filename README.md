@@ -57,7 +57,7 @@ import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 
 const server = new ws.Server({
-  port: 80,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -67,7 +67,7 @@ useServer(
   server,
 );
 
-console.log('Listening to port 80');
+console.log('Listening to port 4000');
 ```
 
 ##### With [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
@@ -85,9 +85,9 @@ uWS
       { schema, roots },
     ),
   )
-  .listen(80, (listenSocket) => {
+  .listen(4000, (listenSocket) => {
     if (listenSocket) {
-      console.log('Listening to port 80');
+      console.log('Listening to port 4000');
     }
   });
 ```
@@ -98,7 +98,7 @@ uWS
 import { createClient } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://welcomer.com/graphql',
+  url: 'ws://welcomer.com:4000/graphql',
 });
 
 // query
@@ -156,7 +156,7 @@ const client = createClient({
 import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://hey.there/graphql',
+  url: 'ws://hey.there:4000/graphql',
 });
 
 async function execute<T>(payload: SubscribePayload) {
@@ -193,7 +193,7 @@ async function execute<T>(payload: SubscribePayload) {
 import { createClient, SubscribePayload } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://iterators.ftw/graphql',
+  url: 'ws://iterators.ftw:4000/graphql',
 });
 
 function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
@@ -268,7 +268,7 @@ import Observable from 'zen-observable';
 // or any other lib which implements Observables as per the ECMAScript proposal: https://github.com/tc39/proposal-observable
 
 const client = createClient({
-  url: 'wss://graphql.loves/observables',
+  url: 'ws://graphql.loves:4000/observables',
 });
 
 function toObservable(operation) {
@@ -310,7 +310,7 @@ import {
 import { createClient } from 'graphql-ws';
 
 const subscriptionsClient = createClient({
-  url: 'wss://i.love/graphql',
+  url: 'ws://i.love:4000/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -374,7 +374,7 @@ import { createClient, defaultExchanges, subscriptionExchange } from 'urql';
 import { createClient as createWSClient } from 'graphql-ws';
 
 const wsClient = createWSClient({
-  url: 'wss://its.urql/graphql',
+  url: 'ws://its.urql:4000/graphql',
 });
 
 const client = createClient({
@@ -456,7 +456,7 @@ class WebSocketLink extends ApolloLink {
 }
 
 const link = new WebSocketLink({
-  url: 'wss://where.is/graphql',
+  url: 'ws://where.is:4000/graphql',
   connectionParams: () => {
     const session = getSession();
     if (!session) {
@@ -478,7 +478,7 @@ const link = new WebSocketLink({
 import { createClient } from 'graphql-ws';
 import { waitForHealthy } from './my-servers';
 
-const url = 'wss://i.want.retry/control/graphql';
+const url = 'ws://i.want.retry:4000/control/graphql';
 
 const client = createClient({
   url,
@@ -549,7 +549,7 @@ function createRestartableClient(options: ClientOptions): RestartableClient {
 }
 
 const client = createRestartableClient({
-  url: 'wss://graceful.restart/is/a/non-fatal/close-code',
+  url: 'ws://graceful.restart:4000/is/a/non-fatal/close-code',
   connectionParams: async () => {
     const token = await giveMeAFreshToken();
     return { token };
@@ -578,7 +578,7 @@ const client = createRestartableClient({
   <body>
     <script type="text/javascript">
       const client = graphqlWs.createClient({
-        url: 'wss://umdfor.the/win/graphql',
+        url: 'ws://umdfor.the:4000/win/graphql',
       });
 
       // consider other recipes for usage inspiration
@@ -598,7 +598,7 @@ const Crypto = require('crypto');
 const { createClient } = require('graphql-ws');
 
 const client = createClient({
-  url: 'wss://no.browser/graphql',
+  url: 'ws://no.browser:4000/graphql',
   webSocketImpl: ws,
   /**
    * Generates a v4 UUID to be used as the ID.
@@ -630,7 +630,7 @@ const server = makeServer({ schema });
 
 // create websocket server
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -719,7 +719,7 @@ const gqlServer = makeServer<Extra>({
 
 // create websocket server
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -783,7 +783,7 @@ import { schema } from './my-graphql-schema';
 const app = express();
 app.use('/graphql', graphqlHTTP({ schema }));
 
-const server = app.listen(443, () => {
+const server = app.listen(4000, () => {
   // create and use the websocket server
   const wsServer = new ws.Server({
     server,
@@ -815,7 +815,7 @@ const apolloServer = new ApolloServer({ schema });
 // apply middleware
 apolloServer.applyMiddleware({ app });
 
-const server = app.listen(443, () => {
+const server = app.listen(4000, () => {
   // create and use the websocket server
   const wsServer = new ws.Server({
     server,
@@ -895,7 +895,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -975,7 +975,7 @@ waveWS.on('connection', (socket) => {
 // serve graphql
 useServer({ schema }, graphqlWS);
 
-server.listen(443);
+server.listen(4000);
 ```
 
 </details>
@@ -989,7 +989,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema, roots, getDynamicContext } from './my-graphql';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1016,7 +1016,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema, checkIsAdmin, getDebugSchema } from './my-graphql';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1049,7 +1049,7 @@ import { validate } from 'graphql';
 import { schema, myValidationRules } from './my-graphql';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1074,7 +1074,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema, myValidationRules } from './my-graphql';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1113,7 +1113,7 @@ import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql';
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1184,7 +1184,7 @@ const queriesStore: Record<QueryID, ExecutionArgs> = {
 };
 
 const wsServer = new ws.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1212,7 +1212,7 @@ useServer(
 import { createClient } from 'graphql-ws';
 
 const client = createClient({
-  url: 'wss://persisted.graphql/queries',
+  url: 'ws://persisted.graphql:4000/queries',
 });
 
 (async () => {
@@ -1271,7 +1271,7 @@ const pinger = new GraphQLSchema({
 });
 
 const wsServer = new WebSocket.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1293,7 +1293,7 @@ import { createClient } from 'graphql-ws';
 
 let connection: WebSocket | undefined;
 const client = createClient({
-  url: 'wss://client.can/send-pings/too',
+  url: 'ws://client.can:4000/send-pings/too',
   on: {
     connected: (socket) => (connection = socket as WebSocket),
     closed: () => (connection = undefined),
@@ -1369,7 +1369,7 @@ import { schema } from './my-graphql-schema';
 import { isTokenValid } from './my-auth';
 
 const wsServer = new WebSocket.Server({
-  port: 443,
+  port: 4000,
   path: '/graphql',
 });
 
@@ -1424,7 +1424,7 @@ let shouldRefreshToken = false,
   tokenExpiryTimeout = null;
 
 const client = createClient({
-  url: 'wss://server-validates.auth/graphql',
+  url: 'ws://server-validates.auth:4000/graphql',
   connectionParams: async () => {
     if (shouldRefreshToken) {
       // refresh the token because it is no longer valid
