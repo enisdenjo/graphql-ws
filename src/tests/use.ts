@@ -88,8 +88,9 @@ for (const { tServer, startTServer } of tServers) {
               expect((ctx.extra as UWSExtra).socket.constructor.name).toEqual(
                 'uWS.WebSocket',
               );
-              expect((ctx.extra as UWSExtra).request.constructor.name).toEqual(
-                'uWS.HttpRequest',
+              expect((ctx.extra as UWSExtra).request).toBeInstanceOf(Object);
+              expect((ctx.extra as UWSExtra).request.headers).toBeInstanceOf(
+                Object,
               );
             } else if (tServer === 'ws') {
               expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);

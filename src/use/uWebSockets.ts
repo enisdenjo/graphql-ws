@@ -1,4 +1,5 @@
 import type * as uWS from 'uWebSockets.js';
+import type http from 'http';
 import { makeServer, ServerOptions } from '../server';
 
 /**
@@ -10,12 +11,16 @@ export interface Extra {
   /**
    * The actual socket connection between the server and the client.
    */
-  readonly socket: uWS.WebSocket;
+  readonly socket: uWS.WebSocket & { upgradeReq: Request };
   /**
    * The initial HTTP request before the actual
    * socket and connection is established.
    */
-  readonly request: uWS.HttpRequest;
+  readonly request: Request;
+}
+
+export interface Request {
+  headers: http.IncomingHttpHeaders;
 }
 
 interface Client {
@@ -70,18 +75,25 @@ export function makeBehavior<
     upgrade(...args) {
       behavior.upgrade?.(...args);
       const [res, req, context] = args;
+      const upgradeReq: Request = {
+        headers: {},
+      };
+
+      req.forEach((key, value) => {
+        upgradeReq.headers[key] = value;
+      });
 
       res.upgrade(
-        { upgradeReq: req },
-        req.getHeader('sec-websocket-key'),
-        req.getHeader('sec-websocket-protocol'),
-        req.getHeader('sec-websocket-extensions'),
+        { upgradeReq },
+        upgradeReq.headers['sec-websocket-key'] || '',
+        upgradeReq.headers['sec-websocket-protocol'] || '',
+        upgradeReq.headers['sec-websocket-extensions'] || '',
         context,
       );
     },
     open(...args) {
       behavior.open?.(...args);
-      const [socket] = args;
+      const socket = args[0] as uWS.WebSocket & { upgradeReq: Request };
 
       // prepare client object
       const client: Client = {
@@ -95,10 +107,9 @@ export function makeBehavior<
         },
       };
 
-      const request = socket.upgradeReq as uWS.HttpRequest;
       client.closed = server.opened(
         {
-          protocol: request.getHeader('sec-websocket-protocol'),
+          protocol: socket.upgradeReq.headers['sec-websocket-protocol'] || '',
           send: async (message) => {
             // the socket might have been destroyed in the meantime
             if (!clients.has(socket)) return;
@@ -115,7 +126,7 @@ export function makeBehavior<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, request } as Extra & Partial<E>,
+        { socket, request: socket.upgradeReq } as Extra & Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
