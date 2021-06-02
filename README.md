@@ -769,57 +769,6 @@ wsServer.on('connection', (socket, request) => {
 
 </details>
 
-<details id="uws-auth-handling">
-<summary><a href="#uws-auth-handling">🔗</a> Server usage with <a href="https://github.com/uNetworking/uWebSockets.js">uWebSockets.js</a> and custom auth handling</summary>
-
-```typescript
-import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
-import cookie from 'cookie';
-import { makeBehavior, Request } from 'graphql-ws/lib/use/uWebSockets';
-import { schema } from './my-graphql-schema';
-import { validate } from './my-auth';
-
-// your custom auth
-class Forbidden extends Error {}
-function handleAuth(request: Request) {
-  // do your auth on every subscription connect
-  const good = validate(request.headers['authorization']);
-  // or const { iDontApprove } = session(cookie.parse(request.headers.cookie));
-  if (!good) {
-    // throw a custom error to be handled
-    throw new Forbidden(':(');
-  }
-}
-
-uWS
-  .App()
-  .ws(
-    '/graphql',
-    makeBehavior({
-      schema,
-      onConnect: async (ctx) => {
-        // do your auth on every connect
-        await handleAuth(ctx.extra.request);
-      },
-      onSubscribe: async (ctx) => {
-        // or maybe on every subscribe
-        await handleAuth(ctx.extra.request);
-      },
-      onNext: async (ctx) => {
-        // haha why not on every result emission?
-        await handleAuth(ctx.extra.request);
-      },
-    }),
-  )
-  .listen(4000, (listenSocket) => {
-    if (listenSocket) {
-      console.log('Listening to port 4000');
-    }
-  });
-```
-
-</details>
-
 <details id="express">
 <summary><a href="#express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/graphql/express-graphql">Express GraphQL</a></summary>
 
