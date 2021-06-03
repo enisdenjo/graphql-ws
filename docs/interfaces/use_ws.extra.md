@@ -17,7 +17,7 @@ The extra that will be put in the `Context`.
 
 ### request
 
-• `Readonly` **request**: *IncomingMessage*
+• `Readonly` **request**: `IncomingMessage`
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.
@@ -26,6 +26,6 @@ ___
 
 ### socket
 
-• `Readonly` **socket**: *WebSocket*
+• `Readonly` **socket**: `WebSocket`
 
 The actual socket connection between the server and the client.

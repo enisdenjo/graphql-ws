@@ -18,23 +18,25 @@
 
 ### makeBehavior
 
-▸ **makeBehavior**<E\>(`options`: [*ServerOptions*](../interfaces/server.serveroptions.md)<[*Extra*](../interfaces/use_uwebsockets.extra.md) & *Partial*<E\>\>, `behavior?`: uWS.WebSocketBehavior, `keepAlive?`: *number*): uWS.WebSocketBehavior
+▸ **makeBehavior**<E\>(`options`, `behavior?`, `keepAlive?`): `uWS.WebSocketBehavior`
 
 Make the behaviour for using a [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) WebSocket server.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
 
 #### Type parameters
 
-| Name | Type | Default |
-| :------ | :------ | :------ |
-| `E` | *Record*<PropertyKey, unknown\> | *Record*<PropertyKey, never\> |
+| Name | Type |
+| :------ | :------ |
+| `E` | `E`: `Record`<PropertyKey, unknown\> = `Record`<PropertyKey, never\> |
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<[*Extra*](../interfaces/use_uwebsockets.extra.md) & *Partial*<E\>\> | - |
-| `behavior` | uWS.WebSocketBehavior | {} |
-| `keepAlive` | *number* | - |
+| Name | Type |
+| :------ | :------ |
+| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_uwebsockets.extra.md) & `Partial`<E\>\> |
+| `behavior` | `uWS.WebSocketBehavior` |
+| `keepAlive` | `number` |
 
-**Returns:** uWS.WebSocketBehavior
+#### Returns
+
+`uWS.WebSocketBehavior`

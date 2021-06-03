@@ -24,7 +24,7 @@
 
 ### GraphQLExecutionContextValue
 
-Ƭ **GraphQLExecutionContextValue**: *object* \| *symbol* \| *number* \| *string* \| *boolean* \| *undefined* \| ``null``
+Ƭ **GraphQLExecutionContextValue**: `object` \| `symbol` \| `number` \| `string` \| `boolean` \| `undefined` \| ``null``
 
 A concrete GraphQL execution context value type.
 
@@ -37,13 +37,13 @@ ___
 
 ### OperationResult
 
-Ƭ **OperationResult**: *Promise*<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| *AsyncIterableIterator*<ExecutionResult\> \| ExecutionResult
+Ƭ **OperationResult**: `Promise`<AsyncIterableIterator<ExecutionResult\> \| ExecutionResult\> \| `AsyncIterableIterator`<ExecutionResult\> \| `ExecutionResult`
 
 ___
 
 ### makeServer
 
-▸ **makeServer**<E\>(`options`: [*ServerOptions*](../interfaces/server.serveroptions.md)<E\>): [*Server*](../interfaces/server.server-1.md)<E\>
+▸ **makeServer**<E\>(`options`): [Server](../interfaces/server.server-1.md)<E\>
 
 Makes a Protocol complient WebSocket GraphQL server. The server
 is actually an API which is to be used with your favourite WebSocket
@@ -53,14 +53,16 @@ Read more about the Protocol in the PROTOCOL.md documentation file.
 
 #### Type parameters
 
-| Name | Default |
+| Name | Type |
 | :------ | :------ |
-| `E` | *unknown* |
+| `E` | `E` = `unknown` |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `options` | [*ServerOptions*](../interfaces/server.serveroptions.md)<E\> |
+| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<E\> |
 
-**Returns:** [*Server*](../interfaces/server.server-1.md)<E\>
+#### Returns
+
+[Server](../interfaces/server.server-1.md)<E\>

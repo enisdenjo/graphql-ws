@@ -17,22 +17,22 @@
 
 ### extensions
 
-• `Optional` `Readonly` **extensions**: ``null`` \| *Record*<string, unknown\>
+• `Optional` `Readonly` **extensions**: ``null`` \| `Record`<string, unknown\>
 
 ___
 
 ### operationName
 
-• `Optional` `Readonly` **operationName**: ``null`` \| *string*
+• `Optional` `Readonly` **operationName**: ``null`` \| `string`
 
 ___
 
 ### query
 
-• `Readonly` **query**: *string*
+• `Readonly` **query**: `string`
 
 ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: ``null`` \| *Record*<string, unknown\>
+• `Optional` `Readonly` **variables**: ``null`` \| `Record`<string, unknown\>

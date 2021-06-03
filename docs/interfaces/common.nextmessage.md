@@ -16,16 +16,16 @@
 
 ### id
 
-• `Readonly` **id**: *string*
+• `Readonly` **id**: `string`
 
 ___
 
 ### payload
 
-• `Readonly` **payload**: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>
+• `Readonly` **payload**: `ExecutionResult`<`Object`, `Object`\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [*Next*](../enums/common.messagetype.md#next)
+• `Readonly` **type**: [Next](../enums/common.messagetype.md#next)

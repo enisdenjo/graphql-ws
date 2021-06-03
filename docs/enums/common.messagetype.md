@@ -21,34 +21,34 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 
 ### Complete
 
-• **Complete**: = "complete"
+• **Complete** = "complete"
 
 ___
 
 ### ConnectionAck
 
-• **ConnectionAck**: = "connection\_ack"
+• **ConnectionAck** = "connection\_ack"
 
 ___
 
 ### ConnectionInit
 
-• **ConnectionInit**: = "connection\_init"
+• **ConnectionInit** = "connection\_init"
 
 ___
 
 ### Error
 
-• **Error**: = "error"
+• **Error** = "error"
 
 ___
 
 ### Next
 
-• **Next**: = "next"
+• **Next** = "next"
 
 ___
 
 ### Subscribe
 
-• **Subscribe**: = "subscribe"
+• **Subscribe** = "subscribe"

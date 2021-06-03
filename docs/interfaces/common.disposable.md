@@ -8,7 +8,7 @@
 
 - **Disposable**
 
-  ↳ [*Client*](client.client-1.md)
+  ↳ [Client](client.client-1.md)
 
 ## Table of contents
 
@@ -20,12 +20,14 @@
 
 ### dispose
 
-• **dispose**: () => *void* \| *Promise*<void\>
+• **dispose**: () => `void` \| `Promise`<void\>
 
 Dispose of the instance and clear up resources.
 
 #### Type declaration
 
-▸ (): *void* \| *Promise*<void\>
+▸ (): `void` \| `Promise`<void\>
 
-**Returns:** *void* \| *Promise*<void\>
+##### Returns
+
+`void` \| `Promise`<void\>

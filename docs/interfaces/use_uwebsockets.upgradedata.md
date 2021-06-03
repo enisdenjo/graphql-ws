@@ -10,7 +10,7 @@ Data acquired during the HTTP upgrade callback from uWS.
 
 - **UpgradeData**
 
-  ↳ [*Extra*](use_uwebsockets.extra.md)
+  ↳ [Extra](use_uwebsockets.extra.md)
 
 ## Table of contents
 
@@ -23,7 +23,7 @@ Data acquired during the HTTP upgrade callback from uWS.
 
 ### persistedRequest
 
-• `Readonly` **persistedRequest**: [*PersistedRequest*](use_uwebsockets.persistedrequest.md)
+• `Readonly` **persistedRequest**: [PersistedRequest](use_uwebsockets.persistedrequest.md)
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.
@@ -37,7 +37,7 @@ ___
 
 ### request
 
-• `Readonly` **request**: HttpRequest
+• `Readonly` **request**: `HttpRequest`
 
 The initial HTTP request before the actual
 socket and connection is established.

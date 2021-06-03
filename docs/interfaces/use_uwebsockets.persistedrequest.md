@@ -25,19 +25,19 @@ while it is accessible.
 
 ### headers
 
-• **headers**: *IncomingHttpHeaders*
+• **headers**: `IncomingHttpHeaders`
 
 ___
 
 ### method
 
-• **method**: *string*
+• **method**: `string`
 
 ___
 
 ### query
 
-• **query**: *string*
+• **query**: `string`
 
 The raw query string (after the `?` sign) or empty string.
 
@@ -45,4 +45,4 @@ ___
 
 ### url
 
-• **url**: *string*
+• **url**: `string`

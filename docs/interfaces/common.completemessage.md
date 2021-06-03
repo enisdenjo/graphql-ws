@@ -15,10 +15,10 @@
 
 ### id
 
-• `Readonly` **id**: *string*
+• `Readonly` **id**: `string`
 
 ___
 
 ### type
 
-• `Readonly` **type**: [*Complete*](../enums/common.messagetype.md#complete)
+• `Readonly` **type**: [Complete](../enums/common.messagetype.md#complete)

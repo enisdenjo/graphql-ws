@@ -6,9 +6,9 @@
 
 ## Type parameters
 
-| Name | Default |
+| Name | Type |
 | :------ | :------ |
-| `E` | *unknown* |
+| `E` | `E` = `unknown` |
 
 ## Table of contents
 
@@ -24,7 +24,7 @@
 
 ### acknowledged
 
-• `Readonly` **acknowledged**: *boolean*
+• `Readonly` **acknowledged**: `boolean`
 
 Indicates that the connection was acknowledged
 by having dispatched the `ConnectionAck` message
@@ -34,7 +34,7 @@ ___
 
 ### connectionInitReceived
 
-• `Readonly` **connectionInitReceived**: *boolean*
+• `Readonly` **connectionInitReceived**: `boolean`
 
 Indicates that the `ConnectionInit` message
 has been received by the server. If this is
@@ -45,7 +45,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: *Readonly*<Record<string, unknown\>\>
+• `Optional` `Readonly` **connectionParams**: `Readonly`<Record<string, unknown\>\>
 
 The parameters passed during the connection initialisation.
 
@@ -53,7 +53,7 @@ ___
 
 ### extra
 
-• **extra**: E
+• **extra**: `E`
 
 An extra field where you can store your own context values
 to pass between callbacks.
@@ -62,7 +62,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: *Record*<string, ``null`` \| AsyncIterator<unknown, any, undefined\>\>
+• `Readonly` **subscriptions**: `Record`<string, ``null`` \| AsyncIterator<unknown, any, undefined\>\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_

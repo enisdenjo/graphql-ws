@@ -8,7 +8,7 @@ The extra that will be put in the `Context`.
 
 ## Hierarchy
 
-- [*UpgradeData*](use_uwebsockets.upgradedata.md)
+- [UpgradeData](use_uwebsockets.upgradedata.md)
 
   ↳ **Extra**
 
@@ -24,7 +24,7 @@ The extra that will be put in the `Context`.
 
 ### persistedRequest
 
-• `Readonly` **persistedRequest**: [*PersistedRequest*](use_uwebsockets.persistedrequest.md)
+• `Readonly` **persistedRequest**: [PersistedRequest](use_uwebsockets.persistedrequest.md)
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.
@@ -34,26 +34,30 @@ from outside of the internal upgrade; therefore, the persisted
 request holds the relevant values extracted from the uWS's request
 while it is accessible.
 
-Inherited from: [UpgradeData](use_uwebsockets.upgradedata.md).[persistedRequest](use_uwebsockets.upgradedata.md#persistedrequest)
+#### Inherited from
+
+[UpgradeData](use_uwebsockets.upgradedata.md).[persistedRequest](use_uwebsockets.upgradedata.md#persistedrequest)
 
 ___
 
 ### request
 
-• `Readonly` **request**: HttpRequest
+• `Readonly` **request**: `HttpRequest`
 
 The initial HTTP request before the actual
 socket and connection is established.
 
 **`deprecated`** uWS.HttpRequest is stack allocated and cannot be accessed outside the internal `upgrade` callback. Consider using the `persistedRequest` instead.
 
-Inherited from: [UpgradeData](use_uwebsockets.upgradedata.md).[request](use_uwebsockets.upgradedata.md#request)
+#### Inherited from
+
+[UpgradeData](use_uwebsockets.upgradedata.md).[request](use_uwebsockets.upgradedata.md#request)
 
 ___
 
 ### socket
 
-• `Readonly` **socket**: WebSocket & [*UpgradeData*](use_uwebsockets.upgradedata.md)
+• `Readonly` **socket**: `WebSocket` & [UpgradeData](use_uwebsockets.upgradedata.md)
 
 The actual socket connection between the server and the client
 with the upgrade data.

@@ -16,16 +16,16 @@
 
 ### id
 
-• `Readonly` **id**: *string*
+• `Readonly` **id**: `string`
 
 ___
 
 ### payload
 
-• `Readonly` **payload**: readonly *GraphQLError*[]
+• `Readonly` **payload**: readonly `GraphQLError`[]
 
 ___
 
 ### type
 
-• `Readonly` **type**: [*Error*](../enums/common.messagetype.md#error)
+• `Readonly` **type**: [Error](../enums/common.messagetype.md#error)

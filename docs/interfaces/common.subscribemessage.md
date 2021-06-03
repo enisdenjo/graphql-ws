@@ -16,16 +16,16 @@
 
 ### id
 
-• `Readonly` **id**: *string*
+• `Readonly` **id**: `string`
 
 ___
 
 ### payload
 
-• `Readonly` **payload**: [*SubscribePayload*](common.subscribepayload.md)
+• `Readonly` **payload**: [SubscribePayload](common.subscribepayload.md)
 
 ___
 
 ### type
 
-• `Readonly` **type**: [*Subscribe*](../enums/common.messagetype.md#subscribe)
+• `Readonly` **type**: [Subscribe](../enums/common.messagetype.md#subscribe)

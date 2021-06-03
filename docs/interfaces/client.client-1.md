@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- [*Disposable*](common.disposable.md)
+- [Disposable](common.disposable.md)
 
   ↳ **Client**
 
@@ -25,23 +25,27 @@
 
 ### dispose
 
-• **dispose**: () => *void* \| *Promise*<void\>
+• **dispose**: () => `void` \| `Promise`<void\>
 
 Dispose of the instance and clear up resources.
 
 #### Type declaration
 
-▸ (): *void* \| *Promise*<void\>
+▸ (): `void` \| `Promise`<void\>
 
-**Returns:** *void* \| *Promise*<void\>
+##### Returns
 
-Inherited from: [Disposable](common.disposable.md).[dispose](common.disposable.md#dispose)
+`void` \| `Promise`<void\>
+
+#### Inherited from
+
+[Disposable](common.disposable.md).[dispose](common.disposable.md#dispose)
 
 ## Methods
 
 ### on
 
-▸ **on**<E\>(`event`: E, `listener`: [*EventListener*](../modules/client.md#eventlistener)<E\>): *function*
+▸ **on**<E\>(`event`, `listener`): () => `void`
 
 Listens on the client which dispatches events about the socket state.
 
@@ -49,22 +53,30 @@ Listens on the client which dispatches events about the socket state.
 
 | Name | Type |
 | :------ | :------ |
-| `E` | [*Event*](../modules/client.md#event) |
+| `E` | `E`: [Event](../modules/client.md#event) |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | E |
-| `listener` | [*EventListener*](../modules/client.md#eventlistener)<E\> |
+| `event` | `E` |
+| `listener` | [EventListener](../modules/client.md#eventlistener)<E\> |
 
-**Returns:** () => *void*
+#### Returns
+
+`fn`
+
+▸ (): `void`
+
+##### Returns
+
+`void`
 
 ___
 
 ### subscribe
 
-▸ **subscribe**<T\>(`payload`: [*SubscribePayload*](common.subscribepayload.md), `sink`: [*Sink*](common.sink.md)<T\>): *function*
+▸ **subscribe**<T\>(`payload`, `sink`): () => `void`
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -72,15 +84,23 @@ function used for dropping the subscription and cleaning stuff up.
 
 #### Type parameters
 
-| Name | Default |
+| Name | Type |
 | :------ | :------ |
-| `T` | *unknown* |
+| `T` | `T` = `unknown` |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `payload` | [*SubscribePayload*](common.subscribepayload.md) |
-| `sink` | [*Sink*](common.sink.md)<T\> |
+| `payload` | [SubscribePayload](common.subscribepayload.md) |
+| `sink` | [Sink](common.sink.md)<T\> |
 
-**Returns:** () => *void*
+#### Returns
+
+`fn`
+
+▸ (): `void`
+
+##### Returns
+
+`void`

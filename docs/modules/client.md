@@ -53,7 +53,7 @@
 
 ### Event
 
-Ƭ **Event**: [*EventConnecting*](client.md#eventconnecting) \| [*EventConnected*](client.md#eventconnected) \| [*EventMessage*](client.md#eventmessage) \| [*EventClosed*](client.md#eventclosed) \| [*EventError*](client.md#eventerror)
+Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventConnected](client.md#eventconnected) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 ### EventClosedListener
 
-Ƭ **EventClosedListener**: (`event`: *unknown*) => *void*
+Ƭ **EventClosedListener**: (`event`: `unknown`) => `void`
 
 The argument is actually the websocket `CloseEvent`, but to avoid
 bundling DOM typings because the client can run in Node env too,
@@ -73,15 +73,17 @@ you should assert the websocket type during implementation.
 
 #### Type declaration
 
-▸ (`event`: *unknown*): *void*
+▸ (`event`): `void`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | *unknown* |
+| `event` | `unknown` |
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
@@ -93,7 +95,7 @@ ___
 
 ### EventConnectedListener
 
-Ƭ **EventConnectedListener**: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void*
+Ƭ **EventConnectedListener**: (`socket`: `unknown`, `payload?`: `Record`<string, unknown\>) => `void`
 
 The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
@@ -104,16 +106,18 @@ send through the `ConnectionAck` message.
 
 #### Type declaration
 
-▸ (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>): *void*
+▸ (`socket`, `payload?`): `void`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `socket` | *unknown* |
-| `payload?` | *Record*<string, unknown\> |
+| `socket` | `unknown` |
+| `payload?` | `Record`<string, unknown\> |
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
@@ -125,13 +129,15 @@ ___
 
 ### EventConnectingListener
 
-Ƭ **EventConnectingListener**: () => *void*
+Ƭ **EventConnectingListener**: () => `void`
 
 #### Type declaration
 
-▸ (): *void*
+▸ (): `void`
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
@@ -143,7 +149,7 @@ ___
 
 ### EventErrorListener
 
-Ƭ **EventErrorListener**: (`error`: *unknown*) => *void*
+Ƭ **EventErrorListener**: (`error`: `unknown`) => `void`
 
 The argument can be either an Error Event or an instance of Error, but to avoid
 bundling DOM typings because the client can run in Node env too, you should assert
@@ -152,27 +158,29 @@ be handler in this listener.
 
 #### Type declaration
 
-▸ (`error`: *unknown*): *void*
+▸ (`error`): `void`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `error` | *unknown* |
+| `error` | `unknown` |
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
 ### EventListener
 
-Ƭ **EventListener**<E\>: E *extends* [*EventConnecting*](client.md#eventconnecting) ? [*EventConnectingListener*](client.md#eventconnectinglistener) : E *extends* [*EventConnected*](client.md#eventconnected) ? [*EventConnectedListener*](client.md#eventconnectedlistener) : E *extends* [*EventMessage*](client.md#eventmessage) ? [*EventMessageListener*](client.md#eventmessagelistener) : E *extends* [*EventClosed*](client.md#eventclosed) ? [*EventClosedListener*](client.md#eventclosedlistener) : E *extends* [*EventError*](client.md#eventerror) ? [*EventErrorListener*](client.md#eventerrorlistener) : *never*
+Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `E` | [*Event*](client.md#event) |
+| `E` | `E`: [Event](client.md#event) |
 
 ___
 
@@ -184,28 +192,30 @@ ___
 
 ### EventMessageListener
 
-Ƭ **EventMessageListener**: (`message`: [*Message*](common.md#message)) => *void*
+Ƭ **EventMessageListener**: (`message`: [Message](common.md#message)) => `void`
 
 Called for all **valid** messages received by the client. Mainly useful for
 debugging and logging received messages.
 
 #### Type declaration
 
-▸ (`message`: [*Message*](common.md#message)): *void*
+▸ (`message`): `void`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `message` | [*Message*](common.md#message) |
+| `message` | [Message](common.md#message) |
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
 ### createClient
 
-▸ **createClient**(`options`: [*ClientOptions*](../interfaces/client.clientoptions.md)): [*Client*](../interfaces/client.client-1.md)
+▸ **createClient**(`options`): [Client](../interfaces/client.client-1.md)
 
 Creates a disposable GraphQL over WebSocket client.
 
@@ -213,9 +223,11 @@ Creates a disposable GraphQL over WebSocket client.
 
 | Name | Type |
 | :------ | :------ |
-| `options` | [*ClientOptions*](../interfaces/client.clientoptions.md) |
+| `options` | [ClientOptions](../interfaces/client.clientoptions.md) |
 
-**Returns:** [*Client*](../interfaces/client.client-1.md)
+#### Returns
+
+[Client](../interfaces/client.client-1.md)
 
 ## Other
 

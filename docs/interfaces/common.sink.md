@@ -8,9 +8,9 @@ A representation of any set of values over any amount of time.
 
 ## Type parameters
 
-| Name | Default |
+| Name | Type |
 | :------ | :------ |
-| `T` | *unknown* |
+| `T` | `T` = `unknown` |
 
 ## Table of contents
 
@@ -24,17 +24,19 @@ A representation of any set of values over any amount of time.
 
 ### complete
 
-▸ **complete**(): *void*
+▸ **complete**(): `void`
 
 The sink has completed. This function "closes" the sink.
 
-**Returns:** *void*
+#### Returns
+
+`void`
 
 ___
 
 ### error
 
-▸ **error**(`error`: *unknown*): *void*
+▸ **error**(`error`): `void`
 
 An error that has occured. Calling this function "closes" the sink.
 Besides the errors being `Error` and `readonly GraphQLError[]`, it
@@ -46,15 +48,17 @@ type during implementation.
 
 | Name | Type |
 | :------ | :------ |
-| `error` | *unknown* |
+| `error` | `unknown` |
 
-**Returns:** *void*
+#### Returns
+
+`void`
 
 ___
 
 ### next
 
-▸ **next**(`value`: T): *void*
+▸ **next**(`value`): `void`
 
 Next value arriving.
 
@@ -62,6 +66,8 @@ Next value arriving.
 
 | Name | Type |
 | :------ | :------ |
-| `value` | T |
+| `value` | `T` |
 
-**Returns:** *void*
+#### Returns
+
+`void`

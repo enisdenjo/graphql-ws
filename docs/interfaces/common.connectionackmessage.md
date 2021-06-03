@@ -15,10 +15,10 @@
 
 ### payload
 
-• `Optional` `Readonly` **payload**: *Record*<string, unknown\>
+• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [*ConnectionAck*](../enums/common.messagetype.md#connectionack)
+• `Readonly` **type**: [ConnectionAck](../enums/common.messagetype.md#connectionack)

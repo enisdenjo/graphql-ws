@@ -28,7 +28,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: *Record*<string, unknown\> \| () => *Record*<string, unknown\> \| *Promise*<Record<string, unknown\>\>
+• `Optional` **connectionParams**: `Record`<string, unknown\> \| () => `Record`<string, unknown\> \| `Promise`<Record<string, unknown\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this
@@ -44,7 +44,7 @@ ___
 
 ### generateID
 
-• `Optional` **generateID**: () => *string*
+• `Optional` **generateID**: () => `string`
 
 A custom ID generator for identifying subscriptions.
 
@@ -56,15 +56,17 @@ Reference: https://gist.github.com/jed/982883
 
 #### Type declaration
 
-▸ (): *string*
+▸ (): `string`
 
-**Returns:** *string*
+##### Returns
+
+`string`
 
 ___
 
 ### isFatalConnectionProblem
 
-• `Optional` **isFatalConnectionProblem**: (`errOrCloseEvent`: *unknown*) => *boolean*
+• `Optional` **isFatalConnectionProblem**: (`errOrCloseEvent`: `unknown`) => `boolean`
 
 Check if the close event or connection error is fatal. If you return `true`,
 the client will fail immediately without additional retries; however, if you
@@ -82,21 +84,23 @@ option.
 
 #### Type declaration
 
-▸ (`errOrCloseEvent`: *unknown*): *boolean*
+▸ (`errOrCloseEvent`): `boolean`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `errOrCloseEvent` | *unknown* |
+| `errOrCloseEvent` | `unknown` |
 
-**Returns:** *boolean*
+##### Returns
+
+`boolean`
 
 ___
 
 ### jsonMessageReplacer
 
-• `Optional` **jsonMessageReplacer**: [*JSONMessageReplacer*](../modules/common.md#jsonmessagereplacer)
+• `Optional` **jsonMessageReplacer**: [JSONMessageReplacer](../modules/common.md#jsonmessagereplacer)
 
 An optional override for the JSON.stringify function used to serialize
 outgoing messages from this client. Useful for serializing custom
@@ -106,7 +110,7 @@ ___
 
 ### jsonMessageReviver
 
-• `Optional` **jsonMessageReviver**: [*JSONMessageReviver*](../modules/common.md#jsonmessagereviver)
+• `Optional` **jsonMessageReviver**: [JSONMessageReviver](../modules/common.md#jsonmessagereviver)
 
 An optional override for the JSON.parse function used to hydrate
 incoming messages to this client. Useful for parsing custom datatypes
@@ -116,7 +120,7 @@ ___
 
 ### keepAlive
 
-• `Optional` **keepAlive**: *number*
+• `Optional` **keepAlive**: `number`
 
 How long should the client wait before closing the socket after the last oparation has
 completed. This is meant to be used in combination with `lazy`. You might want to have
@@ -128,7 +132,7 @@ ___
 
 ### lazy
 
-• `Optional` **lazy**: *boolean*
+• `Optional` **lazy**: `boolean`
 
 Controls when should the connection be established.
 
@@ -142,7 +146,7 @@ ___
 
 ### on
 
-• `Optional` **on**: *Partial*<{ `closed`: (`event`: *unknown*) => *void* ; `connected`: (`socket`: *unknown*, `payload?`: *Record*<string, unknown\>) => *void* ; `connecting`: () => *void* ; `error`: (`error`: *unknown*) => *void* ; `message`: (`message`: [*ConnectionInitMessage*](common.connectioninitmessage.md) \| [*ConnectionAckMessage*](common.connectionackmessage.md) \| [*SubscribeMessage*](common.subscribemessage.md) \| [*NextMessage*](common.nextmessage.md) \| [*ErrorMessage*](common.errormessage.md) \| [*CompleteMessage*](common.completemessage.md)) => *void*  }\>
+• `Optional` **on**: `Partial`<`Object`\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.
@@ -154,7 +158,7 @@ ___
 
 ### onNonLazyError
 
-• `Optional` **onNonLazyError**: (`errorOrCloseEvent`: *unknown*) => *void*
+• `Optional` **onNonLazyError**: (`errorOrCloseEvent`: `unknown`) => `void`
 
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
 using this mode, the errors might have no sinks to report to; however,
@@ -176,21 +180,23 @@ fatal by nature.
 
 #### Type declaration
 
-▸ (`errorOrCloseEvent`: *unknown*): *void*
+▸ (`errorOrCloseEvent`): `void`
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `errorOrCloseEvent` | *unknown* |
+| `errorOrCloseEvent` | `unknown` |
 
-**Returns:** *void*
+##### Returns
+
+`void`
 
 ___
 
 ### retryAttempts
 
-• `Optional` **retryAttempts**: *number*
+• `Optional` **retryAttempts**: `number`
 
 How many times should the client try to reconnect on abnormal socket closure before it errors out?
 
@@ -210,7 +216,7 @@ ___
 
 ### retryWait
 
-• `Optional` **retryWait**: (`retries`: *number*) => *Promise*<void\>
+• `Optional` **retryWait**: (`retries`: `number`) => `Promise`<void\>
 
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.
@@ -221,21 +227,23 @@ by timing the resolution of the returned promise with the retries count.
 
 #### Type declaration
 
-▸ (`retries`: *number*): *Promise*<void\>
+▸ (`retries`): `Promise`<void\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `retries` | *number* |
+| `retries` | `number` |
 
-**Returns:** *Promise*<void\>
+##### Returns
+
+`Promise`<void\>
 
 ___
 
 ### url
 
-• **url**: *string* \| () => *string* \| *Promise*<string\>
+• **url**: `string` \| () => `string` \| `Promise`<string\>
 
 URL of the GraphQL over WebSocket Protocol compliant server to connect.
 
@@ -251,7 +259,7 @@ ___
 
 ### webSocketImpl
 
-• `Optional` **webSocketImpl**: *unknown*
+• `Optional` **webSocketImpl**: `unknown`
 
 A custom WebSocket implementation to use instead of the
 one provided by the global scope. Mostly useful for when

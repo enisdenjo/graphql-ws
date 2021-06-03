@@ -6,9 +6,9 @@
 
 ## Type parameters
 
-| Name | Default |
+| Name | Type |
 | :------ | :------ |
-| `E` | *unknown* |
+| `E` | `E` = `unknown` |
 
 ## Table of contents
 
@@ -36,7 +36,7 @@
 
 ### connectionInitWaitTimeout
 
-• `Optional` **connectionInitWaitTimeout**: *number*
+• `Optional` **connectionInitWaitTimeout**: `number`
 
 The amount of time for which the server will wait
 for `ConnectionInit` message.
@@ -54,7 +54,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs) => [*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue) \| *Promise*<[*GraphQLExecutionContextValue*](../modules/server.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: [GraphQLExecutionContextValue](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md), `args`: `ExecutionArgs`) => [GraphQLExecutionContextValue](../modules/server.md#graphqlexecutioncontextvalue) \| `Promise`<[GraphQLExecutionContextValue](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -78,7 +78,7 @@ ___
 
 ### execute
 
-• `Optional` **execute**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
+• `Optional` **execute**: (`args`: `ExecutionArgs`) => [OperationResult](../modules/server.md#operationresult)
 
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
@@ -89,21 +89,23 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
+▸ (`args`): [OperationResult](../modules/server.md#operationresult)
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `args` | ExecutionArgs |
+| `args` | `ExecutionArgs` |
 
-**Returns:** [*OperationResult*](../modules/server.md#operationresult)
+##### Returns
+
+[OperationResult](../modules/server.md#operationresult)
 
 ___
 
 ### jsonMessageReplacer
 
-• `Optional` **jsonMessageReplacer**: [*JSONMessageReplacer*](../modules/common.md#jsonmessagereplacer)
+• `Optional` **jsonMessageReplacer**: [JSONMessageReplacer](../modules/common.md#jsonmessagereplacer)
 
 An optional override for the JSON.stringify function used to serialize
 outgoing messages to from server. Useful for serializing custom
@@ -113,7 +115,7 @@ ___
 
 ### jsonMessageReviver
 
-• `Optional` **jsonMessageReviver**: [*JSONMessageReviver*](../modules/common.md#jsonmessagereviver)
+• `Optional` **jsonMessageReviver**: [JSONMessageReviver](../modules/common.md#jsonmessagereviver)
 
 An optional override for the JSON.parse function used to hydrate
 incoming messages to this server. Useful for parsing custom datatypes
@@ -123,7 +125,7 @@ ___
 
 ### onClose
 
-• `Optional` **onClose**: (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
+• `Optional` **onClose**: (`ctx`: [Context](server.context.md)<E\>, `code`: `number`, `reason`: `string`) => `void` \| `Promise`<void\>
 
 Called when the socket closes for whatever reason, at any
 point in time. Provides the close event too. Beware
@@ -140,23 +142,25 @@ called before the `onClose`.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
+▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `code` | *number* |
-| `reason` | *string* |
+| `ctx` | [Context](server.context.md)<E\> |
+| `code` | `number` |
+| `reason` | `string` |
 
-**Returns:** *void* \| *Promise*<void\>
+##### Returns
+
+`void` \| `Promise`<void\>
 
 ___
 
 ### onComplete
 
-• `Optional` **onComplete**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](common.completemessage.md)) => *void* \| *Promise*<void\>
+• `Optional` **onComplete**: (`ctx`: [Context](server.context.md)<E\>, `message`: [CompleteMessage](common.completemessage.md)) => `void` \| `Promise`<void\>
 
 The complete callback is executed after the
 operation has completed right before sending
@@ -172,22 +176,24 @@ will still be called.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*CompleteMessage*](common.completemessage.md)): *void* \| *Promise*<void\>
+▸ (`ctx`, `message`): `void` \| `Promise`<void\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*CompleteMessage*](common.completemessage.md) |
+| `ctx` | [Context](server.context.md)<E\> |
+| `message` | [CompleteMessage](common.completemessage.md) |
 
-**Returns:** *void* \| *Promise*<void\>
+##### Returns
+
+`void` \| `Promise`<void\>
 
 ___
 
 ### onConnect
 
-• `Optional` **onConnect**: (`ctx`: [*Context*](server.context.md)<E\>) => *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+• `Optional` **onConnect**: (`ctx`: [Context](server.context.md)<E\>) => `boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -214,21 +220,23 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>): *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+▸ (`ctx`): `boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
+| `ctx` | [Context](server.context.md)<E\> |
 
-**Returns:** *boolean* \| *void* \| *Record*<string, unknown\> \| *Promise*<boolean \| void \| Record<string, unknown\>\>
+##### Returns
+
+`boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
 
 ___
 
 ### onDisconnect
 
-• `Optional` **onDisconnect**: (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*) => *void* \| *Promise*<void\>
+• `Optional` **onDisconnect**: (`ctx`: [Context](server.context.md)<E\>, `code`: `number`, `reason`: `string`) => `void` \| `Promise`<void\>
 
 Called when the client disconnects for whatever reason after
 he successfully went through the connection initialisation phase.
@@ -247,23 +255,25 @@ of the connection state - consider using the `onClose` callback.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `code`: *number*, `reason`: *string*): *void* \| *Promise*<void\>
+▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `code` | *number* |
-| `reason` | *string* |
+| `ctx` | [Context](server.context.md)<E\> |
+| `code` | `number` |
+| `reason` | `string` |
 
-**Returns:** *void* \| *Promise*<void\>
+##### Returns
+
+`void` \| `Promise`<void\>
 
 ___
 
 ### onError
 
-• `Optional` **onError**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](common.errormessage.md), `errors`: readonly *GraphQLError*[]) => *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+• `Optional` **onError**: (`ctx`: [Context](server.context.md)<E\>, `message`: [ErrorMessage](common.errormessage.md), `errors`: readonly `GraphQLError`[]) => `void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
 
 Executed after an error occured right before it
 has been dispatched to the client.
@@ -279,23 +289,25 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*ErrorMessage*](common.errormessage.md), `errors`: readonly *GraphQLError*[]): *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+▸ (`ctx`, `message`, `errors`): `void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*ErrorMessage*](common.errormessage.md) |
-| `errors` | readonly *GraphQLError*[] |
+| `ctx` | [Context](server.context.md)<E\> |
+| `message` | [ErrorMessage](common.errormessage.md) |
+| `errors` | readonly `GraphQLError`[] |
 
-**Returns:** *void* \| readonly *GraphQLError*[] \| *Promise*<void \| readonly *GraphQLError*[]\>
+##### Returns
+
+`void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
 
 ___
 
 ### onNext
 
-• `Optional` **onNext**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](common.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>) => *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+• `Optional` **onNext**: (`ctx`: [Context](server.context.md)<E\>, `message`: [NextMessage](common.nextmessage.md), `args`: `ExecutionArgs`, `result`: `ExecutionResult`<`Object`, `Object`\>) => `void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -312,24 +324,26 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*NextMessage*](common.nextmessage.md), `args`: ExecutionArgs, `result`: *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>): *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+▸ (`ctx`, `message`, `args`, `result`): `void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*NextMessage*](common.nextmessage.md) |
-| `args` | ExecutionArgs |
-| `result` | *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> |
+| `ctx` | [Context](server.context.md)<E\> |
+| `message` | [NextMessage](common.nextmessage.md) |
+| `args` | `ExecutionArgs` |
+| `result` | `ExecutionResult`<`Object`, `Object`\> |
 
-**Returns:** *void* \| *ExecutionResult*<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\> \| *Promise*<void \| ExecutionResult<{ [key: string]: *any*;  }, { [key: string]: *any*;  }\>\>
+##### Returns
+
+`void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
 
 ___
 
 ### onOperation
 
-• `Optional` **onOperation**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)) => *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
+• `Optional` **onOperation**: (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md), `args`: `ExecutionArgs`, `result`: [OperationResult](../modules/server.md#operationresult)) => `void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -352,24 +366,26 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: ExecutionArgs, `result`: [*OperationResult*](../modules/server.md#operationresult)): *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
+▸ (`ctx`, `message`, `args`, `result`): `void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*SubscribeMessage*](common.subscribemessage.md) |
-| `args` | ExecutionArgs |
-| `result` | [*OperationResult*](../modules/server.md#operationresult) |
+| `ctx` | [Context](server.context.md)<E\> |
+| `message` | [SubscribeMessage](common.subscribemessage.md) |
+| `args` | `ExecutionArgs` |
+| `result` | [OperationResult](../modules/server.md#operationresult) |
 
-**Returns:** *void* \| [*OperationResult*](../modules/server.md#operationresult) \| *Promise*<void \| [*OperationResult*](../modules/server.md#operationresult)\>
+##### Returns
+
+`void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
 
 ___
 
 ### onSubscribe
 
-• `Optional` **onSubscribe**: (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md)) => *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+• `Optional` **onSubscribe**: (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md)) => `void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -401,22 +417,24 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md)): *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+▸ (`ctx`, `message`): `void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [*Context*](server.context.md)<E\> |
-| `message` | [*SubscribeMessage*](common.subscribemessage.md) |
+| `ctx` | [Context](server.context.md)<E\> |
+| `message` | [SubscribeMessage](common.subscribemessage.md) |
 
-**Returns:** *void* \| readonly *GraphQLError*[] \| ExecutionArgs \| *Promise*<void \| readonly *GraphQLError*[] \| ExecutionArgs\>
+##### Returns
+
+`void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
 
 ___
 
 ### roots
 
-• `Optional` **roots**: *object*
+• `Optional` **roots**: `Object`
 
 The GraphQL root fields or resolvers to go
 alongside the schema. Learn more about them
@@ -438,7 +456,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: *GraphQLSchema* \| (`ctx`: [*Context*](server.context.md)<E\>, `message`: [*SubscribeMessage*](common.subscribemessage.md), `args`: *Omit*<ExecutionArgs, ``"schema"``\>) => *GraphQLSchema* \| *Promise*<GraphQLSchema\>
+• `Optional` **schema**: `GraphQLSchema` \| (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md), `args`: `Omit`<ExecutionArgs, ``"schema"``\>) => `GraphQLSchema` \| `Promise`<GraphQLSchema\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.
@@ -459,7 +477,7 @@ ___
 
 ### subscribe
 
-• `Optional` **subscribe**: (`args`: ExecutionArgs) => [*OperationResult*](../modules/server.md#operationresult)
+• `Optional` **subscribe**: (`args`: `ExecutionArgs`) => [OperationResult](../modules/server.md#operationresult)
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
@@ -470,21 +488,23 @@ in the close event reason.
 
 #### Type declaration
 
-▸ (`args`: ExecutionArgs): [*OperationResult*](../modules/server.md#operationresult)
+▸ (`args`): [OperationResult](../modules/server.md#operationresult)
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `args` | ExecutionArgs |
+| `args` | `ExecutionArgs` |
 
-**Returns:** [*OperationResult*](../modules/server.md#operationresult)
+##### Returns
+
+[OperationResult](../modules/server.md#operationresult)
 
 ___
 
 ### validate
 
-• `Optional` **validate**: (`schema`: *GraphQLSchema*, `documentAST`: DocumentNode, `rules?`: readonly ValidationRule[], `typeInfo?`: *TypeInfo*, `options?`: { `maxErrors?`: *number*  }) => readonly *GraphQLError*[]
+• `Optional` **validate**: (`schema`: `GraphQLSchema`, `documentAST`: `DocumentNode`, `rules?`: readonly `ValidationRule`[], `typeInfo?`: `TypeInfo`, `options?`: { `maxErrors?`: `number`  }) => readonly `GraphQLError`[]
 
 A custom GraphQL validate function allowing you to apply your
 own validation rules.
@@ -500,17 +520,19 @@ with the `Error` message in the close event reason.
 
 #### Type declaration
 
-▸ (`schema`: *GraphQLSchema*, `documentAST`: DocumentNode, `rules?`: readonly ValidationRule[], `typeInfo?`: *TypeInfo*, `options?`: { `maxErrors?`: *number*  }): readonly *GraphQLError*[]
+▸ (`schema`, `documentAST`, `rules?`, `typeInfo?`, `options?`): readonly `GraphQLError`[]
 
-#### Parameters
+##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `schema` | *GraphQLSchema* |
-| `documentAST` | DocumentNode |
-| `rules?` | readonly ValidationRule[] |
-| `typeInfo?` | *TypeInfo* |
-| `options?` | *object* |
-| `options.maxErrors?` | *number* |
+| `schema` | `GraphQLSchema` |
+| `documentAST` | `DocumentNode` |
+| `rules?` | readonly `ValidationRule`[] |
+| `typeInfo?` | `TypeInfo` |
+| `options?` | `Object` |
+| `options.maxErrors?` | `number` |
 
-**Returns:** readonly *GraphQLError*[]
+##### Returns
+
+readonly `GraphQLError`[]
