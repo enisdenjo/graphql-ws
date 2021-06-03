@@ -26,6 +26,14 @@ The extra that will be put in the `Context`.
 
 • `Readonly` **persistedRequest**: [*PersistedRequest*](use_uwebsockets.persistedrequest.md)
 
+The initial HTTP upgrade request before the actual
+socket and connection is established.
+
+uWS's request is stack allocated and cannot be accessed
+from outside of the internal upgrade; therefore, the persisted
+request holds the relevant values extracted from the uWS's request
+while it is accessible.
+
 Inherited from: [UpgradeData](use_uwebsockets.upgradedata.md).[persistedRequest](use_uwebsockets.upgradedata.md#persistedrequest)
 
 ___

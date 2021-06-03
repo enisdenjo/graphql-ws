@@ -25,6 +25,14 @@ Data acquired during the HTTP upgrade callback from uWS.
 
 • `Readonly` **persistedRequest**: [*PersistedRequest*](use_uwebsockets.persistedrequest.md)
 
+The initial HTTP upgrade request before the actual
+socket and connection is established.
+
+uWS's request is stack allocated and cannot be accessed
+from outside of the internal upgrade; therefore, the persisted
+request holds the relevant values extracted from the uWS's request
+while it is accessible.
+
 ___
 
 ### request

@@ -18,6 +18,7 @@ while it is accessible.
 
 - [headers](use_uwebsockets.persistedrequest.md#headers)
 - [method](use_uwebsockets.persistedrequest.md#method)
+- [query](use_uwebsockets.persistedrequest.md#query)
 - [url](use_uwebsockets.persistedrequest.md#url)
 
 ## Properties
@@ -31,6 +32,14 @@ ___
 ### method
 
 • **method**: *string*
+
+___
+
+### query
+
+• **query**: *string*
+
+The raw query string (after the `?` sign) or empty string.
 
 ___
 
