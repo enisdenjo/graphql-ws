@@ -1,3 +1,10 @@
+# [4.8.0](https://github.com/enisdenjo/graphql-ws/compare/v4.7.0...v4.8.0) (2021-06-03)
+
+
+### Features
+
+* **uWebSockets:** Add `persistedRequest` to context extra and deprecate uWS's stack allocated `request` ([#196](https://github.com/enisdenjo/graphql-ws/issues/196)) ([736e6ed](https://github.com/enisdenjo/graphql-ws/commit/736e6eda45d392292f315b9465b104dce4f2545f))
+
 # [4.7.0](https://github.com/enisdenjo/graphql-ws/compare/v4.6.0...v4.7.0) (2021-05-31)
 
 
