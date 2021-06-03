@@ -7,6 +7,8 @@
 ### Interfaces
 
 - [Extra](../interfaces/use_uwebsockets.extra.md)
+- [PersistedRequest](../interfaces/use_uwebsockets.persistedrequest.md)
+- [UpgradeData](../interfaces/use_uwebsockets.upgradedata.md)
 
 ### Functions
 

@@ -91,6 +91,18 @@ for (const { tServer, startTServer } of tServers) {
               expect((ctx.extra as UWSExtra).request.constructor.name).toEqual(
                 'uWS.HttpRequest',
               );
+              expect((ctx.extra as UWSExtra).persistedRequest.method).toBe(
+                'get',
+              );
+              expect((ctx.extra as UWSExtra).persistedRequest.url).toBe(
+                '/simple',
+              );
+              expect((ctx.extra as UWSExtra).persistedRequest.query).toBe(
+                'te=st',
+              );
+              expect(
+                (ctx.extra as UWSExtra).persistedRequest.headers,
+              ).toBeInstanceOf(Object);
             } else if (tServer === 'ws') {
               expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);
               expect((ctx.extra as WSExtra).request).toBeInstanceOf(
@@ -104,7 +116,7 @@ for (const { tServer, startTServer } of tServers) {
           },
         });
 
-        const client = await createTClient(server.url);
+        const client = await createTClient(server.url + '?te=st');
         client.ws.send(
           stringifyMessage<MessageType.ConnectionInit>({
             type: MessageType.ConnectionInit,

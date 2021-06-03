@@ -1,4 +1,5 @@
 import type * as uWS from 'uWebSockets.js';
+import type http from 'http';
 import { makeServer, ServerOptions } from '../server';
 
 /**
@@ -6,16 +7,56 @@ import { makeServer, ServerOptions } from '../server';
  *
  * @category Server/uWebSockets
  */
-export interface Extra {
+export interface Extra extends UpgradeData {
   /**
-   * The actual socket connection between the server and the client.
+   * The actual socket connection between the server and the client
+   * with the upgrade data.
    */
-  readonly socket: uWS.WebSocket;
+  readonly socket: uWS.WebSocket & UpgradeData;
+}
+
+/**
+ * Data acquired during the HTTP upgrade callback from uWS.
+ *
+ * @category Server/uWebSockets
+ */
+export interface UpgradeData {
   /**
    * The initial HTTP request before the actual
    * socket and connection is established.
+   *
+   * @deprecated uWS.HttpRequest is stack allocated and cannot be accessed outside the internal `upgrade` callback. Consider using the `persistedRequest` instead.
    */
   readonly request: uWS.HttpRequest;
+  /**
+   * The initial HTTP upgrade request before the actual
+   * socket and connection is established.
+   *
+   * uWS's request is stack allocated and cannot be accessed
+   * from outside of the internal upgrade; therefore, the persisted
+   * request holds the relevant values extracted from the uWS's request
+   * while it is accessible.
+   */
+  readonly persistedRequest: PersistedRequest;
+}
+
+/**
+ * The initial HTTP upgrade request before the actual
+ * socket and connection is established.
+ *
+ * uWS's request is stack allocated and cannot be accessed
+ * from outside of the internal upgrade; therefore, the persisted
+ * request holds relevant values extracted from the uWS's request
+ * while it is accessible.
+ *
+ * @category Server/uWebSockets
+ */
+export interface PersistedRequest {
+  method: string;
+  url: string;
+  /** The raw query string (after the `?` sign) or empty string. */
+  query: string;
+  headers: http.IncomingHttpHeaders;
 }
 
 interface Client {
@@ -71,8 +112,21 @@ export function makeBehavior<
       behavior.upgrade?.(...args);
       const [res, req, context] = args;
 
-      res.upgrade(
-        { upgradeReq: req },
+      const headers: http.IncomingHttpHeaders = {};
+      req.forEach((key, value) => {
+        headers[key] = value;
+      });
+
+      res.upgrade<UpgradeData>(
+        {
+          request: req,
+          persistedRequest: {
+            method: req.getMethod(),
+            url: req.getUrl(),
+            query: req.getQuery(),
+            headers,
+          },
+        },
         req.getHeader('sec-websocket-key'),
         req.getHeader('sec-websocket-protocol'),
         req.getHeader('sec-websocket-extensions'),
@@ -81,7 +135,8 @@ export function makeBehavior<
     },
     open(...args) {
       behavior.open?.(...args);
-      const [socket] = args;
+      const socket = args[0] as uWS.WebSocket & UpgradeData;
+      const persistedRequest = socket.persistedRequest;
 
       // prepare client object
       const client: Client = {
@@ -95,10 +150,9 @@ export function makeBehavior<
         },
       };
 
-      const request = socket.upgradeReq as uWS.HttpRequest;
       client.closed = server.opened(
         {
-          protocol: request.getHeader('sec-websocket-protocol'),
+          protocol: persistedRequest.headers['sec-websocket-protocol'] ?? '',
           send: async (message) => {
             // the socket might have been destroyed in the meantime
             if (!clients.has(socket)) return;
@@ -115,7 +169,8 @@ export function makeBehavior<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, request } as Extra & Partial<E>,
+        { socket, request: socket.request, persistedRequest } as Extra &
+          Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
