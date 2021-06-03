@@ -18,7 +18,7 @@ export interface Extra {
    */
   readonly socket: WebSocket;
   /**
-   * The initial HTTP request before the actual
+   * The initial HTTP upgrade request before the actual
    * socket and connection is established.
    */
   readonly request: http.IncomingMessage;

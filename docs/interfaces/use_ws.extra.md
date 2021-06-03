@@ -19,7 +19,7 @@ The extra that will be put in the `Context`.
 
 • `Readonly` **request**: *IncomingMessage*
 
-The initial HTTP request before the actual
+The initial HTTP upgrade request before the actual
 socket and connection is established.
 
 ___
