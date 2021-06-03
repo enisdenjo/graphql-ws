@@ -7,19 +7,55 @@ import { makeServer, ServerOptions } from '../server';
  *
  * @category Server/uWebSockets
  */
-export interface Extra {
+export interface Extra extends UpgradeData {
   /**
-   * The actual socket connection between the server and the client.
+   * The actual socket connection between the server and the client
+   * with the upgrade data.
    */
-  readonly socket: uWS.WebSocket & { upgradeReq: Request };
+  readonly socket: uWS.WebSocket & UpgradeData;
+}
+
+/**
+ * Data acquired during the HTTP upgrade callback from uWS.
+ *
+ * @category Server/uWebSockets
+ */
+export interface UpgradeData {
   /**
    * The initial HTTP request before the actual
    * socket and connection is established.
+   *
+   * @deprecated uWS.HttpRequest is stack allocated and cannot be accessed outside the internal `upgrade` callback. Consider using the `persistedRequest` instead.
    */
-  readonly request: Request;
+  readonly request: uWS.HttpRequest;
+  /**
+   * The initial HTTP upgrade request before the actual
+   * socket and connection is established.
+   *
+   * uWS's request is stack allocated and cannot be accessed
+   * from outside of the internal upgrade; therefore, the persisted
+   * request holds the relevant values extracted from the uWS's request
+   * while it is accessible.
+   */
+  readonly persistedRequest: PersistedRequest;
 }
 
-export interface Request {
+/**
+ * The initial HTTP upgrade request before the actual
+ * socket and connection is established.
+ *
+ * uWS's request is stack allocated and cannot be accessed
+ * from outside of the internal upgrade; therefore, the persisted
+ * request holds relevant values extracted from the uWS's request
+ * while it is accessible.
+ *
+ * @category Server/uWebSockets
+ */
+export interface PersistedRequest {
+  method: string;
+  url: string;
+  /** The raw query string (after the `?` sign) or empty string. */
+  query: string;
   headers: http.IncomingHttpHeaders;
 }
 
@@ -75,25 +111,32 @@ export function makeBehavior<
     upgrade(...args) {
       behavior.upgrade?.(...args);
       const [res, req, context] = args;
-      const upgradeReq: Request = {
-        headers: {},
-      };
 
+      const headers: http.IncomingHttpHeaders = {};
       req.forEach((key, value) => {
-        upgradeReq.headers[key] = value;
+        headers[key] = value;
       });
 
-      res.upgrade(
-        { upgradeReq },
-        upgradeReq.headers['sec-websocket-key'] || '',
-        upgradeReq.headers['sec-websocket-protocol'] || '',
-        upgradeReq.headers['sec-websocket-extensions'] || '',
+      res.upgrade<UpgradeData>(
+        {
+          request: req,
+          persistedRequest: {
+            method: req.getMethod(),
+            url: req.getUrl(),
+            query: req.getQuery(),
+            headers,
+          },
+        },
+        req.getHeader('sec-websocket-key'),
+        req.getHeader('sec-websocket-protocol'),
+        req.getHeader('sec-websocket-extensions'),
         context,
       );
     },
     open(...args) {
       behavior.open?.(...args);
-      const socket = args[0] as uWS.WebSocket & { upgradeReq: Request };
+      const socket = args[0] as uWS.WebSocket & UpgradeData;
+      const persistedRequest = socket.persistedRequest;
 
       // prepare client object
       const client: Client = {
@@ -109,7 +152,7 @@ export function makeBehavior<
 
       client.closed = server.opened(
         {
-          protocol: socket.upgradeReq.headers['sec-websocket-protocol'] || '',
+          protocol: persistedRequest.headers['sec-websocket-protocol'] ?? '',
           send: async (message) => {
             // the socket might have been destroyed in the meantime
             if (!clients.has(socket)) return;
@@ -126,7 +169,8 @@ export function makeBehavior<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, request: socket.upgradeReq } as Extra & Partial<E>,
+        { socket, request: socket.request, persistedRequest } as Extra &
+          Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
