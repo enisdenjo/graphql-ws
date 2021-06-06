@@ -1,3 +1,10 @@
+# [4.9.0](https://github.com/enisdenjo/graphql-ws/compare/v4.8.0...v4.9.0) (2021-06-06)
+
+
+### Features
+
+* **server:** Use `fastify-websocket` ([#200](https://github.com/enisdenjo/graphql-ws/issues/200)) ([b62fc95](https://github.com/enisdenjo/graphql-ws/commit/b62fc958bb0b67224d3c1b684d441bd8349c4b8a))
+
 # [4.8.0](https://github.com/enisdenjo/graphql-ws/compare/v4.7.0...v4.8.0) (2021-06-03)
 
 
