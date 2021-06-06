@@ -41,6 +41,10 @@
       "require": "./lib/use/uWebSockets.js",
       "import": "./lib/use/uWebSockets.mjs"
     },
+    "./lib/use/fastify-websocket": {
+      "require": "./lib/use/fastify-websocket.js",
+      "import": "./lib/use/fastify-websocket.mjs"
+    },
     "./package.json": "./package.json"
   },
   "types": "lib/index.d.ts",
@@ -90,6 +94,8 @@
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "fastify": "^3.17.0",
+    "fastify-websocket": "^3.2.0",
     "glob": "^7.1.7",
     "graphql": "^15.5.0",
     "jest": "^27.0.4",
