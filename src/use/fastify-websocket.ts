@@ -1,5 +1,5 @@
 import type { FastifyRequest } from 'fastify';
-import type { WebsocketHandler, SocketStream } from 'fastify-websocket';
+import type * as fastifyWebsocket from 'fastify-websocket';
 import { makeServer, ServerOptions } from '../server';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../common';
 
@@ -10,9 +10,10 @@ import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../common';
  */
 export interface Extra {
   /**
-   * The actual socket connection between the server and the client.
+   * The underlying socket connection between the server and the client.
+   * The WebSocket socket is located under the `socket` parameter.
    */
-  readonly connection: SocketStream;
+  readonly connection: fastifyWebsocket.SocketStream;
   /**
    * The initial HTTP upgrade request before the actual
    * socket and connection is established.
@@ -38,7 +39,7 @@ export function makeHandler<
    * @default 12 * 1000 // 12 seconds
    */
   keepAlive = 12 * 1000,
-): WebsocketHandler {
+): fastifyWebsocket.WebsocketHandler {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
 
