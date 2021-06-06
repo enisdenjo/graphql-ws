@@ -92,6 +92,34 @@ uWS
   });
 ```
 
+##### With [fastify-websocket](https://github.com/fastify/fastify-websocket)
+
+```ts
+import Fastify from 'fastify'; // yarn add fastify
+import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket
+import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+
+const fastify = Fastify();
+fastify.register(fastifyWebsocket);
+
+fastify.get(
+  '/graphql',
+  { websocket: true },
+  makeHandler(
+    // from the previous step
+    { schema, roots },
+  ),
+);
+
+fastify.listen(4000, (err) => {
+  if (err) {
+    fastify.log.error(err);
+    return process.exit(1);
+  }
+  console.log('Listening to port 4000');
+});
+```
+
 #### Use the client
 
 ```ts
