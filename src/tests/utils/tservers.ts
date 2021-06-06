@@ -5,7 +5,7 @@ import { ServerOptions, Context } from '../../server';
 
 import ws from 'ws';
 import uWS from 'uWebSockets.js';
-import createFastify from 'fastify';
+import Fastify from 'fastify';
 import fastifyWebsocket from 'fastify-websocket';
 
 import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
@@ -421,7 +421,7 @@ export async function startFastifyWSTServer(
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
 
-  const fastify = createFastify();
+  const fastify = Fastify();
   fastify.register(fastifyWebsocket);
 
   // sockets to kick off on teardown

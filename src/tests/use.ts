@@ -1,8 +1,6 @@
 import http from 'http';
 import ws from 'ws';
 import stream from 'stream';
-import fastify, { FastifyRequest } from 'fastify';
-import { SocketStream as FastifySocketStream } from 'fastify-websocket';
 import {
   MessageType,
   stringifyMessage,
