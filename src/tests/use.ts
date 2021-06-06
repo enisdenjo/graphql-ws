@@ -1,5 +1,8 @@
 import http from 'http';
 import ws from 'ws';
+import stream from 'stream';
+import fastify, { FastifyRequest } from 'fastify';
+import { SocketStream as FastifySocketStream } from 'fastify-websocket';
 import {
   MessageType,
   stringifyMessage,
@@ -12,6 +15,7 @@ import {
   tServers,
   WSExtra,
   UWSExtra,
+  FastifyExtra,
   waitForDone,
 } from './utils';
 
@@ -107,6 +111,16 @@ for (const { tServer, startTServer } of tServers) {
               expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);
               expect((ctx.extra as WSExtra).request).toBeInstanceOf(
                 http.IncomingMessage,
+              );
+            } else if (tServer === 'fastify-websocket') {
+              expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
+                stream.Duplex,
+              );
+              expect(
+                (ctx.extra as FastifyExtra).connection.socket,
+              ).toBeInstanceOf(ws);
+              expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
+                'Request',
               );
             } else {
               throw new Error('Missing test case for ' + tServer);
