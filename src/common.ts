@@ -135,11 +135,11 @@ export type Message<T extends MessageType = MessageType> =
   T extends MessageType.ConnectionAck
     ? ConnectionAckMessage
     : T extends MessageType.ConnectionInit
-    ? PingMessage
-    : T extends MessageType.Ping
-    ? PongMessage
-    : T extends MessageType.Pong
     ? ConnectionInitMessage
+    : T extends MessageType.Ping
+    ? PingMessage
+    : T extends MessageType.Pong
+    ? PongMessage
     : T extends MessageType.Subscribe
     ? SubscribeMessage
     : T extends MessageType.Next
