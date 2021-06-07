@@ -56,6 +56,32 @@ interface ConnectionAckMessage {
 
 The client is now **ready** to request subscription operations.
 
+### `Ping`
+
+Direction: **bidirectional**
+
+Ping the other party. This message can be issued at any point after the connection is acknowledged.
+
+_<define what happens if pinging within an unacknowledged connection>_
+
+```typescript
+interface PingMessage {
+  type: 'ping';
+}
+```
+
+### `Pong`
+
+Direction: **bidirectional**
+
+The response message to the `Ping`. Must be sent as soon as the `Ping` message is received.
+
+```typescript
+interface PongMessage {
+  type: 'pong';
+}
+```
+
 ### `Subscribe`
 
 Direction: **Client -> Server**
