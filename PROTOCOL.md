@@ -60,9 +60,9 @@ The client is now **ready** to request subscription operations.
 
 Direction: **bidirectional**
 
-Ping the other party. This message can be issued at any point after the connection is acknowledged.
+Ping the other party. Useful for detecting failed connections, displaying latency metrics or other types of network probing.
 
-_<define what happens if pinging within an unacknowledged connection>_
+_<decide if only server is affected>_ This message can be issued at any point after the connection is acknowledged. If the connection is not acknowledged, and a ping is sent, the socket will be closed immediately with the event `4401: Unauthorized`.
 
 ```typescript
 interface PingMessage {
@@ -75,6 +75,8 @@ interface PingMessage {
 Direction: **bidirectional**
 
 The response message to the `Ping`. Must be sent as soon as the `Ping` message is received.
+
+_<decide if only server is affected>_ This message can be issued at any point after the connection is acknowledged. If the connection is not acknowledged, and a pong is sent, the socket will be closed immediately with the event `4401: Unauthorized`.
 
 ```typescript
 interface PongMessage {
