@@ -29,10 +29,10 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_fastify_websocket.extra.md) & `Partial`<E\>\> |
-| `keepAlive` | `number` |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_fastify_websocket.extra.md) & `Partial`<E\>\> | `undefined` |
+| `keepAlive` | `number` | 12\_000 |
 
 #### Returns
 

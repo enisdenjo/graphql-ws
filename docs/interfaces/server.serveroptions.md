@@ -48,7 +48,7 @@ has not sent the `ConnectionInit` message,
 the server will terminate the socket by
 dispatching a close event `4408: Connection initialisation timeout`
 
-**`default`** 3 * 1000 (3 seconds)
+**`default`** 3_000 // 3 seconds
 
 ___
 

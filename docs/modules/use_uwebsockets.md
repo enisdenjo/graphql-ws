@@ -31,11 +31,11 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_uwebsockets.extra.md) & `Partial`<E\>\> |
-| `behavior` | `uWS.WebSocketBehavior` |
-| `keepAlive` | `number` |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_uwebsockets.extra.md) & `Partial`<E\>\> | `undefined` |
+| `behavior` | `uWS.WebSocketBehavior` | {} |
+| `keepAlive` | `number` | 12\_000 |
 
 #### Returns
 

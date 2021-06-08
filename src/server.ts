@@ -179,7 +179,7 @@ export interface ServerOptions<E = unknown> {
    * the server will terminate the socket by
    * dispatching a close event `4408: Connection initialisation timeout`
    *
-   * @default 3 * 1000 (3 seconds)
+   * @default 3_000 // 3 seconds
    */
   connectionInitWaitTimeout?: number;
   /**
@@ -503,7 +503,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
     validate,
     execute,
     subscribe,
-    connectionInitWaitTimeout = 3 * 1000, // 3 seconds
+    connectionInitWaitTimeout = 3_000, // 3 seconds
     onConnect,
     onDisconnect,
     onClose,

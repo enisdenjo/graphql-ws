@@ -29,11 +29,11 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_ws.extra.md) & `Partial`<E\>\> |
-| `ws` | `WebSocketServer` |
-| `keepAlive` | `number` |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_ws.extra.md) & `Partial`<E\>\> | `undefined` |
+| `ws` | `WebSocketServer` | `undefined` |
+| `keepAlive` | `number` | 12\_000 |
 
 #### Returns
 

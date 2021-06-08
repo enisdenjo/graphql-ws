@@ -75,9 +75,9 @@ export function makeBehavior<
    * to check that the link between the clients and the server is operating and to prevent the link
    * from being broken due to idling.
    *
-   * @default 12 * 1000 // 12 seconds
+   * @default 12_000 // 12 seconds
    */
-  keepAlive = 12 * 1000,
+  keepAlive = 12_000,
 ): uWS.WebSocketBehavior {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
