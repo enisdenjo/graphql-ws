@@ -210,6 +210,43 @@ export interface ClientOptions {
    */
   lazyCloseTimeout?: number;
   /**
+   * The timout between dispatched keep-alive messages, naimly server pings. Internally
+   * dispatches the `PingMessage` type to the server and expects a `PongMessage` in response.
+   * This helps with making sure that the connection with the server is alive and working.
+   *
+   * Timeout countdown starts from the moment the socket was opened and subsequently
+   * after every received `PongMessage`.
+   *
+   * Note that NOTHING will happen automatically with the client if the server never
+   * responds to a `PingMessage` with a `PongMessage`. If you want the connection to close,
+   * you should implement your own logic on top of the client. A simple example looks like this:
+   *
+   * ```js
+   * import { createClient } from 'graphql-ws';
+   *
+   * let timedOut;
+   * createClient({
+   *   url: 'ws://i.time.out:4000/after-5/seconds',
+   *   keepAlive: 10_000, // ping server every 10 seconds
+   *   on: {
+   *     ping: (socket, received) => {
+   *      if (!received) // sent
+   *        timedOut = setTimeout(() => {
+   *          if (socket.readyState === WebSocket.OPEN)
+   *            socket.close(4408, 'Request Timeout');
+   *        }, 5_000); // wait 5 seconds for the pong and then close the connection
+   *     },
+   *     pong: (_socket, received) => {
+   *       if (received) clearTimeout(timedOut); // pong is received, clear connection close timeout
+   *     },
+   *   },
+   * });
+   * ```
+   *
+   * @default 0
+   */
+  keepAlive?: number;
+  /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
    * The library classifies the following close events as fatal:
@@ -314,6 +351,7 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     onNonLazyError = console.error,
     lazyCloseTimeout = 0,
+    keepAlive = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
       let retryDelay = 1000; // start with 1s delay
@@ -452,16 +490,17 @@ export function createClient(options: ClientOptions): Client {
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
           );
 
-          // TODO-db210608 noop if pinger is disabled
           let queuedPing: ReturnType<typeof setTimeout>;
           function enqueuePing() {
-            clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
-            queuedPing = setTimeout(() => {
-              if (socket.readyState === WebSocketImpl.OPEN) {
-                socket.send(stringifyMessage({ type: MessageType.Ping }));
-                emitter.emit('ping', socket, false);
-              }
-            }, 30_000); // TODO-db-210608 customize timeout
+            if (isFinite(keepAlive) && keepAlive > 0) {
+              clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
+              queuedPing = setTimeout(() => {
+                if (socket.readyState === WebSocketImpl.OPEN) {
+                  socket.send(stringifyMessage({ type: MessageType.Ping }));
+                  emitter.emit('ping', socket, false);
+                }
+              }, 30_000); // TODO-db-210608 customize timeout
+            }
           }
 
           socket.onerror = (err) => {

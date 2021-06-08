@@ -600,7 +600,7 @@ let timedOut,
   latency = 0;
 createClient({
   url: 'ws://i.time.out:4000/and-measure/latency',
-  // TODO-db-210608 keep alive option
+  keepAlive: 10_000, // ping server every 10 seconds
   on: {
     ping: (socket, received) => {
       if (!received /* sent */) {
@@ -608,7 +608,7 @@ createClient({
         timedOut = setTimeout(() => {
           if (socket.readyState === WebSocket.OPEN)
             socket.close(4408, 'Request Timeout');
-        }, 10_000); // wait 10 seconds for the pong and then close the connection
+        }, 5_000); // wait 5 seconds for the pong and then close the connection
       }
     },
     pong: (_socket, received) => {
