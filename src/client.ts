@@ -492,7 +492,7 @@ export function createClient(options: ClientOptions): Client {
                   socket.send(stringifyMessage({ type: MessageType.Ping }));
                   emitter.emit('ping', false);
                 }
-              }, 30_000); // TODO-db-210608 customize timeout
+              }, keepAlive);
             }
           }
 
