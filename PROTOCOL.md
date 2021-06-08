@@ -60,7 +60,11 @@ The client is now **ready** to request subscription operations.
 
 Direction: **bidirectional**
 
-Ping the other party. Useful for detecting failed connections, displaying latency metrics or other types of network probing.
+Useful for detecting failed connections, displaying latency metrics or other types of network probing.
+
+A `Pong` must be sent in response by the receiving party.
+
+The `Ping` message can be sent at any time within the established socket.
 
 ```typescript
 interface PingMessage {
@@ -72,7 +76,9 @@ interface PingMessage {
 
 Direction: **bidirectional**
 
-The response message to the `Ping`. Must be sent as soon as the `Ping` message is received.
+The response to the `Ping` message. Must be sent as soon as the `Ping` message is received.
+
+The `Pong` message can be sent at any time within the established socket. Meaning, the `Pong` message may be sent unsolicited as an unidirectional heartbeat.
 
 ```typescript
 interface PongMessage {
