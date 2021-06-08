@@ -15,8 +15,8 @@ Configuration used for the GraphQL over WebSocket client.
 - [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
 - [jsonMessageReplacer](client.clientoptions.md#jsonmessagereplacer)
 - [jsonMessageReviver](client.clientoptions.md#jsonmessagereviver)
-- [keepAlive](client.clientoptions.md#keepalive)
 - [lazy](client.clientoptions.md#lazy)
+- [lazyCloseTimeout](client.clientoptions.md#lazyclosetimeout)
 - [on](client.clientoptions.md#on)
 - [onNonLazyError](client.clientoptions.md#onnonlazyerror)
 - [retryAttempts](client.clientoptions.md#retryattempts)
@@ -118,18 +118,6 @@ out of the incoming JSON.
 
 ___
 
-### keepAlive
-
-• `Optional` **keepAlive**: `number`
-
-How long should the client wait before closing the socket after the last oparation has
-completed. This is meant to be used in combination with `lazy`. You might want to have
-a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
-
-**`default`** 0 // close immediately
-
-___
-
 ### lazy
 
 • `Optional` **lazy**: `boolean`
@@ -141,6 +129,18 @@ Controls when should the connection be established.
 the subscription sink's `error` to handle errors.
 
 **`default`** true
+
+___
+
+### lazyCloseTimeout
+
+• `Optional` **lazyCloseTimeout**: `number`
+
+How long should the client wait before closing the socket after the last oparation has
+completed. This is meant to be used in combination with `lazy`. You might want to have
+a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
+
+**`default`** 0 // close immediately
 
 ___
 
