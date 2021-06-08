@@ -29,6 +29,12 @@ export type EventConnecting = 'connecting';
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
 
 /** @category Client */
+export type EventPing = 'ping';
+
+/** @category Client */
+export type EventPong = 'pong';
+
+/** @category Client */
 export type EventMessage = 'message';
 
 /** @category Client */
@@ -41,6 +47,8 @@ export type EventError = 'error';
 export type Event =
   | EventConnecting
   | EventConnected
+  | EventPing
+  | EventPong
   | EventMessage
   | EventClosed
   | EventError;
@@ -62,6 +70,30 @@ export type EventConnectedListener = (
 
 /** @category Client */
 export type EventConnectingListener = () => void;
+
+/**
+ * The first argument is actually the `WebSocket`, but to avoid
+ * bundling DOM typings because the client can run in Node env too,
+ * you should assert the websocket type during implementation.
+ *
+ * Second argument indicates whether the ping was received from the server.
+ * If `false`, then the ping was sent by the client.
+ *
+ * @category Client
+ */
+export type EventPingListener = (socket: unknown, received: boolean) => void;
+
+/**
+ * The first argument is actually the `WebSocket`, but to avoid
+ * bundling DOM typings because the client can run in Node env too,
+ * you should assert the websocket type during implementation.
+ *
+ * Second argument indicates whether the pong was received from the server.
+ * If `false`, then the pong was sent by the client.
+ *
+ * @category Client
+ */
+export type EventPongListener = (socket: unknown, received: boolean) => void;
 
 /**
  * Called for all **valid** messages received by the client. Mainly useful for
@@ -95,6 +127,10 @@ export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventConnected
   ? EventConnectedListener
+  : E extends EventPing
+  ? EventPingListener
+  : E extends EventPong
+  ? EventPongListener
   : E extends EventMessage
   ? EventMessageListener
   : E extends EventClosed
@@ -357,6 +393,8 @@ export function createClient(options: ClientOptions): Client {
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
+      ping: on?.ping ? [on.ping] : [],
+      pong: on?.pong ? [on.pong] : [],
       message: on?.message ? [message.emit, on.message] : [message.emit],
       closed: on?.closed ? [on.closed] : [],
       error: on?.error ? [on.error] : [],
@@ -414,6 +452,18 @@ export function createClient(options: ClientOptions): Client {
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
           );
 
+          // TODO-db210608 noop if pinger is disabled
+          let queuedPing: ReturnType<typeof setTimeout>;
+          function enqueuePing() {
+            clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
+            queuedPing = setTimeout(() => {
+              if (socket.readyState === WebSocketImpl.OPEN) {
+                socket.send(stringifyMessage({ type: MessageType.Ping }));
+                emitter.emit('ping', socket, false);
+              }
+            }, 30_000); // TODO-db-210608 customize timeout
+          }
+
           socket.onerror = (err) => {
             // we let the onclose reject the promise for correct retry handling
             emitter.emit('error', err);
@@ -421,6 +471,7 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onclose = (event) => {
             connecting = undefined;
+            clearTimeout(queuedPing);
             emitter.emit('closed', event);
             denied(event);
           };
@@ -452,6 +503,18 @@ export function createClient(options: ClientOptions): Client {
             try {
               const message = parseMessage(data, reviver);
               emitter.emit('message', message);
+              if (message.type === 'ping') {
+                // ping received
+                emitter.emit('ping', socket, true);
+                // send pong immediately
+                socket.send(stringifyMessage({ type: MessageType.Pong }));
+                emitter.emit('pong', socket, false);
+              } else if (message.type === 'pong') {
+                // pong received
+                emitter.emit('pong', socket, true);
+                // enqueue next ping (noop if disabled)
+                enqueuePing();
+              }
               if (acknowledged) return; // already connected and acknowledged
 
               if (message.type !== MessageType.ConnectionAck)
@@ -462,6 +525,7 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retrying = false; // future lazy connects are not retries
               retries = 0; // reset the retries on connect
+              enqueuePing(); // enqueue ping (noop if disabled)
               connected([
                 socket,
                 new Promise<void>((_, closed) =>
