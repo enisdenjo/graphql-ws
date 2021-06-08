@@ -90,9 +90,6 @@ for (const { tServer, startTServer } of tServers) {
               expect((ctx.extra as UWSExtra).socket.constructor.name).toEqual(
                 'uWS.WebSocket',
               );
-              expect((ctx.extra as UWSExtra).request.constructor.name).toEqual(
-                'uWS.HttpRequest',
-              );
               expect((ctx.extra as UWSExtra).persistedRequest.method).toBe(
                 'get',
               );

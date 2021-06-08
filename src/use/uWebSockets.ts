@@ -22,13 +22,6 @@ export interface Extra extends UpgradeData {
  */
 export interface UpgradeData {
   /**
-   * The initial HTTP request before the actual
-   * socket and connection is established.
-   *
-   * @deprecated uWS.HttpRequest is stack allocated and cannot be accessed outside the internal `upgrade` callback. Consider using the `persistedRequest` instead.
-   */
-  readonly request: uWS.HttpRequest;
-  /**
    * The initial HTTP upgrade request before the actual
    * socket and connection is established.
    *
@@ -119,7 +112,6 @@ export function makeBehavior<
 
       res.upgrade<UpgradeData>(
         {
-          request: req,
           persistedRequest: {
             method: req.getMethod(),
             url: req.getUrl(),
@@ -169,8 +161,7 @@ export function makeBehavior<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, request: socket.request, persistedRequest } as Extra &
-          Partial<E>,
+        { socket, persistedRequest } as Extra & Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
