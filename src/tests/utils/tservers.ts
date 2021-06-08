@@ -31,6 +31,7 @@ afterEach(async () => {
 });
 
 export interface TServerClient {
+  send(data: string): void;
   onMessage(cb: (message: string) => void): () => void;
   close(code?: number, data?: string): void;
 }
@@ -176,6 +177,7 @@ export async function startWSTServer(
 
   function toClient(socket: ws): TServerClient {
     return {
+      send: (data) => socket.send(data),
       onMessage: (cb) => {
         socket.on('message', cb);
         return () => socket.off('message', cb);
@@ -435,6 +437,7 @@ export async function startFastifyWSTServer(
 
   function toClient(socket: ws): TServerClient {
     return {
+      send: (data) => socket.send(data),
       onMessage: (cb) => {
         socket.on('message', cb);
         return () => socket.off('message', cb);
