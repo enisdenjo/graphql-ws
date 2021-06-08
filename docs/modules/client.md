@@ -227,24 +227,19 @@ ___
 
 ### EventPingListener
 
-Ƭ **EventPingListener**: (`socket`: `unknown`, `received`: `boolean`) => `void`
+Ƭ **EventPingListener**: (`received`: `boolean`) => `void`
 
-The first argument is actually the `WebSocket`, but to avoid
-bundling DOM typings because the client can run in Node env too,
-you should assert the websocket type during implementation.
-
-Second argument communicates whether the ping was received from the server.
+The first argument communicates whether the ping was received from the server.
 If `false`, the ping was sent by the client.
 
 #### Type declaration
 
-▸ (`socket`, `received`): `void`
+▸ (`received`): `void`
 
 ##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `socket` | `unknown` |
 | `received` | `boolean` |
 
 ##### Returns
@@ -261,24 +256,19 @@ ___
 
 ### EventPongListener
 
-Ƭ **EventPongListener**: (`socket`: `unknown`, `received`: `boolean`) => `void`
+Ƭ **EventPongListener**: (`received`: `boolean`) => `void`
 
-The first argument is actually the `WebSocket`, but to avoid
-bundling DOM typings because the client can run in Node env too,
-you should assert the websocket type during implementation.
-
-Second argument communicates whether the pong was received from the server.
+The first argument communicates whether the pong was received from the server.
 If `false`, the pong was sent by the client.
 
 #### Type declaration
 
-▸ (`socket`, `received`): `void`
+▸ (`received`): `void`
 
 ##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `socket` | `unknown` |
 | `received` | `boolean` |
 
 ##### Returns

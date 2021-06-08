@@ -137,19 +137,20 @@ you should implement your own logic on top of the client. A simple example looks
 ```js
 import { createClient } from 'graphql-ws';
 
-let timedOut;
+let activeSocket, timedOut;
 createClient({
   url: 'ws://i.time.out:4000/after-5/seconds',
   keepAlive: 10_000, // ping server every 10 seconds
   on: {
-    ping: (socket, received) => {
-     if (!received) // sent
-       timedOut = setTimeout(() => {
-         if (socket.readyState === WebSocket.OPEN)
-           socket.close(4408, 'Request Timeout');
-       }, 5_000); // wait 5 seconds for the pong and then close the connection
+    connected: (socket) => (activeSocket = socket),
+    ping: (received) => {
+      if (!received) // sent
+        timedOut = setTimeout(() => {
+          if (activeSocket.readyState === WebSocket.OPEN)
+            activeSocket.close(4408, 'Request Timeout');
+        }, 5_000); // wait 5 seconds for the pong and then close the connection
     },
-    pong: (_socket, received) => {
+    pong: (received) => {
       if (received) clearTimeout(timedOut); // pong is received, clear connection close timeout
     },
   },

@@ -595,23 +595,25 @@ const client = createRestartableClient({
 ```typescript
 import { createClient } from 'graphql-ws';
 
-let timedOut,
+let activeSocket,
+  timedOut,
   pingSentAt = 0,
   latency = 0;
 createClient({
   url: 'ws://i.time.out:4000/and-measure/latency',
   keepAlive: 10_000, // ping server every 10 seconds
   on: {
-    ping: (socket, received) => {
+    connected: (socket) => (activeSocket = socket),
+    ping: (received) => {
       if (!received /* sent */) {
         pingSentAt = Date.now();
         timedOut = setTimeout(() => {
-          if (socket.readyState === WebSocket.OPEN)
-            socket.close(4408, 'Request Timeout');
+          if (activeSocket.readyState === WebSocket.OPEN)
+            activeSocket.close(4408, 'Request Timeout');
         }, 5_000); // wait 5 seconds for the pong and then close the connection
       }
     },
-    pong: (_socket, received) => {
+    pong: (received) => {
       if (received) {
         latency = Date.now() - pingSentAt;
         clearTimeout(timedOut); // pong is received, clear connection close timeout

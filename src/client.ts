@@ -72,28 +72,20 @@ export type EventConnectedListener = (
 export type EventConnectingListener = () => void;
 
 /**
- * The first argument is actually the `WebSocket`, but to avoid
- * bundling DOM typings because the client can run in Node env too,
- * you should assert the websocket type during implementation.
- *
- * Second argument communicates whether the ping was received from the server.
+ * The first argument communicates whether the ping was received from the server.
  * If `false`, the ping was sent by the client.
  *
  * @category Client
  */
-export type EventPingListener = (socket: unknown, received: boolean) => void;
+export type EventPingListener = (received: boolean) => void;
 
 /**
- * The first argument is actually the `WebSocket`, but to avoid
- * bundling DOM typings because the client can run in Node env too,
- * you should assert the websocket type during implementation.
- *
- * Second argument communicates whether the pong was received from the server.
+ * The first argument communicates whether the pong was received from the server.
  * If `false`, the pong was sent by the client.
  *
  * @category Client
  */
-export type EventPongListener = (socket: unknown, received: boolean) => void;
+export type EventPongListener = (received: boolean) => void;
 
 /**
  * Called for all **valid** messages received by the client. Mainly useful for
@@ -224,19 +216,20 @@ export interface ClientOptions {
    * ```js
    * import { createClient } from 'graphql-ws';
    *
-   * let timedOut;
+   * let activeSocket, timedOut;
    * createClient({
    *   url: 'ws://i.time.out:4000/after-5/seconds',
    *   keepAlive: 10_000, // ping server every 10 seconds
    *   on: {
-   *     ping: (socket, received) => {
-   *      if (!received) // sent
-   *        timedOut = setTimeout(() => {
-   *          if (socket.readyState === WebSocket.OPEN)
-   *            socket.close(4408, 'Request Timeout');
-   *        }, 5_000); // wait 5 seconds for the pong and then close the connection
+   *     connected: (socket) => (activeSocket = socket),
+   *     ping: (received) => {
+   *       if (!received) // sent
+   *         timedOut = setTimeout(() => {
+   *           if (activeSocket.readyState === WebSocket.OPEN)
+   *             activeSocket.close(4408, 'Request Timeout');
+   *         }, 5_000); // wait 5 seconds for the pong and then close the connection
    *     },
-   *     pong: (_socket, received) => {
+   *     pong: (received) => {
    *       if (received) clearTimeout(timedOut); // pong is received, clear connection close timeout
    *     },
    *   },
@@ -497,7 +490,7 @@ export function createClient(options: ClientOptions): Client {
               queuedPing = setTimeout(() => {
                 if (socket.readyState === WebSocketImpl.OPEN) {
                   socket.send(stringifyMessage({ type: MessageType.Ping }));
-                  emitter.emit('ping', socket, false);
+                  emitter.emit('ping', false);
                 }
               }, 30_000); // TODO-db-210608 customize timeout
             }
@@ -545,13 +538,13 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('message', message);
               if (message.type === 'ping') {
                 // ping received
-                emitter.emit('ping', socket, true);
+                emitter.emit('ping', true);
                 // send pong immediately
                 socket.send(stringifyMessage({ type: MessageType.Pong }));
-                emitter.emit('pong', socket, false);
+                emitter.emit('pong', false);
               } else if (message.type === 'pong') {
                 // pong received
-                emitter.emit('pong', socket, true);
+                emitter.emit('pong', true);
                 // enqueue next ping (noop if disabled)
                 enqueuePing();
               }
