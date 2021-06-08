@@ -15,6 +15,8 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 - [ConnectionInit](common.messagetype.md#connectioninit)
 - [Error](common.messagetype.md#error)
 - [Next](common.messagetype.md#next)
+- [Ping](common.messagetype.md#ping)
+- [Pong](common.messagetype.md#pong)
 - [Subscribe](common.messagetype.md#subscribe)
 
 ## Enumeration members
@@ -46,6 +48,18 @@ ___
 ### Next
 
 • **Next** = "next"
+
+___
+
+### Ping
+
+• **Ping** = "ping"
+
+___
+
+### Pong
+
+• **Pong** = "pong"
 
 ___
 
