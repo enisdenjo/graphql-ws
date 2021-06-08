@@ -233,8 +233,8 @@ The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
-Second argument indicates whether the ping was received from the server.
-If `false`, then the ping was sent by the client.
+Second argument communicates whether the ping was received from the server.
+If `false`, the ping was sent by the client.
 
 #### Type declaration
 
@@ -267,8 +267,8 @@ The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
-Second argument indicates whether the pong was received from the server.
-If `false`, then the pong was sent by the client.
+Second argument communicates whether the pong was received from the server.
+If `false`, the pong was sent by the client.
 
 #### Type declaration
 

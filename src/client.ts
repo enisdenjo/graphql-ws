@@ -76,8 +76,8 @@ export type EventConnectingListener = () => void;
  * bundling DOM typings because the client can run in Node env too,
  * you should assert the websocket type during implementation.
  *
- * Second argument indicates whether the ping was received from the server.
- * If `false`, then the ping was sent by the client.
+ * Second argument communicates whether the ping was received from the server.
+ * If `false`, the ping was sent by the client.
  *
  * @category Client
  */
@@ -88,8 +88,8 @@ export type EventPingListener = (socket: unknown, received: boolean) => void;
  * bundling DOM typings because the client can run in Node env too,
  * you should assert the websocket type during implementation.
  *
- * Second argument indicates whether the pong was received from the server.
- * If `false`, then the pong was sent by the client.
+ * Second argument communicates whether the pong was received from the server.
+ * If `false`, the pong was sent by the client.
  *
  * @category Client
  */
