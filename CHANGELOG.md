@@ -1,3 +1,53 @@
+# [5.0.0](https://github.com/enisdenjo/graphql-ws/compare/v4.9.0...v5.0.0) (2021-06-08)
+
+
+### Features
+
+* Bidirectional ping/pong message types ([#201](https://github.com/enisdenjo/graphql-ws/issues/201)) ([1efaf83](https://github.com/enisdenjo/graphql-ws/commit/1efaf8347dd199687393e8074ab70362727591f2))
+* **client:** Rename `keepAlive` option to `lazyCloseTimeout` ([3c1f13c](https://github.com/enisdenjo/graphql-ws/commit/3c1f13cd49ee00d7da80f3950eef8f414d909d58))
+* **uWebSockets:** Drop deprecated `request` context extra ([02ea5ee](https://github.com/enisdenjo/graphql-ws/commit/02ea5ee8cfe918d547608c69482911e3d6091290))
+
+
+### BREAKING CHANGES
+
+* Because of the Protocol's strictness, an instant connection termination will happen whenever an invalid message is identified; meaning, all previous implementations will fail when receiving the new subprotocol ping/pong messages.
+
+**Beware,** the client will NOT ping the server by default. Please make sure to upgrade your stack in order to support the new ping/pong message types.
+
+A simple recipe showcasing a client that times out if no pong is received and measures latency, looks like this:
+```js
+import { createClient } from 'graphql-ws';
+
+let activeSocket,
+  timedOut,
+  pingSentAt = 0,
+  latency = 0;
+createClient({
+  url: 'ws://i.time.out:4000/and-measure/latency',
+  keepAlive: 10_000, // ping server every 10 seconds
+  on: {
+    connected: (socket) => (activeSocket = socket),
+    ping: (received) => {
+      if (!received /* sent */) {
+        pingSentAt = Date.now();
+        timedOut = setTimeout(() => {
+          if (activeSocket.readyState === WebSocket.OPEN)
+            activeSocket.close(4408, 'Request Timeout');
+        }, 5_000); // wait 5 seconds for the pong and then close the connection
+      }
+    },
+    pong: (received) => {
+      if (received) {
+        latency = Date.now() - pingSentAt;
+        clearTimeout(timedOut); // pong is received, clear connection close timeout
+      }
+    },
+  },
+});
+```
+* **uWebSockets:** The deprecated uWebSockets `request` context extra field has been dropped because it is stack allocated and cannot be used ouside the internal `upgrade` callback.
+* **client:** Client `keepAlive` option has been renamed to `lazyCloseTimeout` in order to eliminate ambiguity with the client to server pings keep-alive option.
+
 # [4.9.0](https://github.com/enisdenjo/graphql-ws/compare/v4.8.0...v4.9.0) (2021-06-06)
 
 
