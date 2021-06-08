@@ -536,17 +536,14 @@ export function createClient(options: ClientOptions): Client {
             try {
               const message = parseMessage(data, reviver);
               emitter.emit('message', message);
-              if (message.type === 'ping') {
-                // ping received
-                emitter.emit('ping', true);
-                // send pong immediately
-                socket.send(stringifyMessage({ type: MessageType.Pong }));
-                emitter.emit('pong', false);
-              } else if (message.type === 'pong') {
-                // pong received
-                emitter.emit('pong', true);
-                // enqueue next ping (noop if disabled)
-                enqueuePing();
+              if (message.type === 'ping' || message.type === 'pong') {
+                emitter.emit(message.type, true); // received
+                if (message.type === 'ping') {
+                  // respond with pong on ping
+                  socket.send(stringifyMessage({ type: MessageType.Pong }));
+                  emitter.emit('pong', false);
+                } else enqueuePing(); // enqueue next ping on pong (noop if disabled)
+                return; // ping and pongs can be received whenever
               }
               if (acknowledged) return; // already connected and acknowledged
 
