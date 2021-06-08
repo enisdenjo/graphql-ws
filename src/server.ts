@@ -585,6 +585,14 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             ctx.acknowledged = true;
             return;
           }
+          case MessageType.Ping: {
+            if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
+            await socket.send(stringifyMessage({ type: MessageType.Pong }));
+            return;
+          }
+          case MessageType.Pong:
+            if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
+            return;
           case MessageType.Subscribe: {
             if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
 
