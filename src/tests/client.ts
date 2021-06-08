@@ -774,13 +774,13 @@ describe('lazy', () => {
     await server.waitForClientClose();
   });
 
-  it('should disconnect after the keepAlive has passed after last unsubscribe', async () => {
+  it('should disconnect after the lazyCloseTimeout has passed after last unsubscribe', async () => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
       url,
       lazy: true, // default
-      keepAlive: 20,
+      lazyCloseTimeout: 20,
       retryAttempts: 0,
       onNonLazyError: noop,
     });
@@ -798,7 +798,7 @@ describe('lazy', () => {
     // everyone unsubscribed
     sub.dispose();
 
-    // still connected because of the keepAlive
+    // still connected because of the lazyCloseTimeout
     await server.waitForClientClose(() => {
       fail("Client shouldn't have closed");
     }, 10);

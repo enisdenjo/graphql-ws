@@ -172,7 +172,7 @@ export interface ClientOptions {
    *
    * @default 0 // close immediately
    */
-  keepAlive?: number;
+  lazyCloseTimeout?: number;
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
@@ -277,7 +277,7 @@ export function createClient(options: ClientOptions): Client {
     connectionParams,
     lazy = true,
     onNonLazyError = console.error,
-    keepAlive = 0,
+    lazyCloseTimeout = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
       let retryDelay = 1000; // start with 1s delay
@@ -495,14 +495,14 @@ export function createClient(options: ClientOptions): Client {
           if (!locks) {
             // and if no more locks are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
-            if (isFinite(keepAlive) && keepAlive > 0) {
+            if (isFinite(lazyCloseTimeout) && lazyCloseTimeout > 0) {
               // if the keepalive is set, allow for the specified calmdown time and
               // then complete. but only if no lock got created in the meantime and
               // if the socket is still open
               setTimeout(() => {
                 if (!locks && socket.readyState === WebSocketImpl.OPEN)
                   complete();
-              }, keepAlive);
+              }, lazyCloseTimeout);
             } else {
               // otherwise complete immediately
               complete();
