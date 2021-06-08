@@ -490,6 +490,7 @@ export function createClient(options: ClientOptions): Client {
                   replacer,
                 ),
               );
+              enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
                 4400,
@@ -525,7 +526,6 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retrying = false; // future lazy connects are not retries
               retries = 0; // reset the retries on connect
-              enqueuePing(); // enqueue ping (noop if disabled)
               connected([
                 socket,
                 new Promise<void>((_, closed) =>
