@@ -18,6 +18,8 @@
 - [Message](client.md#message)
 - [MessageType](client.md#messagetype)
 - [NextMessage](client.md#nextmessage)
+- [PingMessage](client.md#pingmessage)
+- [PongMessage](client.md#pongmessage)
 - [Sink](client.md#sink)
 - [SubscribeMessage](client.md#subscribemessage)
 - [SubscribePayload](client.md#subscribepayload)
@@ -44,6 +46,10 @@
 - [EventListener](client.md#eventlistener)
 - [EventMessage](client.md#eventmessage)
 - [EventMessageListener](client.md#eventmessagelistener)
+- [EventPing](client.md#eventping)
+- [EventPingListener](client.md#eventpinglistener)
+- [EventPong](client.md#eventpong)
+- [EventPongListener](client.md#eventponglistener)
 
 ### Functions
 
@@ -53,7 +59,7 @@
 
 ### Event
 
-Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventConnected](client.md#eventconnected) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
+Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventConnected](client.md#eventconnected) \| [EventPing](client.md#eventping) \| [EventPong](client.md#eventpong) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
 
 ___
 
@@ -174,7 +180,7 @@ ___
 
 ### EventListener
 
-Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
+Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventPing](client.md#eventping) ? [EventPingListener](client.md#eventpinglistener) : `E` extends [EventPong](client.md#eventpong) ? [EventPongListener](client.md#eventponglistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
 
 #### Type parameters
 
@@ -206,6 +212,64 @@ debugging and logging received messages.
 | Name | Type |
 | :------ | :------ |
 | `message` | [Message](common.md#message) |
+
+##### Returns
+
+`void`
+
+___
+
+### EventPing
+
+Ƭ **EventPing**: ``"ping"``
+
+___
+
+### EventPingListener
+
+Ƭ **EventPingListener**: (`received`: `boolean`) => `void`
+
+The first argument communicates whether the ping was received from the server.
+If `false`, the ping was sent by the client.
+
+#### Type declaration
+
+▸ (`received`): `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `received` | `boolean` |
+
+##### Returns
+
+`void`
+
+___
+
+### EventPong
+
+Ƭ **EventPong**: ``"pong"``
+
+___
+
+### EventPongListener
+
+Ƭ **EventPongListener**: (`received`: `boolean`) => `void`
+
+The first argument communicates whether the pong was received from the server.
+If `false`, the pong was sent by the client.
+
+#### Type declaration
+
+▸ (`received`): `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `received` | `boolean` |
 
 ##### Returns
 
@@ -300,6 +364,18 @@ ___
 ### NextMessage
 
 Re-exports: [NextMessage](../interfaces/common.nextmessage.md)
+
+___
+
+### PingMessage
+
+Re-exports: [PingMessage](../interfaces/common.pingmessage.md)
+
+___
+
+### PongMessage
+
+Re-exports: [PongMessage](../interfaces/common.pongmessage.md)
 
 ___
 

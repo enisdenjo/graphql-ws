@@ -16,6 +16,8 @@
 - [Disposable](../interfaces/common.disposable.md)
 - [ErrorMessage](../interfaces/common.errormessage.md)
 - [NextMessage](../interfaces/common.nextmessage.md)
+- [PingMessage](../interfaces/common.pingmessage.md)
+- [PongMessage](../interfaces/common.pongmessage.md)
 - [Sink](../interfaces/common.sink.md)
 - [SubscribeMessage](../interfaces/common.subscribemessage.md)
 - [SubscribePayload](../interfaces/common.subscribepayload.md)
@@ -107,7 +109,7 @@ ___
 
 ### Message
 
-Ƭ **Message**<T\>: `T` extends [ConnectionAck](../enums/common.messagetype.md#connectionack) ? [ConnectionAckMessage](../interfaces/common.connectionackmessage.md) : `T` extends [ConnectionInit](../enums/common.messagetype.md#connectioninit) ? [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md) : `T` extends [Subscribe](../enums/common.messagetype.md#subscribe) ? [SubscribeMessage](../interfaces/common.subscribemessage.md) : `T` extends [Next](../enums/common.messagetype.md#next) ? [NextMessage](../interfaces/common.nextmessage.md) : `T` extends [Error](../enums/common.messagetype.md#error) ? [ErrorMessage](../interfaces/common.errormessage.md) : `T` extends [Complete](../enums/common.messagetype.md#complete) ? [CompleteMessage](../interfaces/common.completemessage.md) : `never`
+Ƭ **Message**<T\>: `T` extends [ConnectionAck](../enums/common.messagetype.md#connectionack) ? [ConnectionAckMessage](../interfaces/common.connectionackmessage.md) : `T` extends [ConnectionInit](../enums/common.messagetype.md#connectioninit) ? [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md) : `T` extends [Ping](../enums/common.messagetype.md#ping) ? [PingMessage](../interfaces/common.pingmessage.md) : `T` extends [Pong](../enums/common.messagetype.md#pong) ? [PongMessage](../interfaces/common.pongmessage.md) : `T` extends [Subscribe](../enums/common.messagetype.md#subscribe) ? [SubscribeMessage](../interfaces/common.subscribemessage.md) : `T` extends [Next](../enums/common.messagetype.md#next) ? [NextMessage](../interfaces/common.nextmessage.md) : `T` extends [Error](../enums/common.messagetype.md#error) ? [ErrorMessage](../interfaces/common.errormessage.md) : `T` extends [Complete](../enums/common.messagetype.md#complete) ? [CompleteMessage](../interfaces/common.completemessage.md) : `never`
 
 #### Type parameters
 
@@ -127,7 +129,7 @@ ___
 
 ### isMessage
 
-▸ **isMessage**(`val`): val is ConnectionInitMessage \| ConnectionAckMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
+▸ **isMessage**(`val`): val is ConnectionInitMessage \| ConnectionAckMessage \| PingMessage \| PongMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
 Checks if the provided value is a message.
 
@@ -139,7 +141,7 @@ Checks if the provided value is a message.
 
 #### Returns
 
-val is ConnectionInitMessage \| ConnectionAckMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
+val is ConnectionInitMessage \| ConnectionAckMessage \| PingMessage \| PongMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
 ___
 

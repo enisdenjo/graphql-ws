@@ -29,6 +29,12 @@ export type EventConnecting = 'connecting';
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
 
 /** @category Client */
+export type EventPing = 'ping';
+
+/** @category Client */
+export type EventPong = 'pong';
+
+/** @category Client */
 export type EventMessage = 'message';
 
 /** @category Client */
@@ -41,6 +47,8 @@ export type EventError = 'error';
 export type Event =
   | EventConnecting
   | EventConnected
+  | EventPing
+  | EventPong
   | EventMessage
   | EventClosed
   | EventError;
@@ -62,6 +70,22 @@ export type EventConnectedListener = (
 
 /** @category Client */
 export type EventConnectingListener = () => void;
+
+/**
+ * The first argument communicates whether the ping was received from the server.
+ * If `false`, the ping was sent by the client.
+ *
+ * @category Client
+ */
+export type EventPingListener = (received: boolean) => void;
+
+/**
+ * The first argument communicates whether the pong was received from the server.
+ * If `false`, the pong was sent by the client.
+ *
+ * @category Client
+ */
+export type EventPongListener = (received: boolean) => void;
 
 /**
  * Called for all **valid** messages received by the client. Mainly useful for
@@ -95,6 +119,10 @@ export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventConnected
   ? EventConnectedListener
+  : E extends EventPing
+  ? EventPingListener
+  : E extends EventPong
+  ? EventPongListener
   : E extends EventMessage
   ? EventMessageListener
   : E extends EventClosed
@@ -173,6 +201,44 @@ export interface ClientOptions {
    * @default 0 // close immediately
    */
   lazyCloseTimeout?: number;
+  /**
+   * The timout between dispatched keep-alive messages, naimly server pings. Internally
+   * dispatches the `PingMessage` type to the server and expects a `PongMessage` in response.
+   * This helps with making sure that the connection with the server is alive and working.
+   *
+   * Timeout countdown starts from the moment the socket was opened and subsequently
+   * after every received `PongMessage`.
+   *
+   * Note that NOTHING will happen automatically with the client if the server never
+   * responds to a `PingMessage` with a `PongMessage`. If you want the connection to close,
+   * you should implement your own logic on top of the client. A simple example looks like this:
+   *
+   * ```js
+   * import { createClient } from 'graphql-ws';
+   *
+   * let activeSocket, timedOut;
+   * createClient({
+   *   url: 'ws://i.time.out:4000/after-5/seconds',
+   *   keepAlive: 10_000, // ping server every 10 seconds
+   *   on: {
+   *     connected: (socket) => (activeSocket = socket),
+   *     ping: (received) => {
+   *       if (!received) // sent
+   *         timedOut = setTimeout(() => {
+   *           if (activeSocket.readyState === WebSocket.OPEN)
+   *             activeSocket.close(4408, 'Request Timeout');
+   *         }, 5_000); // wait 5 seconds for the pong and then close the connection
+   *     },
+   *     pong: (received) => {
+   *       if (received) clearTimeout(timedOut); // pong is received, clear connection close timeout
+   *     },
+   *   },
+   * });
+   * ```
+   *
+   * @default 0
+   */
+  keepAlive?: number;
   /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
@@ -278,6 +344,7 @@ export function createClient(options: ClientOptions): Client {
     lazy = true,
     onNonLazyError = console.error,
     lazyCloseTimeout = 0,
+    keepAlive = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
       let retryDelay = 1000; // start with 1s delay
@@ -357,6 +424,8 @@ export function createClient(options: ClientOptions): Client {
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
       connected: on?.connected ? [on.connected] : [],
+      ping: on?.ping ? [on.ping] : [],
+      pong: on?.pong ? [on.pong] : [],
       message: on?.message ? [message.emit, on.message] : [message.emit],
       closed: on?.closed ? [on.closed] : [],
       error: on?.error ? [on.error] : [],
@@ -414,6 +483,19 @@ export function createClient(options: ClientOptions): Client {
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
           );
 
+          let queuedPing: ReturnType<typeof setTimeout>;
+          function enqueuePing() {
+            if (isFinite(keepAlive) && keepAlive > 0) {
+              clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
+              queuedPing = setTimeout(() => {
+                if (socket.readyState === WebSocketImpl.OPEN) {
+                  socket.send(stringifyMessage({ type: MessageType.Ping }));
+                  emitter.emit('ping', false);
+                }
+              }, keepAlive);
+            }
+          }
+
           socket.onerror = (err) => {
             // we let the onclose reject the promise for correct retry handling
             emitter.emit('error', err);
@@ -421,6 +503,7 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onclose = (event) => {
             connecting = undefined;
+            clearTimeout(queuedPing);
             emitter.emit('closed', event);
             denied(event);
           };
@@ -439,6 +522,7 @@ export function createClient(options: ClientOptions): Client {
                   replacer,
                 ),
               );
+              enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
                 4400,
@@ -452,6 +536,15 @@ export function createClient(options: ClientOptions): Client {
             try {
               const message = parseMessage(data, reviver);
               emitter.emit('message', message);
+              if (message.type === 'ping' || message.type === 'pong') {
+                emitter.emit(message.type, true); // received
+                if (message.type === 'ping') {
+                  // respond with pong on ping
+                  socket.send(stringifyMessage({ type: MessageType.Pong }));
+                  emitter.emit('pong', false);
+                } else enqueuePing(); // enqueue next ping on pong (noop if disabled)
+                return; // ping and pongs can be received whenever
+              }
               if (acknowledged) return; // already connected and acknowledged
 
               if (message.type !== MessageType.ConnectionAck)

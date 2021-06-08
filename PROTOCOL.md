@@ -56,6 +56,36 @@ interface ConnectionAckMessage {
 
 The client is now **ready** to request subscription operations.
 
+### `Ping`
+
+Direction: **bidirectional**
+
+Useful for detecting failed connections, displaying latency metrics or other types of network probing.
+
+A `Pong` must be sent in response from the receiving party as soon as possible.
+
+The `Ping` message can be sent at any time within the established socket.
+
+```typescript
+interface PingMessage {
+  type: 'ping';
+}
+```
+
+### `Pong`
+
+Direction: **bidirectional**
+
+The response to the `Ping` message. Must be sent as soon as the `Ping` message is received.
+
+The `Pong` message can be sent at any time within the established socket. Furthermore, the `Pong` message may even be sent unsolicited as an unidirectional heartbeat.
+
+```typescript
+interface PongMessage {
+  type: 'pong';
+}
+```
+
 ### `Subscribe`
 
 Direction: **Client -> Server**

@@ -15,6 +15,7 @@ Configuration used for the GraphQL over WebSocket client.
 - [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
 - [jsonMessageReplacer](client.clientoptions.md#jsonmessagereplacer)
 - [jsonMessageReviver](client.clientoptions.md#jsonmessagereviver)
+- [keepAlive](client.clientoptions.md#keepalive)
 - [lazy](client.clientoptions.md#lazy)
 - [lazyCloseTimeout](client.clientoptions.md#lazyclosetimeout)
 - [on](client.clientoptions.md#on)
@@ -115,6 +116,48 @@ ___
 An optional override for the JSON.parse function used to hydrate
 incoming messages to this client. Useful for parsing custom datatypes
 out of the incoming JSON.
+
+___
+
+### keepAlive
+
+• `Optional` **keepAlive**: `number`
+
+The timout between dispatched keep-alive messages, naimly server pings. Internally
+dispatches the `PingMessage` type to the server and expects a `PongMessage` in response.
+This helps with making sure that the connection with the server is alive and working.
+
+Timeout countdown starts from the moment the socket was opened and subsequently
+after every received `PongMessage`.
+
+Note that NOTHING will happen automatically with the client if the server never
+responds to a `PingMessage` with a `PongMessage`. If you want the connection to close,
+you should implement your own logic on top of the client. A simple example looks like this:
+
+```js
+import { createClient } from 'graphql-ws';
+
+let activeSocket, timedOut;
+createClient({
+  url: 'ws://i.time.out:4000/after-5/seconds',
+  keepAlive: 10_000, // ping server every 10 seconds
+  on: {
+    connected: (socket) => (activeSocket = socket),
+    ping: (received) => {
+      if (!received) // sent
+        timedOut = setTimeout(() => {
+          if (activeSocket.readyState === WebSocket.OPEN)
+            activeSocket.close(4408, 'Request Timeout');
+        }, 5_000); // wait 5 seconds for the pong and then close the connection
+    },
+    pong: (received) => {
+      if (received) clearTimeout(timedOut); // pong is received, clear connection close timeout
+    },
+  },
+});
+```
+
+**`default`** 0
 
 ___
 

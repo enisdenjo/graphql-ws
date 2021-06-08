@@ -5,7 +5,7 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { createClient, Client, EventListener } from '../client';
-import { SubscribePayload } from '../common';
+import { MessageType, stringifyMessage, SubscribePayload } from '../common';
 import { startWSTServer as startTServer, waitForDone } from './utils';
 
 // simulate browser environment for easier client testing
@@ -400,6 +400,84 @@ it(
     });
   }),
 );
+
+describe('ping/pong', () => {
+  it('should respond with a pong to a ping', async () => {
+    expect.assertions(1);
+
+    const { url, waitForConnect, waitForClient, waitForClientClose } =
+      await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    await waitForConnect();
+
+    await waitForClient((client) => {
+      client.send(stringifyMessage({ type: MessageType.Ping }));
+      client.onMessage((data) => {
+        expect(data).toBe('{"type":"pong"}');
+      });
+    });
+
+    await waitForClientClose(() => {
+      fail("Shouldn't have closed");
+    }, 20);
+  });
+
+  it('should not react to a pong', async () => {
+    const { url, waitForConnect, waitForClient, waitForClientClose } =
+      await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    await waitForConnect();
+
+    await waitForClient((client) => {
+      client.send(stringifyMessage({ type: MessageType.Pong }));
+      client.onMessage(() => {
+        fail("Shouldn't have received a message");
+      });
+    });
+
+    await waitForClientClose(() => {
+      fail("Shouldn't have closed");
+    }, 20);
+  });
+
+  it(
+    'should ping the server after the keepAlive timeout',
+    waitForDone(async (done) => {
+      const { url, waitForConnect, waitForClient } = await startTServer();
+
+      createClient({
+        url,
+        lazy: false,
+        retryAttempts: 0,
+        onNonLazyError: noop,
+        keepAlive: 20,
+      });
+
+      await waitForConnect();
+
+      await waitForClient((client) => {
+        client.onMessage((data) => {
+          expect(data).toBe('{"type":"ping"}');
+          done();
+        });
+      });
+    }),
+  );
+});
 
 describe('query operation', () => {
   it('should execute the query, "next" the result and then complete', async () => {
@@ -1479,5 +1557,85 @@ describe('events', () => {
         },
       },
     );
+  });
+
+  it('should emit ping and pong events when pinging server', async () => {
+    const { url, ...server } = await startTServer();
+
+    const pingFn = jest.fn(noop as EventListener<'ping'>);
+    const pongFn = jest.fn(noop as EventListener<'pong'>);
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      keepAlive: 20,
+      on: {
+        ping: pingFn,
+        pong: pongFn,
+      },
+    });
+    client.on('ping', pingFn);
+    client.on('pong', pongFn);
+
+    await server.waitForConnect();
+
+    await new Promise<void>((resolve, reject) => {
+      server.waitForClient((client) => {
+        client.onMessage((data) => {
+          if (data === stringifyMessage({ type: MessageType.Ping })) resolve();
+          else reject('Unexpected message');
+        });
+      });
+    });
+
+    await new Promise<void>((resolve) => {
+      client.on('pong', () => resolve());
+    });
+
+    expect(pingFn).toBeCalledTimes(2);
+    expect(pingFn.mock.calls[0][0]).toBeFalsy();
+    expect(pingFn.mock.calls[1][0]).toBeFalsy();
+
+    expect(pongFn).toBeCalledTimes(2);
+    expect(pongFn.mock.calls[0][0]).toBeTruthy();
+    expect(pongFn.mock.calls[1][0]).toBeTruthy();
+  });
+
+  it('should emit ping and pong events when receiving server pings', async () => {
+    const { url, ...server } = await startTServer();
+
+    const pingFn = jest.fn(noop as EventListener<'ping'>);
+    const pongFn = jest.fn(noop as EventListener<'pong'>);
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      on: {
+        ping: pingFn,
+        pong: pongFn,
+      },
+    });
+    client.on('ping', pingFn);
+    client.on('pong', pongFn);
+
+    await server.waitForClient((client) => {
+      client.send(stringifyMessage({ type: MessageType.Ping }));
+    });
+
+    await new Promise<void>((resolve) => {
+      client.on('pong', () => resolve());
+    });
+
+    expect(pingFn).toBeCalledTimes(2);
+    expect(pingFn.mock.calls[0][0]).toBeTruthy();
+    expect(pingFn.mock.calls[1][0]).toBeTruthy();
+
+    expect(pongFn).toBeCalledTimes(2);
+    expect(pongFn.mock.calls[0][0]).toBeFalsy();
+    expect(pongFn.mock.calls[1][0]).toBeFalsy();
   });
 });

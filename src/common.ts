@@ -64,6 +64,9 @@ export enum MessageType {
   ConnectionInit = 'connection_init', // Client -> Server
   ConnectionAck = 'connection_ack', // Server -> Client
 
+  Ping = 'ping', // bidirectional
+  Pong = 'pong', /// bidirectional
+
   Subscribe = 'subscribe', // Client -> Server
   Next = 'next', // Server -> Client
   Error = 'error', // Server -> Client
@@ -80,6 +83,16 @@ export interface ConnectionInitMessage {
 export interface ConnectionAckMessage {
   readonly type: MessageType.ConnectionAck;
   readonly payload?: Record<string, unknown>;
+}
+
+/** @category Common */
+export interface PingMessage {
+  readonly type: MessageType.Ping;
+}
+
+/** @category Common */
+export interface PongMessage {
+  readonly type: MessageType.Pong;
 }
 
 /** @category Common */
@@ -123,6 +136,10 @@ export type Message<T extends MessageType = MessageType> =
     ? ConnectionAckMessage
     : T extends MessageType.ConnectionInit
     ? ConnectionInitMessage
+    : T extends MessageType.Ping
+    ? PingMessage
+    : T extends MessageType.Pong
+    ? PongMessage
     : T extends MessageType.Subscribe
     ? SubscribeMessage
     : T extends MessageType.Next
@@ -160,6 +177,10 @@ export function isMessage(val: unknown): val is Message {
           val.payload === undefined ||
           isObject(val.payload)
         );
+      case MessageType.Ping:
+      case MessageType.Pong:
+        // ping and pong types are simply valid
+        return true;
       case MessageType.Subscribe:
         return (
           hasOwnStringProperty(val, 'id') &&
