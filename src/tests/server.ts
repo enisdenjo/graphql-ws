@@ -643,6 +643,46 @@ describe('Connect', () => {
   });
 });
 
+describe('Ping/Pong', () => {
+  it('should respond with a pong to a ping', async () => {
+    const { url } = await startTServer();
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Ping,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.Pong,
+      });
+    });
+  });
+
+  it('should not react to a pong', async () => {
+    const { url } = await startTServer();
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Pong,
+      }),
+    );
+
+    await client.waitForMessage(() => {
+      fail('Shouldt have received a message');
+    }, 20);
+
+    await client.waitForClose(() => {
+      fail('Shouldt have closed');
+    }, 20);
+  });
+});
+
 describe('Subscribe', () => {
   it('should close the socket on request if connection is not acknowledged', async () => {
     const { url } = await startTServer();
