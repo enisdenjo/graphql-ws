@@ -589,6 +589,40 @@ const client = createRestartableClient({
 
 </details>
 
+<details id="ping-from-client">
+<summary><a href="#ping-from-client">🔗</a> Client usage with ping/pong timeout and latency metrics</summary>
+
+```typescript
+import { createClient } from 'graphql-ws';
+
+let timedOut,
+  pingSentAt = 0,
+  latency = 0;
+createClient({
+  url: 'ws://i.time.out:4000/and-measure/latency',
+  // TODO-db-210608 keep alive option
+  on: {
+    ping: (socket, received) => {
+      if (!received /* sent */) {
+        pingSentAt = Date.now();
+        timedOut = setTimeout(() => {
+          if (socket.readyState === WebSocket.OPEN)
+            socket.close(4408, 'Request Timeout');
+        }, 10_000); // wait 10 seconds for the pong and then close the connection
+      }
+    },
+    pong: (_socket, received) => {
+      if (received) {
+        latency = Date.now() - pingSentAt;
+        clearTimeout(timedOut); // pong is received, clear connection close timeout
+      }
+    },
+  },
+});
+```
+
+</details>
+
 <details id="browser">
 <summary><a href="#browser">🔗</a> Client usage in browser</summary>
 
@@ -1262,124 +1296,6 @@ const client = createClient({
   });
 
   expect(onNext).toBeCalledTimes(5); // greetings in 5 languages
-})();
-```
-
-</details>
-
-<details id="ping-from-client">
-<summary><a href="#ping-from-client">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client with client to server pings and latency</summary>
-
-```typescript
-// 🛸 server
-
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql';
-import ws from 'ws'; // yarn add ws
-import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema } from './my-graphql-schema';
-
-// a custom graphql schema that holds just the ping query.
-// used exclusively when the client sends a ping to the server.
-// if you want to send/receive more details, simply adjust the pinger schema.
-const pinger = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      ping: {
-        type: new GraphQLNonNull(GraphQLString),
-        resolve: () => 'pong',
-      },
-    },
-  }),
-});
-
-const wsServer = new WebSocket.Server({
-  port: 4000,
-  path: '/graphql',
-});
-
-useServer(
-  {
-    schema: (_ctx, msg) => {
-      if (msg.payload.query === '{ ping }') return pinger;
-      return schema;
-    },
-  },
-  wsServer,
-);
-```
-
-```typescript
-// 📺 client
-
-import { createClient } from 'graphql-ws';
-
-let connection: WebSocket | undefined;
-const client = createClient({
-  url: 'ws://client.can:4000/send-pings/too',
-  on: {
-    connected: (socket) => (connection = socket as WebSocket),
-    closed: () => (connection = undefined),
-  },
-});
-
-async function ping() {
-  // record the ping sent at moment for calculating latency
-  const pinged = Date.now();
-
-  // if the client went offline or the server is unresponsive
-  // close the active WebSocket connection as soon as the pong
-  // wait timeout expires and have the client silently reconnect.
-  // there is no need to dispose of the subscription since it
-  // will eventually settle because either:
-  // - the client reconnected and a new pong is received
-  // - the retry attempts were exceeded and the close is reported
-  // because if this, the latency accounts for retry waits too.
-  // if you do not want this, simply dispose of the ping subscription
-  // as soon as the pong timeout is exceeded
-  const pongTimeout = setTimeout(
-    () => connection?.close(4408, 'Pong Timeout'),
-    2000, // expect a pong within 2 seconds of the ping
-  );
-
-  // wait for the pong. the promise is guaranteed to settle
-  await new Promise<void>((resolve, reject) => {
-    client.subscribe<{ data: { ping: string } }>(
-      { query: '{ ping }' },
-      {
-        next: () => {
-          /* not interested in the pong */
-        },
-        error: reject,
-        complete: resolve,
-      },
-    );
-    // whatever happens to the promise, clear the pong timeout
-  }).finally(() => clearTimeout(pongTimeout));
-
-  // record when pong has been received
-  const ponged = Date.now();
-
-  // how long it took for the pong to arrive after sending the ping
-  return ponged - pinged;
-}
-
-// keep pinging until a fatal problem occurs
-(async () => {
-  for (;;) {
-    const latency = await ping();
-
-    // or send to your favourite logger - the user
-    console.info('GraphQL WebSocket connection latency', latency);
-
-    // ping every 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
 })();
 ```
 
