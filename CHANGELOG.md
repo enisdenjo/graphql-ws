@@ -1,3 +1,11 @@
+# [5.1.0](https://github.com/enisdenjo/graphql-ws/compare/v5.0.0...v5.1.0) (2021-06-09)
+
+
+### Features
+
+* **client:** `disablePong` option for when implementing a custom pinger ([6510360](https://github.com/enisdenjo/graphql-ws/commit/651036002c3c26dca8495def7ac271e021fcb420)), closes [#117](https://github.com/enisdenjo/graphql-ws/issues/117)
+* Optional `payload` for ping/pong message types ([2fe0345](https://github.com/enisdenjo/graphql-ws/commit/2fe03453e32112598af0faeecf054c899e658c1d)), closes [#117](https://github.com/enisdenjo/graphql-ws/issues/117)
+
 # [5.0.0](https://github.com/enisdenjo/graphql-ws/compare/v4.9.0...v5.0.0) (2021-06-08)
 
 
