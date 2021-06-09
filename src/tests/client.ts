@@ -429,6 +429,32 @@ describe('ping/pong', () => {
     }, 20);
   });
 
+  it('should not respond with a pong to a ping when disabled', async () => {
+    const { url, waitForConnect, waitForClient, waitForClientClose } =
+      await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      disablePong: true,
+    });
+
+    await waitForConnect();
+
+    await waitForClient((client) => {
+      client.send(stringifyMessage({ type: MessageType.Ping }));
+      client.onMessage(() => {
+        fail("Shouldn't have received a message");
+      });
+    });
+
+    await waitForClientClose(() => {
+      fail("Shouldn't have closed");
+    }, 20);
+  });
+
   it('should not react to a pong', async () => {
     const { url, waitForConnect, waitForClient, waitForClientClose } =
       await startTServer();

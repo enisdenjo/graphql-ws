@@ -648,6 +648,7 @@ function createPingerClient(options: ClientOptions): PingerClient {
   let activeSocket: WebSocket;
 
   const client = createClient({
+    disablePong: true,
     ...options,
     on: {
       connected: (socket) => {

@@ -248,6 +248,14 @@ export interface ClientOptions {
    */
   keepAlive?: number;
   /**
+   * Disable sending the `PongMessage` automatically.
+   *
+   * Useful for when integrating your own custom client pinger that performs
+   * custom actions before responding to a ping, or to pass along the optional pong
+   * message payload. Please check the readme recipes for a concrete example.
+   */
+  disablePong?: boolean;
+  /**
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
    * The library classifies the following close events as fatal:
@@ -353,6 +361,7 @@ export function createClient(options: ClientOptions): Client {
     onNonLazyError = console.error,
     lazyCloseTimeout = 0,
     keepAlive = 0,
+    disablePong,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
       let retryDelay = 1000; // start with 1s delay
@@ -546,11 +555,13 @@ export function createClient(options: ClientOptions): Client {
               emitter.emit('message', message);
               if (message.type === 'ping' || message.type === 'pong') {
                 emitter.emit(message.type, true, message.payload); // received
-                if (message.type === 'ping') {
+                if (message.type === 'pong') {
+                  enqueuePing(); // enqueue next ping (noop if disabled)
+                } else if (!disablePong) {
                   // respond with pong on ping
                   socket.send(stringifyMessage({ type: MessageType.Pong }));
                   emitter.emit('pong', false, undefined);
-                } else enqueuePing(); // enqueue next ping on pong (noop if disabled)
+                }
                 return; // ping and pongs can be received whenever
               }
               if (acknowledged) return; // already connected and acknowledged

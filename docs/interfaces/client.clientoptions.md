@@ -11,6 +11,7 @@ Configuration used for the GraphQL over WebSocket client.
 ### Properties
 
 - [connectionParams](client.clientoptions.md#connectionparams)
+- [disablePong](client.clientoptions.md#disablepong)
 - [generateID](client.clientoptions.md#generateid)
 - [isFatalConnectionProblem](client.clientoptions.md#isfatalconnectionproblem)
 - [jsonMessageReplacer](client.clientoptions.md#jsonmessagereplacer)
@@ -40,6 +41,18 @@ takes too long to resolve! Check the `connectionInitWaitTimeout` on the server f
 
 Throwing an error from within this function will close the socket with the `Error` message
 in the close event reason.
+
+___
+
+### disablePong
+
+• `Optional` **disablePong**: `boolean`
+
+Disable sending the `PongMessage` automatically.
+
+Useful for when integrating your own custom client pinger that performs
+custom actions before responding to a ping, or to pass along the optional pong
+message payload. Please check the readme recipes for a concrete example.
 
 ___
 
