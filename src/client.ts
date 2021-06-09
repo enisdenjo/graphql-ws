@@ -559,8 +559,20 @@ export function createClient(options: ClientOptions): Client {
                   enqueuePing(); // enqueue next ping (noop if disabled)
                 } else if (!disablePong) {
                   // respond with pong on ping
-                  socket.send(stringifyMessage({ type: MessageType.Pong }));
-                  emitter.emit('pong', false, undefined);
+                  socket.send(
+                    stringifyMessage(
+                      message.payload
+                        ? {
+                            type: MessageType.Pong,
+                            payload: message.payload,
+                          }
+                        : {
+                            type: MessageType.Pong,
+                            // payload is completely absent if not provided
+                          },
+                    ),
+                  );
+                  emitter.emit('pong', false, message.payload);
                 }
                 return; // ping and pongs can be received whenever
               }

@@ -5,7 +5,12 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { createClient, Client, EventListener } from '../client';
-import { MessageType, stringifyMessage, SubscribePayload } from '../common';
+import {
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+  SubscribePayload,
+} from '../common';
 import { startWSTServer as startTServer, waitForDone } from './utils';
 
 // simulate browser environment for easier client testing
@@ -421,6 +426,41 @@ describe('ping/pong', () => {
       client.send(stringifyMessage({ type: MessageType.Ping }));
       client.onMessage((data) => {
         expect(data).toBe('{"type":"pong"}');
+      });
+    });
+
+    await waitForClientClose(() => {
+      fail("Shouldn't have closed");
+    }, 20);
+  });
+
+  it("should return ping's payload through the pong", async () => {
+    expect.assertions(1);
+
+    const { url, waitForConnect, waitForClient, waitForClientClose } =
+      await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    await waitForConnect();
+
+    await waitForClient((client) => {
+      client.send(
+        stringifyMessage({
+          type: MessageType.Ping,
+          payload: { iCome: 'back' },
+        }),
+      );
+      client.onMessage((data) => {
+        expect(parseMessage(data)).toEqual({
+          type: MessageType.Pong,
+          payload: { iCome: 'back' },
+        });
       });
     });
 
@@ -1670,8 +1710,8 @@ describe('events', () => {
 
     expect(pongFn).toBeCalledTimes(2);
     expect(pongFn.mock.calls[0][0]).toBeFalsy();
-    expect(pongFn.mock.calls[0][1]).toBeUndefined();
+    expect(pongFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
-    expect(pongFn.mock.calls[1][1]).toBeUndefined();
+    expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
   });
 });
