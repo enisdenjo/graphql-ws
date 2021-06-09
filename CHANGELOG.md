@@ -1,3 +1,10 @@
+## [5.1.1](https://github.com/enisdenjo/graphql-ws/compare/v5.1.0...v5.1.1) (2021-06-09)
+
+
+### Bug Fixes
+
+* **server:** Return ping's payload through the response pong ([47730a9](https://github.com/enisdenjo/graphql-ws/commit/47730a9cc735b8e309656a3fb8b9e5b0e05a304a)), closes [#117](https://github.com/enisdenjo/graphql-ws/issues/117)
+
 # [5.1.0](https://github.com/enisdenjo/graphql-ws/compare/v5.0.0...v5.1.0) (2021-06-09)
 
 
