@@ -11,6 +11,8 @@ import {
   Disposable,
   Message,
   MessageType,
+  PingMessage,
+  PongMessage,
   parseMessage,
   stringifyMessage,
   SubscribePayload,
@@ -77,7 +79,10 @@ export type EventConnectingListener = () => void;
  *
  * @category Client
  */
-export type EventPingListener = (received: boolean) => void;
+export type EventPingListener = (
+  received: boolean,
+  payload: PingMessage['payload'],
+) => void;
 
 /**
  * The first argument communicates whether the pong was received from the server.
@@ -85,7 +90,10 @@ export type EventPingListener = (received: boolean) => void;
  *
  * @category Client
  */
-export type EventPongListener = (received: boolean) => void;
+export type EventPongListener = (
+  received: boolean,
+  payload: PongMessage['payload'],
+) => void;
 
 /**
  * Called for all **valid** messages received by the client. Mainly useful for
@@ -490,7 +498,7 @@ export function createClient(options: ClientOptions): Client {
               queuedPing = setTimeout(() => {
                 if (socket.readyState === WebSocketImpl.OPEN) {
                   socket.send(stringifyMessage({ type: MessageType.Ping }));
-                  emitter.emit('ping', false);
+                  emitter.emit('ping', false, undefined);
                 }
               }, keepAlive);
             }
@@ -537,11 +545,11 @@ export function createClient(options: ClientOptions): Client {
               const message = parseMessage(data, reviver);
               emitter.emit('message', message);
               if (message.type === 'ping' || message.type === 'pong') {
-                emitter.emit(message.type, true); // received
+                emitter.emit(message.type, true, message.payload); // received
                 if (message.type === 'ping') {
                   // respond with pong on ping
                   socket.send(stringifyMessage({ type: MessageType.Pong }));
-                  emitter.emit('pong', false);
+                  emitter.emit('pong', false, undefined);
                 } else enqueuePing(); // enqueue next ping on pong (noop if disabled)
                 return; // ping and pongs can be received whenever
               }

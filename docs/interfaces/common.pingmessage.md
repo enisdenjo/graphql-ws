@@ -8,9 +8,16 @@
 
 ### Properties
 
+- [payload](common.pingmessage.md#payload)
 - [type](common.pingmessage.md#type)
 
 ## Properties
+
+### payload
+
+• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
+
+___
 
 ### type
 

@@ -227,20 +227,21 @@ ___
 
 ### EventPingListener
 
-Ƭ **EventPingListener**: (`received`: `boolean`) => `void`
+Ƭ **EventPingListener**: (`received`: `boolean`, `payload`: [PingMessage](../interfaces/common.pingmessage.md)[``"payload"``]) => `void`
 
 The first argument communicates whether the ping was received from the server.
 If `false`, the ping was sent by the client.
 
 #### Type declaration
 
-▸ (`received`): `void`
+▸ (`received`, `payload`): `void`
 
 ##### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `received` | `boolean` |
+| `payload` | [PingMessage](../interfaces/common.pingmessage.md)[``"payload"``] |
 
 ##### Returns
 
@@ -256,20 +257,21 @@ ___
 
 ### EventPongListener
 
-Ƭ **EventPongListener**: (`received`: `boolean`) => `void`
+Ƭ **EventPongListener**: (`received`: `boolean`, `payload`: [PongMessage](../interfaces/common.pongmessage.md)[``"payload"``]) => `void`
 
 The first argument communicates whether the pong was received from the server.
 If `false`, the pong was sent by the client.
 
 #### Type declaration
 
-▸ (`received`): `void`
+▸ (`received`, `payload`): `void`
 
 ##### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `received` | `boolean` |
+| `payload` | [PongMessage](../interfaces/common.pongmessage.md)[``"payload"``] |
 
 ##### Returns
 

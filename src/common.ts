@@ -88,11 +88,13 @@ export interface ConnectionAckMessage {
 /** @category Common */
 export interface PingMessage {
   readonly type: MessageType.Ping;
+  readonly payload?: Record<string, unknown>;
 }
 
 /** @category Common */
 export interface PongMessage {
   readonly type: MessageType.Pong;
+  readonly payload?: Record<string, unknown>;
 }
 
 /** @category Common */
@@ -171,16 +173,14 @@ export function isMessage(val: unknown): val is Message {
           isObject(val.payload)
         );
       case MessageType.ConnectionAck:
-        // the connection ack message can have optional payload object too
+      case MessageType.Ping:
+      case MessageType.Pong:
+        // the connection ack, ping and pong messages can have optional payload object too
         return (
           !hasOwnProperty(val, 'payload') ||
           val.payload === undefined ||
           isObject(val.payload)
         );
-      case MessageType.Ping:
-      case MessageType.Pong:
-        // ping and pong types are simply valid
-        return true;
       case MessageType.Subscribe:
         return (
           hasOwnStringProperty(val, 'id') &&

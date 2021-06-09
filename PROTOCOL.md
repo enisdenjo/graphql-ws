@@ -66,9 +66,12 @@ A `Pong` must be sent in response from the receiving party as soon as possible.
 
 The `Ping` message can be sent at any time within the established socket.
 
+The optional `payload` field can be used to transfer additional details about the ping.
+
 ```typescript
 interface PingMessage {
   type: 'ping';
+  payload?: Record<string, unknown>;
 }
 ```
 
@@ -80,9 +83,12 @@ The response to the `Ping` message. Must be sent as soon as the `Ping` message i
 
 The `Pong` message can be sent at any time within the established socket. Furthermore, the `Pong` message may even be sent unsolicited as an unidirectional heartbeat.
 
+The optional `payload` field can be used to transfer additional details about the pong.
+
 ```typescript
 interface PongMessage {
   type: 'pong';
+  payload?: Record<string, unknown>;
 }
 ```
 

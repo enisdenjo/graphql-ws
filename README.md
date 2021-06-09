@@ -625,6 +625,64 @@ createClient({
 
 </details>
 
+<details id="custom-client-pinger">
+<summary><a href="#custom-client-pinger">🔗</a> Client usage with manual pings and pongs</summary>
+
+```typescript
+import {
+  createClient,
+  Client,
+  ClientOptions,
+  stringifyMessage,
+  PingMessage,
+  PongMessage,
+  MessageType,
+} from 'graphql-ws';
+
+interface PingerClient extends Client {
+  ping(payload?: PingMessage['payload']): void;
+  pong(payload?: PongMessage['payload']): void;
+}
+
+function createPingerClient(options: ClientOptions): PingerClient {
+  let activeSocket: WebSocket;
+
+  const client = createClient({
+    ...options,
+    on: {
+      connected: (socket) => {
+        options.on?.connected?.(socket);
+        activeSocket = socket;
+      },
+    },
+  });
+
+  return {
+    ...client,
+    ping: (payload) => {
+      if (activeSocket.readyState === WebSocket.OPEN)
+        activeSocket.send(
+          stringifyMessage({
+            type: MessageType.Ping,
+            payload,
+          }),
+        );
+    },
+    pong: (payload) => {
+      if (activeSocket.readyState === WebSocket.OPEN)
+        activeSocket.send(
+          stringifyMessage({
+            type: MessageType.Pong,
+            payload,
+          }),
+        );
+    },
+  };
+}
+```
+
+</details>
+
 <details id="browser">
 <summary><a href="#browser">🔗</a> Client usage in browser</summary>
 

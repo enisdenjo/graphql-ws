@@ -1596,11 +1596,15 @@ describe('events', () => {
 
     expect(pingFn).toBeCalledTimes(2);
     expect(pingFn.mock.calls[0][0]).toBeFalsy();
+    expect(pingFn.mock.calls[0][1]).toBeUndefined();
     expect(pingFn.mock.calls[1][0]).toBeFalsy();
+    expect(pingFn.mock.calls[1][1]).toBeUndefined();
 
     expect(pongFn).toBeCalledTimes(2);
     expect(pongFn.mock.calls[0][0]).toBeTruthy();
+    expect(pongFn.mock.calls[0][1]).toBeUndefined();
     expect(pongFn.mock.calls[1][0]).toBeTruthy();
+    expect(pongFn.mock.calls[1][1]).toBeUndefined();
   });
 
   it('should emit ping and pong events when receiving server pings', async () => {
@@ -1623,7 +1627,9 @@ describe('events', () => {
     client.on('pong', pongFn);
 
     await server.waitForClient((client) => {
-      client.send(stringifyMessage({ type: MessageType.Ping }));
+      client.send(
+        stringifyMessage({ type: MessageType.Ping, payload: { some: 'data' } }),
+      );
     });
 
     await new Promise<void>((resolve) => {
@@ -1632,10 +1638,14 @@ describe('events', () => {
 
     expect(pingFn).toBeCalledTimes(2);
     expect(pingFn.mock.calls[0][0]).toBeTruthy();
+    expect(pingFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pingFn.mock.calls[1][0]).toBeTruthy();
+    expect(pingFn.mock.calls[1][1]).toEqual({ some: 'data' });
 
     expect(pongFn).toBeCalledTimes(2);
     expect(pongFn.mock.calls[0][0]).toBeFalsy();
+    expect(pongFn.mock.calls[0][1]).toBeUndefined();
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
+    expect(pongFn.mock.calls[1][1]).toBeUndefined();
   });
 });
