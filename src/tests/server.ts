@@ -662,6 +662,26 @@ describe('Ping/Pong', () => {
     });
   });
 
+  it("should return ping's payload through the pong", async () => {
+    const { url } = await startTServer();
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Ping,
+        payload: { iCome: 'back' },
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.Pong,
+        payload: { iCome: 'back' },
+      });
+    });
+  });
+
   it('should not react to a pong', async () => {
     const { url } = await startTServer();
 
