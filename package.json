@@ -13,7 +13,9 @@
     "observables",
     "express",
     "relay",
-    "apollo"
+    "apollo",
+    "fastify",
+    "uwebsockets"
   ],
   "license": "MIT",
   "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
