@@ -14,7 +14,6 @@ import {
   WSExtra,
   UWSExtra,
   FastifyExtra,
-  waitForDone,
 } from './utils';
 
 for (const { tServer, startTServer } of tServers) {
@@ -80,59 +79,54 @@ for (const { tServer, startTServer } of tServers) {
       });
     });
 
-    it(
-      'should add the initial request and websocket in the context extra',
-      waitForDone(async (done) => {
-        const server = await startTServer({
-          onConnect: (ctx) => {
-            if (tServer === 'uWebSockets.js') {
-              // uWebSocket.js does not export classes, we can rely on the name only
-              expect((ctx.extra as UWSExtra).socket.constructor.name).toEqual(
-                'uWS.WebSocket',
-              );
-              expect((ctx.extra as UWSExtra).persistedRequest.method).toBe(
-                'get',
-              );
-              expect((ctx.extra as UWSExtra).persistedRequest.url).toBe(
-                '/simple',
-              );
-              expect((ctx.extra as UWSExtra).persistedRequest.query).toBe(
-                'te=st',
-              );
-              expect(
-                (ctx.extra as UWSExtra).persistedRequest.headers,
-              ).toBeInstanceOf(Object);
-            } else if (tServer === 'ws') {
-              expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);
-              expect((ctx.extra as WSExtra).request).toBeInstanceOf(
-                http.IncomingMessage,
-              );
-            } else if (tServer === 'fastify-websocket') {
-              expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
-                stream.Duplex,
-              );
-              expect(
-                (ctx.extra as FastifyExtra).connection.socket,
-              ).toBeInstanceOf(ws);
-              expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
-                'Request',
-              );
-            } else {
-              throw new Error('Missing test case for ' + tServer);
-            }
-            done();
-            return false; // reject client for sake of test
-          },
-        });
+    it('should add the initial request and websocket in the context extra', async (done) => {
+      const server = await startTServer({
+        onConnect: (ctx) => {
+          if (tServer === 'uWebSockets.js') {
+            // uWebSocket.js does not export classes, we can rely on the name only
+            expect((ctx.extra as UWSExtra).socket.constructor.name).toEqual(
+              'uWS.WebSocket',
+            );
+            expect((ctx.extra as UWSExtra).persistedRequest.method).toBe('get');
+            expect((ctx.extra as UWSExtra).persistedRequest.url).toBe(
+              '/simple',
+            );
+            expect((ctx.extra as UWSExtra).persistedRequest.query).toBe(
+              'te=st',
+            );
+            expect(
+              (ctx.extra as UWSExtra).persistedRequest.headers,
+            ).toBeInstanceOf(Object);
+          } else if (tServer === 'ws') {
+            expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws);
+            expect((ctx.extra as WSExtra).request).toBeInstanceOf(
+              http.IncomingMessage,
+            );
+          } else if (tServer === 'fastify-websocket') {
+            expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
+              stream.Duplex,
+            );
+            expect(
+              (ctx.extra as FastifyExtra).connection.socket,
+            ).toBeInstanceOf(ws);
+            expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
+              'Request',
+            );
+          } else {
+            throw new Error('Missing test case for ' + tServer);
+          }
+          done();
+          return false; // reject client for sake of test
+        },
+      });
 
-        const client = await createTClient(server.url + '?te=st');
-        client.ws.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-          }),
-        );
-      }),
-    );
+      const client = await createTClient(server.url + '?te=st');
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+    });
 
     it('should close the socket with errors thrown from any callback', async () => {
       const error = new Error('Stop');
@@ -367,39 +361,33 @@ for (const { tServer, startTServer } of tServers) {
     );
 
     describe('Keep-Alive', () => {
-      it(
-        'should dispatch pings after the timeout has passed',
-        waitForDone(async (done) => {
-          const { url } = await startTServer(undefined, 50);
+      it('should dispatch pings after the timeout has passed', async (done) => {
+        const { url } = await startTServer(undefined, 50);
 
-          const client = await createTClient(url);
-          client.ws.send(
-            stringifyMessage<MessageType.ConnectionInit>({
-              type: MessageType.ConnectionInit,
-            }),
-          );
+        const client = await createTClient(url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
 
-          client.ws.once('ping', () => done());
-        }),
-      );
+        client.ws.once('ping', () => done());
+      });
 
-      it(
-        'should not dispatch pings if disabled with nullish timeout',
-        waitForDone(async (done) => {
-          const { url } = await startTServer(undefined, 0);
+      it('should not dispatch pings if disabled with nullish timeout', async (done) => {
+        const { url } = await startTServer(undefined, 0);
 
-          const client = await createTClient(url);
-          client.ws.send(
-            stringifyMessage<MessageType.ConnectionInit>({
-              type: MessageType.ConnectionInit,
-            }),
-          );
+        const client = await createTClient(url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
 
-          client.ws.once('ping', () => fail('Shouldnt have pinged'));
+        client.ws.once('ping', () => fail('Shouldnt have pinged'));
 
-          setTimeout(done, 50);
-        }),
-      );
+        setTimeout(done, 50);
+      });
 
       it('should terminate the socket if no pong is sent in response to a ping', async () => {
         const { url } = await startTServer(undefined, 50);
