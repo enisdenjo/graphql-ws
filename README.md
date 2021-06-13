@@ -955,7 +955,7 @@ const server = app.listen(4000, () => {
 <summary><a href="#ws-backwards-compat">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/apollographql/subscriptions-transport-ws">subscriptions-transport-ws</a> backwards compatibility</summary>
 
 ```ts
-import https from 'https';
+import http from 'http';
 import ws from 'ws'; // yarn add ws
 import { execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
@@ -978,8 +978,8 @@ SubscriptionServer.create(
   subTransWs,
 );
 
-// create https server
-const server = https.createServer(function weServeSocketsOnly(_, res) {
+// create http server
+const server = http.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
   res.end();
 });
@@ -1005,6 +1005,8 @@ server.on('upgrade', (req, socket, head) => {
     wss.emit('connection', ws, req);
   });
 });
+
+server.listen(4000);
 ```
 
 </details>
@@ -1051,13 +1053,13 @@ useServer(
 <summary><a href="#multi-ws">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage on a multi WebSocket server</summary>
 
 ```typescript
-import https from 'https';
+import http from 'http';
 import ws from 'ws'; // yarn add ws
 import url from 'url';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
 
-const server = https.createServer(function weServeSocketsOnly(_, res) {
+const server = http.createServer(function weServeSocketsOnly(_, res) {
   res.writeHead(404);
   res.end();
 });
