@@ -1054,7 +1054,6 @@ useServer(
 import https from 'https';
 import ws from 'ws'; // yarn add ws
 import url from 'url';
-import { createClient } from 'graphql-ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
 
