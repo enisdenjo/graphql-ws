@@ -895,8 +895,6 @@ wsServer.on('connection', (socket, request) => {
 <details id="cf-workers">
 <summary><a href="#cf-workers">🔗</a> Server usage with <a href="https://workers.cloudflare.com/">Cloudflare Workers</a></summary>
 
-<br>
-
 [Please check the `worker-graphql-ws-template` repo out.](https://github.com/enisdenjo/cloudflare-worker-graphql-ws-template)
 
 </details>
