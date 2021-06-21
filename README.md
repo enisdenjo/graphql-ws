@@ -892,6 +892,81 @@ wsServer.on('connection', (socket, request) => {
 
 </details>
 
+<details id="ws-sub-ping-pong">
+<summary><a href="#ws-sub-ping-pong">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a> and subprotocol pings and pongs</summary>
+
+```ts
+import ws from 'ws'; // yarn add ws
+import { makeServer, stringifyMessage, MessageType } from 'graphql-ws';
+import { schema } from './my-graphql-schema';
+
+// make
+const server = makeServer({ schema });
+
+// create websocket server
+const wsServer = new ws.Server({
+  port: 4000,
+  path: '/graphql',
+});
+
+// implement
+wsServer.on('connection', (socket, request) => {
+  // subprotocol pinger because WS level ping/pongs might not be available
+  let pinger, pongWait;
+  function ping() {
+    if (socket.readyState === socket.OPEN) {
+      // send the subprotocol level ping message
+      socket.send(stringifyMessage({ type: MessageType.Ping }));
+
+      // wait for the pong for 6 seconds and then terminate
+      pongWait = setTimeout(() => {
+        clearInterval(pinger);
+        socket.close();
+      }, 6_000);
+    }
+  }
+
+  // ping the client on an interval every 12 seconds
+  pinger = setInterval(() => ping(), 12_000);
+
+  // a new socket opened, let graphql-ws take over
+  const closed = server.opened(
+    {
+      protocol: socket.protocol, // will be validated
+      send: (data) => socket.send(data),
+      close: (code, reason) => socket.close(code, reason),
+      onMessage: (cb) =>
+        socket.on('message', async (event) => {
+          try {
+            // wait for the the operation to complete
+            // - if init message, waits for connect
+            // - if query/mutation, waits for result
+            // - if subscription, waits for complete
+            await cb(event.toString());
+          } catch (err) {
+            // all errors that could be thrown during the
+            // execution of operations will be caught here
+            socket.close(1011, err.message);
+          }
+        }),
+      // pong received, clear termination timeout
+      onPong: () => clearTimeout(pongWait),
+    },
+    // pass values to the `extra` field in the context
+    { socket, request },
+  );
+
+  // notify server that the socket closed and stop the pinger
+  socket.once('close', (code, reason) => {
+    clearTimeout(pongWait);
+    clearInterval(pinger);
+    closed(code, reason);
+  });
+});
+```
+
+</details>
+
 <details id="cf-workers">
 <summary><a href="#cf-workers">🔗</a> Server usage with <a href="https://workers.cloudflare.com/">Cloudflare Workers</a></summary>
 
