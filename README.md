@@ -794,13 +794,6 @@ wsServer.on('connection', (socket, request) => {
 
 </details>
 
-<details id="cf-workers">
-<summary><a href="#cf-workers">🔗</a> Server usage with <a href="https://workers.cloudflare.com/">Cloudflare Workers</a></summary>
-
-[Please check the `worker-graphql-ws-template` repo out.](https://github.com/enisdenjo/cloudflare-worker-graphql-ws-template)
-
-</details>
-
 <details id="ws-auth-handling">
 <summary><a href="#ws-auth-handling">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a> and custom auth handling</summary>
 
@@ -896,6 +889,15 @@ wsServer.on('connection', (socket, request) => {
   socket.once('close', (code, reason) => closed(code, reason));
 });
 ```
+
+</details>
+
+<details id="cf-workers">
+<summary><a href="#cf-workers">🔗</a> Server usage with <a href="https://workers.cloudflare.com/">Cloudflare Workers</a></summary>
+
+<br>
+
+[Please check the `worker-graphql-ws-template` repo out.](https://github.com/enisdenjo/cloudflare-worker-graphql-ws-template)
 
 </details>
 
