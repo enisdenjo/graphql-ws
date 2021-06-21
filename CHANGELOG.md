@@ -1,3 +1,10 @@
+# [5.2.0](https://github.com/enisdenjo/graphql-ws/compare/v5.1.2...v5.2.0) (2021-06-21)
+
+
+### Features
+
+* **server:** Optional `onPing` and `onPong` message type listeners ([f36066f](https://github.com/enisdenjo/graphql-ws/commit/f36066f820ba2b2fabb728c77ca17b5ea5b8e6da))
+
 ## [5.1.2](https://github.com/enisdenjo/graphql-ws/compare/v5.1.1...v5.1.2) (2021-06-09)
 
 
