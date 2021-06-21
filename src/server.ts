@@ -33,6 +33,8 @@ import {
   CompleteMessage,
   JSONMessageReplacer,
   JSONMessageReviver,
+  PingMessage,
+  PongMessage,
 } from './common';
 import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
 
@@ -449,6 +451,22 @@ export interface WebSocket {
    * to your clients however you wish.
    */
   onMessage(cb: (data: string) => Promise<void>): void;
+  /**
+   * Implement a listener for the `PingMessage` sent from the client to the server.
+   * If the client sent the ping with a payload, it will be passed through the
+   * first argument.
+   *
+   * If this listener is implemented, the server will NOT automatically reply
+   * to any pings from the client. Implementing it makes it your resposibility
+   * to decide how and when to respond.
+   */
+  onPing?(payload: PingMessage['payload']): Promise<void> | void;
+  /**
+   * Implement a listener for the `PongMessage` sent from the client to the server.
+   * If the client sent the pong with a payload, it will be passed through the
+   * first argument.
+   */
+  onPong?(payload: PongMessage['payload']): Promise<void> | void;
 }
 
 /** @category Server */
@@ -586,6 +604,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             return;
           }
           case MessageType.Ping: {
+            if (socket.onPing)
+              // if the onPing listener is registered, automatic pong is disabled
+              return await socket.onPing(message.payload);
+
             await socket.send(
               stringifyMessage(
                 message.payload
@@ -599,7 +621,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             return;
           }
           case MessageType.Pong:
-            return;
+            return await socket.onPong?.(message.payload);
           case MessageType.Subscribe: {
             if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
 

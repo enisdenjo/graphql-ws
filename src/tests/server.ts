@@ -8,6 +8,7 @@ import {
   ExecutionResult,
   GraphQLSchema,
 } from 'graphql';
+import { makeServer } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   MessageType,
@@ -681,6 +682,58 @@ describe('Ping/Pong', () => {
     await client.waitForClose(() => {
       fail('Shouldt have closed');
     }, 20);
+  });
+
+  it('should invoke the websocket callback on ping and not reply automatically', async (done) => {
+    const payload = { not: 'relevant' };
+
+    const closed = makeServer({}).opened(
+      {
+        protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        send: () => fail('Shouldnt have responded to a ping'),
+        close: () => {
+          /**/
+        },
+        onMessage: (cb) => {
+          cb(stringifyMessage({ type: MessageType.Ping, payload }));
+        },
+        onPing: (pyld) => {
+          setImmediate(() => {
+            expect(pyld).toEqual(payload);
+            closed(1000, '');
+            done();
+          });
+        },
+        onPong: () => fail('Nothing shouldve ponged'),
+      },
+      {},
+    );
+  });
+
+  it('should invoke the websocket callback on pong', async (done) => {
+    const payload = { not: 'relevant' };
+
+    const closed = makeServer({}).opened(
+      {
+        protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        send: () => Promise.resolve(),
+        close: () => {
+          /**/
+        },
+        onMessage: (cb) => {
+          cb(stringifyMessage({ type: MessageType.Pong, payload }));
+        },
+        onPing: () => fail('Nothing shouldve pinged'),
+        onPong: (pyld) => {
+          setImmediate(() => {
+            expect(pyld).toEqual(payload);
+            closed(1000, '');
+            done();
+          });
+        },
+      },
+      {},
+    );
   });
 });
 

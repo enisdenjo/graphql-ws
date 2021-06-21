@@ -14,6 +14,8 @@
 
 - [close](server.websocket.md#close)
 - [onMessage](server.websocket.md#onmessage)
+- [onPing](server.websocket.md#onping)
+- [onPong](server.websocket.md#onpong)
 - [send](server.websocket.md#send)
 
 ## Properties
@@ -76,6 +78,50 @@ to your clients however you wish.
 #### Returns
 
 `void`
+
+___
+
+### onPing
+
+▸ `Optional` **onPing**(`payload`): `void` \| `Promise`<void\>
+
+Implement a listener for the `PingMessage` sent from the client to the server.
+If the client sent the ping with a payload, it will be passed through the
+first argument.
+
+If this listener is implemented, the server will NOT automatically reply
+to any pings from the client. Implementing it makes it your resposibility
+to decide how and when to respond.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `payload` | `undefined` \| `Record`<string, unknown\> |
+
+#### Returns
+
+`void` \| `Promise`<void\>
+
+___
+
+### onPong
+
+▸ `Optional` **onPong**(`payload`): `void` \| `Promise`<void\>
+
+Implement a listener for the `PongMessage` sent from the client to the server.
+If the client sent the pong with a payload, it will be passed through the
+first argument.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `payload` | `undefined` \| `Record`<string, unknown\> |
+
+#### Returns
+
+`void` \| `Promise`<void\>
 
 ___
 
