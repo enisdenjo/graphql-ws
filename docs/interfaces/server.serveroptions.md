@@ -80,16 +80,16 @@ ___
 
 • `Optional` **execute**: (`args`: `ExecutionArgs`) => [OperationResult](../modules/server.md#operationresult)
 
+#### Type declaration
+
+▸ (`args`): [OperationResult](../modules/server.md#operationresult)
+
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
 
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-#### Type declaration
-
-▸ (`args`): [OperationResult](../modules/server.md#operationresult)
 
 ##### Parameters
 
@@ -127,6 +127,10 @@ ___
 
 • `Optional` **onClose**: (`ctx`: [Context](server.context.md)<E\>, `code`: `number`, `reason`: `string`) => `void` \| `Promise`<void\>
 
+#### Type declaration
+
+▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
+
 Called when the socket closes for whatever reason, at any
 point in time. Provides the close event too. Beware
 that this callback happens AFTER all subscriptions have
@@ -139,10 +143,6 @@ In comparison to `onDisconnect`, this callback will ALWAYS
 be called, regardless if the user succesfully went through
 the connection initialisation or not. `onConnect` might not
 called before the `onClose`.
-
-#### Type declaration
-
-▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
 
 ##### Parameters
 
@@ -162,6 +162,10 @@ ___
 
 • `Optional` **onComplete**: (`ctx`: [Context](server.context.md)<E\>, `message`: [CompleteMessage](common.completemessage.md)) => `void` \| `Promise`<void\>
 
+#### Type declaration
+
+▸ (`ctx`, `message`): `void` \| `Promise`<void\>
+
 The complete callback is executed after the
 operation has completed right before sending
 the complete message to the client.
@@ -173,10 +177,6 @@ in the close event reason.
 Since the library makes sure to complete streaming
 operations even after an abrupt closure, this callback
 will still be called.
-
-#### Type declaration
-
-▸ (`ctx`, `message`): `void` \| `Promise`<void\>
 
 ##### Parameters
 
@@ -194,6 +194,10 @@ ___
 ### onConnect
 
 • `Optional` **onConnect**: (`ctx`: [Context](server.context.md)<E\>) => `boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
+
+#### Type declaration
+
+▸ (`ctx`): `boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
 
 Is the connection callback called when the
 client requests the connection initialisation
@@ -218,10 +222,6 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration
-
-▸ (`ctx`): `boolean` \| `void` \| `Record`<string, unknown\> \| `Promise`<boolean \| void \| Record<string, unknown\>\>
-
 ##### Parameters
 
 | Name | Type |
@@ -238,6 +238,10 @@ ___
 
 • `Optional` **onDisconnect**: (`ctx`: [Context](server.context.md)<E\>, `code`: `number`, `reason`: `string`) => `void` \| `Promise`<void\>
 
+#### Type declaration
+
+▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
+
 Called when the client disconnects for whatever reason after
 he successfully went through the connection initialisation phase.
 Provides the close event too. Beware that this callback happens
@@ -252,10 +256,6 @@ is acknowledged. Meaning, `onConnect` will be called before the `onDisconnect`.
 
 For tracking socket closures at any point in time, regardless
 of the connection state - consider using the `onClose` callback.
-
-#### Type declaration
-
-▸ (`ctx`, `code`, `reason`): `void` \| `Promise`<void\>
 
 ##### Parameters
 
@@ -275,6 +275,10 @@ ___
 
 • `Optional` **onError**: (`ctx`: [Context](server.context.md)<E\>, `message`: [ErrorMessage](common.errormessage.md), `errors`: readonly `GraphQLError`[]) => `void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
 
+#### Type declaration
+
+▸ (`ctx`, `message`, `errors`): `void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
+
 Executed after an error occured right before it
 has been dispatched to the client.
 
@@ -286,10 +290,6 @@ Returned result will be injected in the error message payload.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-#### Type declaration
-
-▸ (`ctx`, `message`, `errors`): `void` \| readonly `GraphQLError`[] \| `Promise`<void \| readonly `GraphQLError`[]\>
 
 ##### Parameters
 
@@ -309,6 +309,10 @@ ___
 
 • `Optional` **onNext**: (`ctx`: [Context](server.context.md)<E\>, `message`: [NextMessage](common.nextmessage.md), `args`: `ExecutionArgs`, `result`: `ExecutionResult`<`Object`, `Object`\>) => `void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
 
+#### Type declaration
+
+▸ (`ctx`, `message`, `args`, `result`): `void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
+
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
 single value and streaming operations will appear in this callback.
@@ -321,10 +325,6 @@ Returned result will be injected in the next message payload.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-#### Type declaration
-
-▸ (`ctx`, `message`, `args`, `result`): `void` \| `ExecutionResult`<`Object`, `Object`\> \| `Promise`<void \| ExecutionResult<`Object`, `Object`\>\>
 
 ##### Parameters
 
@@ -345,6 +345,10 @@ ___
 
 • `Optional` **onOperation**: (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md), `args`: `ExecutionArgs`, `result`: [OperationResult](../modules/server.md#operationresult)) => `void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
 
+#### Type declaration
+
+▸ (`ctx`, `message`, `args`, `result`): `void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
+
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
 mean that there is already a result available - it means
@@ -364,10 +368,6 @@ Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
 
-#### Type declaration
-
-▸ (`ctx`, `message`, `args`, `result`): `void` \| [OperationResult](../modules/server.md#operationresult) \| `Promise`<void \| [OperationResult](../modules/server.md#operationresult)\>
-
 ##### Parameters
 
 | Name | Type |
@@ -386,6 +386,10 @@ ___
 ### onSubscribe
 
 • `Optional` **onSubscribe**: (`ctx`: [Context](server.context.md)<E\>, `message`: [SubscribeMessage](common.subscribemessage.md)) => `void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
+
+#### Type declaration
+
+▸ (`ctx`, `message`): `void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
 
 The subscribe callback executed right after
 acknowledging the request before any payload
@@ -414,10 +418,6 @@ execution args which are then returned by the function.
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-#### Type declaration
-
-▸ (`ctx`, `message`): `void` \| readonly `GraphQLError`[] \| `ExecutionArgs` \| `Promise`<void \| readonly `GraphQLError`[] \| ExecutionArgs\>
 
 ##### Parameters
 
@@ -479,16 +479,16 @@ ___
 
 • `Optional` **subscribe**: (`args`: `ExecutionArgs`) => [OperationResult](../modules/server.md#operationresult)
 
+#### Type declaration
+
+▸ (`args`): [OperationResult](../modules/server.md#operationresult)
+
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
 
 Throwing an error from within this function will
 close the socket with the `Error` message
 in the close event reason.
-
-#### Type declaration
-
-▸ (`args`): [OperationResult](../modules/server.md#operationresult)
 
 ##### Parameters
 
@@ -506,6 +506,10 @@ ___
 
 • `Optional` **validate**: (`schema`: `GraphQLSchema`, `documentAST`: `DocumentNode`, `rules?`: readonly `ValidationRule`[], `typeInfo?`: `TypeInfo`, `options?`: { `maxErrors?`: `number`  }) => readonly `GraphQLError`[]
 
+#### Type declaration
+
+▸ (`schema`, `documentAST`, `rules?`, `typeInfo?`, `options?`): readonly `GraphQLError`[]
+
 A custom GraphQL validate function allowing you to apply your
 own validation rules.
 
@@ -517,10 +521,6 @@ Will not be used when implementing a custom `onSubscribe`.
 
 Throwing an error from within this function will close the socket
 with the `Error` message in the close event reason.
-
-#### Type declaration
-
-▸ (`schema`, `documentAST`, `rules?`, `typeInfo?`, `options?`): readonly `GraphQLError`[]
 
 ##### Parameters
 

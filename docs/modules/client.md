@@ -73,13 +73,13 @@ ___
 
 Ƭ **EventClosedListener**: (`event`: `unknown`) => `void`
 
-The argument is actually the websocket `CloseEvent`, but to avoid
-bundling DOM typings because the client can run in Node env too,
-you should assert the websocket type during implementation.
-
 #### Type declaration
 
 ▸ (`event`): `void`
+
+The argument is actually the websocket `CloseEvent`, but to avoid
+bundling DOM typings because the client can run in Node env too,
+you should assert the websocket type during implementation.
 
 ##### Parameters
 
@@ -103,16 +103,16 @@ ___
 
 Ƭ **EventConnectedListener**: (`socket`: `unknown`, `payload?`: `Record`<string, unknown\>) => `void`
 
+#### Type declaration
+
+▸ (`socket`, `payload?`): `void`
+
 The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
 Also, the second argument is the optional payload that the server may
 send through the `ConnectionAck` message.
-
-#### Type declaration
-
-▸ (`socket`, `payload?`): `void`
 
 ##### Parameters
 
@@ -157,14 +157,14 @@ ___
 
 Ƭ **EventErrorListener**: (`error`: `unknown`) => `void`
 
+#### Type declaration
+
+▸ (`error`): `void`
+
 The argument can be either an Error Event or an instance of Error, but to avoid
 bundling DOM typings because the client can run in Node env too, you should assert
 the type during implementation. Events dispatched from the WebSocket `onerror` can
 be handler in this listener.
-
-#### Type declaration
-
-▸ (`error`): `void`
 
 ##### Parameters
 
@@ -200,12 +200,12 @@ ___
 
 Ƭ **EventMessageListener**: (`message`: [Message](common.md#message)) => `void`
 
-Called for all **valid** messages received by the client. Mainly useful for
-debugging and logging received messages.
-
 #### Type declaration
 
 ▸ (`message`): `void`
+
+Called for all **valid** messages received by the client. Mainly useful for
+debugging and logging received messages.
 
 ##### Parameters
 
@@ -229,12 +229,12 @@ ___
 
 Ƭ **EventPingListener**: (`received`: `boolean`, `payload`: [PingMessage](../interfaces/common.pingmessage.md)[``"payload"``]) => `void`
 
-The first argument communicates whether the ping was received from the server.
-If `false`, the ping was sent by the client.
-
 #### Type declaration
 
 ▸ (`received`, `payload`): `void`
+
+The first argument communicates whether the ping was received from the server.
+If `false`, the ping was sent by the client.
 
 ##### Parameters
 
@@ -259,12 +259,12 @@ ___
 
 Ƭ **EventPongListener**: (`received`: `boolean`, `payload`: [PongMessage](../interfaces/common.pongmessage.md)[``"payload"``]) => `void`
 
-The first argument communicates whether the pong was received from the server.
-If `false`, the pong was sent by the client.
-
 #### Type declaration
 
 ▸ (`received`, `payload`): `void`
+
+The first argument communicates whether the pong was received from the server.
+If `false`, the pong was sent by the client.
 
 ##### Parameters
 

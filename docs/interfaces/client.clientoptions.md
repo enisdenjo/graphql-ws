@@ -60,6 +60,10 @@ ___
 
 • `Optional` **generateID**: () => `string`
 
+#### Type declaration
+
+▸ (): `string`
+
 A custom ID generator for identifying subscriptions.
 
 The default generates a v4 UUID to be used as the ID using `Math`
@@ -67,10 +71,6 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://gist.github.com/jed/982883
-
-#### Type declaration
-
-▸ (): `string`
 
 ##### Returns
 
@@ -81,6 +81,10 @@ ___
 ### isFatalConnectionProblem
 
 • `Optional` **isFatalConnectionProblem**: (`errOrCloseEvent`: `unknown`) => `boolean`
+
+#### Type declaration
+
+▸ (`errOrCloseEvent`): `boolean`
 
 Check if the close event or connection error is fatal. If you return `true`,
 the client will fail immediately without additional retries; however, if you
@@ -93,12 +97,6 @@ the connection phase.
 Beware, the library classifies a few close events as fatal regardless of
 what is returned. They are listed in the documentation of the `retryAttempts`
 option.
-
-**`default`** Non close events
-
-#### Type declaration
-
-▸ (`errOrCloseEvent`): `boolean`
 
 ##### Parameters
 
@@ -216,6 +214,10 @@ ___
 
 • `Optional` **onNonLazyError**: (`errorOrCloseEvent`: `unknown`) => `void`
 
+#### Type declaration
+
+▸ (`errorOrCloseEvent`): `void`
+
 Used ONLY when the client is in non-lazy mode (`lazy = false`). When
 using this mode, the errors might have no sinks to report to; however,
 to avoid swallowing errors, consider using `onNonLazyError`,  which will
@@ -231,12 +233,6 @@ DOM types, you should derive and assert the correct type. When receiving:
 close event is labeled as fatal (read more in `retryAttempts`).
 - An `Error`: some internal issue has occured, all internal errors are
 fatal by nature.
-
-**`default`** console.error
-
-#### Type declaration
-
-▸ (`errorOrCloseEvent`): `void`
 
 ##### Parameters
 
@@ -274,16 +270,14 @@ ___
 
 • `Optional` **retryWait**: (`retries`: `number`) => `Promise`<void\>
 
+#### Type declaration
+
+▸ (`retries`): `Promise`<void\>
+
 Control the wait time between retries. You may implement your own strategy
 by timing the resolution of the returned promise with the retries count.
 `retries` argument counts actual connection attempts, so it will begin with
 0 after the first retryable disconnect.
-
-**`default`** Randomised exponential backoff
-
-#### Type declaration
-
-▸ (`retries`): `Promise`<void\>
 
 ##### Parameters
 

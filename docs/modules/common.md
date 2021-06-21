@@ -55,15 +55,15 @@ ___
 
 Ƭ **JSONMessageReplacer**: (`this`: `any`, `key`: `string`, `value`: `any`) => `any`
 
+#### Type declaration
+
+▸ (`this`, `key`, `value`): `any`
+
 Function that allows customization of the produced JSON string
 for the elements of an outgoing `Message` object.
 
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
-
-#### Type declaration
-
-▸ (`this`, `key`, `value`): `any`
 
 ##### Parameters
 
@@ -83,15 +83,15 @@ ___
 
 Ƭ **JSONMessageReviver**: (`this`: `any`, `key`: `string`, `value`: `any`) => `any`
 
+#### Type declaration
+
+▸ (`this`, `key`, `value`): `any`
+
 Function for transforming values within a message during JSON parsing
 The values are produced by parsing the incoming raw JSON.
 
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#using_the_reviver_parameter
-
-#### Type declaration
-
-▸ (`this`, `key`, `value`): `any`
 
 ##### Parameters
 
