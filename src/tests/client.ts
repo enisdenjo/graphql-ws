@@ -768,6 +768,32 @@ describe('subscription operation', () => {
     await waitForComplete();
     await sub.waitForComplete();
   });
+
+  it('should not send a complete message after receiving complete', async () => {
+    const { url, waitForClient, waitForClientClose } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      lazy: false,
+      onNonLazyError: noop,
+    });
+
+    await waitForClient((client) => {
+      client.onMessage((msg) => {
+        if (parseMessage(msg).type === MessageType.Complete)
+          fail("Shouldn't have sent a complete message");
+      });
+    });
+
+    const sub = tsubscribe(client, {
+      query: '{ getValue }',
+    });
+    await sub.waitForComplete();
+
+    client.dispose();
+    await waitForClientClose();
+  });
 });
 
 describe('"concurrency"', () => {
