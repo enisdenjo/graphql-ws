@@ -17,6 +17,7 @@
     "fastify",
     "uwebsockets"
   ],
+  "author": "Denis Badurina <badurinadenis@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
   "repository": {
