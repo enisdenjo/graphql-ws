@@ -26,31 +26,67 @@ import { isObject } from './utils';
 /** This file is the entry point for browsers, re-export common elements. */
 export * from './common';
 
-/** @category Client */
+/**
+ * WebSocket started connecting.
+ *
+ * @category Client
+ */
 export type EventConnecting = 'connecting';
 
-/** @category Client */
-export type EventOpened = 'opened'; // socket opened
+/**
+ * WebSocket has opened.
+ *
+ * @category Client
+ */
+export type EventOpened = 'opened';
 
-/** @category Client */
-export type EventConnected = 'connected'; // connected = socket opened + acknowledged
+/**
+ * Open WebSocket connection has been acknowledged.
+ *
+ * @category Client
+ */
+export type EventConnected = 'connected';
 
-/** @category Client */
+/**
+ * `PingMessage` has been received or sent.
+ *
+ * @category Client
+ */
 export type EventPing = 'ping';
 
-/** @category Client */
+/**
+ * `PongMessage` has been received or sent.
+ *
+ * @category Client
+ */
 export type EventPong = 'pong';
 
-/** @category Client */
+/**
+ * A message has been received.
+ *
+ * @category Client
+ */
 export type EventMessage = 'message';
 
-/** @category Client */
+/**
+ * WebSocket connection has closed.
+ *
+ * @category Client
+ */
 export type EventClosed = 'closed';
 
-/** @category Client */
+/**
+ * WebSocket connection had an error.
+ *
+ * @category Client
+ */
 export type EventError = 'error';
 
-/** @category Client */
+/**
+ * All events that could occur.
+ *
+ * @category Client
+ */
 export type Event =
   | EventConnecting
   | EventOpened

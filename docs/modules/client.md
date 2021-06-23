@@ -63,11 +63,15 @@
 
 Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventOpened](client.md#eventopened) \| [EventConnected](client.md#eventconnected) \| [EventPing](client.md#eventping) \| [EventPong](client.md#eventpong) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
 
+All events that could occur.
+
 ___
 
 ### EventClosed
 
 Ƭ **EventClosed**: ``"closed"``
+
+WebSocket connection has closed.
 
 ___
 
@@ -98,6 +102,8 @@ ___
 ### EventConnected
 
 Ƭ **EventConnected**: ``"connected"``
+
+Open WebSocket connection has been acknowledged.
 
 ___
 
@@ -133,6 +139,8 @@ ___
 
 Ƭ **EventConnecting**: ``"connecting"``
 
+WebSocket started connecting.
+
 ___
 
 ### EventConnectingListener
@@ -152,6 +160,8 @@ ___
 ### EventError
 
 Ƭ **EventError**: ``"error"``
+
+WebSocket connection had an error.
 
 ___
 
@@ -196,6 +206,8 @@ ___
 
 Ƭ **EventMessage**: ``"message"``
 
+A message has been received.
+
 ___
 
 ### EventMessageListener
@@ -224,6 +236,8 @@ ___
 ### EventOpened
 
 Ƭ **EventOpened**: ``"opened"``
+
+WebSocket has opened.
 
 ___
 
@@ -255,6 +269,8 @@ ___
 
 Ƭ **EventPing**: ``"ping"``
 
+`PingMessage` has been received or sent.
+
 ___
 
 ### EventPingListener
@@ -284,6 +300,8 @@ ___
 ### EventPong
 
 Ƭ **EventPong**: ``"pong"``
+
+`PongMessage` has been received or sent.
 
 ___
 
