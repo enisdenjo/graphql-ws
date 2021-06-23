@@ -30,7 +30,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### connectionParams
 
-• `Optional` **connectionParams**: `Record`<string, unknown\> \| () => `Record`<string, unknown\> \| `Promise`<Record<string, unknown\>\>
+• `Optional` **connectionParams**: `Record`<string, unknown\> \| () => `undefined` \| `Record`<string, unknown\> \| `Promise`<undefined \| Record<string, unknown\>\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this

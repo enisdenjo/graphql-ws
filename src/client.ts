@@ -11,6 +11,7 @@ import {
   Disposable,
   Message,
   MessageType,
+  ConnectionInitMessage,
   ConnectionAckMessage,
   PingMessage,
   PongMessage,
@@ -170,8 +171,10 @@ export interface ClientOptions {
    * in the close event reason.
    */
   connectionParams?:
-    | Record<string, unknown>
-    | (() => Promise<Record<string, unknown>> | Record<string, unknown>);
+    | ConnectionInitMessage['payload']
+    | (() =>
+        | Promise<ConnectionInitMessage['payload']>
+        | ConnectionInitMessage['payload']);
   /**
    * Controls when should the connection be established.
    *
