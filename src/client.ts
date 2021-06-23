@@ -30,6 +30,9 @@ export * from './common';
 export type EventConnecting = 'connecting';
 
 /** @category Client */
+export type EventOpened = 'opened'; // socket opened
+
+/** @category Client */
 export type EventConnected = 'connected'; // connected = socket opened + acknowledged
 
 /** @category Client */
@@ -50,12 +53,25 @@ export type EventError = 'error';
 /** @category Client */
 export type Event =
   | EventConnecting
+  | EventOpened
   | EventConnected
   | EventPing
   | EventPong
   | EventMessage
   | EventClosed
   | EventError;
+
+/** @category Client */
+export type EventConnectingListener = () => void;
+
+/**
+ * The first argument is actually the `WebSocket`, but to avoid
+ * bundling DOM typings because the client can run in Node env too,
+ * you should assert the websocket type during implementation.
+ *
+ * @category Client
+ */
+export type EventOpenedListener = (socket: unknown) => void;
 
 /**
  * The first argument is actually the `WebSocket`, but to avoid
@@ -71,9 +87,6 @@ export type EventConnectedListener = (
   socket: unknown,
   payload: ConnectionAckMessage['payload'],
 ) => void;
-
-/** @category Client */
-export type EventConnectingListener = () => void;
 
 /**
  * The first argument communicates whether the ping was received from the server.
@@ -127,6 +140,8 @@ export type EventErrorListener = (error: unknown) => void;
 /** @category Client */
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
+  : E extends EventOpened
+  ? EventOpenedListener
   : E extends EventConnected
   ? EventConnectedListener
   : E extends EventPing
@@ -444,6 +459,7 @@ export function createClient(options: ClientOptions): Client {
     })();
     const listeners: { [event in Event]: EventListener<event>[] } = {
       connecting: on?.connecting ? [on.connecting] : [],
+      opened: on?.opened ? [on.opened] : [],
       connected: on?.connected ? [on.connected] : [],
       ping: on?.ping ? [on.ping] : [],
       pong: on?.pong ? [on.pong] : [],
@@ -531,6 +547,7 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onopen = async () => {
             try {
+              emitter.emit('opened', socket);
               const payload =
                 typeof connectionParams === 'function'
                   ? await connectionParams()

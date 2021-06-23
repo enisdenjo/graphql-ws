@@ -46,6 +46,8 @@
 - [EventListener](client.md#eventlistener)
 - [EventMessage](client.md#eventmessage)
 - [EventMessageListener](client.md#eventmessagelistener)
+- [EventOpened](client.md#eventopened)
+- [EventOpenedListener](client.md#eventopenedlistener)
 - [EventPing](client.md#eventping)
 - [EventPingListener](client.md#eventpinglistener)
 - [EventPong](client.md#eventpong)
@@ -59,7 +61,7 @@
 
 ### Event
 
-Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventConnected](client.md#eventconnected) \| [EventPing](client.md#eventping) \| [EventPong](client.md#eventpong) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
+Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventOpened](client.md#eventopened) \| [EventConnected](client.md#eventconnected) \| [EventPing](client.md#eventping) \| [EventPong](client.md#eventpong) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
 
 ___
 
@@ -180,7 +182,7 @@ ___
 
 ### EventListener
 
-Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventPing](client.md#eventping) ? [EventPingListener](client.md#eventpinglistener) : `E` extends [EventPong](client.md#eventpong) ? [EventPongListener](client.md#eventponglistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
+Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventOpened](client.md#eventopened) ? [EventOpenedListener](client.md#eventopenedlistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventPing](client.md#eventping) ? [EventPingListener](client.md#eventpinglistener) : `E` extends [EventPong](client.md#eventpong) ? [EventPongListener](client.md#eventponglistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
 
 #### Type parameters
 
@@ -212,6 +214,36 @@ debugging and logging received messages.
 | Name | Type |
 | :------ | :------ |
 | `message` | [Message](common.md#message) |
+
+##### Returns
+
+`void`
+
+___
+
+### EventOpened
+
+Ƭ **EventOpened**: ``"opened"``
+
+___
+
+### EventOpenedListener
+
+Ƭ **EventOpenedListener**: (`socket`: `unknown`) => `void`
+
+#### Type declaration
+
+▸ (`socket`): `void`
+
+The first argument is actually the `WebSocket`, but to avoid
+bundling DOM typings because the client can run in Node env too,
+you should assert the websocket type during implementation.
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `socket` | `unknown` |
 
 ##### Returns
 

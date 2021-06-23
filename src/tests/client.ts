@@ -1485,6 +1485,7 @@ describe('events', () => {
     const { url, ...server } = await startTServer();
 
     const connectingFn = jest.fn(noop as EventListener<'connecting'>);
+    const openedFn = jest.fn(noop as EventListener<'opened'>);
     const connectedFn = jest.fn(noop as EventListener<'connected'>);
     const messageFn = jest.fn(noop as EventListener<'message'>);
     const closedFn = jest.fn(noop as EventListener<'closed'>);
@@ -1498,12 +1499,14 @@ describe('events', () => {
           onNonLazyError: noop,
           on: {
             connecting: connectingFn,
+            opened: openedFn,
             connected: connectedFn,
             message: messageFn,
             closed: closedFn,
           },
         });
         client.on('connecting', connectingFn);
+        client.on('opened', openedFn);
         client.on('connected', connectedFn);
         client.on('message', messageFn);
         client.on('closed', closedFn);
@@ -1518,6 +1521,11 @@ describe('events', () => {
 
     expect(connectingFn).toBeCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(0);
+
+    expect(openedFn).toBeCalledTimes(2); // initial and registered listener
+    openedFn.mock.calls.forEach((cal) => {
+      expect(cal[0]).toBeInstanceOf(WebSocket);
+    });
 
     expect(connectedFn).toBeCalledTimes(2); // initial and registered listener
     connectedFn.mock.calls.forEach((cal) => {
@@ -1546,6 +1554,7 @@ describe('events', () => {
 
     // retrying is disabled
     expect(connectingFn).toBeCalledTimes(2);
+    expect(openedFn).toBeCalledTimes(2);
     expect(connectedFn).toBeCalledTimes(2);
 
     expect(closedFn).toBeCalledTimes(2); // initial and registered listener

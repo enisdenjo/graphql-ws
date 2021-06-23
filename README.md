@@ -547,8 +547,8 @@ function createRestartableClient(options: ClientOptions): RestartableClient {
     ...options,
     on: {
       ...options.on,
-      connected: (socket) => {
-        options.on?.connected?.(socket);
+      opened: (socket) => {
+        options.on?.opened?.(socket);
 
         restart = () => {
           if (socket.readyState === WebSocket.OPEN) {
@@ -556,7 +556,7 @@ function createRestartableClient(options: ClientOptions): RestartableClient {
             socket.close(4205, 'Client Restart');
           } else {
             // otherwise the socket might've closed, indicate that you want
-            // a restart on the next connected event
+            // a restart on the next opened event
             restartRequested = true;
           }
         };
@@ -603,7 +603,7 @@ createClient({
   url: 'ws://i.time.out:4000/and-measure/latency',
   keepAlive: 10_000, // ping server every 10 seconds
   on: {
-    connected: (socket) => (activeSocket = socket),
+    opened: (socket) => (activeSocket = socket),
     ping: (received) => {
       if (!received /* sent */) {
         pingSentAt = Date.now();
@@ -651,8 +651,8 @@ function createPingerClient(options: ClientOptions): PingerClient {
     disablePong: true,
     ...options,
     on: {
-      connected: (socket) => {
-        options.on?.connected?.(socket);
+      opened: (socket) => {
+        options.on?.opened?.(socket);
         activeSocket = socket;
       },
     },
