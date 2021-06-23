@@ -531,15 +531,21 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onopen = async () => {
             try {
+              const payload =
+                typeof connectionParams === 'function'
+                  ? await connectionParams()
+                  : connectionParams;
               socket.send(
                 stringifyMessage<MessageType.ConnectionInit>(
-                  {
-                    type: MessageType.ConnectionInit,
-                    payload:
-                      typeof connectionParams === 'function'
-                        ? await connectionParams()
-                        : connectionParams,
-                  },
+                  payload
+                    ? {
+                        type: MessageType.ConnectionInit,
+                        payload,
+                      }
+                    : {
+                        type: MessageType.ConnectionInit,
+                        // payload is completely absent if not provided
+                      },
                   replacer,
                 ),
               );
