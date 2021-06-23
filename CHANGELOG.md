@@ -1,3 +1,16 @@
+# [5.3.0](https://github.com/enisdenjo/graphql-ws/compare/v5.2.0...v5.3.0) (2021-06-23)
+
+
+### Bug Fixes
+
+* **client:** `ConnectionInit` payload is absent if `connectionParams` returns nothing ([98f8265](https://github.com/enisdenjo/graphql-ws/commit/98f8265967aba43d206b3fffe2405f121d9c49b3))
+
+
+### Features
+
+* **client:** `connectionParams` can return `undefined` ([a543187](https://github.com/enisdenjo/graphql-ws/commit/a543187614dfb90cbc1959c5f2b9669add3823bb))
+* **client:** Add `opened` event for when a WebSocket opens ([9053224](https://github.com/enisdenjo/graphql-ws/commit/9053224863ac3ca07dbe990f1332e3f7f79da01d))
+
 # [5.2.0](https://github.com/enisdenjo/graphql-ws/compare/v5.1.2...v5.2.0) (2021-06-21)
 
 
