@@ -11,6 +11,7 @@ import {
   Disposable,
   Message,
   MessageType,
+  ConnectionAckMessage,
   PingMessage,
   PongMessage,
   parseMessage,
@@ -67,7 +68,7 @@ export type Event =
  */
 export type EventConnectedListener = (
   socket: unknown,
-  payload?: Record<string, unknown>,
+  payload: ConnectionAckMessage['payload'],
 ) => void;
 
 /** @category Client */
