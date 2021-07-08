@@ -1372,7 +1372,7 @@ useServer(
 ```typescript
 // 🛸 server
 
-import { parse } from 'graphql';
+import { parse, ExecutionArgs } from 'graphql';
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
@@ -1397,15 +1397,19 @@ const wsServer = new ws.Server({
 useServer(
   {
     onSubscribe: (_ctx, msg) => {
-      const query = queriesStore[msg.payload.query];
-      if (!query) {
-        // for extra security you only allow the queries from the store
-        throw new Error('404: Query Not Found');
+      const persistedQuery =
+        queriesStore[msg.payload.extensions?.persistedQuery];
+      if (persistedQuery) {
+        return {
+          ...persistedQuery,
+          variableValues: msg.payload.variables, // use the variables from the client
+        };
       }
-      return {
-        ...query,
-        variableValues: msg.payload.variables, // use the variables from the client
-      };
+
+      // for extra security you only allow the queries from the store.
+      // if you want to support both, simply remove the throw below and
+      // graphql-ws will handle the query for you
+      throw new Error('404: Query Not Found');
     },
   },
   wsServer,
@@ -1429,7 +1433,10 @@ const client = createClient({
   await new Promise((resolve, reject) => {
     client.subscribe(
       {
-        query: 'iWantTheGreetings',
+        query: '', // query field is required, but you can leave it empty for persisted queries
+        extensions: {
+          persistedQuery: 'iWantTheGreetings',
+        },
       },
       {
         next: onNext,
