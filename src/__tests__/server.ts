@@ -1659,7 +1659,7 @@ describe('Disconnect/close', () => {
       // 2nd
       onClose: (_ctx, code, reason) => {
         expect(code).toBe(4321);
-        expect(reason).toBe('Byebye');
+        expect(String(reason)).toBe('Byebye');
         done();
       },
     });
@@ -1683,7 +1683,7 @@ describe('Disconnect/close', () => {
       },
       onClose: (_ctx, code, reason) => {
         expect(code).toBe(4321);
-        expect(reason).toBe('Byebye');
+        expect(String(reason)).toBe('Byebye');
         done();
       },
     });

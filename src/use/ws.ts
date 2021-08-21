@@ -100,7 +100,7 @@ export function useServer<
         onMessage: (cb) =>
           socket.on('message', async (event) => {
             try {
-              await cb(event.toString());
+              await cb(String(event));
             } catch (err) {
               socket.close(1011, isProd ? 'Internal Error' : err.message);
             }
@@ -119,7 +119,7 @@ export function useServer<
             `graphql-ws implements exclusively the "${GRAPHQL_TRANSPORT_WS_PROTOCOL}" subprotocol, ` +
             'please make sure that the client implements it too.',
         );
-      closed(code, reason);
+      closed(code, String(reason));
     });
   });
 

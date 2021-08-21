@@ -4666,7 +4666,7 @@ __metadata:
     typedoc-plugin-markdown: ^3.10.4
     typescript: ^4.3.5
     uWebSockets.js: "uNetworking/uWebSockets.js#v19.3.0"
-    ws: ^7.5.0
+    ws: ^8.2.0
   peerDependencies:
     graphql: ">=0.11 <=15"
   languageName: unknown
@@ -9428,7 +9428,7 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.4.6, ws@npm:^7.5.0":
+"ws@npm:^7.4.6":
   version: 7.5.3
   resolution: "ws@npm:7.5.3"
   peerDependencies:
@@ -9443,7 +9443,7 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.0.0":
+"ws@npm:^8.0.0, ws@npm:^8.2.0":
   version: 8.2.0
   resolution: "ws@npm:8.2.0"
   peerDependencies:

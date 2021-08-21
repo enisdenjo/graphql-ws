@@ -179,8 +179,9 @@ export async function startWSTServer(
     return {
       send: (data) => socket.send(data),
       onMessage: (cb) => {
-        socket.on('message', cb);
-        return () => socket.off('message', cb);
+        const listener = (data: unknown) => cb(String(data));
+        socket.on('message', listener);
+        return () => socket.off('message', listener);
       },
       close: (...args) => socket.close(...args),
     };
@@ -439,8 +440,9 @@ export async function startFastifyWSTServer(
     return {
       send: (data) => socket.send(data),
       onMessage: (cb) => {
-        socket.on('message', cb);
-        return () => socket.off('message', cb);
+        const listener = (data: unknown) => cb(String(data));
+        socket.on('message', listener);
+        return () => socket.off('message', listener);
       },
       close: (...args) => socket.close(...args),
     };

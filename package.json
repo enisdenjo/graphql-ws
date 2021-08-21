@@ -112,6 +112,6 @@
     "typedoc-plugin-markdown": "^3.10.4",
     "typescript": "^4.3.5",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v19.3.0",
-    "ws": "^7.5.0"
+    "ws": "^8.2.0"
   }
 }

@@ -26,7 +26,7 @@ for (const { tServer, startTServer } of tServers) {
         /* hide warnings for test */
       };
 
-      let client = await createTClient(url, '');
+      let client = await createTClient(url, 'notme');
       await client.waitForClose((event) => {
         expect(event.code).toBe(1002);
         expect(event.reason).toBe('Protocol Error');
