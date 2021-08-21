@@ -315,7 +315,7 @@ export interface ClientOptions {
    *
    * The library classifies the following close events as fatal:
    * - `4500: Internal server error`
-   * - `4400: Bad Request`
+   * - `4400: Bad request`
    * - `4401: Unauthorized` _tried subscribing before connect ack_
    * - `4406: Subprotocol not acceptable`
    * - `4409: Subscriber for <id> already exists` _distinction is very important_
@@ -711,7 +711,7 @@ export function createClient(options: ClientOptions): Client {
       isLikeCloseEvent(errOrCloseEvent) &&
       [
         4500, // Internal server error
-        4400, // Bad Request
+        4400, // Bad request
         4401, // Unauthorized (tried subscribing before connect ack)
         4406, // Subprotocol not acceptable
         4409, // Subscriber for <id> already exists (distinction is very important)
