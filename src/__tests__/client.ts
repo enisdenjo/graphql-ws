@@ -1209,7 +1209,7 @@ describe('reconnecting', () => {
     console.warn = () => {
       /* hide warnings for test */
     };
-    await testCloseCode(1002);
+    await testCloseCode(4406);
     console.warn = warn;
     await testCloseCode(1011);
     await testCloseCode(4400);

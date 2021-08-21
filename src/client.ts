@@ -314,10 +314,10 @@ export interface ClientOptions {
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
    * The library classifies the following close events as fatal:
-   * - `1002: Protocol Error`
    * - `1011: Internal Error`
    * - `4400: Bad Request`
    * - `4401: Unauthorized` _tried subscribing before connect ack_
+   * - `4406: Subprotocol not acceptable`
    * - `4409: Subscriber for <id> already exists` _distinction is very important_
    * - `4429: Too many initialisation requests`
    *
@@ -710,10 +710,10 @@ export function createClient(options: ClientOptions): Client {
     if (
       isLikeCloseEvent(errOrCloseEvent) &&
       [
-        1002, // Protocol Error
         1011, // Internal Error
         4400, // Bad Request
         4401, // Unauthorized (tried subscribing before connect ack)
+        4406, // Subprotocol not acceptable
         4409, // Subscriber for <id> already exists (distinction is very important)
         4429, // Too many initialisation requests
       ].includes(errOrCloseEvent.code)

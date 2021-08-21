@@ -28,15 +28,15 @@ for (const { tServer, startTServer } of tServers) {
 
       let client = await createTClient(url, 'notme');
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1002);
-        expect(event.reason).toBe('Protocol Error');
+        expect(event.code).toBe(4406);
+        expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
 
       client = await createTClient(url, ['graphql', 'json']);
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1002);
-        expect(event.reason).toBe('Protocol Error');
+        expect(event.code).toBe(4406);
+        expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
 
@@ -45,8 +45,8 @@ for (const { tServer, startTServer } of tServers) {
         GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
       );
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1002);
-        expect(event.reason).toBe('Protocol Error');
+        expect(event.code).toBe(4406);
+        expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
 

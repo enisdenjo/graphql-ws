@@ -544,7 +544,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       };
 
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
-        socket.close(1002, 'Protocol Error');
+        socket.close(4406, 'Subprotocol not acceptable');
         return async (code, reason) => {
           /* nothing was set up, just notify the closure */
           await onClose?.(ctx, code, reason);
