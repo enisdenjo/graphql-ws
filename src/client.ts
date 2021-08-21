@@ -710,16 +710,17 @@ export function createClient(options: ClientOptions): Client {
     // some close codes are worth reporting immediately
     if (
       isLikeCloseEvent(errOrCloseEvent) &&
-      [
-        CloseCode.InternalServerError,
-        CloseCode.BadRequest,
-        CloseCode.Unauthorized,
-        // CloseCode.Forbidden, might grant access out after retry
-        CloseCode.SubprotocolNotAcceptable,
-        // CloseCode.ConnectionInitialisationTimeout, might not time out after retry
-        CloseCode.SubscriberAlreadyExists,
-        CloseCode.TooManyInitialisationRequests,
-      ].includes(errOrCloseEvent.code)
+      (isFatalInternalCloseCode(errOrCloseEvent.code) ||
+        [
+          CloseCode.InternalServerError,
+          CloseCode.BadRequest,
+          CloseCode.Unauthorized,
+          // CloseCode.Forbidden, might grant access out after retry
+          CloseCode.SubprotocolNotAcceptable,
+          // CloseCode.ConnectionInitialisationTimeout, might not time out after retry
+          CloseCode.SubscriberAlreadyExists,
+          CloseCode.TooManyInitialisationRequests,
+        ].includes(errOrCloseEvent.code))
     )
       throw errOrCloseEvent;
 
@@ -876,6 +877,23 @@ interface LikeCloseEvent {
 
 function isLikeCloseEvent(val: unknown): val is LikeCloseEvent {
   return isObject(val) && 'code' in val && 'reason' in val;
+}
+
+function isFatalInternalCloseCode(code: number): boolean {
+  if (
+    [
+      1000, // Normal Closure is not an erroneous close code
+      1001, // Going Away
+      1006, // Abnormal Closure
+      1005, // No Status Received
+      1012, // Service Restart
+      1013, // Try Again Later
+      1013, // Bad Gateway
+    ].includes(code)
+  )
+    return false;
+  // all other internal errors are fatal
+  return code >= 1000 && code <= 1999;
 }
 
 function isWebSocket(val: unknown): val is typeof WebSocket {
