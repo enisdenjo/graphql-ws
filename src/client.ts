@@ -314,7 +314,7 @@ export interface ClientOptions {
    * How many times should the client try to reconnect on abnormal socket closure before it errors out?
    *
    * The library classifies the following close events as fatal:
-   * - `1011: Internal Error`
+   * - `4500: Internal server error`
    * - `4400: Bad Request`
    * - `4401: Unauthorized` _tried subscribing before connect ack_
    * - `4406: Subprotocol not acceptable`
@@ -710,7 +710,7 @@ export function createClient(options: ClientOptions): Client {
     if (
       isLikeCloseEvent(errOrCloseEvent) &&
       [
-        1011, // Internal Error
+        4500, // Internal server error
         4400, // Bad Request
         4401, // Unauthorized (tried subscribing before connect ack)
         4406, // Subprotocol not acceptable

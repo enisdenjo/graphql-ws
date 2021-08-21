@@ -54,7 +54,7 @@ export function useServer<
     // report server errors by erroring out all clients with the same error
     for (const client of ws.clients) {
       try {
-        client.close(1011, isProd ? 'Internal Error' : err.message);
+        client.close(4500, isProd ? 'Internal server error' : err.message);
       } catch (err) {
         firstErr = firstErr ?? err;
       }
@@ -102,7 +102,10 @@ export function useServer<
             try {
               await cb(String(event));
             } catch (err) {
-              socket.close(1011, isProd ? 'Internal Error' : err.message);
+              socket.close(
+                4500,
+                isProd ? 'Internal server error' : err.message,
+              );
             }
           }),
       },

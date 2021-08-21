@@ -779,7 +779,7 @@ wsServer.on('connection', (socket, request) => {
           } catch (err) {
             // all errors that could be thrown during the
             // execution of operations will be caught here
-            socket.close(1011, err.message);
+            socket.close(4500, err.message);
           }
         }),
     },
@@ -875,7 +875,7 @@ wsServer.on('connection', (socket, request) => {
             if (err instanceof Forbidden) {
               // your magic
             } else {
-              socket.close(1011, err.message);
+              socket.close(4500, err.message);
             }
           }
         });
@@ -946,7 +946,7 @@ wsServer.on('connection', (socket, request) => {
           } catch (err) {
             // all errors that could be thrown during the
             // execution of operations will be caught here
-            socket.close(1011, err.message);
+            socket.close(4500, err.message);
           }
         }),
       // pong received, clear termination timeout

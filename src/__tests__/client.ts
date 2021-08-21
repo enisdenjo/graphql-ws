@@ -1211,7 +1211,7 @@ describe('reconnecting', () => {
     };
     await testCloseCode(4406);
     console.warn = warn;
-    await testCloseCode(1011);
+    await testCloseCode(4500);
     await testCloseCode(4400);
     await testCloseCode(4401);
     await testCloseCode(4409);

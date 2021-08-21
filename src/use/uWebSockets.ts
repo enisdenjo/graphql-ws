@@ -188,7 +188,7 @@ export function makeBehavior<
       try {
         await client.handleMessage(Buffer.from(message).toString());
       } catch (err) {
-        socket.end(1011, isProd ? 'Internal Error' : err.message);
+        socket.end(4500, isProd ? 'Internal server error' : err.message);
       }
     },
     close(...args) {

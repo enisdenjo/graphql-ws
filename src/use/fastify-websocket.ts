@@ -47,7 +47,7 @@ export function makeHandler<
     const { socket } = connection;
 
     socket.on('error', (err) =>
-      socket.close(1011, isProd ? 'Internal Error' : err.message),
+      socket.close(4500, isProd ? 'Internal server error' : err.message),
     );
 
     // keep alive through ping-pong messages
@@ -88,7 +88,10 @@ export function makeHandler<
             try {
               await cb(String(event));
             } catch (err) {
-              socket.close(1011, isProd ? 'Internal Error' : err.message);
+              socket.close(
+                4500,
+                isProd ? 'Internal server error' : err.message,
+              );
             }
           }),
       },

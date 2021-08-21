@@ -144,7 +144,7 @@ for (const { tServer, startTServer } of tServers) {
         }),
       );
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1011);
+        expect(event.code).toBe(4500);
         expect(event.reason).toBe(error.message);
         expect(event.wasClean).toBeTruthy();
       });
@@ -175,7 +175,7 @@ for (const { tServer, startTServer } of tServers) {
         });
 
         await client.waitForClose((event) => {
-          expect(event.code).toBe(1011);
+          expect(event.code).toBe(4500);
           expect(event.reason).toBe(error.message);
           expect(event.wasClean).toBeTruthy();
         });
@@ -275,7 +275,7 @@ for (const { tServer, startTServer } of tServers) {
       });
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1011);
+        expect(event.code).toBe(4500);
         expect(event.reason).toBe('The GraphQL schema is not provided');
         expect(event.wasClean).toBeTruthy();
       });
@@ -311,7 +311,7 @@ for (const { tServer, startTServer } of tServers) {
       );
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1011);
+        expect(event.code).toBe(4500);
         expect(event.reason).toBe(
           'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
         );
@@ -336,7 +336,7 @@ for (const { tServer, startTServer } of tServers) {
       );
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(1011);
+        expect(event.code).toBe(4500);
         expect(event.reason).toBe(error.message);
         expect(event.wasClean).toBeTruthy();
       });
@@ -353,7 +353,7 @@ for (const { tServer, startTServer } of tServers) {
       //   ws.emit('error', emittedError);
 
       //   await client.waitForClose((event) => {
-      //     expect(event.code).toBe(1011); // 1011: Internal Error
+      //     expect(event.code).toBe(4500); // 4500: Internal server error
       //     expect(event.reason).toBe(emittedError.message);
       //     expect(event.wasClean).toBeTruthy(); // because the server reported the error
       //   });
