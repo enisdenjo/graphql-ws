@@ -22,6 +22,7 @@ import {
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  CloseCode,
   ID,
   Message,
   MessageType,
@@ -544,7 +545,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       };
 
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
-        socket.close(4406, 'Subprotocol not acceptable');
+        socket.close(
+          CloseCode.SubprotocolNotAcceptable,
+          'Subprotocol not acceptable',
+        );
         return async (code, reason) => {
           /* nothing was set up, just notify the closure */
           await onClose?.(ctx, code, reason);
@@ -557,7 +561,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
         connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
           ? setTimeout(() => {
               if (!ctx.connectionInitReceived)
-                socket.close(4408, 'Connection initialisation timeout');
+                socket.close(
+                  CloseCode.ConnectionInitialisationTimeout,
+                  'Connection initialisation timeout',
+                );
             }, connectionInitWaitTimeout)
           : null;
 
@@ -566,12 +573,15 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
         try {
           message = parseMessage(data, reviver);
         } catch (err) {
-          return socket.close(4400, 'Invalid message received');
+          return socket.close(CloseCode.BadRequest, 'Invalid message received');
         }
         switch (message.type) {
           case MessageType.ConnectionInit: {
             if (ctx.connectionInitReceived)
-              return socket.close(4429, 'Too many initialisation requests');
+              return socket.close(
+                CloseCode.TooManyInitialisationRequests,
+                'Too many initialisation requests',
+              );
 
             // @ts-expect-error: I can write
             ctx.connectionInitReceived = true;
@@ -582,7 +592,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
             const permittedOrPayload = await onConnect?.(ctx);
             if (permittedOrPayload === false)
-              return socket.close(4403, 'Forbidden');
+              return socket.close(CloseCode.Forbidden, 'Forbidden');
 
             await socket.send(
               stringifyMessage<MessageType.ConnectionAck>(
@@ -623,11 +633,15 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
           case MessageType.Pong:
             return await socket.onPong?.(message.payload);
           case MessageType.Subscribe: {
-            if (!ctx.acknowledged) return socket.close(4401, 'Unauthorized');
+            if (!ctx.acknowledged)
+              return socket.close(CloseCode.Unauthorized, 'Unauthorized');
 
             const { id, payload } = message;
             if (id in ctx.subscriptions)
-              return socket.close(4409, `Subscriber for ${id} already exists`);
+              return socket.close(
+                CloseCode.SubscriberAlreadyExists,
+                `Subscriber for ${id} already exists`,
+              );
 
             // if this turns out to be a streaming operation, the subscription value
             // will change to an `AsyncIterable`, otherwise it will stay as is

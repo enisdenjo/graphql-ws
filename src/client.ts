@@ -6,6 +6,7 @@
 
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  CloseCode,
   Sink,
   ID,
   Disposable,
@@ -605,7 +606,7 @@ export function createClient(options: ClientOptions): Client {
               enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
-                4400,
+                CloseCode.BadRequest,
                 err instanceof Error ? err.message : new Error(err).message,
               );
             }
@@ -657,7 +658,7 @@ export function createClient(options: ClientOptions): Client {
               ]);
             } catch (err) {
               socket.close(
-                4400,
+                CloseCode.BadRequest,
                 err instanceof Error ? err.message : new Error(err).message,
               );
             }
@@ -710,12 +711,14 @@ export function createClient(options: ClientOptions): Client {
     if (
       isLikeCloseEvent(errOrCloseEvent) &&
       [
-        4500, // Internal server error
-        4400, // Bad request
-        4401, // Unauthorized (tried subscribing before connect ack)
-        4406, // Subprotocol not acceptable
-        4409, // Subscriber for <id> already exists (distinction is very important)
-        4429, // Too many initialisation requests
+        CloseCode.InternalServerError,
+        CloseCode.BadRequest,
+        CloseCode.Unauthorized,
+        // CloseCode.Forbidden, might grant access out after retry
+        CloseCode.SubprotocolNotAcceptable,
+        // CloseCode.ConnectionInitialisationTimeout, might not time out after retry
+        CloseCode.SubscriberAlreadyExists,
+        CloseCode.TooManyInitialisationRequests,
       ].includes(errOrCloseEvent.code)
     )
       throw errOrCloseEvent;

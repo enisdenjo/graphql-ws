@@ -745,7 +745,7 @@ const client = createClient({
 // minimal version of `import { useServer } from 'graphql-ws/lib/use/ws';`
 
 import ws from 'ws'; // yarn add ws
-import { makeServer } from 'graphql-ws';
+import { makeServer, CloseCode } from 'graphql-ws';
 import { schema } from './my-graphql-schema';
 
 // make
@@ -779,7 +779,7 @@ wsServer.on('connection', (socket, request) => {
           } catch (err) {
             // all errors that could be thrown during the
             // execution of operations will be caught here
-            socket.close(4500, err.message);
+            socket.close(CloseCode.InternalServerError, err.message);
           }
         }),
     },
@@ -802,7 +802,7 @@ wsServer.on('connection', (socket, request) => {
 
 import http from 'http';
 import ws from 'ws'; // yarn add ws
-import { makeServer } from 'graphql-ws';
+import { makeServer, CloseCode } from 'graphql-ws';
 import { schema } from './my-graphql-schema';
 import { validate } from './my-auth';
 
@@ -875,7 +875,7 @@ wsServer.on('connection', (socket, request) => {
             if (err instanceof Forbidden) {
               // your magic
             } else {
-              socket.close(4500, err.message);
+              socket.close(CloseCode.InternalServerError, err.message);
             }
           }
         });
@@ -897,7 +897,12 @@ wsServer.on('connection', (socket, request) => {
 
 ```ts
 import ws from 'ws'; // yarn add ws
-import { makeServer, stringifyMessage, MessageType } from 'graphql-ws';
+import {
+  makeServer,
+  CloseCode,
+  stringifyMessage,
+  MessageType,
+} from 'graphql-ws';
 import { schema } from './my-graphql-schema';
 
 // make
@@ -946,7 +951,7 @@ wsServer.on('connection', (socket, request) => {
           } catch (err) {
             // all errors that could be thrown during the
             // execution of operations will be caught here
-            socket.close(4500, err.message);
+            socket.close(CloseCode.InternalServerError, err.message);
           }
         }),
       // pong received, clear termination timeout
@@ -1496,7 +1501,7 @@ useServer(
 ```typescript
 // 📺 client
 
-import { createClient } from 'graphql-ws';
+import { createClient, CloseCode } from 'graphql-ws';
 import {
   getCurrentToken,
   getCurrentTokenExpiresIn,
@@ -1540,14 +1545,14 @@ const client = createClient({
       // will set the token refresh flag to true
       tokenExpiryTimeout = setTimeout(() => {
         if (socket.readyState === WebSocket.OPEN)
-          socket.close(4403, 'Unauthorized');
+          socket.close(CloseCode.Unauthorized, 'Unauthorized');
       }, getCurrentTokenExpiresIn());
     },
     closed: (event) => {
       // if closed with the `4403: Forbidden` close event
       // the client or the server is communicating that the token
       // is no longer valid and should be therefore refreshed
-      if (event.code === 4403) shouldRefreshToken = true;
+      if (event.code === CloseCode.Forbidden) shouldRefreshToken = true;
     },
   },
 });

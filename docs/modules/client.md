@@ -6,6 +6,7 @@
 
 ### References
 
+- [CloseCode](client.md#closecode)
 - [CompleteMessage](client.md#completemessage)
 - [ConnectionAckMessage](client.md#connectionackmessage)
 - [ConnectionInitMessage](client.md#connectioninitmessage)
@@ -346,6 +347,12 @@ Creates a disposable GraphQL over WebSocket client.
 [`Client`](../interfaces/client.Client.md)
 
 ## Other
+
+### CloseCode
+
+Re-exports: [CloseCode](../enums/common.CloseCode.md)
+
+___
 
 ### CompleteMessage
 

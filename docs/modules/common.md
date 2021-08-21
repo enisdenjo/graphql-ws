@@ -6,6 +6,7 @@
 
 ### Enumerations
 
+- [CloseCode](../enums/common.CloseCode.md)
 - [MessageType](../enums/common.MessageType.md)
 
 ### Interfaces

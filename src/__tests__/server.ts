@@ -11,6 +11,7 @@ import {
 import { makeServer } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  CloseCode,
   MessageType,
   parseMessage,
   stringifyMessage,
@@ -439,7 +440,7 @@ describe('Connect', () => {
     );
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4403);
+      expect(event.code).toBe(CloseCode.Forbidden);
       expect(event.reason).toBe('Forbidden');
       expect(event.wasClean).toBeTruthy();
     });
@@ -536,7 +537,7 @@ describe('Connect', () => {
     await (
       await createTClient(url)
     ).waitForClose((event) => {
-      expect(event.code).toBe(4408);
+      expect(event.code).toBe(CloseCode.ConnectionInitialisationTimeout);
       expect(event.reason).toBe('Connection initialisation timeout');
       expect(event.wasClean).toBeTruthy();
     });
@@ -590,7 +591,7 @@ describe('Connect', () => {
     }, 10);
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4429);
+      expect(event.code).toBe(CloseCode.TooManyInitialisationRequests);
       expect(event.reason).toBe('Too many initialisation requests');
       expect(event.wasClean).toBeTruthy();
     });
@@ -618,7 +619,7 @@ describe('Connect', () => {
     );
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4429);
+      expect(event.code).toBe(CloseCode.TooManyInitialisationRequests);
       expect(event.reason).toBe('Too many initialisation requests');
       expect(event.wasClean).toBeTruthy();
     });
@@ -756,7 +757,7 @@ describe('Subscribe', () => {
     );
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4401);
+      expect(event.code).toBe(CloseCode.Unauthorized);
       expect(event.reason).toBe('Unauthorized');
       expect(event.wasClean).toBeTruthy();
     });
@@ -1401,7 +1402,7 @@ describe('Subscribe', () => {
     );
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4409);
+      expect(event.code).toBe(CloseCode.SubscriberAlreadyExists);
       expect(event.reason).toBe('Subscriber for not-unique already exists');
       expect(event.wasClean).toBeTruthy();
     });
@@ -1446,7 +1447,7 @@ describe('Subscribe', () => {
     );
 
     await client.waitForClose((event) => {
-      expect(event.code).toBe(4409);
+      expect(event.code).toBe(CloseCode.SubscriberAlreadyExists);
       expect(event.reason).toBe('Subscriber for not-unique already exists');
       expect(event.wasClean).toBeTruthy();
     });

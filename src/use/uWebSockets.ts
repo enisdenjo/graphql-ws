@@ -1,6 +1,7 @@
 import type * as uWS from 'uWebSockets.js';
 import type http from 'http';
 import { makeServer, ServerOptions } from '../server';
+import { CloseCode } from '../common';
 
 /**
  * The extra that will be put in the `Context`.
@@ -188,7 +189,10 @@ export function makeBehavior<
       try {
         await client.handleMessage(Buffer.from(message).toString());
       } catch (err) {
-        socket.end(4500, isProd ? 'Internal server error' : err.message);
+        socket.end(
+          CloseCode.InternalServerError,
+          isProd ? 'Internal server error' : err.message,
+        );
       }
     },
     close(...args) {

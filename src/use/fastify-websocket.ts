@@ -1,7 +1,7 @@
 import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
 import { makeServer, ServerOptions } from '../server';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../common';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL, CloseCode } from '../common';
 
 /**
  * The extra that will be put in the `Context`.
@@ -47,7 +47,10 @@ export function makeHandler<
     const { socket } = connection;
 
     socket.on('error', (err) =>
-      socket.close(4500, isProd ? 'Internal server error' : err.message),
+      socket.close(
+        CloseCode.InternalServerError,
+        isProd ? 'Internal server error' : err.message,
+      ),
     );
 
     // keep alive through ping-pong messages
@@ -89,7 +92,7 @@ export function makeHandler<
               await cb(String(event));
             } catch (err) {
               socket.close(
-                4500,
+                CloseCode.InternalServerError,
                 isProd ? 'Internal server error' : err.message,
               );
             }

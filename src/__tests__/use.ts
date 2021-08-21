@@ -7,6 +7,7 @@ import {
   parseMessage,
   SubscribePayload,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  CloseCode,
 } from '../common';
 import {
   createTClient,
@@ -28,14 +29,14 @@ for (const { tServer, startTServer } of tServers) {
 
       let client = await createTClient(url, 'notme');
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4406);
+        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
         expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
 
       client = await createTClient(url, ['graphql', 'json']);
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4406);
+        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
         expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
@@ -45,7 +46,7 @@ for (const { tServer, startTServer } of tServers) {
         GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
       );
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4406);
+        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
         expect(event.reason).toBe('Subprotocol not acceptable');
         expect(event.wasClean).toBeTruthy();
       });
@@ -144,7 +145,7 @@ for (const { tServer, startTServer } of tServers) {
         }),
       );
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4500);
+        expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe(error.message);
         expect(event.wasClean).toBeTruthy();
       });
@@ -175,7 +176,7 @@ for (const { tServer, startTServer } of tServers) {
         });
 
         await client.waitForClose((event) => {
-          expect(event.code).toBe(4500);
+          expect(event.code).toBe(CloseCode.InternalServerError);
           expect(event.reason).toBe(error.message);
           expect(event.wasClean).toBeTruthy();
         });
@@ -275,7 +276,7 @@ for (const { tServer, startTServer } of tServers) {
       });
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4500);
+        expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe('The GraphQL schema is not provided');
         expect(event.wasClean).toBeTruthy();
       });
@@ -311,7 +312,7 @@ for (const { tServer, startTServer } of tServers) {
       );
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4500);
+        expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe(
           'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
         );
@@ -336,7 +337,7 @@ for (const { tServer, startTServer } of tServers) {
       );
 
       await client.waitForClose((event) => {
-        expect(event.code).toBe(4500);
+        expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe(error.message);
         expect(event.wasClean).toBeTruthy();
       });
@@ -353,7 +354,7 @@ for (const { tServer, startTServer } of tServers) {
       //   ws.emit('error', emittedError);
 
       //   await client.waitForClose((event) => {
-      //     expect(event.code).toBe(4500); // 4500: Internal server error
+      //     expect(event.code).toBe(CloseCode.InternalServerError); // CloseCode.InternalServerError: Internal server error
       //     expect(event.reason).toBe(emittedError.message);
       //     expect(event.wasClean).toBeTruthy(); // because the server reported the error
       //   });

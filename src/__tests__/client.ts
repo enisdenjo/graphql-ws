@@ -6,6 +6,7 @@ import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { createClient, Client, EventListener } from '../client';
 import {
+  CloseCode,
   MessageType,
   parseMessage,
   stringifyMessage,
@@ -212,7 +213,7 @@ it('should close with error message during connecting issues', async () => {
 
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(4400);
+    expect(event.code).toBe(CloseCode.BadRequest);
     expect(event.reason).toBe('Welcome');
     expect(event.wasClean).toBeTruthy();
   });
@@ -272,7 +273,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   let sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(4400);
+    expect(event.code).toBe(CloseCode.BadRequest);
     expect(event.reason).toBe('No auth?');
     expect(event.wasClean).toBeTruthy();
   });
@@ -287,7 +288,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(4400);
+    expect(event.code).toBe(CloseCode.BadRequest);
     expect(event.reason).toBe('No auth?');
     expect(event.wasClean).toBeTruthy();
   });
@@ -1209,13 +1210,13 @@ describe('reconnecting', () => {
     console.warn = () => {
       /* hide warnings for test */
     };
-    await testCloseCode(4406);
+    await testCloseCode(CloseCode.SubprotocolNotAcceptable);
     console.warn = warn;
-    await testCloseCode(4500);
-    await testCloseCode(4400);
-    await testCloseCode(4401);
-    await testCloseCode(4409);
-    await testCloseCode(4429);
+    await testCloseCode(CloseCode.InternalServerError);
+    await testCloseCode(CloseCode.BadRequest);
+    await testCloseCode(CloseCode.Unauthorized);
+    await testCloseCode(CloseCode.SubscriberAlreadyExists);
+    await testCloseCode(CloseCode.TooManyInitialisationRequests);
   });
 
   it('should report fatal connection problems immediately', async () => {

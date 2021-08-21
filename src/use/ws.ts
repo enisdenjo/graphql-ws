@@ -1,7 +1,11 @@
 import type * as http from 'http';
 import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL, Disposable } from '../common';
+import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  CloseCode,
+  Disposable,
+} from '../common';
 
 // for nicer documentation
 type WebSocket = typeof ws.prototype;
@@ -54,7 +58,10 @@ export function useServer<
     // report server errors by erroring out all clients with the same error
     for (const client of ws.clients) {
       try {
-        client.close(4500, isProd ? 'Internal server error' : err.message);
+        client.close(
+          CloseCode.InternalServerError,
+          isProd ? 'Internal server error' : err.message,
+        );
       } catch (err) {
         firstErr = firstErr ?? err;
       }
@@ -103,7 +110,7 @@ export function useServer<
               await cb(String(event));
             } catch (err) {
               socket.close(
-                4500,
+                CloseCode.InternalServerError,
                 isProd ? 'Internal server error' : err.message,
               );
             }
