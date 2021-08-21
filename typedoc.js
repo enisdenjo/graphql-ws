@@ -5,5 +5,5 @@ module.exports = {
   excludeExternals: true,
   disableSources: true,
   categorizeByGroup: false, // removes redundant category names in matching modules
-  exclude: ['**/index.ts', '**/utils.ts', '**/tests/**/*'],
+  exclude: ['**/index.ts', '**/utils.ts', '**/__tests__/**/*'],
 };

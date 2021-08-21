@@ -5,5 +5,5 @@
     "outDir": "./lib",
     "declaration": false // already built by `tsconfig.esm.json`
   },
-  "exclude": ["src/tests", "lib"]
+  "exclude": ["src/__tests__", "lib"]
 }

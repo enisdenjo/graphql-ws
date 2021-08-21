@@ -5,5 +5,5 @@
     "outDir": "./lib",
     "declaration": true
   },
-  "exclude": ["src/tests", "lib"]
+  "exclude": ["src/__tests__", "lib"]
 }
