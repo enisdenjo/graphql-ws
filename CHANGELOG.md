@@ -1,3 +1,18 @@
+# [5.4.0](https://github.com/enisdenjo/graphql-ws/compare/v5.3.0...v5.4.0) (2021-08-21)
+
+
+### Bug Fixes
+
+* **client:** Specify and fail on fatal internal WebSocket close codes ([a720125](https://github.com/enisdenjo/graphql-ws/commit/a7201251ee4d090e2bd3e55e8e50dbc1501231a0))
+* Use `4406` close code for unsupported subprotocol (`1002` is an internal WebSocket close code) ([df85281](https://github.com/enisdenjo/graphql-ws/commit/df85281eceab1b6b53747efc83db90602051b8f8))
+* Use `4500` close code for internal server errors (`1011` is an internal WebSocket close code) ([3c0316d](https://github.com/enisdenjo/graphql-ws/commit/3c0316df3b785900b67aaf85435f5fb23ff673c3))
+
+
+### Features
+
+* Centralise expected close codes in `CloseCode` enum ([d10a75c](https://github.com/enisdenjo/graphql-ws/commit/d10a75c3a9fde41ad7944aeff40ffe4df9946bcd))
+* **server:** Add support for `ws@v8` ([9119153](https://github.com/enisdenjo/graphql-ws/commit/911915351ea58816db94c8eccfd4226462e2c8b7))
+
 # [5.3.0](https://github.com/enisdenjo/graphql-ws/compare/v5.2.0...v5.3.0) (2021-06-23)
 
 
