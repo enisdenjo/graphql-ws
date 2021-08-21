@@ -10,8 +10,8 @@ The extra that will be put in the `Context`.
 
 ### Properties
 
-- [request](use_ws.extra.md#request)
-- [socket](use_ws.extra.md#socket)
+- [request](use_ws.Extra.md#request)
+- [socket](use_ws.Extra.md#socket)
 
 ## Properties
 

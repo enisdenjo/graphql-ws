@@ -1,8 +1,8 @@
-[graphql-ws](../README.md) / [use/uWebSockets](../modules/use_uwebsockets.md) / PersistedRequest
+[graphql-ws](../README.md) / [use/uWebSockets](../modules/use_uWebSockets.md) / PersistedRequest
 
 # Interface: PersistedRequest
 
-[use/uWebSockets](../modules/use_uwebsockets.md).PersistedRequest
+[use/uWebSockets](../modules/use_uWebSockets.md).PersistedRequest
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.
@@ -16,10 +16,10 @@ while it is accessible.
 
 ### Properties
 
-- [headers](use_uwebsockets.persistedrequest.md#headers)
-- [method](use_uwebsockets.persistedrequest.md#method)
-- [query](use_uwebsockets.persistedrequest.md#query)
-- [url](use_uwebsockets.persistedrequest.md#url)
+- [headers](use_uWebSockets.PersistedRequest.md#headers)
+- [method](use_uWebSockets.PersistedRequest.md#method)
+- [query](use_uWebSockets.PersistedRequest.md#query)
+- [url](use_uWebSockets.PersistedRequest.md#url)
 
 ## Properties
 

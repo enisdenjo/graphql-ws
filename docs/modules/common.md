@@ -6,21 +6,21 @@
 
 ### Enumerations
 
-- [MessageType](../enums/common.messagetype.md)
+- [MessageType](../enums/common.MessageType.md)
 
 ### Interfaces
 
-- [CompleteMessage](../interfaces/common.completemessage.md)
-- [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)
-- [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md)
-- [Disposable](../interfaces/common.disposable.md)
-- [ErrorMessage](../interfaces/common.errormessage.md)
-- [NextMessage](../interfaces/common.nextmessage.md)
-- [PingMessage](../interfaces/common.pingmessage.md)
-- [PongMessage](../interfaces/common.pongmessage.md)
-- [Sink](../interfaces/common.sink.md)
-- [SubscribeMessage](../interfaces/common.subscribemessage.md)
-- [SubscribePayload](../interfaces/common.subscribepayload.md)
+- [CompleteMessage](../interfaces/common.CompleteMessage.md)
+- [ConnectionAckMessage](../interfaces/common.ConnectionAckMessage.md)
+- [ConnectionInitMessage](../interfaces/common.ConnectionInitMessage.md)
+- [Disposable](../interfaces/common.Disposable.md)
+- [ErrorMessage](../interfaces/common.ErrorMessage.md)
+- [NextMessage](../interfaces/common.NextMessage.md)
+- [PingMessage](../interfaces/common.PingMessage.md)
+- [PongMessage](../interfaces/common.PongMessage.md)
+- [Sink](../interfaces/common.Sink.md)
+- [SubscribeMessage](../interfaces/common.SubscribeMessage.md)
+- [SubscribePayload](../interfaces/common.SubscribePayload.md)
 
 ### Type aliases
 
@@ -109,13 +109,13 @@ ___
 
 ### Message
 
-Ƭ **Message**<T\>: `T` extends [ConnectionAck](../enums/common.messagetype.md#connectionack) ? [ConnectionAckMessage](../interfaces/common.connectionackmessage.md) : `T` extends [ConnectionInit](../enums/common.messagetype.md#connectioninit) ? [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md) : `T` extends [Ping](../enums/common.messagetype.md#ping) ? [PingMessage](../interfaces/common.pingmessage.md) : `T` extends [Pong](../enums/common.messagetype.md#pong) ? [PongMessage](../interfaces/common.pongmessage.md) : `T` extends [Subscribe](../enums/common.messagetype.md#subscribe) ? [SubscribeMessage](../interfaces/common.subscribemessage.md) : `T` extends [Next](../enums/common.messagetype.md#next) ? [NextMessage](../interfaces/common.nextmessage.md) : `T` extends [Error](../enums/common.messagetype.md#error) ? [ErrorMessage](../interfaces/common.errormessage.md) : `T` extends [Complete](../enums/common.messagetype.md#complete) ? [CompleteMessage](../interfaces/common.completemessage.md) : `never`
+Ƭ **Message**<`T`\>: `T` extends [`ConnectionAck`](../enums/common.MessageType.md#connectionack) ? [`ConnectionAckMessage`](../interfaces/common.ConnectionAckMessage.md) : `T` extends [`ConnectionInit`](../enums/common.MessageType.md#connectioninit) ? [`ConnectionInitMessage`](../interfaces/common.ConnectionInitMessage.md) : `T` extends [`Ping`](../enums/common.MessageType.md#ping) ? [`PingMessage`](../interfaces/common.PingMessage.md) : `T` extends [`Pong`](../enums/common.MessageType.md#pong) ? [`PongMessage`](../interfaces/common.PongMessage.md) : `T` extends [`Subscribe`](../enums/common.MessageType.md#subscribe) ? [`SubscribeMessage`](../interfaces/common.SubscribeMessage.md) : `T` extends [`Next`](../enums/common.MessageType.md#next) ? [`NextMessage`](../interfaces/common.NextMessage.md) : `T` extends [`Error`](../enums/common.MessageType.md#error) ? [`ErrorMessage`](../interfaces/common.ErrorMessage.md) : `T` extends [`Complete`](../enums/common.MessageType.md#complete) ? [`CompleteMessage`](../interfaces/common.CompleteMessage.md) : `never`
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `T`: [MessageType](../enums/common.messagetype.md) = [MessageType](../enums/common.messagetype.md) |
+| `T` | extends [`MessageType`](../enums/common.MessageType.md)[`MessageType`](../enums/common.MessageType.md) |
 
 ___
 
@@ -147,7 +147,7 @@ ___
 
 ### parseMessage
 
-▸ **parseMessage**(`data`, `reviver?`): [Message](common.md#message)
+▸ **parseMessage**(`data`, `reviver?`): [`Message`](common.md#message)
 
 Parses the raw websocket message data to a valid message.
 
@@ -156,17 +156,17 @@ Parses the raw websocket message data to a valid message.
 | Name | Type |
 | :------ | :------ |
 | `data` | `unknown` |
-| `reviver?` | [JSONMessageReviver](common.md#jsonmessagereviver) |
+| `reviver?` | [`JSONMessageReviver`](common.md#jsonmessagereviver) |
 
 #### Returns
 
-[Message](common.md#message)
+[`Message`](common.md#message)
 
 ___
 
 ### stringifyMessage
 
-▸ **stringifyMessage**<T\>(`msg`, `replacer?`): `string`
+▸ **stringifyMessage**<`T`\>(`msg`, `replacer?`): `string`
 
 Stringifies a valid message ready to be sent through the socket.
 
@@ -174,14 +174,14 @@ Stringifies a valid message ready to be sent through the socket.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `T`: [MessageType](../enums/common.messagetype.md) |
+| `T` | extends [`MessageType`](../enums/common.MessageType.md) |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `msg` | [Message](common.md#message)<T\> |
-| `replacer?` | [JSONMessageReplacer](common.md#jsonmessagereplacer) |
+| `msg` | [`Message`](common.md#message)<`T`\> |
+| `replacer?` | [`JSONMessageReplacer`](common.md#jsonmessagereplacer) |
 
 #### Returns
 

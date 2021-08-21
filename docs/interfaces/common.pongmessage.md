@@ -8,17 +8,17 @@
 
 ### Properties
 
-- [payload](common.pongmessage.md#payload)
-- [type](common.pongmessage.md#type)
+- [payload](common.PongMessage.md#payload)
+- [type](common.PongMessage.md#type)
 
 ## Properties
 
 ### payload
 
-• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
+• `Optional` `Readonly` **payload**: `Record`<`string`, `unknown`\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [Pong](../enums/common.messagetype.md#pong)
+• `Readonly` **type**: [`Pong`](../enums/common.MessageType.md#pong)

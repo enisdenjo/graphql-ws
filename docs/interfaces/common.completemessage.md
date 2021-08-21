@@ -8,8 +8,8 @@
 
 ### Properties
 
-- [id](common.completemessage.md#id)
-- [type](common.completemessage.md#type)
+- [id](common.CompleteMessage.md#id)
+- [type](common.CompleteMessage.md#type)
 
 ## Properties
 
@@ -21,4 +21,4 @@ ___
 
 ### type
 
-• `Readonly` **type**: [Complete](../enums/common.messagetype.md#complete)
+• `Readonly` **type**: [`Complete`](../enums/common.MessageType.md#complete)

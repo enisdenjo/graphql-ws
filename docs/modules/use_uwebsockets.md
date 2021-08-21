@@ -6,19 +6,19 @@
 
 ### Interfaces
 
-- [Extra](../interfaces/use_uwebsockets.extra.md)
-- [PersistedRequest](../interfaces/use_uwebsockets.persistedrequest.md)
-- [UpgradeData](../interfaces/use_uwebsockets.upgradedata.md)
+- [Extra](../interfaces/use_uWebSockets.Extra.md)
+- [PersistedRequest](../interfaces/use_uWebSockets.PersistedRequest.md)
+- [UpgradeData](../interfaces/use_uWebSockets.UpgradeData.md)
 
 ### Functions
 
-- [makeBehavior](use_uwebsockets.md#makebehavior)
+- [makeBehavior](use_uWebSockets.md#makebehavior)
 
 ## Server/uWebSockets
 
 ### makeBehavior
 
-▸ **makeBehavior**<E\>(`options`, `behavior?`, `keepAlive?`): `uWS.WebSocketBehavior`
+▸ **makeBehavior**<`E`\>(`options`, `behavior?`, `keepAlive?`): `uWS.WebSocketBehavior`
 
 Make the behaviour for using a [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) WebSocket server.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
@@ -27,15 +27,15 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 | Name | Type |
 | :------ | :------ |
-| `E` | `E`: `Record`<PropertyKey, unknown\> = `Record`<PropertyKey, never\> |
+| `E` | extends `Record`<`PropertyKey`, `unknown`\>`Record`<`PropertyKey`, `never`\> |
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `options` | [ServerOptions](../interfaces/server.serveroptions.md)<[Extra](../interfaces/use_uwebsockets.extra.md) & `Partial`<E\>\> | `undefined` |
-| `behavior` | `uWS.WebSocketBehavior` | {} |
-| `keepAlive` | `number` | 12\_000 |
+| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<[`Extra`](../interfaces/use_uWebSockets.Extra.md) & `Partial`<`E`\>\> | `undefined` |
+| `behavior` | `uWS.WebSocketBehavior` | `{}` |
+| `keepAlive` | `number` | `12_000` |
 
 #### Returns
 

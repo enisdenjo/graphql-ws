@@ -6,28 +6,24 @@
 
 ## Hierarchy
 
-- **Disposable**
+- **`Disposable`**
 
-  ↳ [Client](client.client-1.md)
+  ↳ [`Client`](client.Client.md)
 
 ## Table of contents
 
-### Properties
+### Methods
 
-- [dispose](common.disposable.md#dispose)
+- [dispose](common.Disposable.md#dispose)
 
-## Properties
+## Methods
 
 ### dispose
 
-• **dispose**: () => `void` \| `Promise`<void\>
-
-#### Type declaration
-
-▸ (): `void` \| `Promise`<void\>
+▸ **dispose**(): `void` \| `Promise`<`void`\>
 
 Dispose of the instance and clear up resources.
 
-##### Returns
+#### Returns
 
-`void` \| `Promise`<void\>
+`void` \| `Promise`<`void`\>

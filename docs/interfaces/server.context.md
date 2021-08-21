@@ -8,17 +8,17 @@
 
 | Name | Type |
 | :------ | :------ |
-| `E` | `E` = `unknown` |
+| `E` | `unknown` |
 
 ## Table of contents
 
 ### Properties
 
-- [acknowledged](server.context.md#acknowledged)
-- [connectionInitReceived](server.context.md#connectioninitreceived)
-- [connectionParams](server.context.md#connectionparams)
-- [extra](server.context.md#extra)
-- [subscriptions](server.context.md#subscriptions)
+- [acknowledged](server.Context.md#acknowledged)
+- [connectionInitReceived](server.Context.md#connectioninitreceived)
+- [connectionParams](server.Context.md#connectionparams)
+- [extra](server.Context.md#extra)
+- [subscriptions](server.Context.md#subscriptions)
 
 ## Properties
 
@@ -45,7 +45,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: `Readonly`<Record<string, unknown\>\>
+• `Optional` `Readonly` **connectionParams**: `Readonly`<`Record`<`string`, `unknown`\>\>
 
 The parameters passed during the connection initialisation.
 
@@ -62,7 +62,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: `Record`<string, ``null`` \| AsyncIterator<unknown, any, undefined\>\>
+• `Readonly` **subscriptions**: `Record`<`string`, ``null`` \| `AsyncIterator`<`unknown`, `any`, `undefined`\>\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_

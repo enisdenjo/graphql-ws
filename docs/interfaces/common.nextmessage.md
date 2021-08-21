@@ -8,9 +8,9 @@
 
 ### Properties
 
-- [id](common.nextmessage.md#id)
-- [payload](common.nextmessage.md#payload)
-- [type](common.nextmessage.md#type)
+- [id](common.NextMessage.md#id)
+- [payload](common.NextMessage.md#payload)
+- [type](common.NextMessage.md#type)
 
 ## Properties
 
@@ -28,4 +28,4 @@ ___
 
 ### type
 
-• `Readonly` **type**: [Next](../enums/common.messagetype.md#next)
+• `Readonly` **type**: [`Next`](../enums/common.MessageType.md#next)

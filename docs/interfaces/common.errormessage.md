@@ -8,9 +8,9 @@
 
 ### Properties
 
-- [id](common.errormessage.md#id)
-- [payload](common.errormessage.md#payload)
-- [type](common.errormessage.md#type)
+- [id](common.ErrorMessage.md#id)
+- [payload](common.ErrorMessage.md#payload)
+- [type](common.ErrorMessage.md#type)
 
 ## Properties
 
@@ -28,4 +28,4 @@ ___
 
 ### type
 
-• `Readonly` **type**: [Error](../enums/common.messagetype.md#error)
+• `Readonly` **type**: [`Error`](../enums/common.MessageType.md#error)

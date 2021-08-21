@@ -10,8 +10,8 @@ The extra that will be put in the `Context`.
 
 ### Properties
 
-- [connection](use_fastify_websocket.extra.md#connection)
-- [request](use_fastify_websocket.extra.md#request)
+- [connection](use_fastify_websocket.Extra.md#connection)
+- [request](use_fastify_websocket.Extra.md#request)
 
 ## Properties
 
@@ -26,7 +26,7 @@ ___
 
 ### request
 
-• `Readonly` **request**: `FastifyRequest`<RouteGenericInterface, Server, IncomingMessage\>
+• `Readonly` **request**: `FastifyRequest`<`RouteGenericInterface`, `Server`, `IncomingMessage`\>
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.

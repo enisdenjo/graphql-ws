@@ -8,16 +8,16 @@
 
 ### Properties
 
-- [extensions](common.subscribepayload.md#extensions)
-- [operationName](common.subscribepayload.md#operationname)
-- [query](common.subscribepayload.md#query)
-- [variables](common.subscribepayload.md#variables)
+- [extensions](common.SubscribePayload.md#extensions)
+- [operationName](common.SubscribePayload.md#operationname)
+- [query](common.SubscribePayload.md#query)
+- [variables](common.SubscribePayload.md#variables)
 
 ## Properties
 
 ### extensions
 
-• `Optional` `Readonly` **extensions**: ``null`` \| `Record`<string, unknown\>
+• `Optional` `Readonly` **extensions**: ``null`` \| `Record`<`string`, `unknown`\>
 
 ___
 
@@ -35,4 +35,4 @@ ___
 
 ### variables
 
-• `Optional` `Readonly` **variables**: ``null`` \| `Record`<string, unknown\>
+• `Optional` `Readonly` **variables**: ``null`` \| `Record`<`string`, `unknown`\>

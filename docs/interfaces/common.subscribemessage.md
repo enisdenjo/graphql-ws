@@ -8,9 +8,9 @@
 
 ### Properties
 
-- [id](common.subscribemessage.md#id)
-- [payload](common.subscribemessage.md#payload)
-- [type](common.subscribemessage.md#type)
+- [id](common.SubscribeMessage.md#id)
+- [payload](common.SubscribeMessage.md#payload)
+- [type](common.SubscribeMessage.md#type)
 
 ## Properties
 
@@ -22,10 +22,10 @@ ___
 
 ### payload
 
-• `Readonly` **payload**: [SubscribePayload](common.subscribepayload.md)
+• `Readonly` **payload**: [`SubscribePayload`](common.SubscribePayload.md)
 
 ___
 
 ### type
 
-• `Readonly` **type**: [Subscribe](../enums/common.messagetype.md#subscribe)
+• `Readonly` **type**: [`Subscribe`](../enums/common.MessageType.md#subscribe)

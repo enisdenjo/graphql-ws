@@ -29,8 +29,8 @@
 
 ### Interfaces
 
-- [Client](../interfaces/client.client-1.md)
-- [ClientOptions](../interfaces/client.clientoptions.md)
+- [Client](../interfaces/client.Client.md)
+- [ClientOptions](../interfaces/client.ClientOptions.md)
 
 ### Type aliases
 
@@ -61,7 +61,7 @@
 
 ### Event
 
-Ƭ **Event**: [EventConnecting](client.md#eventconnecting) \| [EventOpened](client.md#eventopened) \| [EventConnected](client.md#eventconnected) \| [EventPing](client.md#eventping) \| [EventPong](client.md#eventpong) \| [EventMessage](client.md#eventmessage) \| [EventClosed](client.md#eventclosed) \| [EventError](client.md#eventerror)
+Ƭ **Event**: [`EventConnecting`](client.md#eventconnecting) \| [`EventOpened`](client.md#eventopened) \| [`EventConnected`](client.md#eventconnected) \| [`EventPing`](client.md#eventping) \| [`EventPong`](client.md#eventpong) \| [`EventMessage`](client.md#eventmessage) \| [`EventClosed`](client.md#eventclosed) \| [`EventError`](client.md#eventerror)
 
 All events that could occur.
 
@@ -109,7 +109,7 @@ ___
 
 ### EventConnectedListener
 
-Ƭ **EventConnectedListener**: (`socket`: `unknown`, `payload`: [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)[``"payload"``]) => `void`
+Ƭ **EventConnectedListener**: (`socket`: `unknown`, `payload`: [`ConnectionAckMessage`](../interfaces/common.ConnectionAckMessage.md)[``"payload"``]) => `void`
 
 #### Type declaration
 
@@ -127,7 +127,7 @@ send through the `ConnectionAck` message.
 | Name | Type |
 | :------ | :------ |
 | `socket` | `unknown` |
-| `payload` | [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)[``"payload"``] |
+| `payload` | [`ConnectionAckMessage`](../interfaces/common.ConnectionAckMessage.md)[``"payload"``] |
 
 ##### Returns
 
@@ -192,13 +192,13 @@ ___
 
 ### EventListener
 
-Ƭ **EventListener**<E\>: `E` extends [EventConnecting](client.md#eventconnecting) ? [EventConnectingListener](client.md#eventconnectinglistener) : `E` extends [EventOpened](client.md#eventopened) ? [EventOpenedListener](client.md#eventopenedlistener) : `E` extends [EventConnected](client.md#eventconnected) ? [EventConnectedListener](client.md#eventconnectedlistener) : `E` extends [EventPing](client.md#eventping) ? [EventPingListener](client.md#eventpinglistener) : `E` extends [EventPong](client.md#eventpong) ? [EventPongListener](client.md#eventponglistener) : `E` extends [EventMessage](client.md#eventmessage) ? [EventMessageListener](client.md#eventmessagelistener) : `E` extends [EventClosed](client.md#eventclosed) ? [EventClosedListener](client.md#eventclosedlistener) : `E` extends [EventError](client.md#eventerror) ? [EventErrorListener](client.md#eventerrorlistener) : `never`
+Ƭ **EventListener**<`E`\>: `E` extends [`EventConnecting`](client.md#eventconnecting) ? [`EventConnectingListener`](client.md#eventconnectinglistener) : `E` extends [`EventOpened`](client.md#eventopened) ? [`EventOpenedListener`](client.md#eventopenedlistener) : `E` extends [`EventConnected`](client.md#eventconnected) ? [`EventConnectedListener`](client.md#eventconnectedlistener) : `E` extends [`EventPing`](client.md#eventping) ? [`EventPingListener`](client.md#eventpinglistener) : `E` extends [`EventPong`](client.md#eventpong) ? [`EventPongListener`](client.md#eventponglistener) : `E` extends [`EventMessage`](client.md#eventmessage) ? [`EventMessageListener`](client.md#eventmessagelistener) : `E` extends [`EventClosed`](client.md#eventclosed) ? [`EventClosedListener`](client.md#eventclosedlistener) : `E` extends [`EventError`](client.md#eventerror) ? [`EventErrorListener`](client.md#eventerrorlistener) : `never`
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `E` | `E`: [Event](client.md#event) |
+| `E` | extends [`Event`](client.md#event) |
 
 ___
 
@@ -212,7 +212,7 @@ ___
 
 ### EventMessageListener
 
-Ƭ **EventMessageListener**: (`message`: [Message](common.md#message)) => `void`
+Ƭ **EventMessageListener**: (`message`: [`Message`](common.md#message)) => `void`
 
 #### Type declaration
 
@@ -225,7 +225,7 @@ debugging and logging received messages.
 
 | Name | Type |
 | :------ | :------ |
-| `message` | [Message](common.md#message) |
+| `message` | [`Message`](common.md#message) |
 
 ##### Returns
 
@@ -275,7 +275,7 @@ ___
 
 ### EventPingListener
 
-Ƭ **EventPingListener**: (`received`: `boolean`, `payload`: [PingMessage](../interfaces/common.pingmessage.md)[``"payload"``]) => `void`
+Ƭ **EventPingListener**: (`received`: `boolean`, `payload`: [`PingMessage`](../interfaces/common.PingMessage.md)[``"payload"``]) => `void`
 
 #### Type declaration
 
@@ -289,7 +289,7 @@ If `false`, the ping was sent by the client.
 | Name | Type |
 | :------ | :------ |
 | `received` | `boolean` |
-| `payload` | [PingMessage](../interfaces/common.pingmessage.md)[``"payload"``] |
+| `payload` | [`PingMessage`](../interfaces/common.PingMessage.md)[``"payload"``] |
 
 ##### Returns
 
@@ -307,7 +307,7 @@ ___
 
 ### EventPongListener
 
-Ƭ **EventPongListener**: (`received`: `boolean`, `payload`: [PongMessage](../interfaces/common.pongmessage.md)[``"payload"``]) => `void`
+Ƭ **EventPongListener**: (`received`: `boolean`, `payload`: [`PongMessage`](../interfaces/common.PongMessage.md)[``"payload"``]) => `void`
 
 #### Type declaration
 
@@ -321,7 +321,7 @@ If `false`, the pong was sent by the client.
 | Name | Type |
 | :------ | :------ |
 | `received` | `boolean` |
-| `payload` | [PongMessage](../interfaces/common.pongmessage.md)[``"payload"``] |
+| `payload` | [`PongMessage`](../interfaces/common.PongMessage.md)[``"payload"``] |
 
 ##### Returns
 
@@ -331,7 +331,7 @@ ___
 
 ### createClient
 
-▸ **createClient**(`options`): [Client](../interfaces/client.client-1.md)
+▸ **createClient**(`options`): [`Client`](../interfaces/client.Client.md)
 
 Creates a disposable GraphQL over WebSocket client.
 
@@ -339,41 +339,41 @@ Creates a disposable GraphQL over WebSocket client.
 
 | Name | Type |
 | :------ | :------ |
-| `options` | [ClientOptions](../interfaces/client.clientoptions.md) |
+| `options` | [`ClientOptions`](../interfaces/client.ClientOptions.md) |
 
 #### Returns
 
-[Client](../interfaces/client.client-1.md)
+[`Client`](../interfaces/client.Client.md)
 
 ## Other
 
 ### CompleteMessage
 
-Re-exports: [CompleteMessage](../interfaces/common.completemessage.md)
+Re-exports: [CompleteMessage](../interfaces/common.CompleteMessage.md)
 
 ___
 
 ### ConnectionAckMessage
 
-Re-exports: [ConnectionAckMessage](../interfaces/common.connectionackmessage.md)
+Re-exports: [ConnectionAckMessage](../interfaces/common.ConnectionAckMessage.md)
 
 ___
 
 ### ConnectionInitMessage
 
-Re-exports: [ConnectionInitMessage](../interfaces/common.connectioninitmessage.md)
+Re-exports: [ConnectionInitMessage](../interfaces/common.ConnectionInitMessage.md)
 
 ___
 
 ### Disposable
 
-Re-exports: [Disposable](../interfaces/common.disposable.md)
+Re-exports: [Disposable](../interfaces/common.Disposable.md)
 
 ___
 
 ### ErrorMessage
 
-Re-exports: [ErrorMessage](../interfaces/common.errormessage.md)
+Re-exports: [ErrorMessage](../interfaces/common.ErrorMessage.md)
 
 ___
 
@@ -409,43 +409,43 @@ ___
 
 ### MessageType
 
-Re-exports: [MessageType](../enums/common.messagetype.md)
+Re-exports: [MessageType](../enums/common.MessageType.md)
 
 ___
 
 ### NextMessage
 
-Re-exports: [NextMessage](../interfaces/common.nextmessage.md)
+Re-exports: [NextMessage](../interfaces/common.NextMessage.md)
 
 ___
 
 ### PingMessage
 
-Re-exports: [PingMessage](../interfaces/common.pingmessage.md)
+Re-exports: [PingMessage](../interfaces/common.PingMessage.md)
 
 ___
 
 ### PongMessage
 
-Re-exports: [PongMessage](../interfaces/common.pongmessage.md)
+Re-exports: [PongMessage](../interfaces/common.PongMessage.md)
 
 ___
 
 ### Sink
 
-Re-exports: [Sink](../interfaces/common.sink.md)
+Re-exports: [Sink](../interfaces/common.Sink.md)
 
 ___
 
 ### SubscribeMessage
 
-Re-exports: [SubscribeMessage](../interfaces/common.subscribemessage.md)
+Re-exports: [SubscribeMessage](../interfaces/common.SubscribeMessage.md)
 
 ___
 
 ### SubscribePayload
 
-Re-exports: [SubscribePayload](../interfaces/common.subscribepayload.md)
+Re-exports: [SubscribePayload](../interfaces/common.SubscribePayload.md)
 
 ___
 

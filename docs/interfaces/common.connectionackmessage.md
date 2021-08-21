@@ -8,17 +8,17 @@
 
 ### Properties
 
-- [payload](common.connectionackmessage.md#payload)
-- [type](common.connectionackmessage.md#type)
+- [payload](common.ConnectionAckMessage.md#payload)
+- [type](common.ConnectionAckMessage.md#type)
 
 ## Properties
 
 ### payload
 
-• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
+• `Optional` `Readonly` **payload**: `Record`<`string`, `unknown`\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [ConnectionAck](../enums/common.messagetype.md#connectionack)
+• `Readonly` **type**: [`ConnectionAck`](../enums/common.MessageType.md#connectionack)

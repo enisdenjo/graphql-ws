@@ -8,15 +8,15 @@
 
 ### Properties
 
-- [protocol](server.websocket.md#protocol)
+- [protocol](server.WebSocket.md#protocol)
 
 ### Methods
 
-- [close](server.websocket.md#close)
-- [onMessage](server.websocket.md#onmessage)
-- [onPing](server.websocket.md#onping)
-- [onPong](server.websocket.md#onpong)
-- [send](server.websocket.md#send)
+- [close](server.WebSocket.md#close)
+- [onMessage](server.WebSocket.md#onmessage)
+- [onPing](server.WebSocket.md#onping)
+- [onPong](server.WebSocket.md#onpong)
+- [send](server.WebSocket.md#send)
 
 ## Properties
 
@@ -31,7 +31,7 @@ to validate agains the supported ones.
 
 ### close
 
-▸ **close**(`code`, `reason`): `void` \| `Promise`<void\>
+▸ **close**(`code`, `reason`): `void` \| `Promise`<`void`\>
 
 Closes the socket gracefully. Will always provide
 the appropriate code and close reason. `onDisconnect`
@@ -49,7 +49,7 @@ closure.
 
 #### Returns
 
-`void` \| `Promise`<void\>
+`void` \| `Promise`<`void`\>
 
 ___
 
@@ -73,7 +73,7 @@ to your clients however you wish.
 
 | Name | Type |
 | :------ | :------ |
-| `cb` | (`data`: `string`) => `Promise`<void\> |
+| `cb` | (`data`: `string`) => `Promise`<`void`\> |
 
 #### Returns
 
@@ -83,7 +83,7 @@ ___
 
 ### onPing
 
-▸ `Optional` **onPing**(`payload`): `void` \| `Promise`<void\>
+▸ `Optional` **onPing**(`payload`): `void` \| `Promise`<`void`\>
 
 Implement a listener for the `PingMessage` sent from the client to the server.
 If the client sent the ping with a payload, it will be passed through the
@@ -97,17 +97,17 @@ to decide how and when to respond.
 
 | Name | Type |
 | :------ | :------ |
-| `payload` | `undefined` \| `Record`<string, unknown\> |
+| `payload` | `undefined` \| `Record`<`string`, `unknown`\> |
 
 #### Returns
 
-`void` \| `Promise`<void\>
+`void` \| `Promise`<`void`\>
 
 ___
 
 ### onPong
 
-▸ `Optional` **onPong**(`payload`): `void` \| `Promise`<void\>
+▸ `Optional` **onPong**(`payload`): `void` \| `Promise`<`void`\>
 
 Implement a listener for the `PongMessage` sent from the client to the server.
 If the client sent the pong with a payload, it will be passed through the
@@ -117,17 +117,17 @@ first argument.
 
 | Name | Type |
 | :------ | :------ |
-| `payload` | `undefined` \| `Record`<string, unknown\> |
+| `payload` | `undefined` \| `Record`<`string`, `unknown`\> |
 
 #### Returns
 
-`void` \| `Promise`<void\>
+`void` \| `Promise`<`void`\>
 
 ___
 
 ### send
 
-▸ **send**(`data`): `void` \| `Promise`<void\>
+▸ **send**(`data`): `void` \| `Promise`<`void`\>
 
 Sends a message through the socket. Will always
 provide a `string` message.
@@ -147,4 +147,4 @@ The returned promise is used to control the flow of data
 
 #### Returns
 
-`void` \| `Promise`<void\>
+`void` \| `Promise`<`void`\>

@@ -1,28 +1,28 @@
-[graphql-ws](../README.md) / [use/uWebSockets](../modules/use_uwebsockets.md) / UpgradeData
+[graphql-ws](../README.md) / [use/uWebSockets](../modules/use_uWebSockets.md) / UpgradeData
 
 # Interface: UpgradeData
 
-[use/uWebSockets](../modules/use_uwebsockets.md).UpgradeData
+[use/uWebSockets](../modules/use_uWebSockets.md).UpgradeData
 
 Data acquired during the HTTP upgrade callback from uWS.
 
 ## Hierarchy
 
-- **UpgradeData**
+- **`UpgradeData`**
 
-  ↳ [Extra](use_uwebsockets.extra.md)
+  ↳ [`Extra`](use_uWebSockets.Extra.md)
 
 ## Table of contents
 
 ### Properties
 
-- [persistedRequest](use_uwebsockets.upgradedata.md#persistedrequest)
+- [persistedRequest](use_uWebSockets.UpgradeData.md#persistedrequest)
 
 ## Properties
 
 ### persistedRequest
 
-• `Readonly` **persistedRequest**: [PersistedRequest](use_uwebsockets.persistedrequest.md)
+• `Readonly` **persistedRequest**: [`PersistedRequest`](use_uWebSockets.PersistedRequest.md)
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.

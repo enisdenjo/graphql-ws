@@ -10,15 +10,15 @@ A representation of any set of values over any amount of time.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `T` = `unknown` |
+| `T` | `unknown` |
 
 ## Table of contents
 
 ### Methods
 
-- [complete](common.sink.md#complete)
-- [error](common.sink.md#error)
-- [next](common.sink.md#next)
+- [complete](common.Sink.md#complete)
+- [error](common.Sink.md#error)
+- [next](common.Sink.md#next)
 
 ## Methods
 

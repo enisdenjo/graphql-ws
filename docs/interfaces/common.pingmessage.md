@@ -8,17 +8,17 @@
 
 ### Properties
 
-- [payload](common.pingmessage.md#payload)
-- [type](common.pingmessage.md#type)
+- [payload](common.PingMessage.md#payload)
+- [type](common.PingMessage.md#type)
 
 ## Properties
 
 ### payload
 
-• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
+• `Optional` `Readonly` **payload**: `Record`<`string`, `unknown`\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [Ping](../enums/common.messagetype.md#ping)
+• `Readonly` **type**: [`Ping`](../enums/common.MessageType.md#ping)

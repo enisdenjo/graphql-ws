@@ -8,17 +8,17 @@
 
 ### Properties
 
-- [payload](common.connectioninitmessage.md#payload)
-- [type](common.connectioninitmessage.md#type)
+- [payload](common.ConnectionInitMessage.md#payload)
+- [type](common.ConnectionInitMessage.md#type)
 
 ## Properties
 
 ### payload
 
-• `Optional` `Readonly` **payload**: `Record`<string, unknown\>
+• `Optional` `Readonly` **payload**: `Record`<`string`, `unknown`\>
 
 ___
 
 ### type
 
-• `Readonly` **type**: [ConnectionInit](../enums/common.messagetype.md#connectioninit)
+• `Readonly` **type**: [`ConnectionInit`](../enums/common.MessageType.md#connectioninit)
