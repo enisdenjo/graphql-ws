@@ -126,7 +126,7 @@ fastify.listen(4000, (err) => {
 import { createClient } from 'graphql-ws';
 
 const client = createClient({
-  url: 'ws://welcomer.com:4000/graphql',
+  url: 'ws://localhost:4000/graphql',
 });
 
 // query
