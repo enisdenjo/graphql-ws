@@ -1,3 +1,11 @@
+## [5.4.1](https://github.com/enisdenjo/graphql-ws/compare/v5.4.0...v5.4.1) (2021-08-26)
+
+
+### Bug Fixes
+
+* Add support for `graphql@v16` ([ad5aea2](https://github.com/enisdenjo/graphql-ws/commit/ad5aea2703d8612a8f5b16814864268fd7f3feb6))
+* Sink's next callback always receives an `ExecutionResult` ([045b402](https://github.com/enisdenjo/graphql-ws/commit/045b402987b749790424ca1b89c2d5aa93d8565a))
+
 # [5.4.0](https://github.com/enisdenjo/graphql-ws/compare/v5.3.0...v5.4.0) (2021-08-21)
 
 
