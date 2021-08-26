@@ -71,7 +71,7 @@ ___
 
 ### subscribe
 
-▸ **subscribe**<`T`\>(`payload`, `sink`): () => `void`
+▸ **subscribe**<`Data`, `Extensions`\>(`payload`, `sink`): () => `void`
 
 Subscribes through the WebSocket following the config parameters. It
 uses the `sink` to emit received data or errors. Returns a _cleanup_
@@ -81,14 +81,15 @@ function used for dropping the subscription and cleaning stuff up.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `unknown` |
+| `Data` | `Record`<`string`, `unknown`\> |
+| `Extensions` | `unknown` |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `payload` | [`SubscribePayload`](common.SubscribePayload.md) |
-| `sink` | [`Sink`](common.Sink.md)<`T`\> |
+| `sink` | [`Sink`](common.Sink.md)<`ExecutionResult`<`Data`, `Extensions`\>\> |
 
 #### Returns
 

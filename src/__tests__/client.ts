@@ -13,6 +13,7 @@ import {
   SubscribePayload,
 } from '../common';
 import { startWSTServer as startTServer } from './utils';
+import { ExecutionResult } from 'graphql';
 
 // simulate browser environment for easier client testing
 beforeEach(() => {
@@ -27,7 +28,10 @@ function noop(): void {
 }
 
 interface TSubscribe<T> {
-  waitForNext: (test?: (value: T) => void, expire?: number) => Promise<void>;
+  waitForNext: (
+    test?: (value: ExecutionResult<T, unknown>) => void,
+    expire?: number,
+  ) => Promise<void>;
   waitForError: (
     test?: (error: unknown) => void,
     expire?: number,
@@ -41,7 +45,7 @@ function tsubscribe<T = unknown>(
   payload: SubscribePayload,
 ): TSubscribe<T> {
   const emitter = new EventEmitter();
-  const results: T[] = [];
+  const results: ExecutionResult<T, unknown>[] = [];
   let error: unknown,
     completed = false;
   const dispose = client.subscribe<T>(payload, {
