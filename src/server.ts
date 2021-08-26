@@ -16,9 +16,6 @@ import {
   GraphQLError,
   SubscriptionArgs,
   ExecutionResult,
-  DocumentNode,
-  ValidationRule,
-  TypeInfo,
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -146,13 +143,7 @@ export interface ServerOptions<E = unknown> {
    * Throwing an error from within this function will close the socket
    * with the `Error` message in the close event reason.
    */
-  validate?: (
-    schema: GraphQLSchema,
-    documentAST: DocumentNode,
-    rules?: ReadonlyArray<ValidationRule>,
-    typeInfo?: TypeInfo,
-    options?: { maxErrors?: number },
-  ) => ReadonlyArray<GraphQLError>;
+  validate?: typeof graphqlValidate;
   /**
    * Is the `execute` function from GraphQL which is
    * used to execute the query and mutation operations.

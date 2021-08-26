@@ -22,7 +22,7 @@ ___
 
 ### payload
 
-• `Readonly` **payload**: `ExecutionResult`<`Object`, `Object`\>
+• `Readonly` **payload**: `ExecutionResult`<`ObjMap`<`unknown`\>, `ObjMap`<`unknown`\>\>
 
 ___
 
