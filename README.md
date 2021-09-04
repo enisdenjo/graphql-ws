@@ -15,7 +15,7 @@
 #### Install
 
 ```shell
-$ yarn add graphql-ws
+yarn add graphql-ws
 ```
 
 #### Create a GraphQL schema
