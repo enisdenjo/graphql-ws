@@ -30,7 +30,7 @@ ___
 
 ### ConnectionAcknowledgementTimeout
 
-• **ConnectionAcknowledgementTimeout** = `4418`
+• **ConnectionAcknowledgementTimeout** = `4504`
 
 ___
 
