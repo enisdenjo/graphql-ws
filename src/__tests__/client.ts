@@ -405,6 +405,31 @@ it('should use a custom JSON message replacer function', async (done) => {
   });
 });
 
+it('should close socket if connection not acknowledged', async (done) => {
+  const { url, ...server } = await startTServer({
+    onConnect: () =>
+      new Promise(() => {
+        // never acknowledge
+      }),
+  });
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    connectionAckWaitTimeout: 10,
+  });
+
+  client.on('closed', async (err) => {
+    expect((err as CloseEvent).code).toBe(
+      CloseCode.ConnectionAcknowledgementTimeout,
+    );
+    await server.dispose();
+    done();
+  });
+});
+
 describe('ping/pong', () => {
   it('should respond with a pong to a ping', async () => {
     expect.assertions(1);

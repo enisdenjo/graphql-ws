@@ -305,6 +305,20 @@ export interface ClientOptions {
    */
   keepAlive?: number;
   /**
+   * The amount of time for which the client will wait
+   * for `ConnectionAck` message.
+   *
+   * Set the value to `Infinity`, `''`, `0`, `null` or `undefined` to skip waiting.
+   *
+   * If the wait timeout has passed and the server
+   * has not responded with `ConnectionAck` message,
+   * the client will terminate the socket by
+   * dispatching a close event `4418: Connection acknowledgement timeout`
+   *
+   * @default 0
+   */
+  connectionAckWaitTimeout?: number;
+  /**
    * Disable sending the `PongMessage` automatically.
    *
    * Useful for when integrating your own custom client pinger that performs
@@ -423,6 +437,7 @@ export function createClient(options: ClientOptions): Client {
     lazyCloseTimeout = 0,
     keepAlive = 0,
     disablePong,
+    connectionAckWaitTimeout = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
       let retryDelay = 1000; // start with 1s delay
@@ -562,7 +577,8 @@ export function createClient(options: ClientOptions): Client {
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
           );
 
-          let queuedPing: ReturnType<typeof setTimeout>;
+          let connectionAckTimeout: ReturnType<typeof setTimeout>,
+            queuedPing: ReturnType<typeof setTimeout>;
           function enqueuePing() {
             if (isFinite(keepAlive) && keepAlive > 0) {
               clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
@@ -582,6 +598,7 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onclose = (event) => {
             connecting = undefined;
+            clearTimeout(connectionAckTimeout);
             clearTimeout(queuedPing);
             emitter.emit('closed', event);
             denied(event);
@@ -608,6 +625,19 @@ export function createClient(options: ClientOptions): Client {
                   replacer,
                 ),
               );
+
+              if (
+                isFinite(connectionAckWaitTimeout) &&
+                connectionAckWaitTimeout > 0
+              ) {
+                connectionAckTimeout = setTimeout(() => {
+                  socket.close(
+                    CloseCode.ConnectionAcknowledgementTimeout,
+                    'Connection acknowledgement timeout',
+                  );
+                }, connectionAckWaitTimeout);
+              }
+
               enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
@@ -651,6 +681,7 @@ export function createClient(options: ClientOptions): Client {
                 throw new Error(
                   `First message cannot be of type ${message.type}`,
                 );
+              clearTimeout(connectionAckTimeout);
               acknowledged = true;
               emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
               retrying = false; // future lazy connects are not retries
@@ -723,6 +754,7 @@ export function createClient(options: ClientOptions): Client {
           // CloseCode.Forbidden, might grant access out after retry
           CloseCode.SubprotocolNotAcceptable,
           // CloseCode.ConnectionInitialisationTimeout, might not time out after retry
+          // CloseCode.ConnectionAcknowledgementTimeout, might not time out after retry
           CloseCode.SubscriberAlreadyExists,
           CloseCode.TooManyInitialisationRequests,
         ].includes(errOrCloseEvent.code))

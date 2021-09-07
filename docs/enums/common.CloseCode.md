@@ -11,6 +11,7 @@
 ### Enumeration members
 
 - [BadRequest](common.CloseCode.md#badrequest)
+- [ConnectionAcknowledgementTimeout](common.CloseCode.md#connectionacknowledgementtimeout)
 - [ConnectionInitialisationTimeout](common.CloseCode.md#connectioninitialisationtimeout)
 - [Forbidden](common.CloseCode.md#forbidden)
 - [InternalServerError](common.CloseCode.md#internalservererror)
@@ -24,6 +25,12 @@
 ### BadRequest
 
 • **BadRequest** = `4400`
+
+___
+
+### ConnectionAcknowledgementTimeout
+
+• **ConnectionAcknowledgementTimeout** = `4504`
 
 ___
 
