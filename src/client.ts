@@ -577,7 +577,8 @@ export function createClient(options: ClientOptions): Client {
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
           );
 
-          let queuedPing: ReturnType<typeof setTimeout>;
+          let connectionAckTimeout: ReturnType<typeof setTimeout>,
+            queuedPing: ReturnType<typeof setTimeout>;
           function enqueuePing() {
             if (isFinite(keepAlive) && keepAlive > 0) {
               clearTimeout(queuedPing); // in case where a pong was received before a ping (this is valid behaviour)
@@ -590,21 +591,6 @@ export function createClient(options: ClientOptions): Client {
             }
           }
 
-          let connectionAckTimeout: ReturnType<typeof setTimeout>;
-          function startConnectionAckTimeout() {
-            if (
-              isFinite(connectionAckWaitTimeout) &&
-              connectionAckWaitTimeout > 0
-            ) {
-              connectionAckTimeout = setTimeout(() => {
-                socket.close(
-                  CloseCode.ConnectionAcknowledgementTimeout,
-                  'Connection acknowledgement timeout',
-                );
-              }, connectionAckWaitTimeout);
-            }
-          }
-
           socket.onerror = (err) => {
             // we let the onclose reject the promise for correct retry handling
             emitter.emit('error', err);
@@ -612,8 +598,8 @@ export function createClient(options: ClientOptions): Client {
 
           socket.onclose = (event) => {
             connecting = undefined;
-            clearTimeout(queuedPing);
             clearTimeout(connectionAckTimeout);
+            clearTimeout(queuedPing);
             emitter.emit('closed', event);
             denied(event);
           };
@@ -639,7 +625,19 @@ export function createClient(options: ClientOptions): Client {
                   replacer,
                 ),
               );
-              startConnectionAckTimeout();
+
+              if (
+                isFinite(connectionAckWaitTimeout) &&
+                connectionAckWaitTimeout > 0
+              ) {
+                connectionAckTimeout = setTimeout(() => {
+                  socket.close(
+                    CloseCode.ConnectionAcknowledgementTimeout,
+                    'Connection acknowledgement timeout',
+                  );
+                }, connectionAckWaitTimeout);
+              }
+
               enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
