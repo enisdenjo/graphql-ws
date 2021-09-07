@@ -12,7 +12,7 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../common';
-import { getAvailablePort, startWSTServer as startTServer } from './utils';
+import { startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 
 // simulate browser environment for easier client testing
@@ -402,6 +402,31 @@ it('should use a custom JSON message replacer function', async (done) => {
       expect(data).toBe('{"type":"CONNECTION_INIT"}');
       done();
     });
+  });
+});
+
+it('should close socket if connection not acknowledged', async (done) => {
+  const { url, ...server } = await startTServer({
+    onConnect: () =>
+      new Promise(() => {
+        // never acknowledge
+      }),
+  });
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    connectionAckWaitTimeout: 10,
+  });
+
+  client.on('closed', async (err) => {
+    expect((err as CloseEvent).code).toBe(
+      CloseCode.ConnectionAcknowledgementTimeout,
+    );
+    await server.dispose();
+    done();
   });
 });
 
@@ -1738,30 +1763,5 @@ describe('events', () => {
     expect(pongFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
     expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
-  });
-
-  it('should close socket if ConnectionAck not received', async (done) => {
-    expect.assertions(1);
-    const port = await getAvailablePort();
-    const path = '/simple';
-    const url = `ws://localhost:${port}${path}`;
-    const server = new WebSocket.Server({ port, path });
-
-    const client = createClient({
-      url,
-      lazy: false,
-      retryAttempts: 0,
-      onNonLazyError: noop,
-      connectionAckWaitTimeout: 10,
-    });
-
-    client.on('closed', (err) => {
-      // websocket closed
-      expect((err as CloseEvent).code).toBe(
-        CloseCode.ConnectionAcknowledgementTimeout,
-      );
-      server.close();
-      done();
-    });
   });
 });
