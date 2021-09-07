@@ -33,6 +33,7 @@ export enum CloseCode {
   Forbidden = 4403,
   SubprotocolNotAcceptable = 4406,
   ConnectionInitialisationTimeout = 4408,
+  ConnectionAcknowledgementTimeout = 4418,
   /** Subscriber distinction is very important */
   SubscriberAlreadyExists = 4409,
   TooManyInitialisationRequests = 4429,

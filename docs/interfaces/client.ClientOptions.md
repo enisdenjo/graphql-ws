@@ -10,6 +10,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### Properties
 
+- [connectionAckWaitTimeout](client.ClientOptions.md#connectionackwaittimeout)
 - [connectionParams](client.ClientOptions.md#connectionparams)
 - [disablePong](client.ClientOptions.md#disablepong)
 - [jsonMessageReplacer](client.ClientOptions.md#jsonmessagereplacer)
@@ -30,6 +31,24 @@ Configuration used for the GraphQL over WebSocket client.
 - [retryWait](client.ClientOptions.md#retrywait)
 
 ## Properties
+
+### connectionAckWaitTimeout
+
+• `Optional` **connectionAckWaitTimeout**: `number`
+
+The amount of time for which the client will wait
+for `ConnectionAck` message.
+
+Set the value to `Infinity`, `''`, `0`, `null` or `undefined` to skip waiting.
+
+If the wait timeout has passed and the server
+has not responded with `ConnectionAck` message,
+the client will terminate the socket by
+dispatching a close event `4418: Connection acknowledgement timeout`
+
+**`default`** 0
+
+___
 
 ### connectionParams
 
