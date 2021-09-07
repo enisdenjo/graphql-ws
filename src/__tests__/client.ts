@@ -12,7 +12,7 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../common';
-import { startWSTServer as startTServer } from './utils';
+import { getAvailablePort, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 
 // simulate browser environment for easier client testing
@@ -1738,5 +1738,30 @@ describe('events', () => {
     expect(pongFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
     expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
+  });
+
+  it('should close socket if ConnectionAck not received', async (done) => {
+    expect.assertions(1);
+    const port = await getAvailablePort();
+    const path = '/simple';
+    const url = `ws://localhost:${port}${path}`;
+    const server = new WebSocket.Server({ port, path });
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      connectionAckWaitTimeout: 10,
+    });
+
+    client.on('closed', (err) => {
+      // websocket closed
+      expect((err as CloseEvent).code).toBe(
+        CloseCode.ConnectionAcknowledgementTimeout,
+      );
+      server.close();
+      done();
+    });
   });
 });

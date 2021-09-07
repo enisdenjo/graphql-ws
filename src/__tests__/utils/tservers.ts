@@ -56,7 +56,7 @@ export interface TServer {
 
 type Dispose = (beNice?: boolean) => Promise<void>;
 
-async function getAvailablePort() {
+export async function getAvailablePort() {
   const httpServer = http.createServer();
 
   let tried = 0;
