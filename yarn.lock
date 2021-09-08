@@ -4689,7 +4689,7 @@ __metadata:
     fastify: ^3.21.0
     fastify-websocket: ^4.0.0
     glob: ^7.1.7
-    graphql: 16.0.0-rc.1
+    graphql: 16.0.0-rc.2.experimental-stream-defer.3
     jest: ^27.1.1
     prettier: ^2.3.2
     replacestream: ^4.0.3
@@ -4707,10 +4707,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"graphql@npm:16.0.0-rc.1":
-  version: 16.0.0-rc.1
-  resolution: "graphql@npm:16.0.0-rc.1"
-  checksum: 50780040ada5f4e71d3f485c6c8265dc4ce2ec6d44425f7a36eb2f3ef73ea60a91d89ba956f1b2fee042cc3ebdba387b967c458db736702415d8cfafca384af8
+"graphql@npm:16.0.0-rc.2.experimental-stream-defer.3":
+  version: 16.0.0-rc.2.experimental-stream-defer.3
+  resolution: "graphql@npm:16.0.0-rc.2.experimental-stream-defer.3"
+  checksum: cadb4d499f46acc8e45b76c3e58ffa9cfc67663acef0722bcf1a85f1332a91719968a324a19087ba41d0f8de58d441fc96997169a4d103abd8d9a103efbae9fa
   languageName: node
   linkType: hard
 
