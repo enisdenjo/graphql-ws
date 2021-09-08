@@ -26,7 +26,7 @@ export function isAsyncGenerator<T = unknown>(
 ): val is AsyncGenerator<T> {
   return (
     isObject(val) &&
-    typeof val[Symbol.asyncIterator] === 'function' &&
+    typeof Object(val)[Symbol.asyncIterator] === 'function' &&
     typeof val.return === 'function'
     // for lazy ones, we only need the return anyway
     // typeof val.throw === 'function' &&

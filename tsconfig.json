@@ -10,8 +10,7 @@
     "baseUrl": "./src",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": false
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["lib"]
 }
