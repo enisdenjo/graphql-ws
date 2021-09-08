@@ -1,3 +1,16 @@
+# [5.5.0](https://github.com/enisdenjo/graphql-ws/compare/v5.4.1...v5.5.0) (2021-09-08)
+
+
+### Bug Fixes
+
+* Define graphql execution results ([a64c91b](https://github.com/enisdenjo/graphql-ws/commit/a64c91bbfab8433e8fec2a32a64ee4d402f182c6))
+* **server:** Operation result can be async generator or iterable ([b1fb883](https://github.com/enisdenjo/graphql-ws/commit/b1fb88304a8c5e560620154524ed2218be2e4c99))
+
+
+### Features
+
+* **client:** Add `connectionAckWaitTimeout` option ([#228](https://github.com/enisdenjo/graphql-ws/issues/228)) ([35ce054](https://github.com/enisdenjo/graphql-ws/commit/35ce05460767a60d8763e6123a6da051ba970029))
+
 ## [5.4.1](https://github.com/enisdenjo/graphql-ws/compare/v5.4.0...v5.4.1) (2021-08-26)
 
 
