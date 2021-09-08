@@ -4,7 +4,7 @@
  *
  */
 
-import { GraphQLError, ExecutionResult } from 'graphql';
+import { GraphQLError } from 'graphql';
 import {
   isObject,
   areGraphQLErrors,
@@ -132,10 +132,34 @@ export interface SubscribePayload {
 }
 
 /** @category Common */
+export interface ExecutionResult<
+  Data = Record<string, unknown>,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: Data | null;
+  hasNext?: boolean;
+  extensions?: Extensions;
+}
+
+/** @category Common */
+export interface ExecutionPatchResult<
+  Data = unknown,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: Data | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  hasNext: boolean;
+  extensions?: Extensions;
+}
+
+/** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
-  readonly payload: ExecutionResult;
+  readonly payload: ExecutionResult | ExecutionPatchResult;
 }
 
 /** @category Common */

@@ -15,7 +15,6 @@ import {
   getOperationAST,
   GraphQLError,
   SubscriptionArgs,
-  ExecutionResult,
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -33,6 +32,8 @@ import {
   JSONMessageReviver,
   PingMessage,
   PongMessage,
+  ExecutionResult,
+  ExecutionPatchResult,
 } from './common';
 import {
   isObject,
@@ -44,12 +45,12 @@ import {
 /** @category Server */
 export type OperationResult =
   | Promise<
-      | AsyncGenerator<ExecutionResult>
-      | AsyncIterable<ExecutionResult>
+      | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
+      | AsyncIterable<ExecutionResult | ExecutionPatchResult>
       | ExecutionResult
     >
-  | AsyncGenerator<ExecutionResult>
-  | AsyncIterable<ExecutionResult>
+  | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
+  | AsyncIterable<ExecutionResult | ExecutionPatchResult>
   | ExecutionResult;
 
 /**
@@ -356,8 +357,12 @@ export interface ServerOptions<E = unknown> {
     ctx: Context<E>,
     message: NextMessage,
     args: ExecutionArgs,
-    result: ExecutionResult,
-  ) => Promise<ExecutionResult | void> | ExecutionResult | void;
+    result: ExecutionResult | ExecutionPatchResult,
+  ) =>
+    | Promise<ExecutionResult | ExecutionPatchResult | void>
+    | ExecutionResult
+    | ExecutionPatchResult
+    | void;
   /**
    * The complete callback is executed after the
    * operation has completed right before sending
@@ -652,7 +657,10 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             ctx.subscriptions[id] = null;
 
             const emit = {
-              next: async (result: ExecutionResult, args: ExecutionArgs) => {
+              next: async (
+                result: ExecutionResult | ExecutionPatchResult,
+                args: ExecutionArgs,
+              ) => {
                 let nextMessage: NextMessage = {
                   id,
                   type: MessageType.Next,

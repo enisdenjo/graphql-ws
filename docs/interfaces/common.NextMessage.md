@@ -22,7 +22,7 @@ ___
 
 ### payload
 
-• `Readonly` **payload**: `ExecutionResult`<`ObjMap`<`unknown`\>, `ObjMap`<`unknown`\>\>
+• `Readonly` **payload**: [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\>
 
 ___
 

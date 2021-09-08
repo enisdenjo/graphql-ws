@@ -62,7 +62,7 @@ ___
 
 ### subscriptions
 
-• `Readonly` **subscriptions**: `Record`<`string`, ``null`` \| `AsyncIterator`<`unknown`, `any`, `undefined`\>\>
+• `Readonly` **subscriptions**: `Record`<`string`, ``null`` \| `AsyncGenerator`<`unknown`, `any`, `unknown`\> \| `AsyncIterable`<`unknown`\>\>
 
 Holds the active subscriptions for this context. **All operations**
 that are taking place are aggregated here. The user is _subscribed_

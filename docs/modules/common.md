@@ -16,6 +16,8 @@
 - [ConnectionInitMessage](../interfaces/common.ConnectionInitMessage.md)
 - [Disposable](../interfaces/common.Disposable.md)
 - [ErrorMessage](../interfaces/common.ErrorMessage.md)
+- [ExecutionPatchResult](../interfaces/common.ExecutionPatchResult.md)
+- [ExecutionResult](../interfaces/common.ExecutionResult.md)
 - [NextMessage](../interfaces/common.NextMessage.md)
 - [PingMessage](../interfaces/common.PingMessage.md)
 - [PongMessage](../interfaces/common.PongMessage.md)

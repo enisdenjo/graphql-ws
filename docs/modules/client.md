@@ -12,6 +12,8 @@
 - [ConnectionInitMessage](client.md#connectioninitmessage)
 - [Disposable](client.md#disposable)
 - [ErrorMessage](client.md#errormessage)
+- [ExecutionPatchResult](client.md#executionpatchresult)
+- [ExecutionResult](client.md#executionresult)
 - [GRAPHQL\_TRANSPORT\_WS\_PROTOCOL](client.md#graphql_transport_ws_protocol)
 - [ID](client.md#id)
 - [JSONMessageReplacer](client.md#jsonmessagereplacer)
@@ -381,6 +383,18 @@ ___
 ### ErrorMessage
 
 Re-exports: [ErrorMessage](../interfaces/common.ErrorMessage.md)
+
+___
+
+### ExecutionPatchResult
+
+Re-exports: [ExecutionPatchResult](../interfaces/common.ExecutionPatchResult.md)
+
+___
+
+### ExecutionResult
+
+Re-exports: [ExecutionResult](../interfaces/common.ExecutionResult.md)
 
 ___
 
