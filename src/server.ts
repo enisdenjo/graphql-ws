@@ -34,12 +34,22 @@ import {
   PingMessage,
   PongMessage,
 } from './common';
-import { isObject, isAsyncIterable, areGraphQLErrors } from './utils';
+import {
+  isObject,
+  isAsyncGenerator,
+  isAsyncIterable,
+  areGraphQLErrors,
+} from './utils';
 
 /** @category Server */
 export type OperationResult =
-  | Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
-  | AsyncIterableIterator<ExecutionResult>
+  | Promise<
+      | AsyncGenerator<ExecutionResult>
+      | AsyncIterable<ExecutionResult>
+      | ExecutionResult
+    >
+  | AsyncGenerator<ExecutionResult>
+  | AsyncIterable<ExecutionResult>
   | ExecutionResult;
 
 /**
@@ -488,7 +498,10 @@ export interface Context<E = unknown> {
    * a reservation, meaning - the operation resolves to a single result or is still
    * pending/being prepared.
    */
-  readonly subscriptions: Record<ID, AsyncIterator<unknown> | null>;
+  readonly subscriptions: Record<
+    ID,
+    AsyncGenerator<unknown> | AsyncIterable<unknown> | null
+  >;
   /**
    * An extra field where you can store your own context values
    * to pass between callbacks.
@@ -769,8 +782,8 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
               /** multiple emitted results */
               if (!(id in ctx.subscriptions)) {
                 // subscription was completed/canceled before the operation settled
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                operationResult.return!(); // iterator must implement the return method
+                if (isAsyncGenerator(operationResult))
+                  operationResult.return(undefined);
               } else {
                 ctx.subscriptions[id] = operationResult;
                 for await (const result of operationResult) {
@@ -792,8 +805,9 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
             return;
           }
           case MessageType.Complete: {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            await ctx.subscriptions[message.id]?.return!(); // iterator must implement the return method
+            const subscription = ctx.subscriptions[message.id];
+            if (isAsyncGenerator(subscription))
+              await subscription.return(undefined);
             delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
             return;
           }
@@ -808,8 +822,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          await sub?.return!(); // iterator must implement the return method
+          if (isAsyncGenerator(sub)) await sub.return(undefined);
         }
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
         await onClose?.(ctx, code, reason);

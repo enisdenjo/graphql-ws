@@ -16,8 +16,22 @@ export function isObject(val: unknown): val is Record<PropertyKey, unknown> {
 /** @private */
 export function isAsyncIterable<T = unknown>(
   val: unknown,
-): val is AsyncIterableIterator<T> {
+): val is AsyncIterable<T> {
   return typeof Object(val)[Symbol.asyncIterator] === 'function';
+}
+
+/** @private */
+export function isAsyncGenerator<T = unknown>(
+  val: unknown,
+): val is AsyncGenerator<T> {
+  return (
+    isObject(val) &&
+    typeof val[Symbol.asyncIterator] === 'function' &&
+    typeof val.return === 'function'
+    // for lazy ones, we only need the return anyway
+    // typeof val.throw === 'function' &&
+    // typeof val.next === 'function'
+  );
 }
 
 /** @private */

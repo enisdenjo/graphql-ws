@@ -260,6 +260,9 @@ function subscribe<T>(payload: SubscribePayload): AsyncIterableIterator<T> {
         ? { done: true, value: undefined }
         : { value: pending.shift()! };
     },
+    async throw(err) {
+      throw err
+    }
     async return() {
       dispose();
       return { done: true, value: undefined };
