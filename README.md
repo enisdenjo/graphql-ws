@@ -1468,6 +1468,7 @@ const client = createClient({
 
 import ws from 'ws'; // yarn add ws
 import { useServer } from 'graphql-ws/lib/use/ws';
+import { CloseCode } from 'graphql-ws';
 import { schema } from './my-graphql-schema';
 import { isTokenValid } from './my-auth';
 
@@ -1489,12 +1490,12 @@ useServer(
     onSubscribe: async (ctx) => {
       // or maybe on every subscribe
       if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(4403, 'Forbidden');
+        return ctx.extra.socket.close(CloseCode.Forbidden, 'Forbidden');
     },
     onNext: async (ctx) => {
       // why not on every result emission? lol
       if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(4403, 'Forbidden');
+        return ctx.extra.socket.close(CloseCode.Forbidden, 'Forbidden');
     },
   },
   wsServer,
@@ -1548,7 +1549,7 @@ const client = createClient({
       // will set the token refresh flag to true
       tokenExpiryTimeout = setTimeout(() => {
         if (socket.readyState === WebSocket.OPEN)
-          socket.close(CloseCode.Unauthorized, 'Unauthorized');
+          socket.close(CloseCode.Forbidden, 'Forbidden');
       }, getCurrentTokenExpiresIn());
     },
     closed: (event) => {
