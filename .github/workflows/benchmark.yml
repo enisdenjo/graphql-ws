@@ -26,6 +26,13 @@ jobs:
       - name: Download k6
         run: |
           curl https://github.com/grafana/k6/releases/download/v0.34.1/k6-v0.34.1-linux-amd64.tar.gz -L | tar xvz --strip-components 1
+      - name: Cache k6
+        uses: actions/cache@v2
+        with:
+          path: .k6
+          key: k6-v0.34.1
+      - name: Build
+        run: yarn run build:esm
       - name: Run
         run: |
           yarn bench:start-servers &
