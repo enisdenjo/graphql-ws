@@ -74,6 +74,7 @@ export function run() {
   const metrics = scenarioMetrics[__ENV.SCENARIO];
   metrics.runs.add(1);
 
+  let connected = false;
   try {
     ws.connect(
       `ws://localhost:${__ENV.PORT}/graphql`,
@@ -124,11 +125,11 @@ export function run() {
         });
       },
     );
-
-    check(0, { connected: () => true });
+    connected = true;
   } catch (_err) {
-    check(0, { connected: () => false });
+    // noop
   }
+  check(0, { [`${__ENV.SCENARIO} - connected`]: () => connected });
 
   metrics.completed.add(Date.now() - start);
   metrics.completions.add(1);
