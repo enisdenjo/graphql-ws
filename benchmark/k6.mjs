@@ -29,34 +29,25 @@ export const options = {
   },
 };
 
-// assemble metrics per scenario
 const scenarioMetrics = {};
 for (let scenario in options.scenarios) {
   options.scenarios[scenario].env['SCENARIO'] = scenario;
+  options.scenarios[scenario].tags = { ['SCENARIO']: scenario };
 
   scenarioMetrics[scenario] = {
-    run: new Counter(`${scenario}/run`),
-    opened: new Trend(`${scenario}/opened`, true),
-    acknowledged_and_subscribed: new Trend(
-      `${scenario}/acknowledged_and_subscribed`,
-      true,
-    ),
-    next_received: new Trend(`${scenario}/next_received`, true),
-    complete_received: new Trend(`${scenario}/complete_received`, true),
-    closed: new Trend(`${scenario}/closed`, true),
-    total: new Trend(`${scenario}/total`, true),
+    runs: new Counter(`${scenario} - runs`),
+    opened: new Trend(`${scenario} - opened`, true),
+    subscribed: new Trend(`${scenario} - subscribed`, true),
+    completions: new Counter(`${scenario} - completions`),
+    completed: new Trend(`${scenario} - completed`, true),
   };
 }
 
 export function run() {
   const start = Date.now();
-  let opened = 0;
-  let acknowledged_and_subscribed = 0;
-  let next_received = 0;
-  let complete_received = 0;
 
   const metrics = scenarioMetrics[__ENV.SCENARIO];
-  metrics.run.add(1);
+  metrics.runs.add(1);
 
   const res = ws.connect(
     `ws://localhost:${__ENV.PORT}/graphql`,
@@ -69,12 +60,10 @@ export function run() {
         check(code, {
           'closed normally': (code) => code === 1000,
         });
-        metrics.closed.add(Date.now() - start);
       });
 
       socket.on('open', () => {
-        opened = Date.now() - start;
-        metrics.opened.add(opened);
+        metrics.opened.add(Date.now() - start);
 
         socket.send(stringifyMessage({ type: MessageType.ConnectionInit }));
       });
@@ -84,12 +73,8 @@ export function run() {
         msgs++;
 
         if (msgs === 1) {
-          check(data, {
-            'connection acknowledged': (data) =>
-              parseMessage(data).type === MessageType.ConnectionAck,
-          });
+          assertMessageType(parseMessage(data).type, MessageType.ConnectionAck);
 
-          // execute query once acknowledged_and_subscribed
           socket.send(
             stringifyMessage({
               type: MessageType.Subscribe,
@@ -98,23 +83,11 @@ export function run() {
             }),
           );
 
-          acknowledged_and_subscribed = Date.now() - opened;
-          metrics.acknowledged_and_subscribed.add(acknowledged_and_subscribed);
-        } else if (msgs === 2) {
-          check(data, {
-            'next message received': (data) =>
-              parseMessage(data).type === MessageType.Next,
-          });
-
-          next_received = Date.now() - acknowledged_and_subscribed;
-          metrics.next_received.add(next_received);
-        } else if (msgs === 3) {
-          check(data, {
-            'complete message received': (data) =>
-              parseMessage(data).type === MessageType.Complete,
-          });
-          complete_received = Date.now() - next_received;
-          metrics.complete_received.add(complete_received);
+          metrics.subscribed.add(Date.now() - start);
+        } else if (msgs === 2)
+          assertMessageType(parseMessage(data).type, MessageType.Next);
+        else if (msgs === 3) {
+          assertMessageType(parseMessage(data).type, MessageType.Complete);
 
           // we're done once completed
           socket.close(1000);
@@ -123,6 +96,12 @@ export function run() {
     },
   );
 
-  metrics.total.add(Date.now() - start);
-  check(res, { 'status was 101': (r) => r && r.status === 101 });
+  metrics.completed.add(Date.now() - start);
+  metrics.completions.add(1);
+}
+
+function assertMessageType(got, expected) {
+  if (got !== expected) {
+    fail(`Expected ${expected} message, got ${got}`);
+  }
 }
