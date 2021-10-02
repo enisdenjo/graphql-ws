@@ -1,33 +1,53 @@
 import { check, fail } from 'k6';
 import ws from 'k6/ws';
-import { Trend } from 'k6/metrics';
-import { WS_PORT } from './servers/ports.mjs';
+import { Counter, Trend } from 'k6/metrics';
+import { WS_PORT, UWS_PORT } from './servers/ports.mjs';
 import { stringifyMessage, parseMessage, MessageType } from '../lib/common.mjs';
 
-const trace = {
-  ws_graphql_ack: new Trend('ws_graphql_ack', true),
-  ws_graphql_next: new Trend('ws_graphql_next', true),
-  ws_graphql_complete: new Trend('ws_graphql_complete', true),
-  ws_graphql_close: new Trend('ws_graphql_close', true),
-};
-
-export let options = {
+export const options = {
   scenarios: {
     ws: {
-      exec: 'run',
-      gracefulStop: '5s',
-
       executor: 'constant-vus',
+      exec: 'run',
       vus: 10,
       duration: '5s',
+      gracefulStop: '3s',
 
       env: { PORT: String(WS_PORT) },
+    },
+    uWebSockets: {
+      startTime: '8s', // after ws
+
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+      duration: '5s',
+      gracefulStop: '3s',
+
+      env: { PORT: String(UWS_PORT) },
     },
   },
 };
 
+// assemble metrics per scenario
+const scenarioMetrics = {};
+for (let scenario in options.scenarios) {
+  options.scenarios[scenario].env['SCENARIO'] = scenario;
+
+  scenarioMetrics[scenario] = {
+    run: new Counter(`${scenario}/run`),
+    acknowledged: new Trend(`${scenario}/acknowledged`, true),
+    next_received: new Trend(`${scenario}/next_received`, true),
+    complete_received: new Trend(`${scenario}/complete_received`, true),
+    closed: new Trend(`${scenario}/closed`, true),
+  };
+}
+
 export function run() {
   const start = Date.now();
+
+  const metrics = scenarioMetrics[__ENV.SCENARIO];
+  metrics.run.add(1);
 
   const res = ws.connect(
     `ws://localhost:${__ENV.PORT}/graphql`,
@@ -38,9 +58,9 @@ export function run() {
 
       socket.on('close', (code) => {
         check(code, {
-          'normal closure': (code) => code === 1000,
+          'closed normally': (code) => code === 1000,
         });
-        trace.ws_graphql_close.add(Date.now() - start);
+        metrics.closed.add(Date.now() - start);
       });
 
       socket.on('open', () =>
@@ -56,7 +76,7 @@ export function run() {
             'connection acknowledged': (data) =>
               parseMessage(data).type === MessageType.ConnectionAck,
           });
-          trace.ws_graphql_ack.add(Date.now() - start);
+          metrics.acknowledged.add(Date.now() - start);
 
           // execute query once acknowledged
           socket.send(
@@ -68,16 +88,16 @@ export function run() {
           );
         } else if (msgs === 2) {
           check(data, {
-            'received next message': (data) =>
+            'next message received': (data) =>
               parseMessage(data).type === MessageType.Next,
           });
-          trace.ws_graphql_next.add(Date.now() - start);
+          metrics.next_received.add(Date.now() - start);
         } else if (msgs === 3) {
           check(data, {
-            'received complete message': (data) =>
+            'complete message received': (data) =>
               parseMessage(data).type === MessageType.Complete,
           });
-          trace.ws_graphql_complete.add(Date.now() - start);
+          metrics.complete_received.add(Date.now() - start);
 
           // we're done once completed
           socket.close(1000);
