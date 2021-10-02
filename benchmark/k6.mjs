@@ -11,18 +11,18 @@ export const options = {
       exec: 'run',
       vus: 10,
       duration: '5s',
-      gracefulStop: '3s',
+      gracefulStop: '5s',
 
       env: { PORT: String(WS_PORT) },
     },
     uWebSockets: {
-      startTime: '8s', // after ws
+      startTime: '10s', // after ws
 
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
       duration: '5s',
-      gracefulStop: '3s',
+      gracefulStop: '5s',
 
       env: { PORT: String(UWS_PORT) },
     },
@@ -36,15 +36,24 @@ for (let scenario in options.scenarios) {
 
   scenarioMetrics[scenario] = {
     run: new Counter(`${scenario}/run`),
-    acknowledged: new Trend(`${scenario}/acknowledged`, true),
+    opened: new Trend(`${scenario}/opened`, true),
+    acknowledged_and_subscribed: new Trend(
+      `${scenario}/acknowledged_and_subscribed`,
+      true,
+    ),
     next_received: new Trend(`${scenario}/next_received`, true),
     complete_received: new Trend(`${scenario}/complete_received`, true),
     closed: new Trend(`${scenario}/closed`, true),
+    total: new Trend(`${scenario}/total`, true),
   };
 }
 
 export function run() {
   const start = Date.now();
+  let opened = 0;
+  let acknowledged_and_subscribed = 0;
+  let next_received = 0;
+  let complete_received = 0;
 
   const metrics = scenarioMetrics[__ENV.SCENARIO];
   metrics.run.add(1);
@@ -53,8 +62,8 @@ export function run() {
     `ws://localhost:${__ENV.PORT}/graphql`,
     { headers: { 'Sec-WebSocket-Protocol': 'graphql-transport-ws' } },
     function (socket) {
-      // each run's socket can be open for no more than 5 seconds
-      socket.setTimeout(() => socket.close(), 5000);
+      // each run's socket can be open for no more than 3 seconds
+      socket.setTimeout(() => socket.close(), 3000);
 
       socket.on('close', (code) => {
         check(code, {
@@ -63,9 +72,12 @@ export function run() {
         metrics.closed.add(Date.now() - start);
       });
 
-      socket.on('open', () =>
-        socket.send(stringifyMessage({ type: MessageType.ConnectionInit })),
-      );
+      socket.on('open', () => {
+        opened = Date.now() - start;
+        metrics.opened.add(opened);
+
+        socket.send(stringifyMessage({ type: MessageType.ConnectionInit }));
+      });
 
       let msgs = 0;
       socket.on('message', (data) => {
@@ -76,9 +88,8 @@ export function run() {
             'connection acknowledged': (data) =>
               parseMessage(data).type === MessageType.ConnectionAck,
           });
-          metrics.acknowledged.add(Date.now() - start);
 
-          // execute query once acknowledged
+          // execute query once acknowledged_and_subscribed
           socket.send(
             stringifyMessage({
               type: MessageType.Subscribe,
@@ -86,18 +97,24 @@ export function run() {
               payload: { query: '{ hello }' },
             }),
           );
+
+          acknowledged_and_subscribed = Date.now() - opened;
+          metrics.acknowledged_and_subscribed.add(acknowledged_and_subscribed);
         } else if (msgs === 2) {
           check(data, {
             'next message received': (data) =>
               parseMessage(data).type === MessageType.Next,
           });
-          metrics.next_received.add(Date.now() - start);
+
+          next_received = Date.now() - acknowledged_and_subscribed;
+          metrics.next_received.add(next_received);
         } else if (msgs === 3) {
           check(data, {
             'complete message received': (data) =>
               parseMessage(data).type === MessageType.Complete,
           });
-          metrics.complete_received.add(Date.now() - start);
+          complete_received = Date.now() - next_received;
+          metrics.complete_received.add(complete_received);
 
           // we're done once completed
           socket.close(1000);
@@ -106,5 +123,6 @@ export function run() {
     },
   );
 
+  metrics.total.add(Date.now() - start);
   check(res, { 'status was 101': (r) => r && r.status === 101 });
 }
