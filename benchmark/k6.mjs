@@ -81,7 +81,7 @@ export function run() {
   const metrics = scenarioMetrics[__ENV.SCENARIO];
   metrics.runs.add(1);
 
-  let connected = false;
+  let completed = false;
   try {
     ws.connect(
       `ws://localhost:${__ENV.PORT}/graphql`,
@@ -132,14 +132,13 @@ export function run() {
         });
       },
     );
-    connected = true;
+    completed = true;
+    metrics.completed.add(Date.now() - start);
+    metrics.completions.add(1);
   } catch (_err) {
     // noop
   }
-  check(0, { [`${__ENV.SCENARIO} - connected`]: () => connected });
-
-  metrics.completed.add(Date.now() - start);
-  metrics.completions.add(1);
+  check(0, { [`${__ENV.SCENARIO} - completed`]: () => completed });
 }
 
 function assertMessageType(got, expected) {
