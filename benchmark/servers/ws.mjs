@@ -10,4 +10,4 @@ const server = new WebSocketServer({
 
 useServer({ schema }, server);
 
-console.log(`Listening on port ${WS_PORT}...`);
+console.log(`ws: Listening on port ${WS_PORT}...`);
