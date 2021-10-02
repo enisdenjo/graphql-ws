@@ -11,24 +11,31 @@ export const options = {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
-      duration: '5s',
-      gracefulStop: '5s',
 
       env: { PORT: String(WS_PORT) },
     },
     uWebSockets: {
-      startTime: '10s', // after ws
-
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
-      duration: '5s',
-      gracefulStop: '5s',
 
       env: { PORT: String(UWS_PORT) },
     },
   },
 };
+
+const duration = 5, // seconds
+  gracefulStop = 5; // seconds
+let i = 0;
+for (const [, scenario] of Object.entries(options.scenarios)) {
+  i++;
+
+  scenario.duration = duration + 's';
+  scenario.gracefulStop = gracefulStop + 's';
+  if (i > 1) {
+    scenario.startTime = (duration + gracefulStop) * (i - 1) + 's';
+  }
+}
 
 const scenarioMetrics = {};
 for (let scenario in options.scenarios) {
