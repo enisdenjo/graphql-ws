@@ -74,52 +74,61 @@ export function run() {
   const metrics = scenarioMetrics[__ENV.SCENARIO];
   metrics.runs.add(1);
 
-  const res = ws.connect(
-    `ws://localhost:${__ENV.PORT}/graphql`,
-    { headers: { 'Sec-WebSocket-Protocol': 'graphql-transport-ws' } },
-    function (socket) {
-      // each run's socket can be open for no more than 3 seconds
-      socket.setTimeout(() => socket.close(), 3000);
+  try {
+    ws.connect(
+      `ws://localhost:${__ENV.PORT}/graphql`,
+      { headers: { 'Sec-WebSocket-Protocol': 'graphql-transport-ws' } },
+      function (socket) {
+        // each run's socket can be open for no more than 3 seconds
+        socket.setTimeout(() => socket.close(), 3000);
 
-      socket.on('close', (code) => {
-        check(code, {
-          'closed normally': (code) => code === 1000,
+        socket.on('close', (code) => {
+          check(code, {
+            'closed normally': (code) => code === 1000,
+          });
         });
-      });
 
-      socket.on('open', () => {
-        metrics.opened.add(Date.now() - start);
+        socket.on('open', () => {
+          metrics.opened.add(Date.now() - start);
 
-        socket.send(stringifyMessage({ type: MessageType.ConnectionInit }));
-      });
+          socket.send(stringifyMessage({ type: MessageType.ConnectionInit }));
+        });
 
-      let msgs = 0;
-      socket.on('message', (data) => {
-        msgs++;
+        let msgs = 0;
+        socket.on('message', (data) => {
+          msgs++;
 
-        if (msgs === 1) {
-          assertMessageType(parseMessage(data).type, MessageType.ConnectionAck);
+          if (msgs === 1) {
+            assertMessageType(
+              parseMessage(data).type,
+              MessageType.ConnectionAck,
+            );
 
-          socket.send(
-            stringifyMessage({
-              type: MessageType.Subscribe,
-              id: 'k6',
-              payload: { query: '{ hello }' },
-            }),
-          );
+            socket.send(
+              stringifyMessage({
+                type: MessageType.Subscribe,
+                id: 'k6',
+                payload: { query: '{ hello }' },
+              }),
+            );
 
-          metrics.subscribed.add(Date.now() - start);
-        } else if (msgs === 2)
-          assertMessageType(parseMessage(data).type, MessageType.Next);
-        else if (msgs === 3) {
-          assertMessageType(parseMessage(data).type, MessageType.Complete);
+            metrics.subscribed.add(Date.now() - start);
+          } else if (msgs === 2)
+            assertMessageType(parseMessage(data).type, MessageType.Next);
+          else if (msgs === 3) {
+            assertMessageType(parseMessage(data).type, MessageType.Complete);
 
-          // we're done once completed
-          socket.close(1000);
-        } else fail(`Shouldn't have msgs ${msgs} messages`);
-      });
-    },
-  );
+            // we're done once completed
+            socket.close(1000);
+          } else fail(`Shouldn't have msgs ${msgs} messages`);
+        });
+      },
+    );
+
+    check(0, { connected: () => true });
+  } catch (_err) {
+    check(0, { connected: () => false });
+  }
 
   metrics.completed.add(Date.now() - start);
   metrics.completions.add(1);
