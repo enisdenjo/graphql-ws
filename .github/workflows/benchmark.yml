@@ -1,0 +1,32 @@
+name: Benchmark
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+jobs:
+  k6:
+    name: k6
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'yarn'
+      - name: Install
+        run: yarn install --immutable
+      - name: Download k6
+        run: |
+          curl https://github.com/grafana/k6/releases/download/v0.34.1/k6-v0.34.1-linux-amd64.tar.gz -L | tar xvz --strip-components 1
+      - name: Run
+        run: |
+          yarn bench:start-servers &
+          ./k6 run benchmark/k6.mjs

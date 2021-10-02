@@ -8,6 +8,6 @@ uWS
   .ws('/graphql', makeBehavior({ schema }))
   .listen(UWS_PORT, (listenSocket) => {
     if (listenSocket) {
-      console.log(`uWebSockets: Listening on port ${UWS_PORT}...`);
+      console.log(`uWebSockets - listening on port ${UWS_PORT}...`);
     }
   });
