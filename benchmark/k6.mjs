@@ -1,6 +1,7 @@
 import { check, fail } from 'k6';
 import ws from 'k6/ws';
 import { Counter, Trend } from 'k6/metrics';
+import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 import { WS_PORT, UWS_PORT } from './servers/ports.mjs';
 import { stringifyMessage, parseMessage, MessageType } from '../lib/common.mjs';
 
@@ -40,6 +41,30 @@ for (let scenario in options.scenarios) {
     subscribed: new Trend(`${scenario} - subscribed`, true),
     completions: new Counter(`${scenario} - completions`),
     completed: new Trend(`${scenario} - completed`, true),
+  };
+}
+
+const EXCLUDE_METRICS = [
+  'iteration_duration',
+  'ws_connecting',
+  'ws_msgs_received',
+  'ws_msgs_sent',
+  'ws_session_duration',
+  'ws_sessions',
+];
+
+export function handleSummary(data) {
+  const metrics = data.metrics;
+  data.metrics = {};
+
+  for (const [key, value] of Object.entries(metrics)) {
+    if (!EXCLUDE_METRICS.includes(key)) {
+      data.metrics[key] = value;
+    }
+  }
+
+  return {
+    stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }
 
