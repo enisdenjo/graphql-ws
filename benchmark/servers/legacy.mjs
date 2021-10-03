@@ -49,5 +49,5 @@ SubscriptionServer.create(
 );
 
 server.listen(LEGACY_PORT, () => {
-  console.log(`legacy - listening on port ${LEGACY_PORT}...`);
+  console.log(`legacy_ws7 - listening on port ${LEGACY_PORT}...`);
 });
