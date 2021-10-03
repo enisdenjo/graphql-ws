@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { LEGACY_PORT } from './ports.mjs';
+import { ports } from './ports.mjs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { schema } from './schema.mjs';
@@ -48,6 +48,6 @@ SubscriptionServer.create(
   { server, path: '/graphql' },
 );
 
-server.listen(LEGACY_PORT, () => {
-  console.log(`legacy_ws7 - listening on port ${LEGACY_PORT}...`);
+server.listen(ports.legacy, () => {
+  console.log(`legacy_ws7 - listening on port ${ports.legacy}...`);
 });

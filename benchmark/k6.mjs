@@ -3,66 +3,26 @@ import ws from 'k6/ws';
 import { Counter, Trend } from 'k6/metrics';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.0.0/index.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
-import { WS8_PORT, WS7_PORT, UWS_PORT, LEGACY_PORT } from './servers/ports.mjs';
+import { ports } from './servers/ports.mjs';
 import { MessageType } from '../lib/common.mjs';
+
+if (!__ENV.SERVER) {
+  throw new Error('SERVER not specified.');
+}
 
 export const options = {
   scenarios: {
-    uWebSockets_query: {
+    query: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
-
-      env: { PORT: String(UWS_PORT) },
     },
-    uWebSockets_subscription: {
+    subscription: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
 
-      env: { SUBSCRIPTION: '1', PORT: String(UWS_PORT) },
-    },
-    ws8_query: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { PORT: String(WS8_PORT) },
-    },
-    ws8_subscription: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { SUBSCRIPTION: '1', PORT: String(WS8_PORT) },
-    },
-    ws7_query: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { PORT: String(WS7_PORT) },
-    },
-    ws7_subscription: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { SUBSCRIPTION: '1', PORT: String(WS7_PORT) },
-    },
-    legacy_ws7_query: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { LEGACY: '1', PORT: String(LEGACY_PORT) },
-    },
-    legacy_ws7_subscription: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { LEGACY: '1', SUBSCRIPTION: '1', PORT: String(LEGACY_PORT) },
+      env: { SUBSCRIPTION: '1' },
     },
   },
 };
@@ -82,8 +42,10 @@ for (const [, scenario] of Object.entries(options.scenarios)) {
 
 const scenarioMetrics = {};
 for (let scenario in options.scenarios) {
+  if (!options.scenarios[scenario].env) options.scenarios[scenario].env = {};
   options.scenarios[scenario].env['SCENARIO'] = scenario;
-  options.scenarios[scenario].tags = { ['SCENARIO']: scenario };
+  if (!options.scenarios[scenario].tags) options.scenarios[scenario].tags = {};
+  options.scenarios[scenario].tags['SCENARIO'] = scenario;
 
   scenarioMetrics[scenario] = {
     runs: new Counter(`${scenario} - runs`),
@@ -127,7 +89,7 @@ export function run() {
   let completed = false;
   try {
     ws.connect(
-      `ws://localhost:${__ENV.PORT}/graphql`,
+      `ws://localhost:${ports[__ENV.SERVER]}/graphql`,
       {
         headers: {
           'Sec-WebSocket-Protocol': __ENV.LEGACY
