@@ -6,7 +6,7 @@ import { schema } from './schema.mjs';
 uWS
   .App()
   .ws('/graphql', makeBehavior({ schema }))
-  .listen(ports.uws, (listenSocket) => {
+  .listen(ports.uWebSockets, (listenSocket) => {
     if (listenSocket) {
       console.log(`uWebSockets - listening on port ${ports.uWebSockets}...`);
     }
