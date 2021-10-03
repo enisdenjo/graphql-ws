@@ -14,19 +14,19 @@ export const options = {
     query: {
       executor: 'constant-vus',
       exec: 'run',
-      vus: 10,
+      vus: 20,
     },
     subscription: {
       executor: 'constant-vus',
       exec: 'run',
-      vus: 10,
+      vus: 20,
 
       env: { SUBSCRIPTION: '1' },
     },
   },
 };
 
-const duration = 5, // seconds
+const duration = 10, // seconds
   gracefulStop = 5; // seconds
 let i = 0;
 for (const [, scenario] of Object.entries(options.scenarios)) {
