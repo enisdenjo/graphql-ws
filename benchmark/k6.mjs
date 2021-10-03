@@ -104,9 +104,7 @@ export function run() {
         socket.setTimeout(() => socket.close(), 3000);
 
         socket.on('close', (code) => {
-          check(code, {
-            'closed normally': (code) => code === 1000,
-          });
+          if (code !== 1000) throw null;
         });
 
         socket.on('open', () => {
