@@ -48,6 +48,6 @@ SubscriptionServer.create(
   { server, path: '/graphql' },
 );
 
-server.listen(ports.legacy, () => {
-  console.log(`legacy_ws7 - listening on port ${ports.legacy}...`);
+server.listen(ports.legacy_ws7, () => {
+  console.log(`legacy_ws7 - listening on port ${ports.legacy_ws7}...`);
 });
