@@ -2,8 +2,8 @@ import { check, fail } from 'k6';
 import ws from 'k6/ws';
 import { Counter, Trend } from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
-import { WS_PORT, UWS_PORT } from './servers/ports.mjs';
-import { stringifyMessage, parseMessage, MessageType } from '../lib/common.mjs';
+import { WS_PORT, UWS_PORT, LEGACY_PORT } from './servers/ports.mjs';
+import { MessageType } from '../lib/common.mjs';
 
 export const options = {
   scenarios: {
@@ -20,6 +20,13 @@ export const options = {
       vus: 10,
 
       env: { PORT: String(UWS_PORT) },
+    },
+    legacy: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { LEGACY: '1', PORT: String(LEGACY_PORT) },
     },
   },
 };
@@ -85,7 +92,13 @@ export function run() {
   try {
     ws.connect(
       `ws://localhost:${__ENV.PORT}/graphql`,
-      { headers: { 'Sec-WebSocket-Protocol': 'graphql-transport-ws' } },
+      {
+        headers: {
+          'Sec-WebSocket-Protocol': __ENV.LEGACY
+            ? 'graphql-ws'
+            : 'graphql-transport-ws',
+        },
+      },
       function (socket) {
         // each run's socket can be open for no more than 3 seconds
         socket.setTimeout(() => socket.close(), 3000);
@@ -99,7 +112,13 @@ export function run() {
         socket.on('open', () => {
           metrics.opened.add(Date.now() - start);
 
-          socket.send(stringifyMessage({ type: MessageType.ConnectionInit }));
+          socket.send(
+            JSON.stringify({
+              type: __ENV.LEGACY
+                ? 'connection_init'
+                : MessageType.ConnectionInit,
+            }),
+          );
         });
 
         let msgs = 0;
@@ -108,23 +127,29 @@ export function run() {
 
           if (msgs === 1) {
             assertMessageType(
-              parseMessage(data).type,
-              MessageType.ConnectionAck,
+              JSON.parse(data).type,
+              __ENV.LEGACY ? 'connection_ack' : MessageType.ConnectionAck,
             );
 
             socket.send(
-              stringifyMessage({
-                type: MessageType.Subscribe,
+              JSON.stringify({
+                type: __ENV.LEGACY ? 'start' : MessageType.Subscribe,
                 id: 'k6',
                 payload: { query: '{ hello }' },
               }),
             );
 
             metrics.subscribed.add(Date.now() - start);
-          } else if (msgs === 2)
-            assertMessageType(parseMessage(data).type, MessageType.Next);
-          else if (msgs === 3) {
-            assertMessageType(parseMessage(data).type, MessageType.Complete);
+          } else if (msgs === 2) {
+            assertMessageType(
+              JSON.parse(data).type,
+              __ENV.LEGACY ? 'data' : MessageType.Next,
+            );
+          } else if (msgs === 3) {
+            assertMessageType(
+              JSON.parse(data).type,
+              __ENV.LEGACY ? 'complete' : MessageType.Complete,
+            );
 
             // we're done once completed
             socket.close(1000);
