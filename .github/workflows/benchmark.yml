@@ -97,4 +97,4 @@ jobs:
       - name: Run
         run: |
           NODE_ENV=production node benchmark/servers/legacy_ws7.mjs &
-          SERVER=legacy_ws7 ./k6 run benchmark/k6.mjs
+          LEGACY=1 SERVER=legacy_ws7 ./k6 run benchmark/k6.mjs
