@@ -1,39 +1,68 @@
 import { check, fail } from 'k6';
 import ws from 'k6/ws';
 import { Counter, Trend } from 'k6/metrics';
+import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.0.0/index.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 import { WS8_PORT, WS7_PORT, UWS_PORT, LEGACY_PORT } from './servers/ports.mjs';
 import { MessageType } from '../lib/common.mjs';
 
 export const options = {
   scenarios: {
-    uWebSockets: {
+    uWebSockets_query: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
 
       env: { PORT: String(UWS_PORT) },
     },
-    ws8: {
+    uWebSockets_subscription: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { SUBSCRIPTION: '1', PORT: String(UWS_PORT) },
+    },
+    ws8_query: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
 
       env: { PORT: String(WS8_PORT) },
     },
-    ws7: {
+    ws8_subscription: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { SUBSCRIPTION: '1', PORT: String(WS8_PORT) },
+    },
+    ws7_query: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
 
       env: { PORT: String(WS7_PORT) },
     },
-    legacy_ws7: {
+    ws7_subscription: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { SUBSCRIPTION: '1', PORT: String(WS7_PORT) },
+    },
+    legacy_ws7_query: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
 
       env: { LEGACY: '1', PORT: String(LEGACY_PORT) },
+    },
+    legacy_ws7_subscription: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { LEGACY: '1', SUBSCRIPTION: '1', PORT: String(LEGACY_PORT) },
     },
   },
 };
@@ -139,18 +168,22 @@ export function run() {
             socket.send(
               JSON.stringify({
                 type: __ENV.LEGACY ? 'start' : MessageType.Subscribe,
-                id: 'k6',
-                payload: { query: '{ hello }' },
+                id: uuidv4(),
+                payload: {
+                  query: __ENV.SUBSCRIPTION
+                    ? 'subscription { greetings }'
+                    : '{ hello }',
+                },
               }),
             );
 
             metrics.subscribed.add(Date.now() - start);
-          } else if (msgs === 2) {
+          } else if (__ENV.SUBSCRIPTION ? msgs > 1 && msgs <= 6 : msgs === 2) {
             assertMessageType(
               JSON.parse(data).type,
               __ENV.LEGACY ? 'data' : MessageType.Next,
             );
-          } else if (msgs === 3) {
+          } else if (__ENV.SUBSCRIPTION ? msgs > 6 : msgs === 3) {
             assertMessageType(
               JSON.parse(data).type,
               __ENV.LEGACY ? 'complete' : MessageType.Complete,
