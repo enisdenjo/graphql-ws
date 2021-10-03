@@ -4716,6 +4716,7 @@ __metadata:
     typescript: ^4.4.3
     uWebSockets.js: "uNetworking/uWebSockets.js#v19.3.0"
     ws: ^8.2.2
+    ws7: "npm:ws@7"
   peerDependencies:
     graphql: ">=0.11 <=16"
   languageName: unknown
@@ -9508,7 +9509,7 @@ typescript@^4.4.3:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.4.6":
+"ws7@npm:ws@7, ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.4.6":
   version: 7.5.5
   resolution: "ws@npm:7.5.5"
   peerDependencies:

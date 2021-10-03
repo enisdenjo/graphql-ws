@@ -2,18 +2,11 @@ import { check, fail } from 'k6';
 import ws from 'k6/ws';
 import { Counter, Trend } from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
-import { WS_PORT, UWS_PORT, LEGACY_PORT } from './servers/ports.mjs';
+import { WS8_PORT, WS7_PORT, UWS_PORT, LEGACY_PORT } from './servers/ports.mjs';
 import { MessageType } from '../lib/common.mjs';
 
 export const options = {
   scenarios: {
-    ws: {
-      executor: 'constant-vus',
-      exec: 'run',
-      vus: 10,
-
-      env: { PORT: String(WS_PORT) },
-    },
     uWebSockets: {
       executor: 'constant-vus',
       exec: 'run',
@@ -21,7 +14,21 @@ export const options = {
 
       env: { PORT: String(UWS_PORT) },
     },
-    legacy: {
+    ws8: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { PORT: String(WS8_PORT) },
+    },
+    ws7: {
+      executor: 'constant-vus',
+      exec: 'run',
+      vus: 10,
+
+      env: { PORT: String(WS7_PORT) },
+    },
+    legacy_ws7: {
       executor: 'constant-vus',
       exec: 'run',
       vus: 10,
