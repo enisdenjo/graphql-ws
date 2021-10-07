@@ -1,4 +1,4 @@
-import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
+import uWS from 'uWebSockets.js';
 import { ports } from './ports.mjs';
 import { makeBehavior } from '../../lib/use/uWebSockets.mjs';
 import { schema } from './schema.mjs';
