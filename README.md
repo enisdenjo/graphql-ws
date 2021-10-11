@@ -689,6 +689,41 @@ function createPingerClient(options: ClientOptions): PingerClient {
 
 </details>
 
+<details id="supported-check">
+<summary><a href="#supported-check">🔗</a> Client usage supported check</summary>
+
+```ts
+import { createClient } from 'graphql-ws';
+
+function supportsGraphQLTransportWS(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const client = createClient({
+      url,
+      retryAttempts: 0, // fail immediately
+      lazy: false, // connect as soon as the client is created
+      on: {
+        closed: () => resolve(false), // connection rejected, probably not supported
+        connected: () => {
+          resolve(true); // connected = supported
+          client.dispose(); // dispose after check
+        },
+      },
+    });
+  });
+}
+
+const supported = await supportsGraphQLTransportWS(
+  'ws://some.unknown:4000/enpoint',
+);
+if (supported) {
+  // use graphql-ws
+} else {
+  // fallback (use subscriptions-transport-ws?)
+}
+```
+
+</details>
+
 <details id="browser">
 <summary><a href="#browser">🔗</a> Client usage in browser</summary>
 
