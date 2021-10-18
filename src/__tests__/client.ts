@@ -430,6 +430,38 @@ it('should close socket if connection not acknowledged', async (done) => {
   });
 });
 
+it('should close socket with error on malformed request', async (done) => {
+  const { url } = await startTServer();
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    on: {
+      closed: (err) => {
+        expect((err as CloseEvent).code).toBe(CloseCode.InternalServerError);
+        expect((err as CloseEvent).reason).toBe(
+          'Syntax Error: Unexpected Name "notaquery".',
+        );
+        client.dispose();
+        done();
+      },
+    },
+  });
+
+  client.subscribe(
+    {
+      query: 'notaquery',
+    },
+    {
+      next: noop,
+      error: noop,
+      complete: noop,
+    },
+  );
+});
+
 describe('ping/pong', () => {
   it('should respond with a pong to a ping', async () => {
     expect.assertions(1);
