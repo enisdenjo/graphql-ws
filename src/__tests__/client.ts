@@ -431,6 +431,8 @@ it('should close socket if connection not acknowledged', async (done) => {
 });
 
 it('should close socket with error on malformed request', async (done) => {
+  expect.assertions(4);
+
   const { url } = await startTServer();
 
   const client = createClient({
@@ -444,8 +446,6 @@ it('should close socket with error on malformed request', async (done) => {
         expect((err as CloseEvent).reason).toBe(
           'Syntax Error: Unexpected Name "notaquery".',
         );
-        client.dispose();
-        done();
       },
     },
   });
@@ -456,7 +456,14 @@ it('should close socket with error on malformed request', async (done) => {
     },
     {
       next: noop,
-      error: noop,
+      error: (err) => {
+        expect((err as CloseEvent).code).toBe(CloseCode.InternalServerError);
+        expect((err as CloseEvent).reason).toBe(
+          'Syntax Error: Unexpected Name "notaquery".',
+        );
+        client.dispose();
+        done();
+      },
       complete: noop,
     },
   );
