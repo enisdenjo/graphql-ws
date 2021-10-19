@@ -6,5 +6,6 @@ module.exports = {
   excludePrivate: true,
   disableSources: true,
   categorizeByGroup: false, // removes redundant category names in matching modules
+  githubPages: false,
   exclude: ['**/index.ts', '**/utils.ts', '**/__tests__/**/*'],
 };

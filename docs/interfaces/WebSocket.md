@@ -1,22 +1,20 @@
-[graphql-ws](../README.md) / [server](../modules/server.md) / WebSocket
+[graphql-ws](../README.md) / WebSocket
 
 # Interface: WebSocket
-
-[server](../modules/server.md).WebSocket
 
 ## Table of contents
 
 ### Properties
 
-- [protocol](server.WebSocket.md#protocol)
+- [protocol](WebSocket.md#protocol)
 
 ### Methods
 
-- [close](server.WebSocket.md#close)
-- [onMessage](server.WebSocket.md#onmessage)
-- [onPing](server.WebSocket.md#onping)
-- [onPong](server.WebSocket.md#onpong)
-- [send](server.WebSocket.md#send)
+- [close](WebSocket.md#close)
+- [onMessage](WebSocket.md#onmessage)
+- [onPing](WebSocket.md#onping)
+- [onPong](WebSocket.md#onpong)
+- [send](WebSocket.md#send)
 
 ## Properties
 

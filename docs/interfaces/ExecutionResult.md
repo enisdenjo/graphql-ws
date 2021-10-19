@@ -1,8 +1,6 @@
-[graphql-ws](../README.md) / [common](../modules/common.md) / ExecutionResult
+[graphql-ws](../README.md) / ExecutionResult
 
 # Interface: ExecutionResult<Data, Extensions\>
-
-[common](../modules/common.md).ExecutionResult
 
 ## Type parameters
 
@@ -15,10 +13,10 @@
 
 ### Properties
 
-- [data](common.ExecutionResult.md#data)
-- [errors](common.ExecutionResult.md#errors)
-- [extensions](common.ExecutionResult.md#extensions)
-- [hasNext](common.ExecutionResult.md#hasnext)
+- [data](ExecutionResult.md#data)
+- [errors](ExecutionResult.md#errors)
+- [extensions](ExecutionResult.md#extensions)
+- [hasNext](ExecutionResult.md#hasnext)
 
 ## Properties
 

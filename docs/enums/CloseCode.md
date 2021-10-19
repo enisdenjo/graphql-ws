@@ -1,8 +1,6 @@
-[graphql-ws](../README.md) / [common](../modules/common.md) / CloseCode
+[graphql-ws](../README.md) / CloseCode
 
 # Enumeration: CloseCode
-
-[common](../modules/common.md).CloseCode
 
 `graphql-ws` expected and standard close codes of the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
 
@@ -10,15 +8,15 @@
 
 ### Enumeration members
 
-- [BadRequest](common.CloseCode.md#badrequest)
-- [ConnectionAcknowledgementTimeout](common.CloseCode.md#connectionacknowledgementtimeout)
-- [ConnectionInitialisationTimeout](common.CloseCode.md#connectioninitialisationtimeout)
-- [Forbidden](common.CloseCode.md#forbidden)
-- [InternalServerError](common.CloseCode.md#internalservererror)
-- [SubprotocolNotAcceptable](common.CloseCode.md#subprotocolnotacceptable)
-- [SubscriberAlreadyExists](common.CloseCode.md#subscriberalreadyexists)
-- [TooManyInitialisationRequests](common.CloseCode.md#toomanyinitialisationrequests)
-- [Unauthorized](common.CloseCode.md#unauthorized)
+- [BadRequest](CloseCode.md#badrequest)
+- [ConnectionAcknowledgementTimeout](CloseCode.md#connectionacknowledgementtimeout)
+- [ConnectionInitialisationTimeout](CloseCode.md#connectioninitialisationtimeout)
+- [Forbidden](CloseCode.md#forbidden)
+- [InternalServerError](CloseCode.md#internalservererror)
+- [SubprotocolNotAcceptable](CloseCode.md#subprotocolnotacceptable)
+- [SubscriberAlreadyExists](CloseCode.md#subscriberalreadyexists)
+- [TooManyInitialisationRequests](CloseCode.md#toomanyinitialisationrequests)
+- [Unauthorized](CloseCode.md#unauthorized)
 
 ## Enumeration members
 
