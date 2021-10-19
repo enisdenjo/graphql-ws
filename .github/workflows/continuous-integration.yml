@@ -21,13 +21,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-cache-
+          cache: 'yarn'
       - name: Install
         run: yarn install --immutable
       - name: Lint
@@ -44,13 +38,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-cache-
+          cache: 'yarn'
       - name: Install
         run: yarn install --immutable
       - name: Type check
@@ -67,13 +55,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-cache-
+          cache: 'yarn'
       - name: Install
         run: yarn install --immutable
       - name: Test
