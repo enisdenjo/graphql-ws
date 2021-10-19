@@ -93,7 +93,10 @@ export function makeHandler<
             } catch (err) {
               socket.close(
                 CloseCode.InternalServerError,
-                isProd ? 'Internal server error' : err.message,
+                // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+                isProd || err.message.length > 123
+                  ? 'Internal server error'
+                  : err.message,
               );
             }
           }),

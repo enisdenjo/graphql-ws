@@ -361,6 +361,28 @@ for (const { tServer, startTServer } of tServers) {
       // },
     );
 
+    it('should limit the internal server error message size', async () => {
+      const { url } = await startTServer({
+        onConnect: () => {
+          throw new Error(
+            'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+          );
+        },
+      });
+
+      const client = await createTClient(url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe('Internal server error');
+      });
+    });
+
     describe('Keep-Alive', () => {
       it('should dispatch pings after the timeout has passed', async (done) => {
         const { url } = await startTServer(undefined, 50);
