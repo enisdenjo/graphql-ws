@@ -1,3 +1,12 @@
+## [5.5.1](https://github.com/enisdenjo/graphql-ws/compare/v5.5.0...v5.5.1) (2021-10-19)
+
+
+### Bug Fixes
+
+* **server:** Limit internal server error close message size ([8479f76](https://github.com/enisdenjo/graphql-ws/commit/8479f7676b6fd182d9ade6358dc926026ddab5b7))
+* **server:** Log internal errors to the console ([6ddf0d1](https://github.com/enisdenjo/graphql-ws/commit/6ddf0d1ab394e7c7530fafe28d9e6260b1e1287b))
+* **ws,fastify-websocket:** Send only on ready socket ([8d13c9e](https://github.com/enisdenjo/graphql-ws/commit/8d13c9ee7bc96ac819d44fdd2b2ffe61b4690684))
+
 # [5.5.0](https://github.com/enisdenjo/graphql-ws/compare/v5.4.1...v5.5.0) (2021-09-08)
 
 
