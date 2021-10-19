@@ -83,6 +83,7 @@ export function makeHandler<
         protocol: socket.protocol,
         send: (data) =>
           new Promise((resolve, reject) => {
+            if (socket.readyState !== socket.OPEN) return resolve();
             socket.send(data, (err) => (err ? reject(err) : resolve()));
           }),
         close: (code, reason) => socket.close(code, reason),
