@@ -15,6 +15,17 @@ import {
 import { startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 
+// silence console.error calls for nicer tests overview
+const consoleError = console.error;
+beforeAll(() => {
+  console.error = () => {
+    // silence
+  };
+});
+afterAll(() => {
+  console.error = consoleError;
+});
+
 // simulate browser environment for easier client testing
 beforeEach(() => {
   Object.assign(global, {

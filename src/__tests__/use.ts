@@ -17,6 +17,17 @@ import {
   FastifyExtra,
 } from './utils';
 
+// silence console.error calls for nicer tests overview
+const consoleError = console.error;
+beforeAll(() => {
+  console.error = () => {
+    // silence
+  };
+});
+afterAll(() => {
+  console.error = consoleError;
+});
+
 for (const { tServer, startTServer } of tServers) {
   describe(tServer, () => {
     it('should allow connections with valid protocols only', async () => {

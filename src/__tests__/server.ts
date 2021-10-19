@@ -19,6 +19,17 @@ import {
 import { schema, schemaConfig } from './fixtures/simple';
 import { createTClient, startWSTServer as startTServer } from './utils';
 
+// silence console.error calls for nicer tests overview
+const consoleError = console.error;
+beforeAll(() => {
+  console.error = () => {
+    // silence
+  };
+});
+afterAll(() => {
+  console.error = consoleError;
+});
+
 /**
  * Tests
  */

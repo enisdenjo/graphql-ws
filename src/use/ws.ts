@@ -110,6 +110,11 @@ export function useServer<
             try {
               await cb(String(event));
             } catch (err) {
+              console.error(
+                'Internal error occurred during message handling. ' +
+                  'Please check your implementation.',
+                err,
+              );
               socket.close(
                 CloseCode.InternalServerError,
                 // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
