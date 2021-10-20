@@ -888,6 +888,7 @@ export function createClient(options: ClientOptions): Client {
           sink.error(err);
         }) // rejects on close events and errors
         .then(() => {
+          done = true;
           // delivering either an error or a complete terminates the sequence
           if (!errored) sink.complete();
         }); // resolves on release or normal closure
