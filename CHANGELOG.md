@@ -1,3 +1,11 @@
+## [5.5.2](https://github.com/enisdenjo/graphql-ws/compare/v5.5.1...v5.5.2) (2021-10-20)
+
+
+### Bug Fixes
+
+* **client:** Don't complete after connection error ([5f829c3](https://github.com/enisdenjo/graphql-ws/commit/5f829c36a73e6e8566247d62e2ea395e6d18d8eb))
+* **client:** Report close error even if `Complete` message followed ([27754b2](https://github.com/enisdenjo/graphql-ws/commit/27754b213fe4be3f7a918a0881700cf91825048e)), closes [#245](https://github.com/enisdenjo/graphql-ws/issues/245)
+
 ## [5.5.1](https://github.com/enisdenjo/graphql-ws/compare/v5.5.0...v5.5.1) (2021-10-19)
 
 
