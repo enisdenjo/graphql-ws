@@ -693,6 +693,7 @@ export function createClient(options: ClientOptions): Client {
                 ),
               ]);
             } catch (err) {
+              socket.onmessage = null; // stop reading messages as soon as reading breaks once
               socket.close(
                 CloseCode.BadRequest,
                 err instanceof Error ? err.message : new Error(err).message,
