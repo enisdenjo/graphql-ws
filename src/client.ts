@@ -883,7 +883,10 @@ export function createClient(options: ClientOptions): Client {
           }
         }
       })()
-        .catch(sink.error) // rejects on close events and errors
+        .catch((err) => {
+          (errored = true), (done = true);
+          sink.error(err);
+        }) // rejects on close events and errors
         .then(() => {
           // delivering either an error or a complete terminates the sequence
           if (!errored) sink.complete();

@@ -369,6 +369,33 @@ it('should not call complete after subscription error', async () => {
   }, 20);
 });
 
+it('should not call complete after connection error', async () => {
+  const { url, waitForClient } = await startTServer();
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+  });
+
+  const sub = tsubscribe(client, {
+    query: '{ hello }',
+  });
+
+  // kick off immediately
+  await waitForClient((client) => {
+    client.close();
+  });
+
+  // report error
+  await sub.waitForError();
+
+  // but not complete
+  await sub.waitForComplete(() => {
+    fail("shouldn't have completed");
+  }, 20);
+});
+
 it('should use a custom JSON message reviver function', async () => {
   const { url } = await startTServer();
 
@@ -472,6 +499,65 @@ it('should close socket with error on malformed request', async (done) => {
         expect((err as CloseEvent).reason).toBe(
           'Syntax Error: Unexpected Name "notaquery".',
         );
+        client.dispose();
+        done();
+      },
+      complete: noop,
+    },
+  );
+});
+
+it('should report close error even if complete message followed', async (done) => {
+  expect.assertions(4);
+
+  const { url, server } = await startRawServer();
+
+  server.on('connection', (socket) => {
+    socket.on('message', (data) => {
+      const msg = parseMessage(String(data));
+
+      // acknowledge conneciton
+      if (msg.type === MessageType.ConnectionInit)
+        socket.send(stringifyMessage({ type: MessageType.ConnectionAck }));
+
+      // respond with a malformed error message and a complete
+      if (msg.type === MessageType.Subscribe) {
+        socket.send(
+          JSON.stringify({
+            id: msg.id,
+            type: MessageType.Error,
+            payload: 'malformed',
+          }),
+        );
+        socket.send(
+          stringifyMessage({ id: msg.id, type: MessageType.Complete }),
+        );
+      }
+    });
+  });
+
+  const client = createClient({
+    url,
+    lazy: false,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    on: {
+      closed: (err) => {
+        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).reason).toBe('Invalid message');
+      },
+    },
+  });
+
+  client.subscribe(
+    {
+      query: 'notaquery',
+    },
+    {
+      next: noop,
+      error: (err) => {
+        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).reason).toBe('Invalid message');
         client.dispose();
         done();
       },
