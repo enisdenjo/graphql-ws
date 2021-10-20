@@ -1,3 +1,10 @@
+## [5.5.3](https://github.com/enisdenjo/graphql-ws/compare/v5.5.2...v5.5.3) (2021-10-20)
+
+
+### Bug Fixes
+
+* **client:** Distinguish client connection closes ([ed4d9db](https://github.com/enisdenjo/graphql-ws/commit/ed4d9db0fdf722a98ed8e95d9f5af6ae952acd20))
+
 ## [5.5.2](https://github.com/enisdenjo/graphql-ws/compare/v5.5.1...v5.5.2) (2021-10-20)
 
 
