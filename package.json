@@ -99,7 +99,7 @@
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "fastify": "^3.22.0",
+    "fastify": "^3.22.1",
     "fastify-websocket": "^4.0.0",
     "glob": "^7.2.0",
     "graphql": "16.0.0-rc.5",
@@ -114,7 +114,7 @@
     "typedoc": "0.22.6",
     "typedoc-plugin-markdown": "^3.11.3",
     "typescript": "^4.4.4",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v19.3.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.0.0",
     "ws": "^8.2.3",
     "ws7": "npm:ws@^7.5.5"
   }

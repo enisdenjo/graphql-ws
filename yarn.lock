@@ -2037,8 +2037,8 @@ __metadata:
   linkType: hard
 
 "@semantic-release/npm@npm:^8.0.0":
-  version: 8.0.1
-  resolution: "@semantic-release/npm@npm:8.0.1"
+  version: 8.0.2
+  resolution: "@semantic-release/npm@npm:8.0.2"
   dependencies:
     "@semantic-release/error": ^3.0.0
     aggregate-error: ^3.0.0
@@ -2055,7 +2055,7 @@ __metadata:
     tempy: ^1.0.0
   peerDependencies:
     semantic-release: ">=18.0.0"
-  checksum: b0499469e660ec901c061f56b127b41c10b4edece507ad705d3db13b24deee21cbd3d37566082e99dc0b13430f3262778ccc3b3b2363d4e750456aefab3c41fd
+  checksum: ade2226a85830df101248805b9254ced284fe3d024de100b1669ecda3499f9f9170ac701f88f22742dee9440f57a768215031a0e19e5d8899b27061d43e415b3
   languageName: node
   linkType: hard
 
@@ -3078,9 +3078,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001265":
-  version: 1.0.30001269
-  resolution: "caniuse-lite@npm:1.0.30001269"
-  checksum: 23a6bd029c4120a084056dae4eeecc552eba55c434035306e7ee4060aed1b6babed5f6d832f6ba359f13376356464a1673bc6c625c2932e376156f7f7fa1a3c0
+  version: 1.0.30001270
+  resolution: "caniuse-lite@npm:1.0.30001270"
+  checksum: bee685ddf96f707f124c417f9bf7d84e4e57d5cfeaa3d0ccb79c50a09d7c74786fbe7ec89d733ccc1d0fddd593e9eb3fded5ae12b1ad5a3998a32eecbe0b191c
   languageName: node
   linkType: hard
 
@@ -3748,9 +3748,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.867":
-  version: 1.3.872
-  resolution: "electron-to-chromium@npm:1.3.872"
-  checksum: b76980c58131e7f30cc6b9f855b219a6ef8ba8596faef5955b77130c79109add3abdf59571c6db8c5e98989248967504524f8408d579ae8b6902c5d0aabefa0d
+  version: 1.3.873
+  resolution: "electron-to-chromium@npm:1.3.873"
+  checksum: 65c368b4d963432f5025be27036f01999555c04b96dc4200001d7373bdeacf8449787898a61bb8a0602944c7a54849184dcedf022b4a79b4257200c95574e481
   languageName: node
   linkType: hard
 
@@ -4186,14 +4186,14 @@ __metadata:
   linkType: hard
 
 "fast-json-stringify@npm:^2.5.2":
-  version: 2.7.10
-  resolution: "fast-json-stringify@npm:2.7.10"
+  version: 2.7.11
+  resolution: "fast-json-stringify@npm:2.7.11"
   dependencies:
     ajv: ^6.11.0
     deepmerge: ^4.2.2
     rfdc: ^1.2.0
     string-similarity: ^4.0.1
-  checksum: b57e531f1f5afed0ffa96fc508ed1937d4e4496cde626c20cc35f66583936d621e2015d9b4c8f0f57527c75de96b83d059e29ab0f9cd31cdbb04d0a33874ac1d
+  checksum: 814f5e0d4f5054214287f055aa5792bf0ecbc0a7b0fe800f4484fd6564c92fc41b7e7f12fe9c77cb4cb5534fc1de08a5c8bf5c5e899cf8718fd115b4cd7c3778
   languageName: node
   linkType: hard
 
@@ -4256,9 +4256,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^3.22.0":
-  version: 3.22.0
-  resolution: "fastify@npm:3.22.0"
+"fastify@npm:^3.22.1":
+  version: 3.22.1
+  resolution: "fastify@npm:3.22.1"
   dependencies:
     "@fastify/ajv-compiler": ^1.0.0
     abstract-logging: ^2.0.0
@@ -4271,12 +4271,11 @@ __metadata:
     light-my-request: ^4.2.0
     pino: ^6.13.0
     proxy-addr: ^2.0.7
-    readable-stream: ^3.4.0
     rfdc: ^1.1.4
     secure-json-parse: ^2.0.0
     semver: ^7.3.2
     tiny-lru: ^7.0.0
-  checksum: 4f06ccb4b75df5748d8683b11050920439db642a6fecf508d0e6aa58cefd874a4d9ef76e3ec29a9e87a06c373c4d1adfa0d92c092f793d1bbfd9f3207e2c1c6a
+  checksum: 057f29045629250923b962c5fbd421811378ef32c497bc02bb1c0a75294f43ca73e7041262a306b7c1d6bf243d2096d63cc4192aaa6c9053efcd4557e225d470
   languageName: node
   linkType: hard
 
@@ -4710,7 +4709,7 @@ __metadata:
     eslint: ^8.0.1
     eslint-config-prettier: ^8.3.0
     eslint-plugin-prettier: ^4.0.0
-    fastify: ^3.22.0
+    fastify: ^3.22.1
     fastify-websocket: ^4.0.0
     glob: ^7.2.0
     graphql: 16.0.0-rc.5
@@ -4725,7 +4724,7 @@ __metadata:
     typedoc: 0.22.6
     typedoc-plugin-markdown: ^3.11.3
     typescript: ^4.4.4
-    uWebSockets.js: "uNetworking/uWebSockets.js#v19.3.0"
+    uWebSockets.js: "uNetworking/uWebSockets.js#v20.0.0"
     ws: ^8.2.3
     ws7: "npm:ws@^7.5.5"
   peerDependencies:
@@ -7874,7 +7873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:3, readable-stream@npm:^3.0.0, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
+"readable-stream@npm:3, readable-stream@npm:^3.0.0, readable-stream@npm:^3.6.0":
   version: 3.6.0
   resolution: "readable-stream@npm:3.6.0"
   dependencies:
@@ -9203,10 +9202,10 @@ typescript@^4.4.4:
   languageName: node
   linkType: hard
 
-"uWebSockets.js@uNetworking/uWebSockets.js#v19.3.0":
-  version: 19.3.0
-  resolution: "uWebSockets.js@https://github.com/uNetworking/uWebSockets.js.git#commit=7bf0faac5859fef2d113e83d22803f7833774c11"
-  checksum: e4a34844e277ce869fa9d93a78c37e36cbf5d9dfe5ffa017477e09c16011d21985a14a9898338eed069735a3b8c8090e5ba83f374a8bb65f59dd64dcea00c49a
+"uWebSockets.js@uNetworking/uWebSockets.js#v20.0.0":
+  version: 20.0.0
+  resolution: "uWebSockets.js@https://github.com/uNetworking/uWebSockets.js.git#commit=4558ee00f9f1f686fffe1accbfc2e85b1af9c50f"
+  checksum: 575440e74e8ce502f53f94b9a967a0d9f2acc650ab2a83d88b48a004a651894d67a004216a2d3c2696c960891749133d48a3ba0f33c0aa4f7050d0c1a0d09baa
   languageName: node
   linkType: hard
 
