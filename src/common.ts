@@ -27,7 +27,9 @@ export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';
  */
 export enum CloseCode {
   InternalServerError = 4500,
+  InternalClientError = 4005,
   BadRequest = 4400,
+  BadResponse = 4004,
   /** Tried subscribing before connect ack */
   Unauthorized = 4401,
   Forbidden = 4403,

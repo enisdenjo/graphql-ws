@@ -641,7 +641,7 @@ export function createClient(options: ClientOptions): Client {
               enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
               socket.close(
-                CloseCode.BadRequest,
+                CloseCode.InternalClientError,
                 err instanceof Error ? err.message : new Error(err).message,
               );
             }
@@ -695,7 +695,7 @@ export function createClient(options: ClientOptions): Client {
             } catch (err) {
               socket.onmessage = null; // stop reading messages as soon as reading breaks once
               socket.close(
-                CloseCode.BadRequest,
+                CloseCode.BadResponse,
                 err instanceof Error ? err.message : new Error(err).message,
               );
             }
@@ -750,7 +750,9 @@ export function createClient(options: ClientOptions): Client {
       (isFatalInternalCloseCode(errOrCloseEvent.code) ||
         [
           CloseCode.InternalServerError,
+          CloseCode.InternalClientError,
           CloseCode.BadRequest,
+          CloseCode.BadResponse,
           CloseCode.Unauthorized,
           // CloseCode.Forbidden, might grant access out after retry
           CloseCode.SubprotocolNotAcceptable,

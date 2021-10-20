@@ -228,7 +228,7 @@ it('should close with error message during connecting issues', async () => {
 
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.BadRequest);
+    expect(event.code).toBe(CloseCode.BadResponse);
     expect(event.reason).toBe('Welcome');
     expect(event.wasClean).toBeTruthy();
   });
@@ -288,7 +288,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   let sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.BadRequest);
+    expect(event.code).toBe(CloseCode.InternalClientError);
     expect(event.reason).toBe('No auth?');
     expect(event.wasClean).toBeTruthy();
   });
@@ -303,7 +303,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
     const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.BadRequest);
+    expect(event.code).toBe(CloseCode.InternalClientError);
     expect(event.reason).toBe('No auth?');
     expect(event.wasClean).toBeTruthy();
   });
@@ -543,7 +543,7 @@ it('should report close error even if complete message followed', async (done) =
     onNonLazyError: noop,
     on: {
       closed: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toBe('Invalid message');
       },
     },
@@ -556,7 +556,7 @@ it('should report close error even if complete message followed', async (done) =
     {
       next: noop,
       error: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toBe('Invalid message');
         client.dispose();
         done();
@@ -602,7 +602,7 @@ it('should report close error even if complete message followed', async (done) =
     onNonLazyError: noop,
     on: {
       closed: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toBe('Invalid message');
       },
     },
@@ -615,7 +615,7 @@ it('should report close error even if complete message followed', async (done) =
     {
       next: noop,
       error: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadRequest);
+        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toBe('Invalid message');
         client.dispose();
         done();
@@ -1429,7 +1429,7 @@ describe('reconnecting', () => {
       }, 20);
     }
 
-    expect.assertions(6);
+    expect.assertions(8);
     const warn = console.warn;
     console.warn = () => {
       /* hide warnings for test */
@@ -1437,7 +1437,9 @@ describe('reconnecting', () => {
     await testCloseCode(CloseCode.SubprotocolNotAcceptable);
     console.warn = warn;
     await testCloseCode(CloseCode.InternalServerError);
+    await testCloseCode(CloseCode.InternalClientError);
     await testCloseCode(CloseCode.BadRequest);
+    await testCloseCode(CloseCode.BadResponse);
     await testCloseCode(CloseCode.Unauthorized);
     await testCloseCode(CloseCode.SubscriberAlreadyExists);
     await testCloseCode(CloseCode.TooManyInitialisationRequests);
