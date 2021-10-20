@@ -96,6 +96,44 @@ async function getAvailablePort() {
   return addr.port;
 }
 
+export async function startRawServer(): Promise<{
+  url: string;
+  server: ws.Server;
+  dispose: () => Promise<void>;
+}> {
+  const path = '/raw';
+  const port = await getAvailablePort();
+  const server = new ws.Server({ port, path });
+
+  // sockets to kick off on teardown
+  const sockets = new Set<ws>();
+  server.on('connection', (socket) => {
+    sockets.add(socket);
+    socket.once('close', () => sockets.delete(socket));
+  });
+
+  const dispose: Dispose = (beNice) => {
+    return new Promise((resolve) => {
+      if (!beNice)
+        for (const socket of sockets) {
+          socket.terminate();
+          sockets.delete(socket);
+        }
+      server.close(() => {
+        leftovers.splice(leftovers.indexOf(dispose), 1);
+        resolve();
+      });
+    });
+  };
+  leftovers.push(dispose);
+
+  return {
+    url: `ws://localhost:${port}${path}`,
+    server,
+    dispose,
+  };
+}
+
 export async function startWSTServer(
   options: Partial<ServerOptions> = {},
   keepAlive?: number, // for ws tests sake
