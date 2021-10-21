@@ -885,15 +885,13 @@ export function createClient(options: ClientOptions): Client {
           }
         }
       })()
-        .catch((err) => {
-          (errored = true), (done = true);
-          sink.error(err);
-        }) // rejects on close events and errors
         .then(() => {
-          done = true;
           // delivering either an error or a complete terminates the sequence
           if (!errored) sink.complete();
-        }); // resolves on release or normal closure
+        }) // resolves on release or normal closure
+        .catch((err) => {
+          sink.error(err);
+        }); // rejects on close events and errors
 
       return () => {
         // dispose only of active subscriptions
