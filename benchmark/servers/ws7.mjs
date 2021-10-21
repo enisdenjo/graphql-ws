@@ -1,9 +1,10 @@
 import ws from 'ws7';
+const WebSocketServer = ws.Server;
 import { ports } from './ports.mjs';
 import { useServer } from '../../lib/use/ws.mjs';
 import { schema } from './schema.mjs';
 
-const server = new ws.Server({
+const server = new WebSocketServer({
   port: ports.ws7,
   path: '/graphql',
 });

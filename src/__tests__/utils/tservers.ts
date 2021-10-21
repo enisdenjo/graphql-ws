@@ -3,7 +3,7 @@ import http from 'http';
 import { schema, pong } from '../fixtures/simple';
 import { ServerOptions, Context } from '../../server';
 
-import ws from 'ws';
+import ws, { WebSocketServer } from 'ws';
 import uWS from 'uWebSockets.js';
 import Fastify from 'fastify';
 import fastifyWebsocket from 'fastify-websocket';
@@ -98,12 +98,12 @@ async function getAvailablePort() {
 
 export async function startRawServer(): Promise<{
   url: string;
-  server: ws.Server;
+  server: WebSocketServer;
   dispose: () => Promise<void>;
 }> {
   const path = '/raw';
   const port = await getAvailablePort();
-  const server = new ws.Server({ port, path });
+  const server = new WebSocketServer({ port, path });
 
   // sockets to kick off on teardown
   const sockets = new Set<ws>();
@@ -141,7 +141,7 @@ export async function startWSTServer(
   const path = '/simple';
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
-  const wsServer = new ws.Server({ port, path });
+  const wsServer = new WebSocketServer({ port, path });
 
   // sockets to kick off on teardown
   const sockets = new Set<ws>();
