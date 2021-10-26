@@ -780,6 +780,94 @@ const client = createClient({
 
 </details>
 
+<details id="python-client-gql">
+<summary><a href="#python-client-gql">🔗</a> Client usage in Python 3.6+ with <a href="https://gql.readthedocs.io">gql</a></summary>
+
+```python
+import asyncio
+
+# graphql-ws is supported from gql version 3.0.0b0
+from gql import Client, gql  # pip install --pre gql[websockets]
+from gql.transport.websockets import WebsocketsTransport
+
+
+async def main():
+
+    transport = WebsocketsTransport(
+        url="ws://localhost:4000/graphql",
+        # Uncomment the following lines to activate client pings
+        # ping_interval=60,
+        # pong_timeout=10,
+    )
+
+    client = Client(transport=transport)
+
+    async with client as session:
+
+        # GraphQL query
+        query = gql("{hello}")
+
+        result = await session.execute(query)
+        print(result)
+
+        # GraphQL subscription
+        subscription = gql(
+            """
+            subscription {
+              greetings
+            }
+        """
+        )
+
+        async for result in session.subscribe(subscription):
+            print(result)
+
+
+asyncio.run(main())
+```
+
+</details>
+
+<details id="command-line-client-gql-cli">
+<summary><a href="#command-line-client-gql-cli">🔗</a> Client usage from the command line with <a href="https://gql.readthedocs.io/en/v3.0.0b0/gql-cli/intro.html">gql-cli</a></summary>
+
+```sh
+# Install gql with the 'websockets' extra dependency (needs Python 3.6+)
+$ pip install --pre gql[websockets]
+...
+
+# Execute a simple GraphQL query
+$ echo '{hello}' | gql-cli ws://localhost:4000/graphql
+{"hello": "Hello World!"}
+
+# Execute a GraphQL subscription
+$ echo "subscription{greetings}" | gql-cli ws://localhost:4000/graphql
+{"greetings": "Hi"}
+{"greetings": "Bonjour"}
+{"greetings": "Hola"}
+{"greetings": "Ciao"}
+{"greetings": "Zdravo"}
+
+# Using -v flag to show protocol messages (for debugging)
+$ echo "subscription{greetings}" | gql-cli ws://localhost:4000/graphql -v
+INFO:gql.transport.websockets:>>> {"type": "connection_init", "payload": {}}
+INFO:gql.transport.websockets:<<< {"type":"connection_ack"}
+INFO:gql.transport.websockets:>>> {"id": "1", "type": "subscribe", "payload": {"query": "subscription {\n  greetings\n}\n"}}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"next","payload":{"data":{"greetings":"Hi"}}}
+{"greetings": "Hi"}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"next","payload":{"data":{"greetings":"Bonjour"}}}
+{"greetings": "Bonjour"}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"next","payload":{"data":{"greetings":"Hola"}}}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"next","payload":{"data":{"greetings":"Ciao"}}}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"next","payload":{"data":{"greetings":"Zdravo"}}}
+{"greetings": "Hola"}
+{"greetings": "Ciao"}
+{"greetings": "Zdravo"}
+INFO:gql.transport.websockets:<<< {"id":"1","type":"complete"}
+```
+
+</details>
+
 <details id="ws">
 <summary><a href="#ws">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a></summary>
 
