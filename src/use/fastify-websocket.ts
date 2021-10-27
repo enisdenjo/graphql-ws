@@ -113,7 +113,7 @@ export function makeHandler<
     socket.once('close', (code, reason) => {
       if (pongWait) clearTimeout(pongWait);
       if (pingInterval) clearInterval(pingInterval);
-      if (!isProd && code === 4406)
+      if (!isProd && code === CloseCode.SubprotocolNotAcceptable)
         console.warn(
           `WebSocket protocol error occured. It was most likely caused due to an ` +
             `unsupported subprotocol "${socket.protocol}" requested by the client. ` +
