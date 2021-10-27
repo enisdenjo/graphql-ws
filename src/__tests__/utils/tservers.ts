@@ -31,6 +31,7 @@ afterEach(async () => {
 });
 
 export interface TServerClient {
+  socket: ws | null; // null when uWS
   send(data: string): void;
   onMessage(cb: (message: string) => void): () => void;
   close(code?: number, data?: string): void;
@@ -216,6 +217,7 @@ export async function startWSTServer(
 
   function toClient(socket: ws): TServerClient {
     return {
+      socket,
       send: (data) => socket.send(data),
       onMessage: (cb) => {
         const listener = (data: unknown) => cb(String(data));
@@ -479,6 +481,7 @@ export async function startFastifyWSTServer(
 
   function toClient(socket: ws): TServerClient {
     return {
+      socket,
       send: (data) => socket.send(data),
       onMessage: (cb) => {
         const listener = (data: unknown) => cb(String(data));

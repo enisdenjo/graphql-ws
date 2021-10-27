@@ -80,6 +80,21 @@ export function useServer<
   });
 
   ws.on('connection', (socket, request) => {
+    socket.on('error', (err) => {
+      console.error(
+        'Internal error emitted on a WebSocket socket. ' +
+          'Please check your implementation.',
+        err,
+      );
+      socket.close(
+        CloseCode.InternalServerError,
+        // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+        isProd || err.message.length > 123
+          ? 'Internal server error'
+          : err.message,
+      );
+    });
+
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
     const pingInterval =
