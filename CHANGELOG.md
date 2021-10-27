@@ -1,3 +1,14 @@
+## [5.5.4](https://github.com/enisdenjo/graphql-ws/compare/v5.5.3...v5.5.4) (2021-10-27)
+
+
+### Bug Fixes
+
+* **fastify-websocket:** Handle connection and socket emitted errors ([71e9586](https://github.com/enisdenjo/graphql-ws/commit/71e9586247e91a307b1b401667c8e9f2bb42d932))
+* **fastify-websocket:** Handle server emitted errors ([3fa17a7](https://github.com/enisdenjo/graphql-ws/commit/3fa17a704689da41d66a1934d1aa09a305e01d9f))
+* **ws:** Handle socket emitted errors ([a22c00f](https://github.com/enisdenjo/graphql-ws/commit/a22c00ff406f19ca706afdf6fdd7de98571bce78))
+* **ws:** Limit server emitted error close message size ([50620df](https://github.com/enisdenjo/graphql-ws/commit/50620dfbe2320cf35724ffc79fda80c836042f25))
+* **ws:** Log server emitted errors to the console ([0826b0a](https://github.com/enisdenjo/graphql-ws/commit/0826b0a994ca79b4589b5feed53d5bc98c88714f))
+
 ## [5.5.3](https://github.com/enisdenjo/graphql-ws/compare/v5.5.2...v5.5.3) (2021-10-20)
 
 
