@@ -43,8 +43,44 @@ export function makeHandler<
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
 
-  return (connection, request) => {
+  // we dont have access to the fastify-websocket server instance yet,
+  // register an error handler on first connection ONCE only
+  let handlingServerEmittedErrors = false;
+
+  return function handler(connection, request) {
     const { socket } = connection;
+
+    // handle server emitted errors only if not already handling
+    if (!handlingServerEmittedErrors) {
+      handlingServerEmittedErrors = true;
+      this.websocketServer.once('error', (err) => {
+        console.error(
+          'Internal error emitted on the WebSocket server. ' +
+            'Please check your implementation.',
+          err,
+        );
+
+        // catch the first thrown error and re-throw it once all clients have been notified
+        let firstErr: Error | null = null;
+
+        // report server errors by erroring out all clients with the same error
+        for (const client of this.websocketServer.clients) {
+          try {
+            client.close(
+              CloseCode.InternalServerError,
+              // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+              isProd || err.message.length > 123
+                ? 'Internal server error'
+                : err.message,
+            );
+          } catch (err) {
+            firstErr = firstErr ?? err;
+          }
+        }
+
+        if (firstErr) throw firstErr;
+      });
+    }
 
     // used as listener on two streams, prevent superfluous calls on close
     let emittedErrorHandled = false;

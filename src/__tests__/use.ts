@@ -355,8 +355,7 @@ for (const { tServer, itForWS, skipUWS, startTServer } of tServers) {
     });
 
     // uWebSocket.js cannot have errors emitted on the server instance
-    // TODO-db-211027 fastify-websocket
-    itForWS(
+    skipUWS(
       'should report server emitted errors to clients by closing the connection',
       async () => {
         const { url, server } = await startTServer();
@@ -376,8 +375,7 @@ for (const { tServer, itForWS, skipUWS, startTServer } of tServers) {
     );
 
     // uWebSocket.js cannot have errors emitted on the server instance
-    // TODO-db-211027 fastify-websocket
-    itForWS('should limit the server emitted error message size', async () => {
+    skipUWS('should limit the server emitted error message size', async () => {
       const { url, server, waitForClient } = await startTServer();
 
       const client = await createTClient(url);
