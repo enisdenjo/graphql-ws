@@ -52,6 +52,12 @@ export function useServer<
   const server = makeServer(options);
 
   ws.on('error', (err) => {
+    console.error(
+      'Internal error emitted on the WebSocket server. ' +
+        'Please check your implementation.',
+      err,
+    );
+
     // catch the first thrown error and re-throw it once all clients have been notified
     let firstErr: Error | null = null;
 
