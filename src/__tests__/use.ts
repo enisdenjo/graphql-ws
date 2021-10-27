@@ -391,6 +391,7 @@ for (const { tServer, startTServer } of tServers) {
       await client.waitForClose((event) => {
         expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe('Internal server error');
+        expect(event.wasClean).toBeTruthy(); // because the server reported the error
       });
     });
 
