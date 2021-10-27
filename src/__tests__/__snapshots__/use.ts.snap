@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fastify-websocket should limit the server emitted error message size 1`] = `"Internal error emitted on the WebSocket server. Please check your implementation."`;
+
+exports[`fastify-websocket should limit the socket emitted error message size 1`] = `"Internal error emitted on a WebSocket socket. Please check your implementation."`;
+
+exports[`fastify-websocket should report server emitted errors to clients by closing the connection 1`] = `"Internal error emitted on the WebSocket server. Please check your implementation."`;
+
+exports[`fastify-websocket should report socket emitted errors to clients by closing the connection 1`] = `"Internal error emitted on a WebSocket socket. Please check your implementation."`;
+
+exports[`ws should limit the server emitted error message size 1`] = `"Internal error emitted on the WebSocket server. Please check your implementation."`;
+
+exports[`ws should limit the socket emitted error message size 1`] = `"Internal error emitted on a WebSocket socket. Please check your implementation."`;
+
+exports[`ws should report server emitted errors to clients by closing the connection 1`] = `"Internal error emitted on the WebSocket server. Please check your implementation."`;
+
+exports[`ws should report socket emitted errors to clients by closing the connection 1`] = `"Internal error emitted on a WebSocket socket. Please check your implementation."`;
