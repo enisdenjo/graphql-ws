@@ -51,7 +51,7 @@ export function useServer<
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
 
-  ws.on('error', (err) => {
+  ws.once('error', (err) => {
     console.error(
       'Internal error emitted on the WebSocket server. ' +
         'Please check your implementation.',
@@ -80,7 +80,7 @@ export function useServer<
   });
 
   ws.on('connection', (socket, request) => {
-    socket.on('error', (err) => {
+    socket.once('error', (err) => {
       console.error(
         'Internal error emitted on a WebSocket socket. ' +
           'Please check your implementation.',

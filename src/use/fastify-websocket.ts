@@ -67,8 +67,8 @@ export function makeHandler<
 
     // fastify-websocket uses the WebSocket.createWebSocketStream,
     // therefore errors get emitted on both the connection and the socket
-    connection.on('error', handleEmittedError);
-    socket.on('error', handleEmittedError);
+    connection.once('error', handleEmittedError);
+    socket.once('error', handleEmittedError);
 
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
