@@ -28,7 +28,7 @@ afterAll(() => {
   console.error = consoleError;
 });
 
-for (const { tServer, itForWS, skipUWS, startTServer } of tServers) {
+for (const { tServer, skipUWS, startTServer } of tServers) {
   describe(tServer, () => {
     it('should allow connections with valid protocols only', async () => {
       const { url } = await startTServer();
