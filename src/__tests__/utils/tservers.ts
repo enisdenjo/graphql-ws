@@ -38,6 +38,7 @@ export interface TServerClient {
 
 export interface TServer {
   url: string;
+  server: WebSocketServer | null; // null when uWS because it does not have a server instance
   getClients: () => TServerClient[];
   pong: (key?: string) => void;
   waitForClient: (
@@ -227,6 +228,7 @@ export async function startWSTServer(
 
   return {
     url: `ws://localhost:${port}${path}`,
+    server: wsServer,
     getClients() {
       return Array.from(wsServer.clients, toClient);
     },
@@ -393,6 +395,7 @@ export async function startUWSTServer(
 
   return {
     url: `ws://localhost:${port}${path}`,
+    server: null,
     // @ts-expect-error TODO-db-210410
     getClients: null,
     // @ts-expect-error TODO-db-210410
@@ -554,6 +557,7 @@ export async function startFastifyWSTServer(
 
   return {
     url: `ws://localhost:${port}${path}`,
+    server: fastify.websocketServer,
     getClients() {
       return Array.from(fastify.websocketServer.clients, toClient);
     },
@@ -651,6 +655,9 @@ export const tServers = [
   {
     tServer: 'ws' as const,
     startTServer: startWSTServer,
+    skipWS: it.skip,
+    skipUWS: it,
+    skipFastify: it,
     itForWS: it,
     itForUWS: it.skip,
     itForFastify: it.skip,
@@ -658,6 +665,9 @@ export const tServers = [
   {
     tServer: 'uWebSockets.js' as const,
     startTServer: startUWSTServer,
+    skipWS: it,
+    skipUWS: it.skip,
+    skipFastify: it,
     itForWS: it.skip,
     itForUWS: it,
     itForFastify: it.skip,
@@ -665,6 +675,9 @@ export const tServers = [
   {
     tServer: 'fastify-websocket' as const,
     startTServer: startFastifyWSTServer,
+    skipWS: it,
+    skipUWS: it,
+    skipFastify: it.skip,
     itForWS: it.skip,
     itForUWS: it.skip,
     itForFastify: it,

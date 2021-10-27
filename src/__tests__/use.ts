@@ -28,7 +28,7 @@ afterAll(() => {
   console.error = consoleError;
 });
 
-for (const { tServer, startTServer } of tServers) {
+for (const { tServer, itForWS, startTServer } of tServers) {
   describe(tServer, () => {
     it('should allow connections with valid protocols only', async () => {
       const { url } = await startTServer();
@@ -354,23 +354,55 @@ for (const { tServer, startTServer } of tServers) {
       });
     });
 
-    it /* itForWS */.todo(
-      'should report server errors to clients by closing the connection',
-      // async () => {
-      //   const { url, ws } = await startTServer();
+    // uWebSocket.js cannot have errors emitted on the server instance
+    // TODO-db-211027 fastify-websocket
+    itForWS(
+      'should report server emitted errors to clients by closing the connection',
+      async () => {
+        const { url, server } = await startTServer();
 
-      //   const client = await createTClient(url);
+        const client = await createTClient(url);
 
-      //   const emittedError = new Error("I'm a teapot");
-      //   ws.emit('error', emittedError);
+        const emittedError = new Error("I'm a teapot");
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        server!.emit('error', emittedError);
 
-      //   await client.waitForClose((event) => {
-      //     expect(event.code).toBe(CloseCode.InternalServerError); // CloseCode.InternalServerError: Internal server error
-      //     expect(event.reason).toBe(emittedError.message);
-      //     expect(event.wasClean).toBeTruthy(); // because the server reported the error
-      //   });
-      // },
+        await client.waitForClose((event) => {
+          expect(event.code).toBe(CloseCode.InternalServerError); // CloseCode.InternalServerError: Internal server error
+          expect(event.reason).toBe(emittedError.message);
+          expect(event.wasClean).toBeTruthy(); // because the server reported the error
+        });
+      },
     );
+
+    // uWebSocket.js cannot have errors emitted on the server instance
+    // TODO-db-211027 fastify-websocket
+    itForWS('should limit the server emitted error message size', async () => {
+      const { url, server, waitForClient } = await startTServer();
+
+      const client = await createTClient(url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await waitForClient();
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      server!.emit(
+        'error',
+        new Error(
+          'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+        ),
+      );
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe('Internal server error');
+        expect(event.wasClean).toBeTruthy(); // because the server reported the error
+      });
+    });
 
     it('should limit the internal server error message size', async () => {
       const { url } = await startTServer({
