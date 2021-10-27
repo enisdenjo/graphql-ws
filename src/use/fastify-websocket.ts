@@ -46,12 +46,29 @@ export function makeHandler<
   return (connection, request) => {
     const { socket } = connection;
 
-    socket.on('error', (err) =>
+    // used as listener on two streams, prevent superfluous calls on close
+    let emittedErrorHandled = false;
+    function handleEmittedError(err: Error) {
+      if (emittedErrorHandled) return;
+      emittedErrorHandled = true;
+      console.error(
+        'Internal error emitted on a WebSocket socket. ' +
+          'Please check your implementation.',
+        err,
+      );
       socket.close(
         CloseCode.InternalServerError,
-        isProd ? 'Internal server error' : err.message,
-      ),
-    );
+        // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+        isProd || err.message.length > 123
+          ? 'Internal server error'
+          : err.message,
+      );
+    }
+
+    // fastify-websocket uses the WebSocket.createWebSocketStream,
+    // therefore errors get emitted on both the connection and the socket
+    connection.on('error', handleEmittedError);
+    socket.on('error', handleEmittedError);
 
     // keep alive through ping-pong messages
     let pongWait: NodeJS.Timeout | null = null;
