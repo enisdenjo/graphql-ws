@@ -9,9 +9,11 @@
 ### Enumeration members
 
 - [BadRequest](CloseCode.md#badrequest)
+- [BadResponse](CloseCode.md#badresponse)
 - [ConnectionAcknowledgementTimeout](CloseCode.md#connectionacknowledgementtimeout)
 - [ConnectionInitialisationTimeout](CloseCode.md#connectioninitialisationtimeout)
 - [Forbidden](CloseCode.md#forbidden)
+- [InternalClientError](CloseCode.md#internalclienterror)
 - [InternalServerError](CloseCode.md#internalservererror)
 - [SubprotocolNotAcceptable](CloseCode.md#subprotocolnotacceptable)
 - [SubscriberAlreadyExists](CloseCode.md#subscriberalreadyexists)
@@ -23,6 +25,12 @@
 ### BadRequest
 
 • **BadRequest** = `4400`
+
+___
+
+### BadResponse
+
+• **BadResponse** = `4004`
 
 ___
 
@@ -41,6 +49,12 @@ ___
 ### Forbidden
 
 • **Forbidden** = `4403`
+
+___
+
+### InternalClientError
+
+• **InternalClientError** = `4005`
 
 ___
 
