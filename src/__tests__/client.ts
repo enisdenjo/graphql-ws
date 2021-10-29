@@ -330,13 +330,16 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
 });
 
 it('should not send the complete message if the socket is not open', async () => {
-  const { url, getClients, waitForOperation, waitForClientClose } =
-    await startTServer();
+  const { url, waitForOperation } = await startTServer();
 
+  let close = () => {
+    // see below
+  };
   class MockWebSocket extends WebSocket {
     constructor(...args: unknown[]) {
       // @ts-expect-error Args will fit
       super(...args);
+      close = () => this.close();
     }
 
     public send(data: unknown) {
@@ -355,11 +358,8 @@ it('should not send the complete message if the socket is not open', async () =>
   const sub = tsubscribe(client, { query: 'subscription { ping }' });
   await waitForOperation();
 
-  // kick the client off
-  for (const client of getClients()) {
-    client.close();
-    await waitForClientClose();
-  }
+  // client leaves
+  close();
 
   // dispose of the subscription which should complete the connection
   sub.dispose();
