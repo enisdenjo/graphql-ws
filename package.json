@@ -27,6 +27,7 @@
   "engines": {
     "node": ">=10"
   },
+  "packageManager": "yarn@3.1.0",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
   "browser": "umd/graphql-ws.js",
