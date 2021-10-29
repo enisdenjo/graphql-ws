@@ -566,65 +566,6 @@ it('should report close error even if complete message followed', async (done) =
   );
 });
 
-it('should report close error even if complete message followed', async (done) => {
-  expect.assertions(4);
-
-  const { url, server } = await startRawServer();
-
-  server.on('connection', (socket) => {
-    socket.on('message', (data) => {
-      const msg = parseMessage(String(data));
-
-      // acknowledge conneciton
-      if (msg.type === MessageType.ConnectionInit)
-        socket.send(stringifyMessage({ type: MessageType.ConnectionAck }));
-
-      // respond with a malformed error message and a complete
-      if (msg.type === MessageType.Subscribe) {
-        socket.send(
-          JSON.stringify({
-            id: msg.id,
-            type: MessageType.Error,
-            payload: 'malformed',
-          }),
-        );
-        socket.send(
-          stringifyMessage({ id: msg.id, type: MessageType.Complete }),
-        );
-      }
-    });
-  });
-
-  const client = createClient({
-    url,
-    lazy: false,
-    retryAttempts: 0,
-    onNonLazyError: noop,
-    on: {
-      closed: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
-        expect((err as CloseEvent).reason).toBe('Invalid message');
-      },
-    },
-  });
-
-  client.subscribe(
-    {
-      query: 'notaquery',
-    },
-    {
-      next: noop,
-      error: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
-        expect((err as CloseEvent).reason).toBe('Invalid message');
-        client.dispose();
-        done();
-      },
-      complete: noop,
-    },
-  );
-});
-
 describe('ping/pong', () => {
   it('should respond with a pong to a ping', async () => {
     expect.assertions(1);
