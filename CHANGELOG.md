@@ -1,3 +1,11 @@
+## [5.5.5](https://github.com/enisdenjo/graphql-ws/compare/v5.5.4...v5.5.5) (2021-10-29)
+
+
+### Bug Fixes
+
+* **client:** Limit client emitted error close message size ([2d959f6](https://github.com/enisdenjo/graphql-ws/commit/2d959f61c9cf0119cd4b20f843dd82fe584141a6))
+* **client:** Report close causing internal errors to error listeners ([4e7e389](https://github.com/enisdenjo/graphql-ws/commit/4e7e3896e62c934ac9301518fb410d23ae9a8bb8))
+
 ## [5.5.4](https://github.com/enisdenjo/graphql-ws/compare/v5.5.3...v5.5.4) (2021-10-27)
 
 
