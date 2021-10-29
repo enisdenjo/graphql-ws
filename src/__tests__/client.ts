@@ -566,6 +566,62 @@ it('should report close error even if complete message followed', async (done) =
   );
 });
 
+it('should limit the internal client error message size', async (done) => {
+  const { url } = await startTServer();
+
+  const longError = new Error(
+    'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+  );
+
+  createClient({
+    url,
+    retryAttempts: 0,
+    lazy: false,
+    onNonLazyError: noop,
+    on: {
+      closed: (event) => {
+        expect((event as CloseEvent).code).toBe(CloseCode.InternalClientError);
+        expect((event as CloseEvent).reason).toBe('Internal client error');
+        expect((event as CloseEvent).wasClean).toBeTruthy(); // because the client reported the error
+
+        done();
+      },
+    },
+    connectionParams: () => {
+      throw longError;
+    },
+  });
+});
+
+it('should limit the internal client bad response error message size', async (done) => {
+  const { url } = await startTServer();
+
+  const longError = new Error(
+    'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+  );
+
+  createClient({
+    url,
+    retryAttempts: 0,
+    lazy: false,
+    onNonLazyError: noop,
+    on: {
+      message: () => {
+        // message listener is called inside the WebSocket.onmessage,
+        // perfect place to throw a long error
+        throw longError;
+      },
+      closed: (event) => {
+        expect((event as CloseEvent).code).toBe(CloseCode.BadResponse);
+        expect((event as CloseEvent).reason).toBe('Bad response');
+        expect((event as CloseEvent).wasClean).toBeTruthy(); // because the client reported the error
+
+        done();
+      },
+    },
+  });
+});
+
 describe('ping/pong', () => {
   it('should respond with a pong to a ping', async () => {
     expect.assertions(1);

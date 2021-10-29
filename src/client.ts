@@ -23,7 +23,7 @@ import {
   JSONMessageReviver,
   JSONMessageReplacer,
 } from './common';
-import { isObject } from './utils';
+import { isObject, limitCloseReason } from './utils';
 
 /** This file is the entry point for browsers, re-export common elements. */
 export * from './common';
@@ -642,7 +642,10 @@ export function createClient(options: ClientOptions): Client {
             } catch (err) {
               socket.close(
                 CloseCode.InternalClientError,
-                err instanceof Error ? err.message : new Error(err).message,
+                limitCloseReason(
+                  err instanceof Error ? err.message : new Error(err).message,
+                  'Internal client error',
+                ),
               );
             }
           };
@@ -696,7 +699,10 @@ export function createClient(options: ClientOptions): Client {
               socket.onmessage = null; // stop reading messages as soon as reading breaks once
               socket.close(
                 CloseCode.BadResponse,
-                err instanceof Error ? err.message : new Error(err).message,
+                limitCloseReason(
+                  err instanceof Error ? err.message : new Error(err).message,
+                  'Bad response',
+                ),
               );
             }
           };
