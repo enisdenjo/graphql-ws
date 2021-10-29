@@ -2,6 +2,7 @@ import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
 import { makeServer, ServerOptions } from '../server';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL, CloseCode } from '../common';
+import { limitCloseReason } from '../utils';
 
 /**
  * The extra that will be put in the `Context`.
@@ -68,10 +69,9 @@ export function makeHandler<
           try {
             client.close(
               CloseCode.InternalServerError,
-              // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-              isProd || err.message.length > 123
+              isProd
                 ? 'Internal server error'
-                : err.message,
+                : limitCloseReason(err.message, 'Internal server error'),
             );
           } catch (err) {
             firstErr = firstErr ?? err;
@@ -94,10 +94,9 @@ export function makeHandler<
       );
       socket.close(
         CloseCode.InternalServerError,
-        // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-        isProd || err.message.length > 123
+        isProd
           ? 'Internal server error'
-          : err.message,
+          : limitCloseReason(err.message, 'Internal server error'),
       );
     }
 
@@ -152,10 +151,9 @@ export function makeHandler<
               );
               socket.close(
                 CloseCode.InternalServerError,
-                // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-                isProd || err.message.length > 123
+                isProd
                   ? 'Internal server error'
-                  : err.message,
+                  : limitCloseReason(err.message, 'Internal server error'),
               );
             }
           }),

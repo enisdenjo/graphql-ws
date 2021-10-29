@@ -2,6 +2,7 @@ import type * as uWS from 'uWebSockets.js';
 import type http from 'http';
 import { makeServer, ServerOptions } from '../server';
 import { CloseCode } from '../common';
+import { limitCloseReason } from '../utils';
 
 /**
  * The extra that will be put in the `Context`.
@@ -196,10 +197,9 @@ export function makeBehavior<
         );
         socket.end(
           CloseCode.InternalServerError,
-          // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-          isProd || err.message.length > 123
+          isProd
             ? 'Internal server error'
-            : err.message,
+            : limitCloseReason(err.message, 'Internal server error'),
         );
       }
     },

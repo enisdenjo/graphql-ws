@@ -76,3 +76,13 @@ export function hasOwnStringProperty<
 >(obj: O, prop: P): obj is O & Record<P, string> {
   return baseHasOwnProperty.call(obj, prop) && typeof obj[prop] === 'string';
 }
+
+/**
+ * Limits the WebSocket close event reason to not exceed a length of one frame.
+ * Reference: https://datatracker.ietf.org/doc/html/rfc6455#section-5.2.
+ *
+ * @private
+ */
+export function limitCloseReason(reason: string, whenTooLong: string) {
+  return reason.length < 124 ? reason : whenTooLong;
+}

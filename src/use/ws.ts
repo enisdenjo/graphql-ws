@@ -6,6 +6,7 @@ import {
   CloseCode,
   Disposable,
 } from '../common';
+import { limitCloseReason } from '../utils';
 
 // for nicer documentation
 type WebSocket = typeof ws.prototype;
@@ -66,10 +67,9 @@ export function useServer<
       try {
         client.close(
           CloseCode.InternalServerError,
-          // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-          isProd || err.message.length > 123
+          isProd
             ? 'Internal server error'
-            : err.message,
+            : limitCloseReason(err.message, 'Internal server error'),
         );
       } catch (err) {
         firstErr = firstErr ?? err;
@@ -88,10 +88,9 @@ export function useServer<
       );
       socket.close(
         CloseCode.InternalServerError,
-        // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-        isProd || err.message.length > 123
+        isProd
           ? 'Internal server error'
-          : err.message,
+          : limitCloseReason(err.message, 'Internal server error'),
       );
     });
 
@@ -141,10 +140,9 @@ export function useServer<
               );
               socket.close(
                 CloseCode.InternalServerError,
-                // close reason should fit in one frame https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-                isProd || err.message.length > 123
+                isProd
                   ? 'Internal server error'
-                  : err.message,
+                  : limitCloseReason(err.message, 'Internal server error'),
               );
             }
           }),
