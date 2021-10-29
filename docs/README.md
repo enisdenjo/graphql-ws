@@ -180,7 +180,7 @@ ___
 
 Ƭ **EventError**: ``"error"``
 
-WebSocket connection had an error.
+WebSocket connection had an error or client had an internal error.
 
 ___
 
@@ -192,10 +192,8 @@ ___
 
 ▸ (`error`): `void`
 
-The argument can be either an Error Event or an instance of Error, but to avoid
-bundling DOM typings because the client can run in Node env too, you should assert
-the type during implementation. Events dispatched from the WebSocket `onerror` can
-be handler in this listener.
+Events dispatched from the WebSocket `onerror` are handled in this listener,
+as well as all internal client errors that could throw.
 
 **`category`** Client
 

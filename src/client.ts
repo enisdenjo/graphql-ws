@@ -78,7 +78,7 @@ export type EventMessage = 'message';
 export type EventClosed = 'closed';
 
 /**
- * WebSocket connection had an error.
+ * WebSocket connection had an error or client had an internal error.
  *
  * @category Client
  */
@@ -166,10 +166,8 @@ export type EventMessageListener = (message: Message) => void;
 export type EventClosedListener = (event: unknown) => void;
 
 /**
- * The argument can be either an Error Event or an instance of Error, but to avoid
- * bundling DOM typings because the client can run in Node env too, you should assert
- * the type during implementation. Events dispatched from the WebSocket `onerror` can
- * be handler in this listener.
+ * Events dispatched from the WebSocket `onerror` are handled in this listener,
+ * as well as all internal client errors that could throw.
  *
  * @category Client
  */
@@ -535,13 +533,31 @@ export function createClient(options: ClientOptions): Client {
         };
       },
       emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
-        for (const listener of listeners[event]) {
+        // we copy the listeners so that unlistens dont "pull the rug under our feet"
+        for (const listener of [...listeners[event]]) {
           // @ts-expect-error: The args should fit
           listener(...args);
         }
       },
     };
   })();
+
+  // invokes the callback either when an error or closed event is emitted,
+  // first one that gets called prevails, other emissions are ignored
+  function errorOrClosed(cb: (errOrEvent: unknown) => void) {
+    const listening = [
+      // errors are fatal and more critical than close events, throw them first
+      emitter.on('error', (err) => {
+        listening.forEach((unlisten) => unlisten());
+        cb(err);
+      }),
+      // closes can be graceful and not fatal, throw them second (if error didnt throw)
+      emitter.on('closed', (event) => {
+        listening.forEach((unlisten) => unlisten());
+        cb(event);
+      }),
+    ];
+  }
 
   type Connected = [socket: WebSocket, throwOnClose: Promise<void>];
   let connecting: Promise<Connected> | undefined,
@@ -591,18 +607,14 @@ export function createClient(options: ClientOptions): Client {
             }
           }
 
-          socket.onerror = (err) => {
-            // we let the onclose reject the promise for correct retry handling
-            emitter.emit('error', err);
-          };
-
-          socket.onclose = (event) => {
+          errorOrClosed((errOrEvent) => {
             connecting = undefined;
             clearTimeout(connectionAckTimeout);
             clearTimeout(queuedPing);
-            emitter.emit('closed', event);
-            denied(event);
-          };
+            denied(errOrEvent);
+          });
+          socket.onerror = (err) => emitter.emit('error', err);
+          socket.onclose = (event) => emitter.emit('closed', event);
 
           socket.onopen = async () => {
             try {
@@ -640,6 +652,7 @@ export function createClient(options: ClientOptions): Client {
 
               enqueuePing(); // enqueue ping (noop if disabled)
             } catch (err) {
+              emitter.emit('error', err);
               socket.close(
                 CloseCode.InternalClientError,
                 limitCloseReason(
@@ -691,12 +704,11 @@ export function createClient(options: ClientOptions): Client {
               retries = 0; // reset the retries on connect
               connected([
                 socket,
-                new Promise<void>((_, closed) =>
-                  socket.addEventListener('close', closed),
-                ),
+                new Promise<void>((_, reject) => errorOrClosed(reject)),
               ]);
             } catch (err) {
               socket.onmessage = null; // stop reading messages as soon as reading breaks once
+              emitter.emit('error', err);
               socket.close(
                 CloseCode.BadResponse,
                 limitCloseReason(

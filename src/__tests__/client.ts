@@ -206,18 +206,27 @@ it('should recieve optional connection ack payload in event handler', async (don
   });
 });
 
-it('should close with error message during connecting issues', async () => {
+it('should close with error message during connecting issues', async (done) => {
+  expect.assertions(4);
+
   const { url } = await startTServer();
 
-  const someerr = new Error('Welcome');
+  const someErr = new Error('Welcome');
   const client = createClient({
     url,
     retryAttempts: 0,
     onNonLazyError: noop,
     on: {
+      closed: (event) => {
+        expect((event as CloseEvent).code).toBe(CloseCode.BadResponse);
+        expect((event as CloseEvent).reason).toBe('Welcome');
+        expect((event as CloseEvent).wasClean).toBeTruthy();
+
+        done();
+      },
       connected: () => {
         // the `connected` listener is called right before successful connection
-        throw someerr;
+        throw someErr;
       },
     },
   });
@@ -227,10 +236,7 @@ it('should close with error message during connecting issues', async () => {
   });
 
   await sub.waitForError((err) => {
-    const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.BadResponse);
-    expect(event.reason).toBe('Welcome');
-    expect(event.wasClean).toBeTruthy();
+    expect(err).toBe(someErr);
   });
 });
 
@@ -273,39 +279,53 @@ it('should pass the `connectionParams` through', async () => {
   });
 });
 
-it('should close the socket if the `connectionParams` rejects or throws', async () => {
+it('should close the socket if the `connectionParams` rejects or throws', async (done) => {
+  expect.assertions(8);
+
   const server = await startTServer();
+
+  const someErr = new Error('No auth?');
 
   let client = createClient({
     url: server.url,
     retryAttempts: 0,
     onNonLazyError: noop,
+    on: {
+      closed: (event) => {
+        expect((event as CloseEvent).code).toBe(CloseCode.InternalClientError);
+        expect((event as CloseEvent).reason).toBe('No auth?');
+        expect((event as CloseEvent).wasClean).toBeTruthy();
+      },
+    },
     connectionParams: () => {
-      throw new Error('No auth?');
+      throw someErr;
     },
   });
 
   let sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
-    const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.InternalClientError);
-    expect(event.reason).toBe('No auth?');
-    expect(event.wasClean).toBeTruthy();
+    expect(err).toBe(someErr);
   });
 
   client = createClient({
     url: server.url,
     retryAttempts: 0,
     onNonLazyError: noop,
-    connectionParams: () => Promise.reject(new Error('No auth?')),
+    on: {
+      closed: (event) => {
+        expect((event as CloseEvent).code).toBe(CloseCode.InternalClientError);
+        expect((event as CloseEvent).reason).toBe('No auth?');
+        expect((event as CloseEvent).wasClean).toBeTruthy();
+
+        done();
+      },
+    },
+    connectionParams: () => Promise.reject(someErr),
   });
 
   sub = tsubscribe(client, { query: '{ getValue }' });
   await sub.waitForError((err) => {
-    const event = err as CloseEvent;
-    expect(event.code).toBe(CloseCode.InternalClientError);
-    expect(event.reason).toBe('No auth?');
-    expect(event.wasClean).toBeTruthy();
+    expect(err).toBe(someErr);
   });
 });
 
@@ -508,7 +528,7 @@ it('should close socket with error on malformed request', async (done) => {
 });
 
 it('should report close error even if complete message followed', async (done) => {
-  expect.assertions(4);
+  expect.assertions(3);
 
   const { url, server } = await startRawServer();
 
@@ -545,6 +565,8 @@ it('should report close error even if complete message followed', async (done) =
       closed: (err) => {
         expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toBe('Invalid message');
+
+        done();
       },
     },
   });
@@ -556,14 +578,121 @@ it('should report close error even if complete message followed', async (done) =
     {
       next: noop,
       error: (err) => {
-        expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
-        expect((err as CloseEvent).reason).toBe('Invalid message');
+        expect((err as Error).message).toBe('Invalid message');
         client.dispose();
-        done();
       },
       complete: noop,
     },
   );
+});
+
+it('should report close causing internal client errors to listeners', async () => {
+  expect.assertions(4);
+
+  const { url } = await startTServer();
+
+  const someError = new Error('Something went wrong!');
+
+  // internal client error
+  await new Promise<void>((resolve) =>
+    createClient({
+      url,
+      // retryAttempts: 0, should fail immediately because error is thrown
+      lazy: false,
+      onNonLazyError: (err) => {
+        expect(err).toBe(someError);
+        resolve();
+      },
+      on: {
+        error: (err) => {
+          expect(err).toBe(someError);
+        },
+      },
+      connectionParams: () => {
+        throw someError;
+      },
+    }),
+  );
+
+  // simulate bad response
+  await new Promise<void>((resolve) =>
+    createClient({
+      url,
+      // retryAttempts: 0, should fail immediately because error is thrown
+      lazy: false,
+      onNonLazyError: (err) => {
+        expect(err).toBe(someError);
+        resolve();
+      },
+      on: {
+        error: (err) => {
+          expect(err).toBe(someError);
+        },
+        message: () => {
+          throw someError;
+        },
+      },
+    }),
+  );
+});
+
+it('should report close causing internal client errors to subscription sinks', async () => {
+  const { url } = await startTServer();
+
+  const someError = new Error('Something went wrong!');
+
+  // internal client error
+  await new Promise<void>((resolve) => {
+    const client = createClient({
+      url,
+      // retryAttempts: 0, should fail immediately because error is thrown
+      connectionParams: () => {
+        throw someError;
+      },
+    });
+
+    client.subscribe(
+      { query: '{ getValue }' },
+      {
+        next: noop,
+        complete: noop,
+        error: (err) => {
+          expect(err).toBe(someError);
+          resolve();
+        },
+      },
+    );
+  });
+
+  // simulate bad response
+  await new Promise<void>((resolve) => {
+    let i = 0;
+    const client = createClient({
+      url,
+      // retryAttempts: 0, should fail immediately because error is thrown
+      on: {
+        message: () => {
+          i++;
+          if (i === 2) {
+            // throw on second message to simulate bad responses while connected
+            throw someError;
+          }
+        },
+      },
+    });
+
+    client.subscribe(
+      { query: '{ getValue }' },
+      {
+        next: noop,
+        complete: noop,
+        error: (err) => {
+          expect(err).toBe(someError);
+          resolve();
+        },
+      },
+    );
+  });
 });
 
 it('should limit the internal client error message size', async (done) => {
@@ -1816,8 +1945,10 @@ describe('events', () => {
       lazy: false,
       retryAttempts: 0,
       onNonLazyError: (err) => {
-        // handle the websocket close event
-        expect((err as CloseEvent).code).toBe(1006);
+        // connection error
+        expect((err as ErrorEvent).message).toBe(
+          'connect ECONNREFUSED 127.0.0.1:80',
+        );
         done();
       },
       on: {
@@ -1861,8 +1992,10 @@ describe('events', () => {
         next: noop,
         complete: noop,
         error: (err) => {
-          // handle the websocket close event
-          expect((err as CloseEvent).code).toBe(1006);
+          // connection error
+          expect((err as ErrorEvent).message).toBe(
+            'connect ECONNREFUSED 127.0.0.1:80',
+          );
           done();
         },
       },
