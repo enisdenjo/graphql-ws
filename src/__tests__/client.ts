@@ -379,7 +379,7 @@ it('should not call complete after connection error', async () => {
   });
 
   const sub = tsubscribe(client, {
-    query: '{ hello }',
+    query: '{ getValue }',
   });
 
   // kick off immediately
