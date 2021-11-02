@@ -1,10 +1,12 @@
-[graphql-ws](../README.md) / Client
+[graphql-ws](../README.md) / [client](../modules/client.md) / Client
 
 # Interface: Client
 
+[client](../modules/client.md).Client
+
 ## Hierarchy
 
-- [`Disposable`](Disposable.md)
+- [`Disposable`](common.Disposable.md)
 
   ↳ **`Client`**
 
@@ -12,9 +14,9 @@
 
 ### Methods
 
-- [dispose](Client.md#dispose)
-- [on](Client.md#on)
-- [subscribe](Client.md#subscribe)
+- [dispose](client.Client.md#dispose)
+- [on](client.Client.md#on)
+- [subscribe](client.Client.md#subscribe)
 
 ## Methods
 
@@ -30,7 +32,7 @@ Dispose of the instance and clear up resources.
 
 #### Inherited from
 
-[Disposable](Disposable.md).[dispose](Disposable.md#dispose)
+[Disposable](common.Disposable.md).[dispose](common.Disposable.md#dispose)
 
 ___
 
@@ -44,14 +46,14 @@ Listens on the client which dispatches events about the socket state.
 
 | Name | Type |
 | :------ | :------ |
-| `E` | extends [`Event`](../README.md#event) |
+| `E` | extends [`Event`](../modules/client.md#event) |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `event` | `E` |
-| `listener` | [`EventListener`](../README.md#eventlistener)<`E`\> |
+| `listener` | [`EventListener`](../modules/client.md#eventlistener)<`E`\> |
 
 #### Returns
 
@@ -86,8 +88,8 @@ function used for dropping the subscription and cleaning stuff up.
 
 | Name | Type |
 | :------ | :------ |
-| `payload` | [`SubscribePayload`](SubscribePayload.md) |
-| `sink` | [`Sink`](Sink.md)<`ExecutionResult`<`Data`, `Extensions`\>\> |
+| `payload` | [`SubscribePayload`](common.SubscribePayload.md) |
+| `sink` | [`Sink`](common.Sink.md)<`ExecutionResult`<`Data`, `Extensions`\>\> |
 
 #### Returns
 

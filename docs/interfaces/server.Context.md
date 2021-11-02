@@ -1,6 +1,8 @@
-[graphql-ws](../README.md) / Context
+[graphql-ws](../README.md) / [server](../modules/server.md) / Context
 
 # Interface: Context<E\>
+
+[server](../modules/server.md).Context
 
 ## Type parameters
 
@@ -12,11 +14,11 @@
 
 ### Properties
 
-- [acknowledged](Context.md#acknowledged)
-- [connectionInitReceived](Context.md#connectioninitreceived)
-- [connectionParams](Context.md#connectionparams)
-- [extra](Context.md#extra)
-- [subscriptions](Context.md#subscriptions)
+- [acknowledged](server.Context.md#acknowledged)
+- [connectionInitReceived](server.Context.md#connectioninitreceived)
+- [connectionParams](server.Context.md#connectionparams)
+- [extra](server.Context.md#extra)
+- [subscriptions](server.Context.md#subscriptions)
 
 ## Properties
 

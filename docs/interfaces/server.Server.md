@@ -1,6 +1,8 @@
-[graphql-ws](../README.md) / Server
+[graphql-ws](../README.md) / [server](../modules/server.md) / Server
 
 # Interface: Server<E\>
+
+[server](../modules/server.md).Server
 
 ## Type parameters
 
@@ -12,7 +14,7 @@
 
 ### Methods
 
-- [opened](Server.md#opened)
+- [opened](server.Server.md#opened)
 
 ## Methods
 
@@ -37,7 +39,7 @@ promise will resolve once the internal cleanup is complete.
 
 | Name | Type |
 | :------ | :------ |
-| `socket` | [`WebSocket`](WebSocket.md) |
+| `socket` | [`WebSocket`](server.WebSocket.md) |
 | `ctxExtra` | `E` |
 
 #### Returns

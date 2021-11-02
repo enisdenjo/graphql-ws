@@ -1,18 +1,20 @@
-[graphql-ws](../README.md) / Disposable
+[graphql-ws](../README.md) / [common](../modules/common.md) / Disposable
 
 # Interface: Disposable
+
+[common](../modules/common.md).Disposable
 
 ## Hierarchy
 
 - **`Disposable`**
 
-  ↳ [`Client`](Client.md)
+  ↳ [`Client`](client.Client.md)
 
 ## Table of contents
 
 ### Methods
 
-- [dispose](Disposable.md#dispose)
+- [dispose](common.Disposable.md#dispose)
 
 ## Methods
 

@@ -1,6 +1,8 @@
-[graphql-ws](../README.md) / ExecutionPatchResult
+[graphql-ws](../README.md) / [common](../modules/common.md) / ExecutionPatchResult
 
 # Interface: ExecutionPatchResult<Data, Extensions\>
+
+[common](../modules/common.md).ExecutionPatchResult
 
 ## Type parameters
 
@@ -13,12 +15,12 @@
 
 ### Properties
 
-- [data](ExecutionPatchResult.md#data)
-- [errors](ExecutionPatchResult.md#errors)
-- [extensions](ExecutionPatchResult.md#extensions)
-- [hasNext](ExecutionPatchResult.md#hasnext)
-- [label](ExecutionPatchResult.md#label)
-- [path](ExecutionPatchResult.md#path)
+- [data](common.ExecutionPatchResult.md#data)
+- [errors](common.ExecutionPatchResult.md#errors)
+- [extensions](common.ExecutionPatchResult.md#extensions)
+- [hasNext](common.ExecutionPatchResult.md#hasnext)
+- [label](common.ExecutionPatchResult.md#label)
+- [path](common.ExecutionPatchResult.md#path)
 
 ## Properties
 

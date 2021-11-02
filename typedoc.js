@@ -1,4 +1,5 @@
 module.exports = {
+  entryPointStrategy: 'expand',
   out: './docs',
   readme: 'none',
   plugin: 'typedoc-plugin-markdown',

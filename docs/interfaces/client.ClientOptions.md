@@ -1,6 +1,8 @@
-[graphql-ws](../README.md) / ClientOptions
+[graphql-ws](../README.md) / [client](../modules/client.md) / ClientOptions
 
 # Interface: ClientOptions
+
+[client](../modules/client.md).ClientOptions
 
 Configuration used for the GraphQL over WebSocket client.
 
@@ -8,25 +10,25 @@ Configuration used for the GraphQL over WebSocket client.
 
 ### Properties
 
-- [connectionAckWaitTimeout](ClientOptions.md#connectionackwaittimeout)
-- [connectionParams](ClientOptions.md#connectionparams)
-- [disablePong](ClientOptions.md#disablepong)
-- [jsonMessageReplacer](ClientOptions.md#jsonmessagereplacer)
-- [jsonMessageReviver](ClientOptions.md#jsonmessagereviver)
-- [keepAlive](ClientOptions.md#keepalive)
-- [lazy](ClientOptions.md#lazy)
-- [lazyCloseTimeout](ClientOptions.md#lazyclosetimeout)
-- [on](ClientOptions.md#on)
-- [retryAttempts](ClientOptions.md#retryattempts)
-- [url](ClientOptions.md#url)
-- [webSocketImpl](ClientOptions.md#websocketimpl)
+- [connectionAckWaitTimeout](client.ClientOptions.md#connectionackwaittimeout)
+- [connectionParams](client.ClientOptions.md#connectionparams)
+- [disablePong](client.ClientOptions.md#disablepong)
+- [jsonMessageReplacer](client.ClientOptions.md#jsonmessagereplacer)
+- [jsonMessageReviver](client.ClientOptions.md#jsonmessagereviver)
+- [keepAlive](client.ClientOptions.md#keepalive)
+- [lazy](client.ClientOptions.md#lazy)
+- [lazyCloseTimeout](client.ClientOptions.md#lazyclosetimeout)
+- [on](client.ClientOptions.md#on)
+- [retryAttempts](client.ClientOptions.md#retryattempts)
+- [url](client.ClientOptions.md#url)
+- [webSocketImpl](client.ClientOptions.md#websocketimpl)
 
 ### Methods
 
-- [generateID](ClientOptions.md#generateid)
-- [isFatalConnectionProblem](ClientOptions.md#isfatalconnectionproblem)
-- [onNonLazyError](ClientOptions.md#onnonlazyerror)
-- [retryWait](ClientOptions.md#retrywait)
+- [generateID](client.ClientOptions.md#generateid)
+- [isFatalConnectionProblem](client.ClientOptions.md#isfatalconnectionproblem)
+- [onNonLazyError](client.ClientOptions.md#onnonlazyerror)
+- [retryWait](client.ClientOptions.md#retrywait)
 
 ## Properties
 
@@ -78,7 +80,7 @@ ___
 
 ### jsonMessageReplacer
 
-• `Optional` **jsonMessageReplacer**: [`JSONMessageReplacer`](../README.md#jsonmessagereplacer)
+• `Optional` **jsonMessageReplacer**: [`JSONMessageReplacer`](../modules/common.md#jsonmessagereplacer)
 
 An optional override for the JSON.stringify function used to serialize
 outgoing messages from this client. Useful for serializing custom
@@ -88,7 +90,7 @@ ___
 
 ### jsonMessageReviver
 
-• `Optional` **jsonMessageReviver**: [`JSONMessageReviver`](../README.md#jsonmessagereviver)
+• `Optional` **jsonMessageReviver**: [`JSONMessageReviver`](../modules/common.md#jsonmessagereviver)
 
 An optional override for the JSON.parse function used to hydrate
 incoming messages to this client. Useful for parsing custom datatypes

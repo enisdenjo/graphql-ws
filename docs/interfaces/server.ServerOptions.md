@@ -1,6 +1,8 @@
-[graphql-ws](../README.md) / ServerOptions
+[graphql-ws](../README.md) / [server](../modules/server.md) / ServerOptions
 
 # Interface: ServerOptions<E\>
+
+[server](../modules/server.md).ServerOptions
 
 ## Type parameters
 
@@ -12,26 +14,26 @@
 
 ### Properties
 
-- [connectionInitWaitTimeout](ServerOptions.md#connectioninitwaittimeout)
-- [context](ServerOptions.md#context)
-- [jsonMessageReplacer](ServerOptions.md#jsonmessagereplacer)
-- [jsonMessageReviver](ServerOptions.md#jsonmessagereviver)
-- [roots](ServerOptions.md#roots)
-- [schema](ServerOptions.md#schema)
-- [validate](ServerOptions.md#validate)
+- [connectionInitWaitTimeout](server.ServerOptions.md#connectioninitwaittimeout)
+- [context](server.ServerOptions.md#context)
+- [jsonMessageReplacer](server.ServerOptions.md#jsonmessagereplacer)
+- [jsonMessageReviver](server.ServerOptions.md#jsonmessagereviver)
+- [roots](server.ServerOptions.md#roots)
+- [schema](server.ServerOptions.md#schema)
+- [validate](server.ServerOptions.md#validate)
 
 ### Methods
 
-- [execute](ServerOptions.md#execute)
-- [onClose](ServerOptions.md#onclose)
-- [onComplete](ServerOptions.md#oncomplete)
-- [onConnect](ServerOptions.md#onconnect)
-- [onDisconnect](ServerOptions.md#ondisconnect)
-- [onError](ServerOptions.md#onerror)
-- [onNext](ServerOptions.md#onnext)
-- [onOperation](ServerOptions.md#onoperation)
-- [onSubscribe](ServerOptions.md#onsubscribe)
-- [subscribe](ServerOptions.md#subscribe)
+- [execute](server.ServerOptions.md#execute)
+- [onClose](server.ServerOptions.md#onclose)
+- [onComplete](server.ServerOptions.md#oncomplete)
+- [onConnect](server.ServerOptions.md#onconnect)
+- [onDisconnect](server.ServerOptions.md#ondisconnect)
+- [onError](server.ServerOptions.md#onerror)
+- [onNext](server.ServerOptions.md#onnext)
+- [onOperation](server.ServerOptions.md#onoperation)
+- [onSubscribe](server.ServerOptions.md#onsubscribe)
+- [subscribe](server.ServerOptions.md#subscribe)
 
 ## Properties
 
@@ -55,7 +57,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [`GraphQLExecutionContextValue`](../README.md#graphqlexecutioncontextvalue) \| (`ctx`: [`Context`](Context.md)<`E`\>, `message`: [`SubscribeMessage`](SubscribeMessage.md), `args`: `ExecutionArgs`) => [`GraphQLExecutionContextValue`](../README.md#graphqlexecutioncontextvalue) \| `Promise`<[`GraphQLExecutionContextValue`](../README.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [`Context`](server.Context.md)<`E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `ExecutionArgs`) => [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| `Promise`<[`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -79,7 +81,7 @@ ___
 
 ### jsonMessageReplacer
 
-• `Optional` **jsonMessageReplacer**: [`JSONMessageReplacer`](../README.md#jsonmessagereplacer)
+• `Optional` **jsonMessageReplacer**: [`JSONMessageReplacer`](../modules/common.md#jsonmessagereplacer)
 
 An optional override for the JSON.stringify function used to serialize
 outgoing messages to from server. Useful for serializing custom
@@ -89,7 +91,7 @@ ___
 
 ### jsonMessageReviver
 
-• `Optional` **jsonMessageReviver**: [`JSONMessageReviver`](../README.md#jsonmessagereviver)
+• `Optional` **jsonMessageReviver**: [`JSONMessageReviver`](../modules/common.md#jsonmessagereviver)
 
 An optional override for the JSON.parse function used to hydrate
 incoming messages to this server. Useful for parsing custom datatypes
@@ -121,7 +123,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: `GraphQLSchema` \| (`ctx`: [`Context`](Context.md)<`E`\>, `message`: [`SubscribeMessage`](SubscribeMessage.md), `args`: `Omit`<`ExecutionArgs`, ``"schema"``\>) => `GraphQLSchema` \| `Promise`<`GraphQLSchema`\>
+• `Optional` **schema**: `GraphQLSchema` \| (`ctx`: [`Context`](server.Context.md)<`E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `Omit`<`ExecutionArgs`, ``"schema"``\>) => `GraphQLSchema` \| `Promise`<`GraphQLSchema`\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.
@@ -185,7 +187,7 @@ will be created from the provided schema.
 
 ### execute
 
-▸ `Optional` **execute**(`args`): [`OperationResult`](../README.md#operationresult)
+▸ `Optional` **execute**(`args`): [`OperationResult`](../modules/server.md#operationresult)
 
 Is the `execute` function from GraphQL which is
 used to execute the query and mutation operations.
@@ -202,7 +204,7 @@ in the close event reason.
 
 #### Returns
 
-[`OperationResult`](../README.md#operationresult)
+[`OperationResult`](../modules/server.md#operationresult)
 
 ___
 
@@ -227,7 +229,7 @@ called before the `onClose`.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
 | `code` | `number` |
 | `reason` | `string` |
 
@@ -257,8 +259,8 @@ will still be called.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
-| `message` | [`CompleteMessage`](CompleteMessage.md) |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `message` | [`CompleteMessage`](common.CompleteMessage.md) |
 
 #### Returns
 
@@ -297,7 +299,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
 
 #### Returns
 
@@ -328,7 +330,7 @@ of the connection state - consider using the `onClose` callback.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
 | `code` | `number` |
 | `reason` | `string` |
 
@@ -358,8 +360,8 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
-| `message` | [`ErrorMessage`](ErrorMessage.md) |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `message` | [`ErrorMessage`](common.ErrorMessage.md) |
 | `errors` | readonly `GraphQLError`[] |
 
 #### Returns
@@ -370,7 +372,7 @@ ___
 
 ### onNext
 
-▸ `Optional` **onNext**(`ctx`, `message`, `args`, `result`): `void` \| [`ExecutionResult`](ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> \| `Promise`<`void` \| [`ExecutionResult`](ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\>\>
+▸ `Optional` **onNext**(`ctx`, `message`, `args`, `result`): `void` \| [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> \| `Promise`<`void` \| [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\>\>
 
 Executed after an operation has emitted a result right before
 that result has been sent to the client. Results from both
@@ -389,20 +391,20 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
-| `message` | [`NextMessage`](NextMessage.md) |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `message` | [`NextMessage`](common.NextMessage.md) |
 | `args` | `ExecutionArgs` |
-| `result` | [`ExecutionResult`](ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> |
+| `result` | [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> |
 
 #### Returns
 
-`void` \| [`ExecutionResult`](ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> \| `Promise`<`void` \| [`ExecutionResult`](ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\>\>
+`void` \| [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> \| `Promise`<`void` \| [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\>\>
 
 ___
 
 ### onOperation
 
-▸ `Optional` **onOperation**(`ctx`, `message`, `args`, `result`): `void` \| [`OperationResult`](../README.md#operationresult) \| `Promise`<`void` \| [`OperationResult`](../README.md#operationresult)\>
+▸ `Optional` **onOperation**(`ctx`, `message`, `args`, `result`): `void` \| [`OperationResult`](../modules/server.md#operationresult) \| `Promise`<`void` \| [`OperationResult`](../modules/server.md#operationresult)\>
 
 Executed after the operation call resolves. For streaming
 operations, triggering this callback does not necessarely
@@ -427,14 +429,14 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
-| `message` | [`SubscribeMessage`](SubscribeMessage.md) |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `message` | [`SubscribeMessage`](common.SubscribeMessage.md) |
 | `args` | `ExecutionArgs` |
-| `result` | [`OperationResult`](../README.md#operationresult) |
+| `result` | [`OperationResult`](../modules/server.md#operationresult) |
 
 #### Returns
 
-`void` \| [`OperationResult`](../README.md#operationresult) \| `Promise`<`void` \| [`OperationResult`](../README.md#operationresult)\>
+`void` \| [`OperationResult`](../modules/server.md#operationresult) \| `Promise`<`void` \| [`OperationResult`](../modules/server.md#operationresult)\>
 
 ___
 
@@ -474,8 +476,8 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](Context.md)<`E`\> |
-| `message` | [`SubscribeMessage`](SubscribeMessage.md) |
+| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `message` | [`SubscribeMessage`](common.SubscribeMessage.md) |
 
 #### Returns
 
@@ -485,7 +487,7 @@ ___
 
 ### subscribe
 
-▸ `Optional` **subscribe**(`args`): [`OperationResult`](../README.md#operationresult)
+▸ `Optional` **subscribe**(`args`): [`OperationResult`](../modules/server.md#operationresult)
 
 Is the `subscribe` function from GraphQL which is
 used to execute the subscription operation.
@@ -502,4 +504,4 @@ in the close event reason.
 
 #### Returns
 
-[`OperationResult`](../README.md#operationresult)
+[`OperationResult`](../modules/server.md#operationresult)
