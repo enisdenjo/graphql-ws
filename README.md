@@ -23,31 +23,42 @@ yarn add graphql-ws
 #### Create a GraphQL schema
 
 ```ts
-import { buildSchema } from 'graphql';
+import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
 
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-  type Subscription {
-    greetings: String
-  }
-`);
-
-// The roots provide resolvers for each GraphQL operation
-const roots = {
-  query: {
-    hello: () => 'Hello World!',
-  },
-  subscription: {
-    greetings: async function* sayHiIn5Languages() {
-      for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
-        yield { greetings: hi };
-      }
+/**
+ * Construct a GraphQL schema and define the necessary resolvers.
+ *
+ * type Query {
+ *   hello: String
+ * }
+ * type Subscription {
+ *   greetings: String
+ * }
+ */
+export const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      hello: {
+        type: GraphQLString,
+        resolve: () => 'world',
+      },
     },
-  },
-};
+  }),
+  subscription: new GraphQLObjectType({
+    name: 'Subscription',
+    fields: {
+      greetings: {
+        type: GraphQLString,
+        subscribe: async function* () {
+          for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
+            yield { greetings: hi };
+          }
+        },
+      },
+    },
+  }),
+});
 ```
 
 #### Start the server
@@ -59,17 +70,14 @@ import { WebSocketServer } from 'ws'; // yarn add ws
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema } from './previous-step';
 
 const server = new WebSocketServer({
   port: 4000,
   path: '/graphql',
 });
 
-useServer(
-  // from the previous step
-  { schema, roots },
-  server,
-);
+useServer({ schema }, server);
 
 console.log('Listening to port 4000');
 ```
@@ -79,16 +87,11 @@ console.log('Listening to port 4000');
 ```ts
 import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
 import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+import { schema } from './previous-step';
 
 uWS
   .App()
-  .ws(
-    '/graphql',
-    makeBehavior(
-      // from the previous step
-      { schema, roots },
-    ),
-  )
+  .ws('/graphql', makeBehavior({ schema }))
   .listen(4000, (listenSocket) => {
     if (listenSocket) {
       console.log('Listening to port 4000');
@@ -102,18 +105,12 @@ uWS
 import Fastify from 'fastify'; // yarn add fastify
 import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket
 import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+import { schema } from './previous-step';
 
 const fastify = Fastify();
 fastify.register(fastifyWebsocket);
 
-fastify.get(
-  '/graphql',
-  { websocket: true },
-  makeHandler(
-    // from the previous step
-    { schema, roots },
-  ),
-);
+fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
 
 fastify.listen(4000, (err) => {
   if (err) {
@@ -1257,7 +1254,7 @@ import { WebSocketServer } from 'ws'; // yarn add ws
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { schema, roots, getDynamicContext } from './my-graphql';
+import { schema, getDynamicContext } from './my-graphql';
 
 const wsServer = new WebSocketServer({
   port: 4000,
@@ -1270,7 +1267,6 @@ useServer(
       return getDynamicContext(ctx, msg, args);
     }, // or static context by supplying the value direcly
     schema,
-    roots,
   },
   wsServer,
 );
