@@ -330,7 +330,9 @@ export interface ClientOptions {
    * The library classifies the following close events as fatal:
    * - _All internal WebSocket fatal close codes (check `isFatalInternalCloseCode` in `src/client.ts` for exact list)_
    * - `4500: Internal server error`
+   * - `4005: Internal client error`
    * - `4400: Bad request`
+   * - `4004: Bad response`
    * - `4401: Unauthorized` _tried subscribing before connect ack_
    * - `4406: Subprotocol not acceptable`
    * - `4409: Subscriber for <id> already exists` _distinction is very important_
