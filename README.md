@@ -767,6 +767,35 @@ const client = createClient({
 
 </details>
 
+<details id="node-client-headers">
+<summary><a href="#node-client-headers">🔗</a> Client usage in Node with custom headers</summary>
+
+```ts
+const WebSocket = require('ws'); // yarn add ws
+const { createClient } = require('graphql-ws');
+
+class MyWebSocket extends WebSocket {
+  constructor(address, protocols) {
+    super(address, protocols, {
+      headers: {
+        // your custom headers go here
+        'User-Agent': 'graphql-ws client',
+        'X-Custom-Header': 'hello world',
+      },
+    });
+  }
+}
+
+const client = createClient({
+  url: 'ws://node.custom-headers:4000/graphql',
+  webSocketImpl: MyWebSocket,
+});
+
+// consider other recipes for usage inspiration
+```
+
+</details>
+
 <details id="ws">
 <summary><a href="#ws">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a></summary>
 
