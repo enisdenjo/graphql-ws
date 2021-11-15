@@ -134,8 +134,8 @@ function tsubscribe<T = unknown>(
  * Tests
  */
 
-it('should use the provided WebSocket implementation', async () => {
-  const { url, ...server } = await startTServer();
+it('should use the provided WebSocket implementation', async (done) => {
+  const { url } = await startTServer();
 
   Object.assign(global, {
     WebSocket: null,
@@ -147,9 +147,10 @@ it('should use the provided WebSocket implementation', async () => {
     onNonLazyError: noop,
     lazy: false,
     webSocketImpl: WebSocket,
+    on: {
+      connected: () => done(),
+    },
   });
-
-  await server.waitForClient();
 });
 
 it('should accept a function for the url', async () => {
