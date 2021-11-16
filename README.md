@@ -431,12 +431,16 @@ const client = createClient({
 <summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
+// for Apollo Client v3:
 import {
   ApolloLink,
   Operation,
   FetchResult,
   Observable,
 } from '@apollo/client/core';
+// or for Apollo Client v2:
+// import { ApolloLink, Operation, FetchResult, Observable } from 'apollo-link'; // yarn add apollo-link
+
 import { print, GraphQLError } from 'graphql';
 import { createClient, ClientOptions, Client } from 'graphql-ws';
 
