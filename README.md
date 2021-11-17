@@ -771,7 +771,7 @@ const client = createClient({
 </details>
 
 <details id="node-client-headers">
-<summary><a href="#node-client-headers">🔗</a> Client usage in Node with custom headers</summary>
+<summary><a href="#node-client-headers">🔗</a> Client usage in Node with custom headers <a href="https://stackoverflow.com/a/4361358/3633671"><i>(Node only)</i></a></summary>
 
 ```ts
 const WebSocket = require('ws'); // yarn add ws
