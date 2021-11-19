@@ -56,7 +56,35 @@ ___
 • **extra**: `E`
 
 An extra field where you can store your own context values
-to pass between callbacks.
+to pass between callbacks.  
+
+You can combine this with the [context](server.ServerOptions.md#context) 
+property to make values available to the async interator filters.
+
+For example
+
+```typescript
+// in the onSubscribe callback:
+ctx.extra['context'] = {
+  jwtToken: ctx.connectionParams.jwtToken
+};
+
+// in the context method:
+context: (ctx) => ctx.extra.context;
+
+// in the schema async iterator:
+subscription: {
+  someResolver: withFilter(
+    () => pubSub.asyncIterator('TOPIC_NAME'),
+    (payload: any, variables: any, _context: any, _info: any) => {
+      const token = variable.jwtToken
+      // do some logic here
+      return passedFilter
+    }
+  )
+  // ...
+ }
+ ```
 
 ___
 
