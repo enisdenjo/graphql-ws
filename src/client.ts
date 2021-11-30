@@ -495,7 +495,10 @@ export function createClient(options: ClientOptions): Client {
       // @ts-expect-error: Support more browsers
       window.MozWebSocket;
   }
-  if (!ws) throw new Error('WebSocket implementation missing');
+  if (!ws)
+    throw new Error(
+      "WebSocket implementation missing; on Node you can `import WebSocket from 'ws';` and pass `webSocketImpl: WebSocket` to `createClient`",
+    );
   const WebSocketImpl = ws;
 
   // websocket status emitter, subscriptions are handled differently
