@@ -365,25 +365,7 @@ function fetchOrSubscribe(operation: RequestParameters, variables: Variables) {
         query: operation.text,
         variables,
       },
-      {
-        ...sink,
-        error: (err) => {
-          if (Array.isArray(err))
-            // GraphQLError[]
-            return sink.error(
-              new Error(err.map(({ message }) => message).join(', ')),
-            );
-
-          if (err instanceof CloseEvent)
-            return sink.error(
-              new Error(
-                `Socket closed with event ${err.code} ${err.reason || ''}`, // reason will be available on clean closes only
-              ),
-            );
-
-          return sink.error(err);
-        },
-      },
+      sink,
     );
   });
 }
@@ -458,22 +440,7 @@ class WebSocketLink extends ApolloLink {
         {
           next: sink.next.bind(sink),
           complete: sink.complete.bind(sink),
-          error: (err) => {
-            if (Array.isArray(err))
-              // GraphQLError[]
-              return sink.error(
-                new Error(err.map(({ message }) => message).join(', ')),
-              );
-
-            if (err instanceof CloseEvent)
-              return sink.error(
-                new Error(
-                  `Socket closed with event ${err.code} ${err.reason || ''}`, // reason will be available on clean closes only
-                ),
-              );
-
-            return sink.error(err);
-          },
+          error: sink.error.bind(sink),
         },
       );
     });
