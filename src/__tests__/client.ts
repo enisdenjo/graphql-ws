@@ -1208,10 +1208,8 @@ describe('lazy', () => {
         lazy: false,
         retryAttempts: 0,
         onNonLazyError: noop,
-        on: {
-          connected: () => resolve(client),
-        },
       });
+      client.on('connected', () => resolve(client));
     });
 
     client.dispose();
