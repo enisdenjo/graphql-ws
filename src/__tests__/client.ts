@@ -1945,9 +1945,7 @@ describe('events', () => {
       retryAttempts: 0,
       onNonLazyError: (err) => {
         // connection error
-        expect((err as ErrorEvent).message).toBe(
-          'connect ECONNREFUSED 127.0.0.1:80',
-        );
+        expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
         done();
       },
       on: {
@@ -1957,9 +1955,7 @@ describe('events', () => {
         },
         error: (err) => {
           // connection error
-          expect((err as ErrorEvent).message).toBe(
-            'connect ECONNREFUSED 127.0.0.1:80',
-          );
+          expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
         },
       },
     });
@@ -1980,9 +1976,7 @@ describe('events', () => {
 
     client.on('error', (err) => {
       // connection error
-      expect((err as ErrorEvent).message).toBe(
-        'connect ECONNREFUSED 127.0.0.1:80',
-      );
+      expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
     });
 
     client.subscribe(
@@ -1992,9 +1986,7 @@ describe('events', () => {
         complete: noop,
         error: (err) => {
           // connection error
-          expect((err as ErrorEvent).message).toBe(
-            'connect ECONNREFUSED 127.0.0.1:80',
-          );
+          expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
           done();
         },
       },
