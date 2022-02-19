@@ -18,7 +18,7 @@
 
 ### makeBehavior
 
-▸ **makeBehavior**<`E`\>(`options`, `behavior?`, `keepAlive?`): `uWS.WebSocketBehavior`
+▸ **makeBehavior**<`P`, `E`\>(`options`, `behavior?`, `keepAlive?`): `uWS.WebSocketBehavior`
 
 Make the behaviour for using a [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) WebSocket server.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
@@ -27,13 +27,14 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 | Name | Type |
 | :------ | :------ |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
 | `E` | extends `Record`<`PropertyKey`, `unknown`\>`Record`<`PropertyKey`, `never`\> |
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<[`Extra`](../interfaces/use_uWebSockets.Extra.md) & `Partial`<`E`\>\> | `undefined` |
+| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use_uWebSockets.Extra.md) & `Partial`<`E`\>\> | `undefined` |
 | `behavior` | `WebSocketBehavior` | `{}` |
 | `keepAlive` | `number` | `12_000` |
 

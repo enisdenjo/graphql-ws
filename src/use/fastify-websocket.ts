@@ -1,7 +1,11 @@
 import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
 import { makeServer, ServerOptions } from '../server';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL, CloseCode } from '../common';
+import {
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  ConnectionInitMessage,
+  CloseCode,
+} from '../common';
 import { limitCloseReason } from '../utils';
 
 /**
@@ -29,9 +33,10 @@ export interface Extra {
  * @category Server/fastify-websocket
  */
 export function makeHandler<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
-  options: ServerOptions<Extra & Partial<E>>,
+  options: ServerOptions<P, Extra & Partial<E>>,
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
    * to check that the link between the clients and the server is operating and to prevent the link

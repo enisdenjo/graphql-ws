@@ -136,7 +136,7 @@ ___
 
 ### isMessage
 
-▸ **isMessage**(`val`): val is ConnectionAckMessage \| PingMessage \| PongMessage \| ConnectionInitMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
+▸ **isMessage**(`val`): val is ConnectionInitMessage \| ConnectionAckMessage \| PingMessage \| PongMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
 Checks if the provided value is a message.
 
@@ -148,7 +148,7 @@ Checks if the provided value is a message.
 
 #### Returns
 
-val is ConnectionAckMessage \| PingMessage \| PongMessage \| ConnectionInitMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
+val is ConnectionInitMessage \| ConnectionAckMessage \| PingMessage \| PongMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
 ___
 

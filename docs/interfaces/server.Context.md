@@ -1,6 +1,6 @@
 [graphql-ws](../README.md) / [server](../modules/server.md) / Context
 
-# Interface: Context<E\>
+# Interface: Context<P, E\>
 
 [server](../modules/server.md).Context
 
@@ -8,6 +8,7 @@
 
 | Name | Type |
 | :------ | :------ |
+| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``][`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
 | `E` | `unknown` |
 
 ## Table of contents
@@ -45,7 +46,7 @@ ___
 
 ### connectionParams
 
-• `Optional` `Readonly` **connectionParams**: `Readonly`<`Record`<`string`, `unknown`\>\>
+• `Optional` `Readonly` **connectionParams**: `Readonly`<`P`\>
 
 The parameters passed during the connection initialisation.
 

@@ -47,7 +47,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<WSExtra | UWSExtra | FastifyExtra>) => void,
+    test?: (ctx: Context<any, WSExtra | UWSExtra | FastifyExtra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -152,7 +152,7 @@ export async function startWSTServer(
     socket.once('close', () => sockets.delete(socket));
   });
 
-  const pendingConnections: Context<WSExtra>[] = [];
+  const pendingConnections: Context<any, WSExtra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
   const server = useWSServer(
@@ -335,7 +335,7 @@ export async function startUWSTServer(
   // sockets to kick off on teardown
   const sockets = new Set<uWS.WebSocket>();
 
-  const pendingConnections: Context<UWSExtra>[] = [];
+  const pendingConnections: Context<any, UWSExtra>[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0;
   const listenSocket = await new Promise<uWS.us_listen_socket>(
@@ -473,7 +473,7 @@ export async function startFastifyWSTServer(
   // sockets to kick off on teardown
   const sockets = new Set<ws>();
 
-  const pendingConnections: Context<FastifyExtra>[] = [];
+  const pendingConnections: Context<any, FastifyExtra>[] = [];
   const pendingClients: TServerClient[] = [];
   let pendingOperations = 0,
     pendingCompletes = 0,
