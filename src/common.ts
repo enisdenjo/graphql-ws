@@ -269,7 +269,7 @@ export function isMessage(val: unknown): val is Message {
  *
  * @category Common
  */
-export type JSONMessageReviver = (this: any, key: string, value: any) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type JSONMessageReviver = (this: any, key: string, value: any) => any;
 
 /**
  * Parses the raw websocket message data to a valid message.
@@ -302,7 +302,7 @@ export function parseMessage(
  *
  * @category Common
  */
-export type JSONMessageReplacer = (this: any, key: string, value: any) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type JSONMessageReplacer = (this: any, key: string, value: any) => any;
 
 /**
  * Stringifies a valid message ready to be sent through the socket.
