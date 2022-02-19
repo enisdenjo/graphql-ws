@@ -27,8 +27,8 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 | Name | Type |
 | :------ | :------ |
-| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
-| `E` | extends `Record`<`PropertyKey`, `unknown`\>`Record`<`PropertyKey`, `never`\> |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\> = `undefined` \| `Record`<`string`, `unknown`\> |
+| `E` | extends `Record`<`PropertyKey`, `unknown`\> = `Record`<`PropertyKey`, `never`\> |
 
 #### Parameters
 

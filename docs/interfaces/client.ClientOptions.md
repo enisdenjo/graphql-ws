@@ -10,7 +10,7 @@ Configuration used for the GraphQL over WebSocket client.
 
 | Name | Type |
 | :------ | :------ |
-| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``][`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
+| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] = [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
 
 ## Table of contents
 
@@ -174,7 +174,7 @@ ___
 
 ### on
 
-• `Optional` **on**: `Partial`<`Object`\>
+• `Optional` **on**: `Partial`<{ `closed`: [`EventClosedListener`](../modules/client.md#eventclosedlistener) ; `connected`: [`EventConnectedListener`](../modules/client.md#eventconnectedlistener) ; `connecting`: [`EventConnectingListener`](../modules/client.md#eventconnectinglistener) ; `error`: [`EventErrorListener`](../modules/client.md#eventerrorlistener) ; `message`: [`EventMessageListener`](../modules/client.md#eventmessagelistener) ; `opened`: [`EventOpenedListener`](../modules/client.md#eventopenedlistener) ; `ping`: [`EventPingListener`](../modules/client.md#eventpinglistener) ; `pong`: [`EventPongListener`](../modules/client.md#eventponglistener)  }\>
 
 Register listeners before initialising the client. This way
 you can ensure to catch all client relevant emitted events.

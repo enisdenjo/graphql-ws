@@ -90,8 +90,6 @@ The argument is actually the websocket `CloseEvent`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
-**`category`** Client
-
 ##### Parameters
 
 | Name | Type |
@@ -127,8 +125,6 @@ you should assert the websocket type during implementation.
 Also, the second argument is the optional payload that the server may
 send through the `ConnectionAck` message.
 
-**`category`** Client
-
 ##### Parameters
 
 | Name | Type |
@@ -158,8 +154,6 @@ ___
 
 ▸ (): `void`
 
-**`category`** Client
-
 ##### Returns
 
 `void`
@@ -184,8 +178,6 @@ ___
 
 Events dispatched from the WebSocket `onerror` are handled in this listener,
 as well as all internal client errors that could throw.
-
-**`category`** Client
 
 ##### Parameters
 
@@ -230,8 +222,6 @@ ___
 Called for all **valid** messages received by the client. Mainly useful for
 debugging and logging received messages.
 
-**`category`** Client
-
 ##### Parameters
 
 | Name | Type |
@@ -264,8 +254,6 @@ The first argument is actually the `WebSocket`, but to avoid
 bundling DOM typings because the client can run in Node env too,
 you should assert the websocket type during implementation.
 
-**`category`** Client
-
 ##### Parameters
 
 | Name | Type |
@@ -296,8 +284,6 @@ ___
 
 The first argument communicates whether the ping was received from the server.
 If `false`, the ping was sent by the client.
-
-**`category`** Client
 
 ##### Parameters
 
@@ -331,8 +317,6 @@ ___
 The first argument communicates whether the pong was received from the server.
 If `false`, the pong was sent by the client.
 
-**`category`** Client
-
 ##### Parameters
 
 | Name | Type |
@@ -356,7 +340,7 @@ Creates a disposable GraphQL over WebSocket client.
 
 | Name | Type |
 | :------ | :------ |
-| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\> = `undefined` \| `Record`<`string`, `unknown`\> |
 
 #### Parameters
 

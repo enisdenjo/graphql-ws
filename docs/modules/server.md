@@ -55,7 +55,7 @@ Read more about the Protocol in the PROTOCOL.md documentation file.
 
 | Name | Type |
 | :------ | :------ |
-| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\> = `undefined` \| `Record`<`string`, `unknown`\> |
 | `E` | `unknown` |
 
 #### Parameters

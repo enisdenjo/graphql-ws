@@ -68,8 +68,6 @@ for the elements of an outgoing `Message` object.
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
 
-**`category`** Common
-
 ##### Parameters
 
 | Name | Type |
@@ -98,8 +96,6 @@ The values are produced by parsing the incoming raw JSON.
 Read more about using it:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#using_the_reviver_parameter
 
-**`category`** Common
-
 ##### Parameters
 
 | Name | Type |
@@ -122,7 +118,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends [`MessageType`](../enums/common.MessageType.md)[`MessageType`](../enums/common.MessageType.md) |
+| `T` | extends [`MessageType`](../enums/common.MessageType.md) = [`MessageType`](../enums/common.MessageType.md) |
 
 ___
 

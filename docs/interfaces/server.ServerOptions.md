@@ -8,7 +8,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``][`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
+| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] = [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
 | `E` | `unknown` |
 
 ## Table of contents
