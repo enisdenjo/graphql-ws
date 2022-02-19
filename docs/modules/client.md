@@ -348,15 +348,21 @@ ___
 
 ### createClient
 
-▸ **createClient**(`options`): [`Client`](../interfaces/client.Client.md)
+▸ **createClient**<`P`\>(`options`): [`Client`](../interfaces/client.Client.md)
 
 Creates a disposable GraphQL over WebSocket client.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `options` | [`ClientOptions`](../interfaces/client.ClientOptions.md) |
+| `options` | [`ClientOptions`](../interfaces/client.ClientOptions.md)<`P`\> |
 
 #### Returns
 

@@ -1,7 +1,7 @@
 import type * as uWS from 'uWebSockets.js';
 import type http from 'http';
 import { makeServer, ServerOptions } from '../server';
-import { CloseCode } from '../common';
+import { ConnectionInitMessage, CloseCode } from '../common';
 import { limitCloseReason } from '../utils';
 
 /**
@@ -68,9 +68,10 @@ interface Client {
  * @category Server/uWebSockets
  */
 export function makeBehavior<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
-  options: ServerOptions<Extra & Partial<E>>,
+  options: ServerOptions<P, Extra & Partial<E>>,
   behavior: uWS.WebSocketBehavior = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))

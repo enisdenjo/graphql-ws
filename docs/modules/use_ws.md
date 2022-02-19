@@ -16,7 +16,7 @@
 
 ### useServer
 
-▸ **useServer**<`E`\>(`options`, `ws`, `keepAlive?`): [`Disposable`](../interfaces/common.Disposable.md)
+▸ **useServer**<`P`, `E`\>(`options`, `ws`, `keepAlive?`): [`Disposable`](../interfaces/common.Disposable.md)
 
 Use the server on a [ws](https://github.com/websockets/ws) ws server.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
@@ -25,13 +25,14 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 | Name | Type |
 | :------ | :------ |
+| `P` | extends `undefined` \| `Record`<`string`, `unknown`\>`undefined` \| `Record`<`string`, `unknown`\> |
 | `E` | extends `Record`<`PropertyKey`, `unknown`\>`Record`<`PropertyKey`, `never`\> |
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<[`Extra`](../interfaces/use_ws.Extra.md) & `Partial`<`E`\>\> | `undefined` |
+| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use_ws.Extra.md) & `Partial`<`E`\>\> | `undefined` |
 | `ws` | `Server` | `undefined` |
 | `keepAlive` | `number` | `12_000` |
 

@@ -3,6 +3,7 @@ import type * as ws from 'ws';
 import { makeServer, ServerOptions } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  ConnectionInitMessage,
   CloseCode,
   Disposable,
 } from '../common';
@@ -36,9 +37,10 @@ export interface Extra {
  * @category Server/ws
  */
 export function useServer<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
-  options: ServerOptions<Extra & Partial<E>>,
+  options: ServerOptions<P, Extra & Partial<E>>,
   ws: WebSocketServer,
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))

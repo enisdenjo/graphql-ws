@@ -1,10 +1,16 @@
 [graphql-ws](../README.md) / [client](../modules/client.md) / ClientOptions
 
-# Interface: ClientOptions
+# Interface: ClientOptions<P\>
 
 [client](../modules/client.md).ClientOptions
 
 Configuration used for the GraphQL over WebSocket client.
+
+## Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``][`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
 
 ## Table of contents
 
@@ -52,7 +58,7 @@ ___
 
 ### connectionParams
 
-• `Optional` **connectionParams**: `Record`<`string`, `unknown`\> \| () => `undefined` \| `Record`<`string`, `unknown`\> \| `Promise`<`undefined` \| `Record`<`string`, `unknown`\>\>
+• `Optional` **connectionParams**: `P` \| () => `P` \| `Promise`<`P`\>
 
 Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
 that the client specifies when establishing a connection with the server. You can use this

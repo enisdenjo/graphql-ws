@@ -24,6 +24,7 @@ import {
   MessageType,
   stringifyMessage,
   parseMessage,
+  ConnectionInitMessage,
   SubscribeMessage,
   NextMessage,
   ErrorMessage,
@@ -74,7 +75,10 @@ export type GraphQLExecutionContextValue =
   | null;
 
 /** @category Server */
-export interface ServerOptions<E = unknown> {
+export interface ServerOptions<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+  E = unknown,
+> {
   /**
    * The GraphQL schema on which the operations
    * will be executed and validated against.
@@ -94,7 +98,7 @@ export interface ServerOptions<E = unknown> {
   schema?:
     | GraphQLSchema
     | ((
-        ctx: Context<E>,
+        ctx: Context<P, E>,
         message: SubscribeMessage,
         args: Omit<ExecutionArgs, 'schema'>,
       ) => Promise<GraphQLSchema> | GraphQLSchema);
@@ -120,7 +124,7 @@ export interface ServerOptions<E = unknown> {
   context?:
     | GraphQLExecutionContextValue
     | ((
-        ctx: Context<E>,
+        ctx: Context<P, E>,
         message: SubscribeMessage,
         args: ExecutionArgs,
       ) =>
@@ -212,7 +216,7 @@ export interface ServerOptions<E = unknown> {
    * in the close event reason.
    */
   onConnect?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
   ) =>
     | Promise<Record<string, unknown> | boolean | void>
     | Record<string, unknown>
@@ -235,7 +239,7 @@ export interface ServerOptions<E = unknown> {
    * of the connection state - consider using the `onClose` callback.
    */
   onDisconnect?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     code: number,
     reason: string,
   ) => Promise<void> | void;
@@ -254,7 +258,7 @@ export interface ServerOptions<E = unknown> {
    * called before the `onClose`.
    */
   onClose?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     code: number,
     reason: string,
   ) => Promise<void> | void;
@@ -288,7 +292,7 @@ export interface ServerOptions<E = unknown> {
    * in the close event reason.
    */
   onSubscribe?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     message: SubscribeMessage,
   ) =>
     | Promise<ExecutionArgs | readonly GraphQLError[] | void>
@@ -316,7 +320,7 @@ export interface ServerOptions<E = unknown> {
    * in the close event reason.
    */
   onOperation?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     message: SubscribeMessage,
     args: ExecutionArgs,
     result: OperationResult,
@@ -335,7 +339,7 @@ export interface ServerOptions<E = unknown> {
    * in the close event reason.
    */
   onError?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     message: ErrorMessage,
     errors: readonly GraphQLError[],
   ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
@@ -354,7 +358,7 @@ export interface ServerOptions<E = unknown> {
    * in the close event reason.
    */
   onNext?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     message: NextMessage,
     args: ExecutionArgs,
     result: ExecutionResult | ExecutionPatchResult,
@@ -377,7 +381,7 @@ export interface ServerOptions<E = unknown> {
    * will still be called.
    */
   onComplete?: (
-    ctx: Context<E>,
+    ctx: Context<P, E>,
     message: CompleteMessage,
   ) => Promise<void> | void;
   /**
@@ -477,7 +481,10 @@ export interface WebSocket {
 }
 
 /** @category Server */
-export interface Context<E = unknown> {
+export interface Context<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+  E = unknown,
+> {
   /**
    * Indicates that the `ConnectionInit` message
    * has been received by the server. If this is
@@ -492,7 +499,7 @@ export interface Context<E = unknown> {
    */
   readonly acknowledged: boolean;
   /** The parameters passed during the connection initialisation. */
-  readonly connectionParams?: Readonly<Record<string, unknown>>;
+  readonly connectionParams?: Readonly<P>;
   /**
    * Holds the active subscriptions for this context. **All operations**
    * that are taking place are aggregated here. The user is _subscribed_
@@ -523,7 +530,10 @@ export interface Context<E = unknown> {
  *
  * @category Server
  */
-export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
+export function makeServer<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+  E = unknown,
+>(options: ServerOptions<P, E>): Server<E> {
   const {
     schema,
     context,
@@ -546,7 +556,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
 
   return {
     opened(socket, extra) {
-      const ctx: Context<E> = {
+      const ctx: Context<P, E> = {
         connectionInitReceived: false,
         acknowledged: false,
         subscriptions: {},

@@ -1,6 +1,6 @@
 [graphql-ws](../README.md) / [server](../modules/server.md) / ServerOptions
 
-# Interface: ServerOptions<E\>
+# Interface: ServerOptions<P, E\>
 
 [server](../modules/server.md).ServerOptions
 
@@ -8,6 +8,7 @@
 
 | Name | Type |
 | :------ | :------ |
+| `P` | extends [`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``][`ConnectionInitMessage`](common.ConnectionInitMessage.md)[``"payload"``] |
 | `E` | `unknown` |
 
 ## Table of contents
@@ -57,7 +58,7 @@ ___
 
 ### context
 
-• `Optional` **context**: [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [`Context`](server.Context.md)<`E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `ExecutionArgs`) => [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| `Promise`<[`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue)\>
+• `Optional` **context**: [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| (`ctx`: [`Context`](server.Context.md)<`P`, `E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `ExecutionArgs`) => [`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue) \| `Promise`<[`GraphQLExecutionContextValue`](../modules/server.md#graphqlexecutioncontextvalue)\>
 
 A value which is provided to every resolver and holds
 important contextual information like the currently
@@ -123,7 +124,7 @@ ___
 
 ### schema
 
-• `Optional` **schema**: `GraphQLSchema` \| (`ctx`: [`Context`](server.Context.md)<`E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `Omit`<`ExecutionArgs`, ``"schema"``\>) => `GraphQLSchema` \| `Promise`<`GraphQLSchema`\>
+• `Optional` **schema**: `GraphQLSchema` \| (`ctx`: [`Context`](server.Context.md)<`P`, `E`\>, `message`: [`SubscribeMessage`](common.SubscribeMessage.md), `args`: `Omit`<`ExecutionArgs`, ``"schema"``\>) => `GraphQLSchema` \| `Promise`<`GraphQLSchema`\>
 
 The GraphQL schema on which the operations
 will be executed and validated against.
@@ -229,7 +230,7 @@ called before the `onClose`.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `code` | `number` |
 | `reason` | `string` |
 
@@ -259,7 +260,7 @@ will still be called.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `message` | [`CompleteMessage`](common.CompleteMessage.md) |
 
 #### Returns
@@ -299,7 +300,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 
 #### Returns
 
@@ -330,7 +331,7 @@ of the connection state - consider using the `onClose` callback.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `code` | `number` |
 | `reason` | `string` |
 
@@ -360,7 +361,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `message` | [`ErrorMessage`](common.ErrorMessage.md) |
 | `errors` | readonly `GraphQLError`[] |
 
@@ -391,7 +392,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `message` | [`NextMessage`](common.NextMessage.md) |
 | `args` | `ExecutionArgs` |
 | `result` | [`ExecutionResult`](common.ExecutionResult.md)<`Record`<`string`, `unknown`\>, `Record`<`string`, `unknown`\>\> \| [`ExecutionPatchResult`](common.ExecutionPatchResult.md)<`unknown`, `Record`<`string`, `unknown`\>\> |
@@ -429,7 +430,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `message` | [`SubscribeMessage`](common.SubscribeMessage.md) |
 | `args` | `ExecutionArgs` |
 | `result` | [`OperationResult`](../modules/server.md#operationresult) |
@@ -476,7 +477,7 @@ in the close event reason.
 
 | Name | Type |
 | :------ | :------ |
-| `ctx` | [`Context`](server.Context.md)<`E`\> |
+| `ctx` | [`Context`](server.Context.md)<`P`, `E`\> |
 | `message` | [`SubscribeMessage`](common.SubscribeMessage.md) |
 
 #### Returns

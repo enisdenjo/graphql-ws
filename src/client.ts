@@ -197,7 +197,9 @@ export type EventListener<E extends Event> = E extends EventConnecting
  *
  * @category Client
  */
-export interface ClientOptions {
+export interface ClientOptions<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+> {
   /**
    * URL of the GraphQL over WebSocket Protocol compliant server to connect.
    *
@@ -221,11 +223,7 @@ export interface ClientOptions {
    * Throwing an error from within this function will close the socket with the `Error` message
    * in the close event reason.
    */
-  connectionParams?:
-    | ConnectionInitMessage['payload']
-    | (() =>
-        | Promise<ConnectionInitMessage['payload']>
-        | ConnectionInitMessage['payload']);
+  connectionParams?: P | (() => Promise<P> | P);
   /**
    * Controls when should the connection be established.
    *
@@ -428,7 +426,9 @@ export interface Client extends Disposable {
  *
  * @category Client
  */
-export function createClient(options: ClientOptions): Client {
+export function createClient<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+>(options: ClientOptions<P>): Client {
   const {
     url,
     connectionParams,
