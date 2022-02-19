@@ -20,5 +20,6 @@ module.exports = {
         'ts-expect-error': 'allow-with-description',
       },
     ],
+    '@typescript-eslint/no-explicit-any': 'off',
   },
 };
