@@ -1,3 +1,10 @@
+# [5.6.0](https://github.com/enisdenjo/graphql-ws/compare/v5.5.5...v5.6.0) (2022-02-19)
+
+
+### Features
+
+* TypeScript generic for connection init payload (`connectionParams`) ([#311](https://github.com/enisdenjo/graphql-ws/issues/311)) ([e67cf80](https://github.com/enisdenjo/graphql-ws/commit/e67cf807396ca45b1198ff4bb64e44b55778e1f8))
+
 ## [5.5.5](https://github.com/enisdenjo/graphql-ws/compare/v5.5.4...v5.5.5) (2021-10-29)
 
 
