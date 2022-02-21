@@ -1,6 +1,6 @@
 import type * as http from 'http';
 import type * as ws from 'ws';
-import { makeServer, ServerOptions } from '../server';
+import { handleProtocols, makeServer, ServerOptions } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ConnectionInitMessage,
@@ -53,6 +53,8 @@ export function useServer<
 ): Disposable {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
+
+  ws.options.handleProtocols = handleProtocols;
 
   ws.once('error', (err) => {
     console.error(

@@ -15,6 +15,7 @@ import {
   WSExtra,
   UWSExtra,
   FastifyExtra,
+  TClient,
 } from './utils';
 
 // silence console.error calls for nicer tests overview
@@ -30,7 +31,7 @@ afterAll(() => {
 
 for (const { tServer, skipUWS, startTServer } of tServers) {
   describe(tServer, () => {
-    it('should allow connections with valid protocols only', async () => {
+    it("should omit the subprotocol from the response if there's no valid one offered by the client", async () => {
       const { url } = await startTServer();
 
       const warn = console.warn;
@@ -38,33 +39,58 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
         /* hide warnings for test */
       };
 
-      let client = await createTClient(url, 'notme');
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
-        expect(event.reason).toBe('Subprotocol not acceptable');
-        expect(event.wasClean).toBeTruthy();
-      });
+      let client: TClient;
+      try {
+        client = await createTClient(url, ['notme', 'notmeither']);
+      } catch (err) {
+        expect(err).toMatchInlineSnapshot(
+          '[Error: Server sent no subprotocol]',
+        );
+      }
 
-      client = await createTClient(url, ['graphql', 'json']);
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
-        expect(event.reason).toBe('Subprotocol not acceptable');
-        expect(event.wasClean).toBeTruthy();
-      });
+      try {
+        client = await createTClient(url, 'notme');
+      } catch (err) {
+        expect(err).toMatchInlineSnapshot(
+          '[Error: Server sent no subprotocol]',
+        );
+      }
 
-      client = await createTClient(
-        url,
-        GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
-      );
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
-        expect(event.reason).toBe('Subprotocol not acceptable');
-        expect(event.wasClean).toBeTruthy();
-      });
+      try {
+        client = await createTClient(url, ['graphql', 'json']);
+      } catch (err) {
+        expect(err).toMatchInlineSnapshot(
+          '[Error: Server sent no subprotocol]',
+        );
+      }
+
+      try {
+        client = await createTClient(
+          url,
+          GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
+        );
+      } catch (err) {
+        expect(err).toMatchInlineSnapshot(
+          '[Error: Server sent no subprotocol]',
+        );
+      }
 
       client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
       await client.waitForClose(
         () => fail('shouldnt close for valid protocol'),
+        30, // should be kicked off within this time
+      );
+
+      client = await createTClient(url, [
+        'this',
+        GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        'one',
+      ]);
+      await client.waitForClose(
+        (e) => {
+          console.log(e);
+          fail('shouldnt close for valid protocol');
+        },
         30, // should be kicked off within this time
       );
 

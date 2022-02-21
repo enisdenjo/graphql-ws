@@ -1,27 +1,30 @@
 import WebSocket from 'ws';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../common';
 
+export interface TClient {
+  ws: WebSocket;
+  waitForMessage: (
+    test?: (data: WebSocket.MessageEvent) => void,
+    expire?: number,
+  ) => Promise<void>;
+  waitForClose: (
+    test?: (event: WebSocket.CloseEvent) => void,
+    expire?: number,
+  ) => Promise<void>;
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function createTClient(
   url: string,
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
-) {
+): Promise<TClient> {
   let closeEvent: WebSocket.CloseEvent;
   const queue: WebSocket.MessageEvent[] = [];
-  return new Promise<{
-    ws: WebSocket;
-    waitForMessage: (
-      test?: (data: WebSocket.MessageEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-    waitForClose: (
-      test?: (event: WebSocket.CloseEvent) => void,
-      expire?: number,
-    ) => Promise<void>;
-  }>((resolve) => {
+  return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, protocols);
     ws.onclose = (event) => (closeEvent = event); // just so that none are missed
     ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
+    ws.once('error', reject);
     ws.once('open', () =>
       resolve({
         ws,

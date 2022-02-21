@@ -848,3 +848,30 @@ export function makeServer<
     },
   };
 }
+
+/**
+ * Helper utility for choosing the "graphql-transport-ws" subprotocol from
+ * a set of WebSocket subprotocols.
+ *
+ * Accepts a set of already extracted WebSocket subprotocols or the raw
+ * Sec-WebSocket-Protocol header value. In either case, if the right
+ * protocol appears, it will be returned.
+ *
+ * By specification, the server should not provide a value with Sec-WebSocket-Protocol
+ * if it does not agree with client's subprotocols. The client has a responsibility
+ * to handle the connection afterwards.
+ */
+export function handleProtocols(
+  protocols: Set<string> | string,
+): typeof GRAPHQL_TRANSPORT_WS_PROTOCOL | false {
+  return (
+    typeof protocols === 'string'
+      ? protocols
+          .split(',')
+          .map((p) => p.trim())
+          .includes(GRAPHQL_TRANSPORT_WS_PROTOCOL)
+      : protocols.has(GRAPHQL_TRANSPORT_WS_PROTOCOL)
+  )
+    ? GRAPHQL_TRANSPORT_WS_PROTOCOL
+    : false;
+}

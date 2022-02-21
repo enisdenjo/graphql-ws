@@ -1,6 +1,6 @@
 import type * as uWS from 'uWebSockets.js';
 import type http from 'http';
-import { makeServer, ServerOptions } from '../server';
+import { handleProtocols, makeServer, ServerOptions } from '../server';
 import { ConnectionInitMessage, CloseCode } from '../common';
 import { limitCloseReason } from '../utils';
 
@@ -92,6 +92,7 @@ export function makeBehavior<
 
   return {
     ...behavior,
+
     pong(...args) {
       behavior.pong?.(...args);
       const [socket] = args;
@@ -123,7 +124,8 @@ export function makeBehavior<
           },
         },
         req.getHeader('sec-websocket-key'),
-        req.getHeader('sec-websocket-protocol'),
+        handleProtocols(req.getHeader('sec-websocket-protocol')) ||
+          new Uint8Array(),
         req.getHeader('sec-websocket-extensions'),
         context,
       );
@@ -147,7 +149,10 @@ export function makeBehavior<
 
       client.closed = server.opened(
         {
-          protocol: persistedRequest.headers['sec-websocket-protocol'] ?? '',
+          protocol:
+            handleProtocols(
+              persistedRequest.headers['sec-websocket-protocol'] || '',
+            ) || '',
           send: async (message) => {
             // the socket might have been destroyed in the meantime
             if (!clients.has(socket)) return;

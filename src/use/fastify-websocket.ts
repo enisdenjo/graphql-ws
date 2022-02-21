@@ -1,6 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
-import { makeServer, ServerOptions } from '../server';
+import { handleProtocols, makeServer, ServerOptions } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ConnectionInitMessage,
@@ -55,6 +55,9 @@ export function makeHandler<
 
   return function handler(connection, request) {
     const { socket } = connection;
+
+    // might be too late, but meh
+    this.websocketServer.options.handleProtocols = handleProtocols;
 
     // handle server emitted errors only if not already handling
     if (!handlingServerEmittedErrors) {
