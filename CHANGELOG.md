@@ -1,3 +1,10 @@
+## [5.6.1](https://github.com/enisdenjo/graphql-ws/compare/v5.6.0...v5.6.1) (2022-02-21)
+
+
+### Bug Fixes
+
+* **server:** Handle upgrade requests with multiple subprotocols and omit `Sec-WebSocket-Protocol` header if none supported ([9bae064](https://github.com/enisdenjo/graphql-ws/commit/9bae06437d6dc37c6dbafa18f905e27659a12da2))
+
 # [5.6.0](https://github.com/enisdenjo/graphql-ws/compare/v5.5.5...v5.6.0) (2022-02-19)
 
 
