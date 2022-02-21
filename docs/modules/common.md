@@ -124,7 +124,7 @@ ___
 
 ### GRAPHQL\_TRANSPORT\_WS\_PROTOCOL
 
-• **GRAPHQL\_TRANSPORT\_WS\_PROTOCOL**: ``"graphql-transport-ws"``
+• `Const` **GRAPHQL\_TRANSPORT\_WS\_PROTOCOL**: ``"graphql-transport-ws"``
 
 The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
 
