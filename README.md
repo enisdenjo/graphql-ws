@@ -353,8 +353,9 @@ const subscriptionsClient = createClient({
   },
 });
 
-// yes, both fetch AND subscribe handled in one implementation
-function fetchOrSubscribe(operation: RequestParameters, variables: Variables) {
+// both fetch and subscribe can be handled through one implementation
+// to understand why we return Observable<any>, please see: https://github.com/enisdenjo/graphql-ws/issues/316#issuecomment-1047605774
+function fetchOrSubscribe(operation: RequestParameters, variables: Variables): Observable<any> {
   return Observable.create((sink) => {
     if (!operation.text) {
       return sink.error(new Error('Operation text cannot be empty'));
