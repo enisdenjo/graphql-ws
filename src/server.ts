@@ -34,7 +34,6 @@ import {
   PingMessage,
   PongMessage,
   ExecutionResult,
-  ExecutionPatchResult,
 } from './common';
 import {
   isObject,
@@ -46,12 +45,12 @@ import {
 /** @category Server */
 export type OperationResult =
   | Promise<
-      | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
-      | AsyncIterable<ExecutionResult | ExecutionPatchResult>
+      | AsyncGenerator<ExecutionResult>
+      | AsyncIterable<ExecutionResult>
       | ExecutionResult
     >
-  | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
-  | AsyncIterable<ExecutionResult | ExecutionPatchResult>
+  | AsyncGenerator<ExecutionResult>
+  | AsyncIterable<ExecutionResult>
   | ExecutionResult;
 
 /**
@@ -361,12 +360,8 @@ export interface ServerOptions<
     ctx: Context<P, E>,
     message: NextMessage,
     args: ExecutionArgs,
-    result: ExecutionResult | ExecutionPatchResult,
-  ) =>
-    | Promise<ExecutionResult | ExecutionPatchResult | void>
-    | ExecutionResult
-    | ExecutionPatchResult
-    | void;
+    result: ExecutionResult,
+  ) => Promise<ExecutionResult | void> | ExecutionResult | void;
   /**
    * The complete callback is executed after the
    * operation has completed right before sending
@@ -667,10 +662,7 @@ export function makeServer<
             ctx.subscriptions[id] = null;
 
             const emit = {
-              next: async (
-                result: ExecutionResult | ExecutionPatchResult,
-                args: ExecutionArgs,
-              ) => {
+              next: async (result: ExecutionResult, args: ExecutionArgs) => {
                 let nextMessage: NextMessage = {
                   id,
                   type: MessageType.Next,
@@ -792,7 +784,7 @@ export function makeServer<
               ctx,
               message,
               execArgs,
-              operationResult,
+              operationResult as any,
             );
             if (maybeResult) operationResult = maybeResult;
 
@@ -805,7 +797,7 @@ export function makeServer<
               } else {
                 ctx.subscriptions[id] = operationResult;
                 for await (const result of operationResult) {
-                  await emit.next(result, execArgs);
+                  await emit.next(result as any, execArgs);
                 }
               }
             } else {
@@ -813,7 +805,7 @@ export function makeServer<
               // if the client completed the subscription before the single result
               // became available, he effectively canceled it and no data should be sent
               if (id in ctx.subscriptions)
-                await emit.next(operationResult, execArgs);
+                await emit.next(operationResult as any, execArgs);
             }
 
             // lack of subscription at this point indicates that the client

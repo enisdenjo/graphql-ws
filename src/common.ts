@@ -134,34 +134,72 @@ export interface SubscribePayload {
 }
 
 /** @category Common */
-export interface ExecutionResult<
+export interface ExecutionResultWithData<
   Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: Data | null;
-  hasNext?: boolean;
+  data: Data;
+  errors?: GraphQLError[];
   extensions?: Extensions;
+  label?: string;
+  path?: Array<string | number>;
 }
 
 /** @category Common */
-export interface ExecutionPatchResult<
-  Data = unknown,
+export interface ExecutionPatchResultWithData<
+  Data = Record<string, unknown>,
+  Extensions = Record<string, unknown>,
+> extends ExecutionResultWithData<Data, Extensions> {
+  hasNext?: boolean;
+}
+
+/** @category Common */
+export interface ExecutionResultWithoutData<
+  Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
   data?: Data | null;
-  path?: ReadonlyArray<string | number>;
-  label?: string;
-  hasNext: boolean;
+  errors?: GraphQLError[];
   extensions?: Extensions;
+  label?: string;
+  path?: Array<string | number>;
 }
+
+/** @category Common */
+export interface ExecutionResultWithExtensionsOnly<
+  Extensions = Record<string, unknown>,
+> {
+  // Per https://spec.graphql.org/June2018/#sec-Errors
+  // > If the data entry in the response is not present, the errors entry
+  // > in the response must not be empty. It must contain at least one error
+  // This means a payload has to have either a data key or an errors key:
+  // but the spec leaves room for the combination of data: null plus extensions
+  // since `data: null` is a *required* output if there was an error during
+  // execution, but the inverse is not described in the sepc: `data: null`
+  // does not necessarily indicate that there was an error.
+  data: null;
+  extensions: Extensions;
+}
+
+/**
+ * The shape of a GraphQL response as per the [specification](https://graphql.github.io/graphql-spec/June2018/#sec-Response-Format).
+ *
+ * @category Common
+ */
+export type ExecutionResult<
+  Data = Record<string, unknown>,
+  Extensions = Record<string, unknown>,
+> =
+  | ExecutionResultWithData<Data, Extensions>
+  | ExecutionPatchResultWithData<Data, Extensions>
+  | ExecutionResultWithoutData<Data, Extensions>
+  | ExecutionResultWithExtensionsOnly<Extensions>;
 
 /** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
-  readonly payload: ExecutionResult | ExecutionPatchResult;
+  readonly payload: ExecutionResult;
 }
 
 /** @category Common */
