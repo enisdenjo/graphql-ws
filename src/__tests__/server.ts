@@ -8,7 +8,7 @@ import {
   ExecutionResult,
   GraphQLSchema,
 } from 'graphql';
-import { makeServer } from '../server';
+import { handleProtocols, makeServer } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
@@ -1704,4 +1704,68 @@ describe('Disconnect/close', () => {
 
     client.ws.close(4321, 'Byebye');
   });
+});
+
+it('should only accept a Set, Array or string in handleProtocols', () => {
+  for (const test of [
+    {
+      in: new Set(['not', 'me']),
+      out: false,
+    },
+    {
+      in: new Set(['maybe', 'me', GRAPHQL_TRANSPORT_WS_PROTOCOL + 'nah']),
+      out: false,
+    },
+    {
+      in: new Set(['almost', 'next', GRAPHQL_TRANSPORT_WS_PROTOCOL, 'one']),
+      out: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+    },
+    {
+      in: [''],
+      out: false,
+    },
+    {
+      in: ['123', GRAPHQL_TRANSPORT_WS_PROTOCOL],
+      out: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+    },
+    {
+      in: [GRAPHQL_TRANSPORT_WS_PROTOCOL, GRAPHQL_TRANSPORT_WS_PROTOCOL],
+      out: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+    },
+    {
+      in: `some, ${GRAPHQL_TRANSPORT_WS_PROTOCOL}   , other-one,third`,
+      out: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+    },
+    {
+      in: `no, graphql-TransPort-ws`,
+      out: false,
+    },
+    {
+      in: { iAm: 'unacceptable' },
+      out: false,
+    },
+    {
+      in: 123,
+      out: false,
+    },
+    {
+      in: null,
+      out: false,
+    },
+    {
+      in: undefined,
+      out: false,
+    },
+    {
+      in: () => {
+        // void
+      },
+      out: false,
+    },
+  ]) {
+    expect(
+      // @ts-expect-error for test purposes, in can be different from type
+      handleProtocols(test.in),
+    ).toBe(test.out);
+  }
 });

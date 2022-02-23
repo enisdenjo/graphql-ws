@@ -862,16 +862,20 @@ export function makeServer<
  * to handle the connection afterwards.
  */
 export function handleProtocols(
-  protocols: Set<string> | string,
+  protocols: Set<string> | string[] | string,
 ): typeof GRAPHQL_TRANSPORT_WS_PROTOCOL | false {
-  return (
-    typeof protocols === 'string'
-      ? protocols
-          .split(',')
-          .map((p) => p.trim())
-          .includes(GRAPHQL_TRANSPORT_WS_PROTOCOL)
-      : protocols.has(GRAPHQL_TRANSPORT_WS_PROTOCOL)
-  )
-    ? GRAPHQL_TRANSPORT_WS_PROTOCOL
-    : false;
+  switch (true) {
+    case protocols instanceof Set &&
+      protocols.has(GRAPHQL_TRANSPORT_WS_PROTOCOL):
+    case Array.isArray(protocols) &&
+      protocols.includes(GRAPHQL_TRANSPORT_WS_PROTOCOL):
+    case typeof protocols === 'string' &&
+      protocols
+        .split(',')
+        .map((p) => p.trim())
+        .includes(GRAPHQL_TRANSPORT_WS_PROTOCOL):
+      return GRAPHQL_TRANSPORT_WS_PROTOCOL;
+    default:
+      return false;
+  }
 }

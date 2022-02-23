@@ -42,7 +42,7 @@ to handle the connection afterwards.
 
 | Name | Type |
 | :------ | :------ |
-| `protocols` | `string` \| `Set`<`string`\> |
+| `protocols` | `string` \| `Set`<`string`\> \| `string`[] |
 
 #### Returns
 
