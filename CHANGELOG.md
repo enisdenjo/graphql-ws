@@ -1,3 +1,10 @@
+## [5.6.2](https://github.com/enisdenjo/graphql-ws/compare/v5.6.1...v5.6.2) (2022-02-23)
+
+
+### Bug Fixes
+
+* **server:** `handleProtocols` accepts arrays too and gracefully rejects other types ([98dec1a](https://github.com/enisdenjo/graphql-ws/commit/98dec1addb59c2a215cb4425a4927c5f33a78b4c)), closes [#318](https://github.com/enisdenjo/graphql-ws/issues/318)
+
 ## [5.6.1](https://github.com/enisdenjo/graphql-ws/compare/v5.6.0...v5.6.1) (2022-02-21)
 
 
