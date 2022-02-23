@@ -21,7 +21,26 @@
 - [handleProtocols](server.md#handleprotocols)
 - [makeServer](server.md#makeserver)
 
-## Other
+## Server
+
+### GraphQLExecutionContextValue
+
+Ƭ **GraphQLExecutionContextValue**: `object` \| `symbol` \| `number` \| `string` \| `boolean` \| `undefined` \| ``null``
+
+A concrete GraphQL execution context value type.
+
+Mainly used because TypeScript collapes unions
+with `any` or `unknown` to `any` or `unknown`. So,
+we use a custom type to allow definitions such as
+the `context` server option.
+
+___
+
+### OperationResult
+
+Ƭ **OperationResult**: `Promise`<`AsyncGenerator`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| `AsyncIterable`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| [`ExecutionResult`](../interfaces/common.ExecutionResult.md)\> \| `AsyncGenerator`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| `AsyncIterable`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| [`ExecutionResult`](../interfaces/common.ExecutionResult.md)
+
+___
 
 ### handleProtocols
 
@@ -47,25 +66,6 @@ to handle the connection afterwards.
 #### Returns
 
 typeof [`GRAPHQL_TRANSPORT_WS_PROTOCOL`](common.md#graphql_transport_ws_protocol) \| ``false``
-
-## Server
-
-### GraphQLExecutionContextValue
-
-Ƭ **GraphQLExecutionContextValue**: `object` \| `symbol` \| `number` \| `string` \| `boolean` \| `undefined` \| ``null``
-
-A concrete GraphQL execution context value type.
-
-Mainly used because TypeScript collapes unions
-with `any` or `unknown` to `any` or `unknown`. So,
-we use a custom type to allow definitions such as
-the `context` server option.
-
-___
-
-### OperationResult
-
-Ƭ **OperationResult**: `Promise`<`AsyncGenerator`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| `AsyncIterable`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| [`ExecutionResult`](../interfaces/common.ExecutionResult.md)\> \| `AsyncGenerator`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| `AsyncIterable`<[`ExecutionResult`](../interfaces/common.ExecutionResult.md) \| [`ExecutionPatchResult`](../interfaces/common.ExecutionPatchResult.md)\> \| [`ExecutionResult`](../interfaces/common.ExecutionResult.md)
 
 ___
 

@@ -860,6 +860,8 @@ export function makeServer<
  * By specification, the server should not provide a value with Sec-WebSocket-Protocol
  * if it does not agree with client's subprotocols. The client has a responsibility
  * to handle the connection afterwards.
+ *
+ * @category Server
  */
 export function handleProtocols(
   protocols: Set<string> | string[] | string,
