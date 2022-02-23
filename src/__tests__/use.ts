@@ -1,5 +1,7 @@
 import http from 'http';
 import ws from 'ws';
+// @ts-expect-error: ws7 has no definitions
+import ws7 from 'ws7';
 import stream from 'stream';
 import {
   MessageType,
@@ -140,6 +142,11 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
             expect((ctx.extra as WSExtra).request).toBeInstanceOf(
               http.IncomingMessage,
             );
+          } else if (tServer === 'ws7') {
+            expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws7);
+            expect((ctx.extra as WSExtra).request).toBeInstanceOf(
+              http.IncomingMessage,
+            );
           } else if (tServer === 'fastify-websocket') {
             expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
               stream.Duplex,
@@ -151,7 +158,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
               'Request',
             );
           } else {
-            throw new Error('Missing test case for ' + tServer);
+            fail('Missing test case for ' + tServer);
           }
           done();
           return false; // reject client for sake of test

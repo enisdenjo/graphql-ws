@@ -4,6 +4,8 @@ import { schema, pong } from '../fixtures/simple';
 import { ServerOptions, Context } from '../../server';
 
 import ws, { WebSocketServer } from 'ws';
+// @ts-expect-error: ws7 has no definitions
+import ws7 from 'ws7';
 import uWS from 'uWebSockets.js';
 import Fastify from 'fastify';
 import fastifyWebsocket from 'fastify-websocket';
@@ -139,11 +141,17 @@ export async function startRawServer(): Promise<{
 export async function startWSTServer(
   options: Partial<ServerOptions> = {},
   keepAlive?: number, // for ws tests sake
+  v7?: boolean,
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
-  const wsServer = new WebSocketServer({ port, path });
+  let wsServer: ws.Server;
+  if (v7) {
+    wsServer = new ws7.Server({ port, path });
+  } else {
+    wsServer = new WebSocketServer({ port, path });
+  }
 
   // sockets to kick off on teardown
   const sockets = new Set<ws>();
@@ -658,6 +666,17 @@ export const tServers = [
   {
     tServer: 'ws' as const,
     startTServer: startWSTServer,
+    skipWS: it.skip,
+    skipUWS: it,
+    skipFastify: it,
+    itForWS: it,
+    itForUWS: it.skip,
+    itForFastify: it.skip,
+  },
+  {
+    tServer: 'ws7' as const,
+    startTServer: (options?: Partial<ServerOptions>, keepAlive?: number) =>
+      startWSTServer(options, keepAlive, true),
     skipWS: it.skip,
     skipUWS: it,
     skipFastify: it,
