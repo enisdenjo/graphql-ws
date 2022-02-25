@@ -2082,4 +2082,56 @@ describe('events', () => {
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
     expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
   });
+
+  it('should provide the latest socket reference to event listeners', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 1,
+      onNonLazyError: noop,
+      on: {
+        opened: (socket) => {
+          // only latest socket can be open
+          const sock = socket as WebSocket;
+          expect(sock.readyState).toBe(sock.OPEN);
+        },
+        connected: (socket) => {
+          // only latest socket can be open
+          const sock = socket as WebSocket;
+          expect(sock.readyState).toBe(sock.OPEN);
+        },
+      },
+    });
+
+    await tsubscribe(client, { query: '{ getValue }' }).waitForComplete();
+
+    server.getClients().forEach((client) => {
+      client.close(4321);
+    });
+    await new Promise<void>((resolve) => {
+      const dispose = client.on('closed', () => {
+        dispose();
+        resolve();
+      });
+    });
+
+    await tsubscribe(client, { query: '{ getValue }' }).waitForComplete();
+
+    server.getClients().forEach((client) => {
+      client.close(4321);
+    });
+    await new Promise<void>((resolve) => {
+      const dispose = client.on('closed', () => {
+        dispose();
+        resolve();
+      });
+    });
+
+    await tsubscribe(client, { query: '{ getValue }' }).waitForComplete();
+
+    // opened and connected should be called 6 times (3 times connected, 2 times disconnected)
+    expect.assertions(6);
+  });
 });
