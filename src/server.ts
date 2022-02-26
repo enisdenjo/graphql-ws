@@ -609,7 +609,16 @@ export function makeServer<
               // @ts-expect-error: I can write
               ctx.connectionParams = message.payload;
 
-            const permittedOrPayload = await onConnect?.(ctx);
+            let permittedOrPayload;
+            try {
+              permittedOrPayload = await onConnect?.(ctx);
+            } catch (err) {
+              return socket.close(
+                CloseCode.InternalServerError,
+                'message' in err ? err.message : err,
+              );
+            }
+
             if (permittedOrPayload === false)
               return socket.close(CloseCode.Forbidden, 'Forbidden');
 

@@ -517,6 +517,26 @@ describe('Connect', () => {
     });
   });
 
+  it('should close the connection if the onConnect function throws an error', async () => {
+    const { url } = await startTServer({
+      onConnect: async () => {
+        await Promise.resolve();
+        throw new Error('some developer error');
+      },
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForClose((event) => {
+      expect(event.reason).toBe('some developer error');
+    });
+  });
+
   it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
     const connectionParams = {
       some: 'string',
