@@ -413,7 +413,32 @@ const client = createClient({
 </details>
 
 <details id="apollo-client">
-<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
+<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/react/">Apollo Client Web</a> v3.5.10+</summary>
+
+```typescript
+// Direct support for graphql-ws added in Apollo Client Web v3.5.10.
+// See the next section for older versions.
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from 'graphql-ws';
+
+const link = new GraphQLWsLink(createClient({
+  url: 'ws://where.is:4000/graphql',
+  connectionParams: () => {
+    const session = getSession();
+    if (!session) {
+      return {};
+    }
+    return {
+      Authorization: `Bearer ${session.token}`,
+    };
+  },
+});
+```
+
+</details>
+
+<details id="apollo-client">
+<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/react/">Apollo Client Web</a> prior to v3.5.10</summary>
 
 ```typescript
 // for Apollo Client v3:
@@ -1106,35 +1131,54 @@ const server = app.listen(4000, () => {
 </details>
 
 <details id="apollo-server-express">
-<summary><a href="#apollo-server-express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/apollographql/apollo-server/tree/main/packages/apollo-server-express">Apollo Server Express</a></summary>
+<summary><a href="#apollo-server-express">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.apollographql.com/docs/apollo-server/data/subscriptions/">Apollo Server Express</a></summary>
 
 ```typescript
-import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import { WebSocketServer } from 'ws'; // yarn add ws
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
+import { createServer } from 'http';
+import express from 'express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
 
-// create express
+// create express and HTTP server
 const app = express();
+const httpServer = createServer(app);
+
+// create websocket server
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: '/graphql',
+});
+
+// Save the returned server's info so we can shut down this server later
+const serverCleanup = useServer({ schema }, wsServer);
 
 // create apollo server
-const apolloServer = new ApolloServer({ schema });
+const server = new ApolloServer({
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
 
-// apply middleware
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
+  ],
+});
+
+await apolloServer.start();
 apolloServer.applyMiddleware({ app });
 
-const server = app.listen(4000, () => {
-  // create and use the websocket server
-  const wsServer = new WebSocketServer({
-    server,
-    path: '/graphql',
-  });
-
-  useServer({ schema }, wsServer);
-});
+httpServer.listen(4000);
 ```
 
 </details>
@@ -1680,6 +1724,13 @@ const client = createClient({
 ```
 
 </details>
+
+## Web IDE support
+
+`graphql-ws` is supported by:
+
+- [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support); select `graphql-ws` in Connection Settings
+- [GraphiQL](https://github.com/graphql/graphiql); use [`createGraphiQLFetcher`](https://github.com/graphql/graphiql/blob/main/packages/graphiql-toolkit/docs/create-fetcher.md)
 
 ## [Documentation](docs/)
 
