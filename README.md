@@ -466,6 +466,26 @@ const link = new WebSocketLink({
 ```
 
 </details>
+  
+<details id="kotlin">
+<summary><a href="#kotlin">🔗</a> Client usage with <a href="https://github.com/apollographql/apollo-kotlin">Apollo Kotlin</a></summary>
+
+Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Kotlin using [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
+  
+```kotlin
+val apolloClient = ApolloClient.Builder()
+    .networkTransport(
+        WebSocketNetworkTransport.Builder()
+            .serverUrl(
+                serverUrl = "http://localhost:9090/graphql",
+            ).protocol(
+                protocolFactory = GraphQLWsProtocol.Factory()
+            ).build()
+    )
+    .build()
+```
+
+</details>  
 
 <details id="retry-strategy">
 <summary><a href="#retry-strategy">🔗</a> Client usage with custom retry timeout strategy</summary>
@@ -770,25 +790,6 @@ const client = createClient({
 
 </details>
 
-<details id="kotlin">
-<summary><a href="#kotlin">🔗</a> Client usage with <a href="https://github.com/apollographql/apollo-kotlin">Apollo Kotlin</a></summary>
-
-Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Kotlin using [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
-  
-```kotlin
-val apolloClient = ApolloClient.Builder()
-    .networkTransport(
-        WebSocketNetworkTransport.Builder()
-            .serverUrl(
-                serverUrl = "http://localhost:9090/graphql",
-            ).protocol(
-                protocolFactory = GraphQLWsProtocol.Factory()
-            ).build()
-    )
-    .build()
-```
-
-</details>
 <details id="ws">
 <summary><a href="#ws">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a></summary>
 
