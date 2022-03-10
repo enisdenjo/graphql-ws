@@ -551,6 +551,37 @@ let client = ApolloClient(
 
 </details>
 
+<details id="apollo-studio-explorer">
+<summary><a href="#apollo-studio-explorer">🔗</a> Client usage with [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support)</summary>
+
+In Explorer Settings, click "Edit" for "Connection Settings" and select `graphql-ws` under "Implementation".
+
+</details>
+
+<details id="graphiql">
+<summary><a href="#graphiql">🔗</a> Client usage with [GraphiQL](https://github.com/graphql/graphiql)</summary>
+
+```typescript
+import * as React from 'react';
+import ReactDOM from 'react-dom';
+import { GraphiQL } from 'graphiql';
+import { createGraphiQLFetcher } from '@graphiql/toolkit';
+import { createClient } from 'graphql-ws';
+
+const fetcher = createGraphiQLFetcher({
+  url: 'https://myschema.com/graphql',
+  wsClient: createClient({
+    url: 'wss://myschema.com/graphql',
+  }),
+});
+
+export const App = () => <GraphiQL fetcher={fetcher} />;
+
+ReactDOM.render(document.getElementByID('graphiql'), <App />);
+```
+
+</details>
+
 <details id="retry-strategy">
 <summary><a href="#retry-strategy">🔗</a> Client usage with custom retry timeout strategy</summary>
 
@@ -1724,13 +1755,6 @@ const client = createClient({
 ```
 
 </details>
-
-## Web IDE support
-
-`graphql-ws` is supported by:
-
-- [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support); select `graphql-ws` in Connection Settings
-- [GraphiQL](https://github.com/graphql/graphiql); use [`createGraphiQLFetcher`](https://github.com/graphql/graphiql/blob/main/packages/graphiql-toolkit/docs/create-fetcher.md)
 
 ## [Documentation](docs/)
 
