@@ -412,9 +412,7 @@ const client = createClient({
 
 </details>
 
-<details id="apollo-
-             
-              ">
+<details id="apollo-client">
 <summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com">Apollo</a></summary>
 
 ```typescript
