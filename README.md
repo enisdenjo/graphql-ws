@@ -485,7 +485,46 @@ val apolloClient = ApolloClient.Builder()
     .build()
 ```
 
-</details>  
+</details>
+
+<details id="apollo-ios">
+<summary><a href="#apollo-ios">🔗</a> Client usage with <a href="https://github.com/apollographql/apollo-ios">Apollo iOS</a></summary>
+
+Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Swift using [Apollo iOS](https://github.com/apollographql/apollo-ios)
+
+```swift
+import Foundation
+import Apollo
+import ApolloWebSocket
+
+let store = ApolloStore()
+
+let normalTransport = RequestChainNetworkTransport(
+  interceptorProvider: DefaultInterceptorProvider(store: store),
+  endpointURL: URL(string: "http://localhost:8080/graphql")!
+)
+
+let webSocketClient = WebSocket(
+  request: URLRequest(url: URL(string: "ws://localhost:8080/websocket")!),
+  protocol: .graphql_transport_ws
+)
+let webSocketTransport = WebSocketTransport(
+  websocket: webSocketClient,
+  store: store
+)
+
+let splitTransport = SplitNetworkTransport(
+  uploadingNetworkTransport: normalTransport,
+  webSocketNetworkTransport: webSocketTransport
+)
+
+let client = ApolloClient(
+  networkTransport: splitTransport,
+  store: store
+)
+```
+
+</details>
 
 <details id="retry-strategy">
 <summary><a href="#retry-strategy">🔗</a> Client usage with custom retry timeout strategy</summary>
