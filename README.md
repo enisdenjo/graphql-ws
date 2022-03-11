@@ -562,7 +562,7 @@ In Explorer Settings, click "Edit" for "Connection Settings" and select `graphql
 <summary><a href="#graphiql">🔗</a> Client usage with <a href="https://github.com/graphql/graphiql">GraphiQL</a></summary>
 
 ```typescript
-import * as React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { GraphiQL } from 'graphiql';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
