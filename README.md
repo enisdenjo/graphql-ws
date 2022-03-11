@@ -413,13 +413,14 @@ const client = createClient({
 </details>
 
 <details id="apollo-client">
-<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/react/">Apollo Client Web</a> v3.5.10+</summary>
+<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/react/">Apollo Client Web</a></summary>
 
 ```typescript
-// Direct support for graphql-ws added in Apollo Client Web v3.5.10.
-// See the next section for older versions.
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from 'graphql-ws';
+// Apollo Client Web v3.5.10 has a GraphQLWsLink class which implements
+// graphql-ws directly. For older versions, see the next code block
+// to define your own GraphQLWsLink.
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 
 const link = new GraphQLWsLink(createClient({
   url: 'ws://where.is:4000/graphql',
@@ -435,13 +436,8 @@ const link = new GraphQLWsLink(createClient({
 });
 ```
 
-</details>
-
-<details id="apollo-client">
-<summary><a href="#apollo-client">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/react/">Apollo Client Web</a> prior to v3.5.10</summary>
-
 ```typescript
-// for Apollo Client v3:
+// for Apollo Client v3 older than v3.5.10:
 import {
   ApolloLink,
   Operation,
@@ -452,14 +448,11 @@ import {
 // import { ApolloLink, Operation, FetchResult, Observable } from 'apollo-link'; // yarn add apollo-link
 
 import { print } from 'graphql';
-import { createClient, ClientOptions, Client } from 'graphql-ws';
+import { createClient, Client } from 'graphql-ws';
 
-class WebSocketLink extends ApolloLink {
-  private client: Client;
-
-  constructor(options: ClientOptions) {
+class GraphQLWsLink extends ApolloLink {
+  constructor(private client: Client) {
     super();
-    this.client = createClient(options);
   }
 
   public request(operation: Operation): Observable<FetchResult> {
@@ -475,19 +468,6 @@ class WebSocketLink extends ApolloLink {
     });
   }
 }
-
-const link = new WebSocketLink({
-  url: 'ws://where.is:4000/graphql',
-  connectionParams: () => {
-    const session = getSession();
-    if (!session) {
-      return {};
-    }
-    return {
-      Authorization: `Bearer ${session.token}`,
-    };
-  },
-});
 ```
 
 </details>
@@ -496,7 +476,7 @@ const link = new WebSocketLink({
 <summary><a href="#kotlin">🔗</a> Client usage with <a href="https://github.com/apollographql/apollo-kotlin">Apollo Kotlin</a></summary>
 
 Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Kotlin using [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
-  
+
 ```kotlin
 val apolloClient = ApolloClient.Builder()
     .networkTransport(
