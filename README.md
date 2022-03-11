@@ -552,7 +552,7 @@ let client = ApolloClient(
 </details>
 
 <details id="apollo-studio-explorer">
-<summary><a href="#apollo-studio-explorer">🔗</a> Client usage with [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support)</summary>
+<summary><a href="#apollo-studio-explorer">🔗</a> Client usage with <a href="https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support">Apollo Studio Explorer</a></summary>
 
 In Explorer Settings, click "Edit" for "Connection Settings" and select `graphql-ws` under "Implementation".
 
