@@ -62,7 +62,6 @@ export function createTClient(
             };
             if (expire)
               setTimeout(() => {
-                // @ts-expect-error: its ok
                 ws.onclose = null; // expired
                 resolve();
               }, expire);

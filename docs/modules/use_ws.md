@@ -33,7 +33,7 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 | Name | Type | Default value |
 | :------ | :------ | :------ |
 | `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use_ws.Extra.md) & `Partial`<`E`\>\> | `undefined` |
-| `ws` | `Server` | `undefined` |
+| `ws` | `WebSocketServer` | `undefined` |
 | `keepAlive` | `number` | `12_000` |
 
 #### Returns
