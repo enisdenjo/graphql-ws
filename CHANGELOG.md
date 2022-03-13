@@ -1,3 +1,10 @@
+## [5.6.3](https://github.com/enisdenjo/graphql-ws/compare/v5.6.2...v5.6.3) (2022-03-13)
+
+
+### Bug Fixes
+
+* **client:** Stop execution if `connectionParams` took too long and the server kicked the client off ([1e94e45](https://github.com/enisdenjo/graphql-ws/commit/1e94e45d51b13bd870273a63e33819055209f607)), closes [#331](https://github.com/enisdenjo/graphql-ws/issues/331)
+
 ## [5.6.2](https://github.com/enisdenjo/graphql-ws/compare/v5.6.1...v5.6.2) (2022-02-23)
 
 
