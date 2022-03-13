@@ -330,6 +330,45 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   });
 });
 
+it('should report close events when `connectionParams` takes too long', async (done) => {
+  const server = await startTServer({
+    connectionInitWaitTimeout: 10,
+  });
+
+  // lazy
+  const client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    connectionParams: () =>
+      // takes longer than the connectionInitWaitTimeout
+      new Promise<undefined>((resolve) => setTimeout(resolve, 20)),
+  });
+
+  const sub = tsubscribe(client, { query: '{ getValue }' });
+
+  await sub.waitForError((event) => {
+    expect((event as CloseEvent).code).toBe(
+      CloseCode.ConnectionInitialisationTimeout,
+    );
+  });
+
+  // non-lazy
+  createClient({
+    url: server.url,
+    retryAttempts: 0,
+    lazy: false,
+    onNonLazyError: (event) => {
+      expect((event as CloseEvent).code).toBe(
+        CloseCode.ConnectionInitialisationTimeout,
+      );
+      done();
+    },
+    connectionParams: () =>
+      // takes longer than the connectionInitWaitTimeout
+      new Promise<undefined>((resolve) => setTimeout(resolve, 20)),
+  });
+});
+
 it('should not send the complete message if the socket is not open', async () => {
   const { url, waitForOperation } = await startTServer();
 

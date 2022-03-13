@@ -628,6 +628,11 @@ export function createClient<
                 typeof connectionParams === 'function'
                   ? await connectionParams()
                   : connectionParams;
+
+              // connectionParams might take too long causing the server to kick off the client
+              // the necessary error/close event is already reported - simply stop execution
+              if (socket.readyState !== WebSocketImpl.OPEN) return;
+
               socket.send(
                 stringifyMessage<MessageType.ConnectionInit>(
                   payload
