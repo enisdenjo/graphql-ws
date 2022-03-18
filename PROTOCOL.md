@@ -147,6 +147,8 @@ Operation execution error(s) triggered by the `Next` message happening before th
 
 A client should be prepared to receive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
 
+Note: Errors that occur during regular processing should result in a `Next` message with a non-empty `errors` member in its `payload` followed by a `Complete` message.
+
 ```typescript
 import { GraphQLError } from 'graphql';
 
