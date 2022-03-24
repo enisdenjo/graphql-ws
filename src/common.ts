@@ -21,6 +21,13 @@ import {
 export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';
 
 /**
+ * The deprecated subprotocol used by [subscriptions-transport-ws](https://github.com/apollographql/subscriptions-transport-ws).
+ *
+ * @private
+ */
+export const DEPRECATED_GRAPHQL_WS_PROTOCOL = 'graphql-ws';
+
+/**
  * `graphql-ws` expected and standard close codes of the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
  *
  * @category Common

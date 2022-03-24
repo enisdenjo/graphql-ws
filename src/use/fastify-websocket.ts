@@ -2,7 +2,7 @@ import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
 import { handleProtocols, makeServer, ServerOptions } from '../server';
 import {
-  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
   ConnectionInitMessage,
   CloseCode,
 } from '../common';
@@ -172,12 +172,14 @@ export function makeHandler<
     socket.once('close', (code, reason) => {
       if (pongWait) clearTimeout(pongWait);
       if (pingInterval) clearInterval(pingInterval);
-      if (!isProd && code === CloseCode.SubprotocolNotAcceptable)
+      if (
+        !isProd &&
+        code === CloseCode.SubprotocolNotAcceptable &&
+        socket.protocol === DEPRECATED_GRAPHQL_WS_PROTOCOL
+      )
         console.warn(
-          `WebSocket protocol error occured. It was most likely caused due to an ` +
-            `unsupported subprotocol "${socket.protocol}" requested by the client. ` +
-            `graphql-ws implements exclusively the "${GRAPHQL_TRANSPORT_WS_PROTOCOL}" subprotocol, ` +
-            'please make sure that the client implements it too.',
+          `Client provided the unsupported and deprecated subprotocol "${socket.protocol}" used by subscriptions-transport-ws.` +
+            'Please see https://www.apollographql.com/docs/apollo-server/data/subscriptions/#switching-from-subscriptions-transport-ws.',
         );
       closed(code, String(reason));
     });
