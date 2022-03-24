@@ -1,3 +1,10 @@
+## [5.6.4](https://github.com/enisdenjo/graphql-ws/compare/v5.6.3...v5.6.4) (2022-03-24)
+
+
+### Bug Fixes
+
+* Warn about subscriptions-transport-ws clients and provide migration link ([e080739](https://github.com/enisdenjo/graphql-ws/commit/e08073956621b52d858b617eff5cf993ccedea16)), closes [#339](https://github.com/enisdenjo/graphql-ws/issues/339) [#325](https://github.com/enisdenjo/graphql-ws/issues/325)
+
 ## [5.6.3](https://github.com/enisdenjo/graphql-ws/compare/v5.6.2...v5.6.3) (2022-03-13)
 
 
