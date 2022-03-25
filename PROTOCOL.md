@@ -139,9 +139,7 @@ interface NextMessage {
 
 Direction: **Server -> Client**
 
-Operation execution error(s) in response to the `Subscribe` message that occur before actual execution, usually due to validation errors.
-
-Note: Any errors that occur **as part of execution** should be contained in a `Next` message as specified by the GraphQL protocol.
+Operation execution error(s) in response to the `Subscribe` message. This can occur _before_ execution starts, usually due to validation errors, or _during_ the execution of the request. This message terminates the operation and no further messages will be sent.
 
 ```typescript
 import { GraphQLError } from 'graphql';
