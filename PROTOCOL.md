@@ -102,7 +102,7 @@ Requests an operation specified in the message `payload`. This message provides 
 
 If there is already an active subscriber for an operation matching the provided ID, regardless of the operation type, the server **must** close the socket immediately with the event `4409: Subscriber for <unique-operation-id> already exists`.
 
-The server needs only keep track of IDs for as long as the subscription is active.  Once a client knows that the server has completed an operation, it is free to re-use that ID.
+The server needs only keep track of IDs for as long as the subscription is active. Once a client completes an operation, it is free to re-use that ID.
 
 ```typescript
 interface SubscribeMessage {
@@ -125,7 +125,6 @@ Direction: **Server -> Client**
 
 Operation execution result(s) from the source stream created by the binding `Subscribe` message. After all results have been emitted, the `Complete` message will follow indicating stream completion.
 
-A server will always send at least one `Next` message for each operation, unless it sends an `Error` message first.
 
 A client should be prepared to recive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
 
@@ -147,7 +146,6 @@ Operation execution error(s) triggered by the `Next` message happening before th
 
 A client should be prepared to receive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
 
-Note: Errors that occur during regular processing should result in a `Next` message with a non-empty `errors` member in its `payload` followed by a `Complete` message.
 
 ```typescript
 import { GraphQLError } from 'graphql';
