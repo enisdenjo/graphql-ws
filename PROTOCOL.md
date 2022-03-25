@@ -163,7 +163,7 @@ Direction: **bidirectional**
 
 Note: The asynchronous nature of the full-duplex connection means that a client can send a `Complete` message to the server even when messages are
 in-flight to the client, or when the server has itself completed the operation (via a `Error` or `Complete` message).  Both client and server
-must therefore be prepared to receive (and ignore) messages for operations that they consider already completed.  Simply ignoring all messages with _unknown_ IDs is acceptable.
+must therefore be prepared to receive (and ignore) messages for operations that they consider already completed.
 
 ```typescript
 interface CompleteMessage {
@@ -179,7 +179,7 @@ Direction: **bidirectional**
 Receiving a message of a type or format which is not specified in this document will result in an **immediate** socket closure with the event `4400: <error-message>`. The `<error-message>` can be vaguely descriptive on why the received message is invalid.
 
 Receiving a message (other than `Subscribe`) with an ID that belongs to an operation that has been previously completed does not constitute an
-error.  It is permissable to simply ignore all unknown IDs without closing the connection.
+error.  It is permissable to simply ignore all _unknown_ IDs without closing the connection.
 
 ## Examples
 
