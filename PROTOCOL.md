@@ -125,9 +125,6 @@ Direction: **Server -> Client**
 
 Operation execution result(s) from the source stream created by the binding `Subscribe` message. After all results have been emitted, the `Complete` message will follow indicating stream completion.
 
-
-A client should be prepared to recive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
-
 ```typescript
 import { ExecutionResult } from 'graphql';
 
@@ -142,10 +139,9 @@ interface NextMessage {
 
 Direction: **Server -> Client**
 
-Operation execution error(s) triggered by the `Next` message happening before the actual execution, usually due to validation errors.
+Operation execution error(s) in response to the `Subscribe` message that occur before actual execution, usually due to validation errors.
 
-A client should be prepared to receive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
-
+Note: Any errors that occur **as part of execution** should be contained in a `Next` message as specified by the GraphQL protocol.
 
 ```typescript
 import { GraphQLError } from 'graphql';
@@ -163,15 +159,11 @@ Direction: **bidirectional**
 
 - **Server -> Client** indicates that the requested operation execution has completed. If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
   
-  A client should be prepared to receive (and ignore) IDs for operations for which it has previously sent a `Complete` message to the server.
-
 - **Client -> Server** indicates that the client has stopped listening and wants to complete the subscription. No further events, relevant to the original subscription, should be sent through. Even if the client sent a `Complete` message for a *single-result-operation* before it resolved, the result should not be sent through once it does.
-
-  A server should be prepared to receive (and ignore) IDs for operations for which it has previously sent a `Complete` or `Error` message to the client.
 
 Note: The asynchronous nature of the full-duplex connection means that a client can send a `Complete` message to the server even when messages are
 in-flight to the client, or when the server has itself completed the operation (via a `Error` or `Complete` message).  Both client and server
-must therefore be prepared to receive (and ignore) messages for operations that they consider already completed.
+must therefore be prepared to receive (and ignore) messages for operations that they consider already completed.  Simply ignoring all messages with _unknown_ IDs is acceptable.
 
 ```typescript
 interface CompleteMessage {
