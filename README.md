@@ -433,7 +433,7 @@ const link = new GraphQLWsLink(createClient({
       Authorization: `Bearer ${session.token}`,
     };
   },
-});
+}));
 ```
 
 ```typescript
