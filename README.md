@@ -1167,7 +1167,7 @@ const wsServer = new WebSocketServer({
 const serverCleanup = useServer({ schema }, wsServer);
 
 // create apollo server
-const server = new ApolloServer({
+const apolloServer = new ApolloServer({
   schema,
   plugins: [
     // Proper shutdown for the HTTP server.
