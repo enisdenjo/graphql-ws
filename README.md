@@ -1750,6 +1750,6 @@ File a bug, contribute with code, or improve documentation? Read up on our guide
 
 ## Disclaimer
 
-This library and the [GraphQL over WebSocket Protocol](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) are **not** cross-compatible with the legacy [`subscriptions-transport-ws`](https://github.com/apollographql/subscriptions-transport-ws) and its [accompanying Protocol](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
+This library and the [GraphQL over WebSocket Protocol](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) are **not** cross-compatible with the [deprecated `subscriptions-transport-ws`](https://github.com/apollographql/subscriptions-transport-ws) and its [accompanying Protocol](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
 
 You must use `graphql-ws` coherently and implement the [GraphQL over WebSocket Protocol](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) on both sides, server and the client.
