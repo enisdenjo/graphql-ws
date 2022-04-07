@@ -1,3 +1,10 @@
+# [5.7.0](https://github.com/enisdenjo/graphql-ws/compare/v5.6.4...v5.7.0) (2022-04-07)
+
+
+### Features
+
+* **client:** Terminate the WebSocket abruptly and immediately ([53ad515](https://github.com/enisdenjo/graphql-ws/commit/53ad5156e85f358bfa1baa81f9787b6a8479527d)), closes [#290](https://github.com/enisdenjo/graphql-ws/issues/290)
+
 ## [5.6.4](https://github.com/enisdenjo/graphql-ws/compare/v5.6.3...v5.6.4) (2022-03-24)
 
 
