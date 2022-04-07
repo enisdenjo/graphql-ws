@@ -26,7 +26,7 @@ ___
 
 ### request
 
-• `Readonly` **request**: `FastifyRequest`<`RouteGenericInterface`, `Server`, `IncomingMessage`, `unknown`\>
+• `Readonly` **request**: `FastifyRequest`<`RouteGenericInterface`, `Server`, `IncomingMessage`, `unknown`, `FastifyLoggerInstance`\>
 
 The initial HTTP upgrade request before the actual
 socket and connection is established.
