@@ -420,20 +420,22 @@ import { createClient } from 'graphql-ws';
 // Apollo Client Web v3.5.10 has a GraphQLWsLink class which implements
 // graphql-ws directly. For older versions, see the next code block
 // to define your own GraphQLWsLink.
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 
-const link = new GraphQLWsLink(createClient({
-  url: 'ws://where.is:4000/graphql',
-  connectionParams: () => {
-    const session = getSession();
-    if (!session) {
-      return {};
-    }
-    return {
-      Authorization: `Bearer ${session.token}`,
-    };
-  },
-}));
+const link = new GraphQLWsLink(
+  createClient({
+    url: 'ws://where.is:4000/graphql',
+    connectionParams: () => {
+      const session = getSession();
+      if (!session) {
+        return {};
+      }
+      return {
+        Authorization: `Bearer ${session.token}`,
+      };
+    },
+  }),
+);
 ```
 
 ```typescript
@@ -471,7 +473,7 @@ class GraphQLWsLink extends ApolloLink {
 ```
 
 </details>
-  
+
 <details id="kotlin">
 <summary><a href="#kotlin">🔗</a> Client usage with <a href="https://github.com/apollographql/apollo-kotlin">Apollo Kotlin</a></summary>
 
