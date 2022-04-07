@@ -17,6 +17,7 @@
 - [dispose](client.Client.md#dispose)
 - [on](client.Client.md#on)
 - [subscribe](client.Client.md#subscribe)
+- [terminate](client.Client.md#terminate)
 
 ## Methods
 
@@ -102,5 +103,26 @@ uses the `sink` to emit received data or errors. Returns a _cleanup_
 function used for dropping the subscription and cleaning stuff up.
 
 ##### Returns
+
+`void`
+
+___
+
+### terminate
+
+▸ **terminate**(): `void`
+
+Terminates the WebSocket abruptly and immediately.
+
+A close event `4499: Terminated` is issued to the current WebSocket and an
+artificial `{ code: 4499, reason: 'Terminated', wasClean: false }` close-event-like
+object is immediately emitted without waiting for the one coming from `WebSocket.onclose`.
+
+Terminating is not considered fatal and a connection retry will occur as expected.
+
+Useful in cases where the WebSocket is stuck and not emitting any events;
+can happen on iOS Safari, see: https://github.com/enisdenjo/graphql-ws/discussions/290.
+
+#### Returns
 
 `void`

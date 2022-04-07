@@ -791,6 +791,42 @@ it('should limit the internal client bad response error message size', async (do
   });
 });
 
+it('should terminate socket immediately on terminate', async (done) => {
+  const { url, waitForConnect } = await startTServer();
+
+  class CannotCloseWebSocket extends WebSocket {
+    constructor(...args: unknown[]) {
+      // @ts-expect-error Args will fit
+      super(...args);
+    }
+
+    public close() {
+      // unresponsive
+    }
+  }
+
+  const client = createClient({
+    url,
+    retryAttempts: 0,
+    lazy: false,
+    onNonLazyError: noop,
+    webSocketImpl: CannotCloseWebSocket,
+    on: {
+      closed: (event) => {
+        expect(event).not.toBeInstanceOf(CloseEvent); // because its an artificial close-event-like object
+        expect((event as any).code).toBe(4499);
+        expect((event as any).reason).toBe('Terminated');
+        expect((event as any).wasClean).toBeFalsy();
+        done();
+      },
+    },
+  });
+
+  await waitForConnect();
+
+  client.terminate();
+});
+
 describe('ping/pong', () => {
   it('should respond with a pong to a ping', async () => {
     expect.assertions(1);

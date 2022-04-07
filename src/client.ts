@@ -419,6 +419,19 @@ export interface Client extends Disposable {
     payload: SubscribePayload,
     sink: Sink<ExecutionResult<Data, Extensions>>,
   ): () => void;
+  /**
+   * Terminates the WebSocket abruptly and immediately.
+   *
+   * A close event `4499: Terminated` is issued to the current WebSocket and an
+   * artificial `{ code: 4499, reason: 'Terminated', wasClean: false }` close-event-like
+   * object is immediately emitted without waiting for the one coming from `WebSocket.onclose`.
+   *
+   * Terminating is not considered fatal and a connection retry will occur as expected.
+   *
+   * Useful in cases where the WebSocket is stuck and not emitting any events;
+   * can happen on iOS Safari, see: https://github.com/enisdenjo/graphql-ws/discussions/290.
+   */
+  terminate(): void;
 }
 
 /**
@@ -617,6 +630,12 @@ export function createClient<
             clearTimeout(connectionAckTimeout);
             clearTimeout(queuedPing);
             denied(errOrEvent);
+
+            if (isLikeCloseEvent(errOrEvent) && errOrEvent.code === 4499) {
+              socket.close(4499, 'Terminated'); // close event is artificial and emitted manually, see `Client.terminate()` below
+              socket.onerror = null;
+              socket.onclose = null;
+            }
           });
           socket.onerror = (err) => emitter.emit('error', err);
           socket.onclose = (event) => emitter.emit('closed', event);
@@ -788,6 +807,7 @@ export function createClient<
           // CloseCode.ConnectionAcknowledgementTimeout, might not time out after retry
           CloseCode.SubscriberAlreadyExists,
           CloseCode.TooManyInitialisationRequests,
+          // 4499, // Terminated, probably because the socket froze, we want to retry
         ].includes(errOrCloseEvent.code))
     )
       throw errOrCloseEvent;
@@ -931,6 +951,16 @@ export function createClient<
         // if there is a connection, close it
         const [socket] = await connecting;
         socket.close(1000, 'Normal Closure');
+      }
+    },
+    terminate() {
+      if (connecting) {
+        // only if there is a connection
+        emitter.emit('closed', {
+          code: 4499,
+          reason: 'Terminated',
+          wasClean: false,
+        });
       }
     },
   };

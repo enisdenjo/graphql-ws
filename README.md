@@ -690,6 +690,42 @@ createClient({
 
 </details>
 
+<details id="client-terminate">
+<summary><a href="#client-terminate">🔗</a> Client usage with abrupt termination on pong timeout</summary>
+
+```typescript
+import { createClient } from 'graphql-ws';
+
+let timedOut;
+const client = createClient({
+  url: 'ws://terminate.me:4000/on-pong-timeout',
+  keepAlive: 10_000, // ping server every 10 seconds
+  on: {
+    ping: (received) => {
+      if (!received /* sent */) {
+        timedOut = setTimeout(() => {
+          // a close event `4499: Terminated` is issued to the current WebSocket and an
+          // artificial `{ code: 4499, reason: 'Terminated', wasClean: false }` close-event-like
+          // object is immediately emitted without waiting for the one coming from `WebSocket.onclose`
+          //
+          // calling terminate is not considered fatal and a connection retry will occur as expected
+          //
+          // see: https://github.com/enisdenjo/graphql-ws/discussions/290
+          client.terminate();
+        }, 5_000);
+      }
+    },
+    pong: (received) => {
+      if (received) {
+        clearTimeout(timedOut);
+      }
+    },
+  },
+});
+```
+
+</details>
+
 <details id="custom-client-pinger">
 <summary><a href="#custom-client-pinger">🔗</a> Client usage with manual pings and pongs</summary>
 
