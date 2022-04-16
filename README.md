@@ -343,6 +343,7 @@ import { createClient } from 'graphql-ws';
 const subscriptionsClient = createClient({
   url: 'ws://i.love:4000/graphql',
   connectionParams: () => {
+    // Note: getSession() is a placeholder function created by you
     const session = getSession();
     if (!session) {
       return {};
@@ -426,6 +427,7 @@ const link = new GraphQLWsLink(
   createClient({
     url: 'ws://where.is:4000/graphql',
     connectionParams: () => {
+      // Note: getSession() is a placeholder function created by you
       const session = getSession();
       if (!session) {
         return {};
