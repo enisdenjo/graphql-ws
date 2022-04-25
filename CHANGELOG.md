@@ -1,3 +1,10 @@
+## [5.8.1](https://github.com/enisdenjo/graphql-ws/compare/v5.8.0...v5.8.1) (2022-04-25)
+
+
+### Bug Fixes
+
+* **client:** `isFatalConnectionProblem` defaults to undefined for using `shouldRetry` ([9d5c573](https://github.com/enisdenjo/graphql-ws/commit/9d5c5733ba8bb181ef4f2051da958d80786c9ee6))
+
 # [5.8.0](https://github.com/enisdenjo/graphql-ws/compare/v5.7.0...v5.8.0) (2022-04-25)
 
 
