@@ -581,6 +581,8 @@ const client = createClient({
   // see `retryAttempts` documentation about which `CloseEvent`s are
   // considered fatal regardless
   shouldRetry: () => true,
+  // or pre v5.8.0:
+  // isFatalConnectionProblem: () => false,
 });
 ```
 

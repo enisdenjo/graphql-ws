@@ -338,7 +338,7 @@ export interface ClientOptions<
    *
    * In addition to the aforementioned close events, any _non-CloseEvent_ connection problem
    * is considered fatal by default. However, this specific behaviour can be altered by using
-   * the `isFatalConnectionProblem` option.
+   * the `shouldRetry` option.
    *
    * These events are reported immediately and the client will not reconnect.
    *
