@@ -1,3 +1,10 @@
+# [5.8.0](https://github.com/enisdenjo/graphql-ws/compare/v5.7.0...v5.8.0) (2022-04-25)
+
+
+### Features
+
+* **client:** Deprecate `isFatalConnectionProblem` option in favour of `shouldRetry` ([d8dcf21](https://github.com/enisdenjo/graphql-ws/commit/d8dcf219ecb55241d4a99d500eae69de564651f4))
+
 # [5.7.0](https://github.com/enisdenjo/graphql-ws/compare/v5.6.4...v5.7.0) (2022-04-07)
 
 
