@@ -566,6 +566,26 @@ ReactDOM.render(document.getElementByID('graphiql'), <App />);
 
 </details>
 
+<details id="retry-non-close-events">
+<summary><a href="#retry-non-close-events">🔗</a> Client usage with retry on any connection problem</summary>
+
+```typescript
+import { createClient } from 'graphql-ws';
+import { waitForHealthy } from './my-servers';
+
+const client = createClient({
+  url: 'ws://any.retry:4000/graphql',
+  // by default the client will immediately fail on any non-fatal
+  // `CloseEvent` problem thrown during the connection phase
+  //
+  // see `retryAttempts` documentation about which `CloseEvent`s are
+  // considered fatal regardless
+  shouldRetry: () => true,
+});
+```
+
+</details>
+
 <details id="retry-strategy">
 <summary><a href="#retry-strategy">🔗</a> Client usage with custom retry timeout strategy</summary>
 

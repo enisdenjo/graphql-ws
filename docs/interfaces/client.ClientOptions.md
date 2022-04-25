@@ -35,6 +35,7 @@ Configuration used for the GraphQL over WebSocket client.
 - [isFatalConnectionProblem](client.ClientOptions.md#isfatalconnectionproblem)
 - [onNonLazyError](client.ClientOptions.md#onnonlazyerror)
 - [retryWait](client.ClientOptions.md#retrywait)
+- [shouldRetry](client.ClientOptions.md#shouldretry)
 
 ## Properties
 
@@ -259,6 +260,8 @@ ___
 
 ▸ `Optional` **isFatalConnectionProblem**(`errOrCloseEvent`): `boolean`
 
+**`deprecated`** Use `shouldRetry` instead.
+
 Check if the close event or connection error is fatal. If you return `true`,
 the client will fail immediately without additional retries; however, if you
 return `false`, the client will keep retrying until the `retryAttempts` have
@@ -271,7 +274,7 @@ Beware, the library classifies a few close events as fatal regardless of
 what is returned. They are listed in the documentation of the `retryAttempts`
 option.
 
-**`default`** 'Any non-CloseEvent'
+**`default`** 'Any non-`CloseEvent`'
 
 #### Parameters
 
@@ -339,3 +342,32 @@ by timing the resolution of the returned promise with the retries count.
 #### Returns
 
 `Promise`<`void`\>
+
+___
+
+### shouldRetry
+
+▸ `Optional` **shouldRetry**(`errOrCloseEvent`): `boolean`
+
+Check if the close event or connection error is fatal. If you return `false`,
+the client will fail immediately without additional retries; however, if you
+return `true`, the client will keep retrying until the `retryAttempts` have
+been exceeded.
+
+The argument is whatever has been thrown during the connection phase.
+
+Beware, the library classifies a few close events as fatal regardless of
+what is returned here. They are listed in the documentation of the `retryAttempts`
+option.
+
+**`default`** 'Only `CloseEvent`s'
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `errOrCloseEvent` | `unknown` |
+
+#### Returns
+
+`boolean`

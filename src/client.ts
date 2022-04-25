@@ -355,6 +355,23 @@ export interface ClientOptions<
    */
   retryWait?: (retries: number) => Promise<void>;
   /**
+   * Check if the close event or connection error is fatal. If you return `false`,
+   * the client will fail immediately without additional retries; however, if you
+   * return `true`, the client will keep retrying until the `retryAttempts` have
+   * been exceeded.
+   *
+   * The argument is whatever has been thrown during the connection phase.
+   *
+   * Beware, the library classifies a few close events as fatal regardless of
+   * what is returned here. They are listed in the documentation of the `retryAttempts`
+   * option.
+   *
+   * @default 'Only `CloseEvent`s'
+   */
+  shouldRetry?: (errOrCloseEvent: unknown) => boolean;
+  /**
+   * @deprecated Use `shouldRetry` instead.
+   *
    * Check if the close event or connection error is fatal. If you return `true`,
    * the client will fail immediately without additional retries; however, if you
    * return `false`, the client will keep retrying until the `retryAttempts` have
@@ -367,7 +384,7 @@ export interface ClientOptions<
    * what is returned. They are listed in the documentation of the `retryAttempts`
    * option.
    *
-   * @default 'Any non-CloseEvent'
+   * @default 'Any non-`CloseEvent`'
    */
   isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
   /**
@@ -470,6 +487,7 @@ export function createClient<
         ),
       );
     },
+    shouldRetry = isLikeCloseEvent,
     isFatalConnectionProblem = (errOrCloseEvent) =>
       // non `CloseEvent`s are fatal by default
       !isLikeCloseEvent(errOrCloseEvent),
@@ -827,7 +845,10 @@ export function createClient<
     // retries are not allowed or we tried to many times, report error
     if (!retryAttempts || retries >= retryAttempts) throw errOrCloseEvent;
 
-    // throw fatal connection problems immediately
+    // throw non-retryable connection problems
+    if (!shouldRetry(errOrCloseEvent)) throw errOrCloseEvent;
+
+    // @deprecated throw fatal connection problems immediately
     if (isFatalConnectionProblem(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
