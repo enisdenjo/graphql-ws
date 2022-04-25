@@ -593,10 +593,8 @@ const client = createClient({
 import { createClient } from 'graphql-ws';
 import { waitForHealthy } from './my-servers';
 
-const url = 'ws://i.want.retry:4000/control/graphql';
-
 const client = createClient({
-  url,
+  url: 'ws://i.want.retry:4000/control/graphql',
   retryWait: async function waitForServerHealthyBeforeRetry() {
     // if you have a server healthcheck, you can wait for it to become
     // healthy before retrying after an abrupt disconnect (most commonly a restart)
