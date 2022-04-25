@@ -168,7 +168,7 @@ How long should the client wait before closing the socket after the last oparati
 completed. This is meant to be used in combination with `lazy`. You might want to have
 a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
 
-**`default`** 0 // close immediately
+**`default`** 0
 
 ___
 
@@ -271,7 +271,7 @@ Beware, the library classifies a few close events as fatal regardless of
 what is returned. They are listed in the documentation of the `retryAttempts`
 option.
 
-**`default`** Non close events
+**`default`** 'Any non-CloseEvent'
 
 #### Parameters
 
@@ -328,7 +328,7 @@ by timing the resolution of the returned promise with the retries count.
 `retries` argument counts actual connection attempts, so it will begin with
 0 after the first retryable disconnect.
 
-**`default`** Randomised exponential backoff
+**`default`** 'Randomised exponential backoff'
 
 #### Parameters
 
