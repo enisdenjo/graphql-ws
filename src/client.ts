@@ -488,9 +488,7 @@ export function createClient<
       );
     },
     shouldRetry = isLikeCloseEvent,
-    isFatalConnectionProblem = (errOrCloseEvent) =>
-      // non `CloseEvent`s are fatal by default
-      !isLikeCloseEvent(errOrCloseEvent),
+    isFatalConnectionProblem,
     on,
     webSocketImpl,
     /**
@@ -849,7 +847,7 @@ export function createClient<
     if (!shouldRetry(errOrCloseEvent)) throw errOrCloseEvent;
 
     // @deprecated throw fatal connection problems immediately
-    if (isFatalConnectionProblem(errOrCloseEvent)) throw errOrCloseEvent;
+    if (isFatalConnectionProblem?.(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
     return (retrying = true);

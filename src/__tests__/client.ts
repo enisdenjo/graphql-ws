@@ -1702,6 +1702,26 @@ describe('reconnecting', () => {
     }, 20);
   });
 
+  it('should allow retrying non-CloseEvent connection problems', async (done) => {
+    let count = 0;
+    createClient({
+      url: 'ws://idontexitst.no',
+      lazy: false,
+      retryAttempts: 1,
+      retryWait: () => Promise.resolve(),
+      onNonLazyError: noop,
+      shouldRetry: () => true,
+      on: {
+        connecting: () => {
+          count++;
+          if (count === 2) {
+            done();
+          }
+        },
+      },
+    });
+  });
+
   it.todo(
     'should attempt reconnecting silently a few times before closing for good',
   );
