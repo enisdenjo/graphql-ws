@@ -336,6 +336,10 @@ export interface ClientOptions<
    * - `4409: Subscriber for <id> already exists` _distinction is very important_
    * - `4429: Too many initialisation requests`
    *
+   * In addition to the aforementioned close events, any _non-CloseEvent_ connection problem
+   * is considered fatal by default. However, this specific behaviour can be altered by using
+   * the `isFatalConnectionProblem` option.
+   *
    * These events are reported immediately and the client will not reconnect.
    *
    * @default 5
