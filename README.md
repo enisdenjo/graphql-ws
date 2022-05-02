@@ -1018,15 +1018,11 @@ function handleAuth(request: http.IncomingMessage) {
 const gqlServer = makeServer<Extra>({
   schema,
   onConnect: async (ctx) => {
-    // do your auth on every connect
+    // do your auth on every connect (recommended)
     await handleAuth(ctx.extra.request);
   },
   onSubscribe: async (ctx) => {
     // or maybe on every subscribe
-    await handleAuth(ctx.extra.request);
-  },
-  onNext: async (ctx) => {
-    // haha why not on every result emission?
     await handleAuth(ctx.extra.request);
   },
 });
@@ -1713,7 +1709,7 @@ useServer(
   {
     schema,
     onConnect: async (ctx) => {
-      // do your auth check on every connect
+      // do your auth check on every connect (recommended)
       if (!(await isTokenValid(ctx.connectionParams?.token)))
         // returning false from the onConnect callback will close with `4403: Forbidden`;
         // therefore, being synonymous to ctx.extra.socket.close(4403, 'Forbidden');
@@ -1721,11 +1717,6 @@ useServer(
     },
     onSubscribe: async (ctx) => {
       // or maybe on every subscribe
-      if (!(await isTokenValid(ctx.connectionParams?.token)))
-        return ctx.extra.socket.close(CloseCode.Forbidden, 'Forbidden');
-    },
-    onNext: async (ctx) => {
-      // why not on every result emission? lol
       if (!(await isTokenValid(ctx.connectionParams?.token)))
         return ctx.extra.socket.close(CloseCode.Forbidden, 'Forbidden');
     },
