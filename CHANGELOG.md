@@ -1,3 +1,10 @@
+## [5.8.2](https://github.com/enisdenjo/graphql-ws/compare/v5.8.1...v5.8.2) (2022-05-12)
+
+
+### Bug Fixes
+
+* **server:** Should clean up subscription reservations on abrupt errors without relying on connection close ([611c223](https://github.com/enisdenjo/graphql-ws/commit/611c223471ed3aeee55a80e12d4cdc1a86176b15))
+
 ## [5.8.1](https://github.com/enisdenjo/graphql-ws/compare/v5.8.0...v5.8.1) (2022-04-25)
 
 
