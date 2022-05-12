@@ -8,7 +8,7 @@ import {
   ExecutionResult,
   GraphQLSchema,
 } from 'graphql';
-import { handleProtocols, makeServer } from '../server';
+import { Context, handleProtocols, makeServer } from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
@@ -1657,6 +1657,52 @@ describe('Subscribe', () => {
     }, 30);
 
     await server.waitForComplete();
+  });
+
+  it('should clean up subscription reservations on abrupt errors without relying on close', async (done) => {
+    let currCtx: Context;
+    makeServer({
+      connectionInitWaitTimeout: 0, // defaults to 3 seconds
+      schema,
+      execute: () => {
+        throw null;
+      },
+      onSubscribe: (ctx) => {
+        currCtx = ctx;
+      },
+    }).opened(
+      {
+        protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        send: () => {
+          /**/
+        },
+        close: () => {
+          fail("Shouldn't have closed");
+        },
+        onMessage: async (cb) => {
+          await cb(stringifyMessage({ type: MessageType.ConnectionInit }));
+
+          try {
+            // will throw because of execute impl
+            await cb(
+              stringifyMessage({
+                id: '1',
+                type: MessageType.Subscribe,
+                payload: {
+                  query: '{ getValue }',
+                },
+              }),
+            );
+            fail("Subscribe shouldn't have succeeded");
+          } catch {
+            // we dont close the connection but still expect the subscriptions to clean up
+            expect(Object.entries(currCtx.subscriptions)).toHaveLength(0);
+            done();
+          }
+        },
+      },
+      {},
+    );
   });
 });
 
