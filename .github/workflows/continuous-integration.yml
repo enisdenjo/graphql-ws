@@ -20,7 +20,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: 18
           cache: 'yarn'
       - name: Install
         run: yarn install --immutable
@@ -37,7 +37,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: 18
           cache: 'yarn'
       - name: Install
         run: yarn install --immutable
@@ -54,7 +54,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: 18
           cache: 'yarn'
       - name: Install
         run: yarn install --immutable
