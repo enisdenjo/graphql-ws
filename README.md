@@ -128,6 +128,9 @@ import { createClient } from 'graphql-ws';
 
 const client = createClient({
   url: 'ws://localhost:4000/graphql',
+  // If you are on Node and you get 'WebSocket implementation missing'
+  // import import * as WebSocket from 'ws';
+  // webSocketImpl: WebSocket
 });
 
 // query
