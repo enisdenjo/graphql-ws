@@ -6,7 +6,7 @@
 
 import { ExecutionResult } from 'graphql';
 import {
-  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
   CloseCode,
   Sink,
   ID,
@@ -628,7 +628,7 @@ export function createClient<
           emitter.emit('connecting');
           const socket = new WebSocketImpl(
             typeof url === 'function' ? await url() : url,
-            GRAPHQL_TRANSPORT_WS_PROTOCOL,
+            DEPRECATED_GRAPHQL_WS_PROTOCOL,
           );
 
           let connectionAckTimeout: ReturnType<typeof setTimeout>,
