@@ -1,8 +1,8 @@
 **/.DS_Store
 node_modules
-lib
-umd
-dist
+#lib
+#umd
+#dist
 .vscode
 .yarn/*
 !.yarn/releases
