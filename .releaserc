@@ -7,21 +7,7 @@
       "@semantic-release/npm",
       {
         "tarballDir": "dist"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "message": "chore(release): 🎉 ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-      }
-    ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": "dist/*.tgz",
-        "failComment": false,
-        "failTitle": false,
-        "labels": false
+        "inpmPublish": false
       }
     ]
   ]
