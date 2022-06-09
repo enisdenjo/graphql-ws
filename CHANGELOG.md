@@ -1,3 +1,10 @@
+# [5.9.0](https://github.com/enisdenjo/graphql-ws/compare/v5.8.2...v5.9.0) (2022-06-09)
+
+
+### Features
+
+* Descriptive invalid message errors ([b46379e](https://github.com/enisdenjo/graphql-ws/commit/b46379e5946b8ce10e907588399350b8ba256c4c)), closes [#366](https://github.com/enisdenjo/graphql-ws/issues/366)
+
 ## [5.8.2](https://github.com/enisdenjo/graphql-ws/compare/v5.8.1...v5.8.2) (2022-05-12)
 
 
