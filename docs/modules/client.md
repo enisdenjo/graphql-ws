@@ -36,7 +36,7 @@
 - [Client](../interfaces/client.Client.md)
 - [ClientOptions](../interfaces/client.ClientOptions.md)
 
-### Type aliases
+### Type Aliases
 
 - [Event](client.md#event)
 - [EventClosed](client.md#eventclosed)

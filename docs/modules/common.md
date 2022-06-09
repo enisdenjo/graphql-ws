@@ -25,7 +25,7 @@
 - [SubscribeMessage](../interfaces/common.SubscribeMessage.md)
 - [SubscribePayload](../interfaces/common.SubscribePayload.md)
 
-### Type aliases
+### Type Aliases
 
 - [ID](common.md#id)
 - [JSONMessageReplacer](common.md#jsonmessagereplacer)

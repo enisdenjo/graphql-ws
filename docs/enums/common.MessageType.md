@@ -8,7 +8,7 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [Complete](common.MessageType.md#complete)
 - [ConnectionAck](common.MessageType.md#connectionack)
@@ -19,50 +19,50 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 - [Pong](common.MessageType.md#pong)
 - [Subscribe](common.MessageType.md#subscribe)
 
-## Enumeration members
+## Enumeration Members
 
 ### Complete
 
-• **Complete** = `"complete"`
+• **Complete**
 
 ___
 
 ### ConnectionAck
 
-• **ConnectionAck** = `"connection_ack"`
+• **ConnectionAck**
 
 ___
 
 ### ConnectionInit
 
-• **ConnectionInit** = `"connection_init"`
+• **ConnectionInit**
 
 ___
 
 ### Error
 
-• **Error** = `"error"`
+• **Error**
 
 ___
 
 ### Next
 
-• **Next** = `"next"`
+• **Next**
 
 ___
 
 ### Ping
 
-• **Ping** = `"ping"`
+• **Ping**
 
 ___
 
 ### Pong
 
-• **Pong** = `"pong"`
+• **Pong**
 
 ___
 
 ### Subscribe
 
-• **Subscribe** = `"subscribe"`
+• **Subscribe**

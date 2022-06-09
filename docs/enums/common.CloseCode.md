@@ -8,7 +8,7 @@
 
 ## Table of contents
 
-### Enumeration members
+### Enumeration Members
 
 - [BadRequest](common.CloseCode.md#badrequest)
 - [BadResponse](common.CloseCode.md#badresponse)
@@ -22,59 +22,59 @@
 - [TooManyInitialisationRequests](common.CloseCode.md#toomanyinitialisationrequests)
 - [Unauthorized](common.CloseCode.md#unauthorized)
 
-## Enumeration members
+## Enumeration Members
 
 ### BadRequest
 
-• **BadRequest** = `4400`
+• **BadRequest**
 
 ___
 
 ### BadResponse
 
-• **BadResponse** = `4004`
+• **BadResponse**
 
 ___
 
 ### ConnectionAcknowledgementTimeout
 
-• **ConnectionAcknowledgementTimeout** = `4504`
+• **ConnectionAcknowledgementTimeout**
 
 ___
 
 ### ConnectionInitialisationTimeout
 
-• **ConnectionInitialisationTimeout** = `4408`
+• **ConnectionInitialisationTimeout**
 
 ___
 
 ### Forbidden
 
-• **Forbidden** = `4403`
+• **Forbidden**
 
 ___
 
 ### InternalClientError
 
-• **InternalClientError** = `4005`
+• **InternalClientError**
 
 ___
 
 ### InternalServerError
 
-• **InternalServerError** = `4500`
+• **InternalServerError**
 
 ___
 
 ### SubprotocolNotAcceptable
 
-• **SubprotocolNotAcceptable** = `4406`
+• **SubprotocolNotAcceptable**
 
 ___
 
 ### SubscriberAlreadyExists
 
-• **SubscriberAlreadyExists** = `4409`
+• **SubscriberAlreadyExists**
 
 Subscriber distinction is very important
 
@@ -82,12 +82,12 @@ ___
 
 ### TooManyInitialisationRequests
 
-• **TooManyInitialisationRequests** = `4429`
+• **TooManyInitialisationRequests**
 
 ___
 
 ### Unauthorized
 
-• **Unauthorized** = `4401`
+• **Unauthorized**
 
 Tried subscribing before connect ack

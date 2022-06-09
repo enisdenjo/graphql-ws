@@ -11,7 +11,7 @@
 - [ServerOptions](../interfaces/server.ServerOptions.md)
 - [WebSocket](../interfaces/server.WebSocket.md)
 
-### Type aliases
+### Type Aliases
 
 - [GraphQLExecutionContextValue](server.md#graphqlexecutioncontextvalue)
 - [OperationResult](server.md#operationresult)
@@ -61,7 +61,7 @@ to handle the connection afterwards.
 
 | Name | Type |
 | :------ | :------ |
-| `protocols` | `string` \| `Set`<`string`\> \| `string`[] |
+| `protocols` | `string` \| `string`[] \| `Set`<`string`\> |
 
 #### Returns
 
