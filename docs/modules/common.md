@@ -41,6 +41,7 @@
 - [isMessage](common.md#ismessage)
 - [parseMessage](common.md#parsemessage)
 - [stringifyMessage](common.md#stringifymessage)
+- [validateMessage](common.md#validatemessage)
 
 ## Common
 
@@ -134,7 +135,9 @@ ___
 
 ▸ **isMessage**(`val`): val is ConnectionInitMessage \| ConnectionAckMessage \| PingMessage \| PongMessage \| SubscribeMessage \| NextMessage \| ErrorMessage \| CompleteMessage
 
-Checks if the provided value is a message.
+Checks if the provided value is a valid GraphQL over WebSocket message.
+
+**`deprecated`** Use `validateMessage` instead.
 
 #### Parameters
 
@@ -189,3 +192,23 @@ Stringifies a valid message ready to be sent through the socket.
 #### Returns
 
 `string`
+
+___
+
+### validateMessage
+
+▸ **validateMessage**(`val`): [`Message`](common.md#message)
+
+Validates the message against the GraphQL over WebSocket Protocol.
+
+Invalid messages will throw descriptive errors.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `val` | `unknown` |
+
+#### Returns
+
+[`Message`](common.md#message)

@@ -5,12 +5,32 @@
  */
 import { GraphQLError } from 'graphql';
 
-// Extremely small optimisation, reduces runtime prototype traversal
-const baseHasOwnProperty = Object.prototype.hasOwnProperty;
+/** @private */
+export function extendedTypeof(
+  val: unknown,
+):
+  | 'string'
+  | 'number'
+  | 'bigint'
+  | 'boolean'
+  | 'symbol'
+  | 'undefined'
+  | 'object'
+  | 'function'
+  | 'array'
+  | 'null' {
+  if (val === null) {
+    return 'null';
+  }
+  if (Array.isArray(val)) {
+    return 'array';
+  }
+  return typeof val;
+}
 
 /** @private */
 export function isObject(val: unknown): val is Record<PropertyKey, unknown> {
-  return typeof val === 'object' && val !== null;
+  return extendedTypeof(val) === 'object';
 }
 
 /** @private */
@@ -43,38 +63,6 @@ export function areGraphQLErrors(obj: unknown): obj is readonly GraphQLError[] {
     // error has at least a message
     obj.every((ob) => 'message' in ob)
   );
-}
-
-/** @private */
-export function hasOwnProperty<
-  O extends Record<PropertyKey, unknown>,
-  P extends PropertyKey,
->(obj: O, prop: P): obj is O & Record<P, unknown> {
-  return baseHasOwnProperty.call(obj, prop);
-}
-
-/** @private */
-export function hasOwnObjectProperty<
-  O extends Record<PropertyKey, unknown>,
-  P extends PropertyKey,
->(obj: O, prop: P): obj is O & Record<P, Record<PropertyKey, unknown>> {
-  return baseHasOwnProperty.call(obj, prop) && isObject(obj[prop]);
-}
-
-/** @private */
-export function hasOwnArrayProperty<
-  O extends Record<PropertyKey, unknown>,
-  P extends PropertyKey,
->(obj: O, prop: P): obj is O & Record<P, unknown[]> {
-  return baseHasOwnProperty.call(obj, prop) && Array.isArray(obj[prop]);
-}
-
-/** @private */
-export function hasOwnStringProperty<
-  O extends Record<PropertyKey, unknown>,
-  P extends PropertyKey,
->(obj: O, prop: P): obj is O & Record<P, string> {
-  return baseHasOwnProperty.call(obj, prop) && typeof obj[prop] === 'string';
 }
 
 /**

@@ -604,7 +604,7 @@ it('should report close error even if complete message followed', async (done) =
     on: {
       closed: (err) => {
         expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
-        expect((err as CloseEvent).reason).toBe('Invalid message');
+        expect((err as CloseEvent).reason).toMatchSnapshot();
 
         done();
       },
@@ -618,7 +618,7 @@ it('should report close error even if complete message followed', async (done) =
     {
       next: noop,
       error: (err) => {
-        expect((err as Error).message).toBe('Invalid message');
+        expect((err as Error).message).toMatchSnapshot();
         client.dispose();
       },
       complete: noop,

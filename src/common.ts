@@ -5,13 +5,7 @@
  */
 
 import { GraphQLError } from 'graphql';
-import {
-  isObject,
-  areGraphQLErrors,
-  hasOwnProperty,
-  hasOwnObjectProperty,
-  hasOwnStringProperty,
-} from './utils';
+import { areGraphQLErrors, extendedTypeof, isObject } from './utils';
 
 /**
  * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
@@ -205,66 +199,214 @@ export type Message<T extends MessageType = MessageType> =
     : never;
 
 /**
- * Checks if the provided value is a message.
+ * Validates the message against the GraphQL over WebSocket Protocol.
+ *
+ * Invalid messages will throw descriptive errors.
+ *
+ * @category Common
+ */
+export function validateMessage(val: unknown): Message {
+  if (!isObject(val)) {
+    throw new Error(
+      `Message is expected to be an object, but got ${extendedTypeof(val)}`,
+    );
+  }
+
+  if (!val.type) {
+    throw new Error(`Message is missing the 'type' property`);
+  }
+  if (typeof val.type !== 'string') {
+    throw new Error(
+      `Message is expects the 'type' property to be a string, but got ${extendedTypeof(
+        val.type,
+      )}`,
+    );
+  }
+
+  switch (val.type) {
+    case MessageType.ConnectionInit:
+    case MessageType.ConnectionAck:
+    case MessageType.Ping:
+    case MessageType.Pong: {
+      if ('payload' in val && !isObject(val.payload)) {
+        throw new Error(
+          `"${val.type}" message expects the 'payload' property to be an object or missing, but got "${val.payload}"`,
+        );
+      }
+
+      break;
+    }
+
+    case MessageType.Subscribe: {
+      if (typeof val.id !== 'string') {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'id' property to be a string, but got ${extendedTypeof(
+            val.id,
+          )}`,
+        );
+      }
+      if (!val.id) {
+        throw new Error(
+          `"${val.type}" message requires a non-empty 'id' property`,
+        );
+      }
+
+      if (!isObject(val.payload)) {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'payload' property to be an object, but got ${extendedTypeof(
+            val.payload,
+          )}`,
+        );
+      }
+
+      if (typeof val.payload.query !== 'string') {
+        throw new Error(
+          `"${
+            val.type
+          }" message payload expects the 'query' property to be a string, but got ${extendedTypeof(
+            val.payload.query,
+          )}`,
+        );
+      }
+
+      if (val.payload.variables != null && !isObject(val.payload.variables)) {
+        throw new Error(
+          `"${
+            val.type
+          }" message payload expects the 'variables' property to be a an object or nullish or missing, but got ${extendedTypeof(
+            val.payload.variables,
+          )}`,
+        );
+      }
+
+      if (
+        val.payload.operationName != null &&
+        extendedTypeof(val.payload.operationName) !== 'string'
+      ) {
+        throw new Error(
+          `"${
+            val.type
+          }" message payload expects the 'operationName' property to be a string or nullish or missing, but got ${extendedTypeof(
+            val.payload.operationName,
+          )}`,
+        );
+      }
+
+      if (val.payload.extensions != null && !isObject(val.payload.extensions)) {
+        throw new Error(
+          `"${
+            val.type
+          }" message payload expects the 'extensions' property to be a an object or nullish or missing, but got ${extendedTypeof(
+            val.payload.extensions,
+          )}`,
+        );
+      }
+
+      break;
+    }
+
+    case MessageType.Next: {
+      if (typeof val.id !== 'string') {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'id' property to be a string, but got ${extendedTypeof(
+            val.id,
+          )}`,
+        );
+      }
+      if (!val.id) {
+        throw new Error(
+          `"${val.type}" message requires a non-empty 'id' property`,
+        );
+      }
+
+      if (!isObject(val.payload)) {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'payload' property to be an object, but got ${extendedTypeof(
+            val.payload,
+          )}`,
+        );
+      }
+
+      break;
+    }
+
+    case MessageType.Error: {
+      if (typeof val.id !== 'string') {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'id' property to be a string, but got ${extendedTypeof(
+            val.id,
+          )}`,
+        );
+      }
+      if (!val.id) {
+        throw new Error(
+          `"${val.type}" message requires a non-empty 'id' property`,
+        );
+      }
+
+      if (!areGraphQLErrors(val.payload)) {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'payload' property to be an array of GraphQL errors, but got ${JSON.stringify(
+            val.payload,
+          )}`,
+        );
+      }
+
+      break;
+    }
+
+    case MessageType.Complete: {
+      if (typeof val.id !== 'string') {
+        throw new Error(
+          `"${
+            val.type
+          }" message expects the 'id' property to be a string, but got ${extendedTypeof(
+            val.id,
+          )}`,
+        );
+      }
+      if (!val.id) {
+        throw new Error(
+          `"${val.type}" message requires a non-empty 'id' property`,
+        );
+      }
+
+      break;
+    }
+
+    default:
+      throw new Error(`Invalid message 'type' property "${val.type}"`);
+  }
+
+  return val as unknown as Message;
+}
+
+/**
+ * Checks if the provided value is a valid GraphQL over WebSocket message.
+ *
+ * @deprecated Use `validateMessage` instead.
  *
  * @category Common
  */
 export function isMessage(val: unknown): val is Message {
-  if (isObject(val)) {
-    // all messages must have the `type` prop
-    if (!hasOwnStringProperty(val, 'type')) {
-      return false;
-    }
-    // validate other properties depending on the `type`
-    switch (val.type) {
-      case MessageType.ConnectionInit:
-        // the connection init message can have optional payload object
-        return (
-          !hasOwnProperty(val, 'payload') ||
-          val.payload === undefined ||
-          isObject(val.payload)
-        );
-      case MessageType.ConnectionAck:
-      case MessageType.Ping:
-      case MessageType.Pong:
-        // the connection ack, ping and pong messages can have optional payload object too
-        return (
-          !hasOwnProperty(val, 'payload') ||
-          val.payload === undefined ||
-          isObject(val.payload)
-        );
-      case MessageType.Subscribe:
-        return (
-          hasOwnStringProperty(val, 'id') &&
-          hasOwnObjectProperty(val, 'payload') &&
-          (!hasOwnProperty(val.payload, 'operationName') ||
-            val.payload.operationName === undefined ||
-            val.payload.operationName === null ||
-            typeof val.payload.operationName === 'string') &&
-          hasOwnStringProperty(val.payload, 'query') &&
-          (!hasOwnProperty(val.payload, 'variables') ||
-            val.payload.variables === undefined ||
-            val.payload.variables === null ||
-            hasOwnObjectProperty(val.payload, 'variables')) &&
-          (!hasOwnProperty(val.payload, 'extensions') ||
-            val.payload.extensions === undefined ||
-            val.payload.extensions === null ||
-            hasOwnObjectProperty(val.payload, 'extensions'))
-        );
-      case MessageType.Next:
-        return (
-          hasOwnStringProperty(val, 'id') &&
-          hasOwnObjectProperty(val, 'payload')
-        );
-      case MessageType.Error:
-        return hasOwnStringProperty(val, 'id') && areGraphQLErrors(val.payload);
-      case MessageType.Complete:
-        return hasOwnStringProperty(val, 'id');
-      default:
-        return false;
-    }
+  try {
+    validateMessage(val);
+    return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
 /**
@@ -287,17 +429,15 @@ export function parseMessage(
   data: unknown,
   reviver?: JSONMessageReviver,
 ): Message {
-  if (isMessage(data)) {
-    return data;
+  try {
+    return validateMessage(data);
+  } catch {
+    if (typeof data !== 'string') {
+      throw new Error('Only strings are parsable messages');
+    }
+    const message = JSON.parse(data, reviver);
+    return validateMessage(message);
   }
-  if (typeof data !== 'string') {
-    throw new Error('Message not parsable');
-  }
-  const message = JSON.parse(data, reviver);
-  if (!isMessage(message)) {
-    throw new Error('Invalid message');
-  }
-  return message;
 }
 
 /**
@@ -320,8 +460,6 @@ export function stringifyMessage<T extends MessageType>(
   msg: Message<T>,
   replacer?: JSONMessageReplacer,
 ): string {
-  if (!isMessage(msg)) {
-    throw new Error('Cannot stringify invalid message');
-  }
+  validateMessage(msg);
   return JSON.stringify(msg, replacer);
 }

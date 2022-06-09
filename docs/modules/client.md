@@ -29,6 +29,7 @@
 - [isMessage](client.md#ismessage)
 - [parseMessage](client.md#parsemessage)
 - [stringifyMessage](client.md#stringifymessage)
+- [validateMessage](client.md#validatemessage)
 
 ### Interfaces
 
@@ -489,3 +490,9 @@ ___
 ### stringifyMessage
 
 Re-exports [stringifyMessage](common.md#stringifymessage)
+
+___
+
+### validateMessage
+
+Re-exports [validateMessage](common.md#validatemessage)
