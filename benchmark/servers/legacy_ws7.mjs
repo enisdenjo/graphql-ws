@@ -12,38 +12,8 @@ const server = createServer((_req, res) => {
 SubscriptionServer.create(
   {
     schema,
-    execute: (
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-    ) =>
-      execute({
-        schema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-      }),
-    subscribe: (
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-    ) =>
-      subscribe({
-        schema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-      }),
+    execute,
+    subscribe,
   },
   { server, path: '/graphql' },
 );
