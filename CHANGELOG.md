@@ -1,3 +1,10 @@
+## [5.9.1](https://github.com/enisdenjo/graphql-ws/compare/v5.9.0...v5.9.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* Add types path to package.json `exports` ([#375](https://github.com/enisdenjo/graphql-ws/issues/375)) ([9f394d7](https://github.com/enisdenjo/graphql-ws/commit/9f394d7a8b70c1d6b2cfe6d30ba7e0777d578181))
+
 # [5.9.0](https://github.com/enisdenjo/graphql-ws/compare/v5.8.2...v5.9.0) (2022-06-09)
 
 
