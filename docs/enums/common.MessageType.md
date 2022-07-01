@@ -23,46 +23,46 @@ Types of messages allowed to be sent by the client/server over the WS protocol.
 
 ### Complete
 
-• **Complete**
+• **Complete** = ``"complete"``
 
 ___
 
 ### ConnectionAck
 
-• **ConnectionAck**
+• **ConnectionAck** = ``"connection_ack"``
 
 ___
 
 ### ConnectionInit
 
-• **ConnectionInit**
+• **ConnectionInit** = ``"connection_init"``
 
 ___
 
 ### Error
 
-• **Error**
+• **Error** = ``"error"``
 
 ___
 
 ### Next
 
-• **Next**
+• **Next** = ``"next"``
 
 ___
 
 ### Ping
 
-• **Ping**
+• **Ping** = ``"ping"``
 
 ___
 
 ### Pong
 
-• **Pong**
+• **Pong** = ``"pong"``
 
 ___
 
 ### Subscribe
 
-• **Subscribe**
+• **Subscribe** = ``"subscribe"``

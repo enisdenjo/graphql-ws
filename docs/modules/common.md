@@ -137,7 +137,9 @@ ___
 
 Checks if the provided value is a valid GraphQL over WebSocket message.
 
-**`deprecated`** Use `validateMessage` instead.
+**`Deprecated`**
+
+ Use `validateMessage` instead.
 
 #### Parameters
 

@@ -53,7 +53,9 @@ has not responded with `ConnectionAck` message,
 the client will terminate the socket by
 dispatching a close event `4418: Connection acknowledgement timeout`
 
-**`default`** 0
+**`Default`**
+
+ 0
 
 ___
 
@@ -143,7 +145,9 @@ createClient({
 });
 ```
 
-**`default`** 0
+**`Default`**
+
+ 0
 
 ___
 
@@ -157,7 +161,9 @@ Controls when should the connection be established.
 - `true`: Establish a connection on first subscribe and close on last unsubscribe. Use
 the subscription sink's `error` to handle errors.
 
-**`default`** true
+**`Default`**
+
+ true
 
 ___
 
@@ -169,7 +175,9 @@ How long should the client wait before closing the socket after the last oparati
 completed. This is meant to be used in combination with `lazy`. You might want to have
 a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
 
-**`default`** 0
+**`Default`**
+
+ 0
 
 ___
 
@@ -208,7 +216,9 @@ the `shouldRetry` option.
 
 These events are reported immediately and the client will not reconnect.
 
-**`default`** 5
+**`Default`**
+
+ 5
 
 ___
 
@@ -260,7 +270,9 @@ ___
 
 ▸ `Optional` **isFatalConnectionProblem**(`errOrCloseEvent`): `boolean`
 
-**`deprecated`** Use `shouldRetry` instead.
+**`Deprecated`**
+
+ Use `shouldRetry` instead.
 
 Check if the close event or connection error is fatal. If you return `true`,
 the client will fail immediately without additional retries; however, if you
@@ -274,7 +286,9 @@ Beware, the library classifies a few close events as fatal regardless of
 what is returned. They are listed in the documentation of the `retryAttempts`
 option.
 
-**`default`** 'Any non-`CloseEvent`'
+**`Default`**
+
+ 'Any non-`CloseEvent`'
 
 #### Parameters
 
@@ -308,7 +322,9 @@ close event is labeled as fatal (read more in `retryAttempts`).
 - An `Error`: some internal issue has occured, all internal errors are
 fatal by nature.
 
-**`default`** console.error
+**`Default`**
+
+ console.error
 
 #### Parameters
 
@@ -331,7 +347,9 @@ by timing the resolution of the returned promise with the retries count.
 `retries` argument counts actual connection attempts, so it will begin with
 0 after the first retryable disconnect.
 
-**`default`** 'Randomised exponential backoff'
+**`Default`**
+
+ 'Randomised exponential backoff'
 
 #### Parameters
 
@@ -360,7 +378,9 @@ Beware, the library classifies a few close events as fatal regardless of
 what is returned here. They are listed in the documentation of the `retryAttempts`
 option.
 
-**`default`** 'Only `CloseEvent`s'
+**`Default`**
+
+ 'Only `CloseEvent`s'
 
 #### Parameters
 

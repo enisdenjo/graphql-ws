@@ -26,55 +26,55 @@
 
 ### BadRequest
 
-• **BadRequest**
+• **BadRequest** = ``4400``
 
 ___
 
 ### BadResponse
 
-• **BadResponse**
+• **BadResponse** = ``4004``
 
 ___
 
 ### ConnectionAcknowledgementTimeout
 
-• **ConnectionAcknowledgementTimeout**
+• **ConnectionAcknowledgementTimeout** = ``4504``
 
 ___
 
 ### ConnectionInitialisationTimeout
 
-• **ConnectionInitialisationTimeout**
+• **ConnectionInitialisationTimeout** = ``4408``
 
 ___
 
 ### Forbidden
 
-• **Forbidden**
+• **Forbidden** = ``4403``
 
 ___
 
 ### InternalClientError
 
-• **InternalClientError**
+• **InternalClientError** = ``4005``
 
 ___
 
 ### InternalServerError
 
-• **InternalServerError**
+• **InternalServerError** = ``4500``
 
 ___
 
 ### SubprotocolNotAcceptable
 
-• **SubprotocolNotAcceptable**
+• **SubprotocolNotAcceptable** = ``4406``
 
 ___
 
 ### SubscriberAlreadyExists
 
-• **SubscriberAlreadyExists**
+• **SubscriberAlreadyExists** = ``4409``
 
 Subscriber distinction is very important
 
@@ -82,12 +82,12 @@ ___
 
 ### TooManyInitialisationRequests
 
-• **TooManyInitialisationRequests**
+• **TooManyInitialisationRequests** = ``4429``
 
 ___
 
 ### Unauthorized
 
-• **Unauthorized**
+• **Unauthorized** = ``4401``
 
 Tried subscribing before connect ack
