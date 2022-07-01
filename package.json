@@ -35,19 +35,23 @@
     ".": {
       "require": "./lib/index.js",
       "import": "./lib/index.mjs",
+      "types": "./lib/index.d.ts",
       "browser": "./umd/graphql-ws.js"
     },
     "./lib/use/ws": {
       "require": "./lib/use/ws.js",
-      "import": "./lib/use/ws.mjs"
+      "import": "./lib/use/ws.mjs",
+      "types": "./lib/use/ws.d.ts"
     },
     "./lib/use/uWebSockets": {
       "require": "./lib/use/uWebSockets.js",
-      "import": "./lib/use/uWebSockets.mjs"
+      "import": "./lib/use/uWebSockets.mjs",
+      "types": "./lib/use/uWebSockets.d.ts"
     },
     "./lib/use/fastify-websocket": {
       "require": "./lib/use/fastify-websocket.js",
-      "import": "./lib/use/fastify-websocket.mjs"
+      "import": "./lib/use/fastify-websocket.mjs",
+      "types": "./lib/use/fastify-websocket.d.ts"
     },
     "./package.json": "./package.json"
   },
