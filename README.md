@@ -1787,6 +1787,157 @@ const client = createClient({
 
 </details>
 
+<details id="subscribe-ack">
+<summary><a href="#subscribe-ack">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server and client usage with subscription acknowledgment</summary>
+
+```ts
+// 🛸 server
+
+import { WebSocketServer } from 'ws';
+// import ws from 'ws'; yarn add ws@7
+// const WebSocketServer = ws.Server;
+import { MessageType, stringifyMessage } from 'graphql-ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema } from './my-graphql-schema';
+
+const wsServer = new WebSocketServer({
+  port: 4000,
+  path: '/graphql',
+});
+
+useServer<undefined, { ackWaiters: Record<string, () => void> }>(
+  {
+    schema,
+    onConnect: (ctx) => {
+      // listeners waiting for operation acknowledgment. if subscription, this means the graphql.subscribe was successful
+      // intentionally in context extra to avoid memory leaks when clients disconnect
+      ctx.extra.ackWaiters = {};
+    },
+    onSubscribe: (ctx, msg) => {
+      const ackId = msg.payload.extensions?.ackId;
+      if (typeof ackId === 'string') {
+        // if acknowledgment ID is present, create an acknowledger that will be executed when operation succeeds
+        ctx.extra.ackWaiters![msg.id] = () => {
+          ctx.extra.socket.send(
+            stringifyMessage({
+              type: MessageType.Ping,
+              payload: {
+                ackId,
+              },
+            }),
+          );
+        };
+      }
+    },
+    onOperation: (ctx, msg) => {
+      // acknowledge operation success and remove waiter
+      ctx.extra.ackWaiters![msg.id]?.();
+      delete ctx.extra.ackWaiters![msg.id];
+    },
+  },
+  wsServer,
+);
+
+console.log('Listening to port 4000');
+```
+
+```ts
+// 📺 client
+
+import {
+  Client,
+  ClientOptions,
+  createClient,
+  ExecutionResult,
+  Sink,
+  SubscribePayload,
+} from 'graphql-ws';
+
+// client with augmented subscribe method accepting the `onAck` callback for operation acknowledgement
+type ClientWithSubscribeAck = Omit<Client, 'subscribe'> & {
+  subscribe<Data = Record<string, unknown>, Extensions = unknown>(
+    payload: SubscribePayload,
+    sink: Sink<ExecutionResult<Data, Extensions>>,
+    onAck: () => void,
+  ): () => void;
+};
+
+function createClientWithSubscribeAck(
+  options: ClientOptions,
+): ClientWithSubscribeAck {
+  const client = createClient(options);
+
+  const ackListeners: Record<string, () => void> = {};
+  client.on('ping', (_received, payload) => {
+    const ackId = payload?.ackId;
+    if (typeof ackId === 'string') {
+      ackListeners[ackId]?.();
+      delete ackListeners[ackId];
+    }
+  });
+
+  return {
+    ...client,
+    subscribe: (payload, sink, onAck) => {
+      const ackId = Math.random().toString(); // be wary of uniqueness
+      ackListeners[ackId] = onAck;
+      return client.subscribe(
+        {
+          ...payload,
+          extensions: {
+            ...payload.extensions,
+            ackId,
+          },
+        },
+        sink,
+      );
+    },
+  };
+}
+```
+
+Using the augmented client would be as simple as:
+
+```ts
+const client = createClientWithSubscribeAck({
+  url: 'ws://i.want.ack:4000/graphql',
+});
+
+(async () => {
+  const onNext = () => {
+    /* handle incoming values */
+  };
+
+  let unsubscribe = () => {
+    /* complete the subscription */
+  };
+
+  let subscriptionAcknowledged = () => {
+    /* server successfully subscribed */
+  };
+
+  await new Promise((resolve, reject) => {
+    unsubscribe = client.subscribe(
+      {
+        query: 'subscription { greetings }',
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: resolve,
+      },
+      subscriptionAcknowledged,
+    );
+  });
+
+  expect(subscriptionAcknowledged).toBeCalledFirst();
+
+  expect(onNext).then.toBeCalledTimes(5); // we say "Hi" in 5 languages
+})();
+```
+
+</details>
+
 ## [Documentation](docs/)
 
 Check the [docs folder](docs/) out for [TypeDoc](https://typedoc.org) generated documentation.
