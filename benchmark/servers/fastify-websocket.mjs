@@ -10,7 +10,7 @@ fastify.register(async (fastify) => {
   fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
 });
 
-fastify.listen(ports['@fastify/websocket'], (err) => {
+fastify.listen({ port: ports['@fastify/websocket'] }, (err) => {
   if (err) {
     fastify.log.error(err);
     return process.exit(1);
