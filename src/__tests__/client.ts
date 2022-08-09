@@ -1466,10 +1466,9 @@ describe('reconnecting', () => {
     });
 
     // client reported the error immediately, meaning it wont retry
-    expect.assertions(1);
     await sub.waitForError((err) => {
       expect((err as CloseEvent).code).toBe(1005);
-    }, 20);
+    });
   });
 
   it('should reconnect silently after socket closes', async () => {
@@ -1504,10 +1503,9 @@ describe('reconnecting', () => {
     });
 
     // client reported the error, meaning it wont retry anymore
-    expect.assertions(1);
     await sub.waitForError((err) => {
       expect((err as CloseEvent).code).toBe(1005);
-    }, 20);
+    });
   });
 
   it('should resubscribe all subscribers on silent reconnects', async () => {
@@ -1629,10 +1627,9 @@ describe('reconnecting', () => {
       // client reported the error immediately, meaning it wont retry
       await sub.waitForError((err) => {
         expect((err as CloseEvent).code).toBe(code);
-      }, 20);
+      });
     }
 
-    expect.assertions(8);
     const warn = console.warn;
     console.warn = () => {
       /* hide warnings for test */
@@ -2063,7 +2060,6 @@ describe('events', () => {
 
   it('should emit the websocket connection error', (done) => {
     expect.assertions(3);
-
     createClient({
       url: 'ws://localhost/i/dont/exist',
       lazy: false,
@@ -2087,7 +2083,8 @@ describe('events', () => {
   });
 
   it('should emit the websocket connection error on first subscribe in lazy mode', (done) => {
-    expect.assertions(3);
+    // dont use expect.assertions(3) because https://github.com/facebook/jest/issues/8297
+    const expected = jest.fn();
 
     const client = createClient({
       url: 'ws://localhost/i/dont/exist',
@@ -2097,11 +2094,13 @@ describe('events', () => {
     client.on('closed', (err) => {
       // websocket closed
       expect((err as CloseEvent).code).toBe(1006);
+      expected();
     });
 
     client.on('error', (err) => {
       // connection error
       expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+      expected();
     });
 
     client.subscribe(
@@ -2112,6 +2111,7 @@ describe('events', () => {
         error: (err) => {
           // connection error
           expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+          expect(expected).toBeCalledTimes(2);
           done();
         },
       },
@@ -2209,6 +2209,9 @@ describe('events', () => {
   });
 
   it('should provide the latest socket reference to event listeners', async () => {
+    // dont use expect.assertions(6) because https://github.com/facebook/jest/issues/8297
+    const expected = jest.fn();
+
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2221,11 +2224,13 @@ describe('events', () => {
           // only latest socket can be open
           const sock = socket as WebSocket;
           expect(sock.readyState).toBe(sock.OPEN);
+          expected();
         },
         connected: (socket) => {
           // only latest socket can be open
           const sock = socket as WebSocket;
           expect(sock.readyState).toBe(sock.OPEN);
+          expected();
         },
       },
     });
@@ -2257,6 +2262,6 @@ describe('events', () => {
     await tsubscribe(client, { query: '{ getValue }' }).waitForComplete();
 
     // opened and connected should be called 6 times (3 times connected, 2 times disconnected)
-    expect.assertions(6);
+    expect(expected).toBeCalledTimes(6);
   });
 });

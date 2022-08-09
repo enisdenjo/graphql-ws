@@ -23,12 +23,9 @@ export { WSExtra, UWSExtra, FastifyExtra };
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
-afterEach(async () => {
+afterAll(async () => {
   while (leftovers.length > 0) {
-    // if not disposed by test, cleanup
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const dispose = leftovers.pop()!;
-    await dispose();
+    await leftovers.pop()?.();
   }
 });
 
@@ -116,15 +113,17 @@ export async function startRawServer(): Promise<{
     socket.once('close', () => sockets.delete(socket));
   });
 
+  let disposed = false;
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve) => {
+      if (disposed) return resolve();
+      disposed = true;
       if (!beNice)
         for (const socket of sockets) {
           socket.terminate();
           sockets.delete(socket);
         }
       server.close(() => {
-        leftovers.splice(leftovers.indexOf(dispose), 1);
         resolve();
       });
     });
@@ -194,8 +193,11 @@ export async function startWSTServer(
     keepAlive,
   );
 
+  let disposed = false;
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve, reject) => {
+      if (disposed) return resolve();
+      disposed = true;
       if (!beNice)
         for (const socket of sockets) {
           socket.terminate();
@@ -204,7 +206,6 @@ export async function startWSTServer(
       const disposing = server.dispose() as Promise<void>;
       disposing.catch(reject).then(() => {
         wsServer.close(() => {
-          leftovers.splice(leftovers.indexOf(dispose), 1);
           resolve();
         });
       });
@@ -393,13 +394,15 @@ export async function startUWSTServer(
     },
   );
 
+  let disposed = false;
   const dispose: Dispose = async (beNice) => {
+    if (disposed) return;
+    disposed = true;
     for (const socket of sockets) {
       if (beNice) socket.end(1001, 'Going away');
       else socket.close();
     }
     uWS.us_listen_socket_close(listenSocket);
-    leftovers.splice(leftovers.indexOf(dispose), 1);
   };
   leftovers.push(dispose);
 
@@ -541,8 +544,12 @@ export async function startFastifyWSTServer(
     });
   });
 
+  let disposed = false;
   const dispose: Dispose = (beNice) => {
     return new Promise((resolve, reject) => {
+      if (disposed) return resolve();
+      disposed = true;
+
       for (const socket of sockets) {
         if (beNice) socket.close(1001, 'Going away');
         else socket.terminate();
@@ -552,7 +559,6 @@ export async function startFastifyWSTServer(
       fastify.websocketServer.close((err) => {
         if (err) return reject(err);
         fastify.close(() => {
-          leftovers.splice(leftovers.indexOf(dispose), 1);
           resolve();
         });
       });
