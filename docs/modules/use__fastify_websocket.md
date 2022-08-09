@@ -30,10 +30,10 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use__fastify_websocket.Extra.md) & `Partial`<`E`\>\> | `undefined` |
-| `keepAlive` | `number` | `12_000` |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use__fastify_websocket.Extra.md) & `Partial`<`E`\>\> | `undefined` | - |
+| `keepAlive` | `number` | `12_000` | The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss)) to check that the link between the clients and the server is operating and to prevent the link from being broken due to idling.  **`Default`**  12_000 // 12 seconds |
 
 #### Returns
 

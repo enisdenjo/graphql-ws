@@ -12,18 +12,22 @@
 
 ## Table of contents
 
-### Methods
+### Properties
 
 - [dispose](common.Disposable.md#dispose)
 
-## Methods
+## Properties
 
 ### dispose
 
-▸ **dispose**(): `void` \| `Promise`<`void`\>
+• **dispose**: () => `void` \| `Promise`<`void`\>
+
+#### Type declaration
+
+▸ (): `void` \| `Promise`<`void`\>
 
 Dispose of the instance and clear up resources.
 
-#### Returns
+##### Returns
 
 `void` \| `Promise`<`void`\>

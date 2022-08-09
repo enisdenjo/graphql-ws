@@ -19,23 +19,20 @@ Configuration used for the GraphQL over WebSocket client.
 - [connectionAckWaitTimeout](client.ClientOptions.md#connectionackwaittimeout)
 - [connectionParams](client.ClientOptions.md#connectionparams)
 - [disablePong](client.ClientOptions.md#disablepong)
+- [generateID](client.ClientOptions.md#generateid)
+- [isFatalConnectionProblem](client.ClientOptions.md#isfatalconnectionproblem)
 - [jsonMessageReplacer](client.ClientOptions.md#jsonmessagereplacer)
 - [jsonMessageReviver](client.ClientOptions.md#jsonmessagereviver)
 - [keepAlive](client.ClientOptions.md#keepalive)
 - [lazy](client.ClientOptions.md#lazy)
 - [lazyCloseTimeout](client.ClientOptions.md#lazyclosetimeout)
 - [on](client.ClientOptions.md#on)
-- [retryAttempts](client.ClientOptions.md#retryattempts)
-- [url](client.ClientOptions.md#url)
-- [webSocketImpl](client.ClientOptions.md#websocketimpl)
-
-### Methods
-
-- [generateID](client.ClientOptions.md#generateid)
-- [isFatalConnectionProblem](client.ClientOptions.md#isfatalconnectionproblem)
 - [onNonLazyError](client.ClientOptions.md#onnonlazyerror)
+- [retryAttempts](client.ClientOptions.md#retryattempts)
 - [retryWait](client.ClientOptions.md#retrywait)
 - [shouldRetry](client.ClientOptions.md#shouldretry)
+- [url](client.ClientOptions.md#url)
+- [webSocketImpl](client.ClientOptions.md#websocketimpl)
 
 ## Properties
 
@@ -55,7 +52,7 @@ dispatching a close event `4418: Connection acknowledgement timeout`
 
 **`Default`**
 
- 0
+0
 
 ___
 
@@ -84,6 +81,68 @@ Disable sending the `PongMessage` automatically.
 Useful for when integrating your own custom client pinger that performs
 custom actions before responding to a ping, or to pass along the optional pong
 message payload. Please check the readme recipes for a concrete example.
+
+___
+
+### generateID
+
+• `Optional` **generateID**: () => `string`
+
+#### Type declaration
+
+▸ (): `string`
+
+A custom ID generator for identifying subscriptions.
+
+The default generates a v4 UUID to be used as the ID using `Math`
+as the random number generator. Supply your own generator
+in case you need more uniqueness.
+
+Reference: https://gist.github.com/jed/982883
+
+##### Returns
+
+`string`
+
+___
+
+### isFatalConnectionProblem
+
+• `Optional` **isFatalConnectionProblem**: (`errOrCloseEvent`: `unknown`) => `boolean`
+
+#### Type declaration
+
+▸ (`errOrCloseEvent`): `boolean`
+
+**`Deprecated`**
+
+Use `shouldRetry` instead.
+
+Check if the close event or connection error is fatal. If you return `true`,
+the client will fail immediately without additional retries; however, if you
+return `false`, the client will keep retrying until the `retryAttempts` have
+been exceeded.
+
+The argument is either a WebSocket `CloseEvent` or an error thrown during
+the connection phase.
+
+Beware, the library classifies a few close events as fatal regardless of
+what is returned. They are listed in the documentation of the `retryAttempts`
+option.
+
+**`Default`**
+
+'Any non-`CloseEvent`'
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `errOrCloseEvent` | `unknown` |
+
+##### Returns
+
+`boolean`
 
 ___
 
@@ -147,7 +206,7 @@ createClient({
 
 **`Default`**
 
- 0
+0
 
 ___
 
@@ -163,7 +222,7 @@ the subscription sink's `error` to handle errors.
 
 **`Default`**
 
- true
+true
 
 ___
 
@@ -177,7 +236,7 @@ a calmdown time before actually closing the connection. Kinda' like a lazy close
 
 **`Default`**
 
- 0
+0
 
 ___
 
@@ -190,6 +249,46 @@ you can ensure to catch all client relevant emitted events.
 
 The listeners passed in will **always** be the first ones
 to get the emitted event before other registered listeners.
+
+___
+
+### onNonLazyError
+
+• `Optional` **onNonLazyError**: (`errorOrCloseEvent`: `unknown`) => `void`
+
+#### Type declaration
+
+▸ (`errorOrCloseEvent`): `void`
+
+Used ONLY when the client is in non-lazy mode (`lazy = false`). When
+using this mode, the errors might have no sinks to report to; however,
+to avoid swallowing errors, consider using `onNonLazyError`,  which will
+be called when either:
+- An unrecoverable error/close event occurs
+- Silent retry attempts have been exceeded
+
+After a client has errored out, it will NOT perform any automatic actions.
+
+The argument can be a websocket `CloseEvent` or an `Error`. To avoid bundling
+DOM types, you should derive and assert the correct type. When receiving:
+- A `CloseEvent`: retry attempts have been exceeded or the specific
+close event is labeled as fatal (read more in `retryAttempts`).
+- An `Error`: some internal issue has occured, all internal errors are
+fatal by nature.
+
+**`Default`**
+
+console.error
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `errorOrCloseEvent` | `unknown` |
+
+##### Returns
+
+`void`
 
 ___
 
@@ -218,7 +317,71 @@ These events are reported immediately and the client will not reconnect.
 
 **`Default`**
 
- 5
+5
+
+___
+
+### retryWait
+
+• `Optional` **retryWait**: (`retries`: `number`) => `Promise`<`void`\>
+
+#### Type declaration
+
+▸ (`retries`): `Promise`<`void`\>
+
+Control the wait time between retries. You may implement your own strategy
+by timing the resolution of the returned promise with the retries count.
+`retries` argument counts actual connection attempts, so it will begin with
+0 after the first retryable disconnect.
+
+**`Default`**
+
+'Randomised exponential backoff'
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `retries` | `number` |
+
+##### Returns
+
+`Promise`<`void`\>
+
+___
+
+### shouldRetry
+
+• `Optional` **shouldRetry**: (`errOrCloseEvent`: `unknown`) => `boolean`
+
+#### Type declaration
+
+▸ (`errOrCloseEvent`): `boolean`
+
+Check if the close event or connection error is fatal. If you return `false`,
+the client will fail immediately without additional retries; however, if you
+return `true`, the client will keep retrying until the `retryAttempts` have
+been exceeded.
+
+The argument is whatever has been thrown during the connection phase.
+
+Beware, the library classifies a few close events as fatal regardless of
+what is returned here. They are listed in the documentation of the `retryAttempts`
+option.
+
+**`Default`**
+
+'Only `CloseEvent`s'
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `errOrCloseEvent` | `unknown` |
+
+##### Returns
+
+`boolean`
 
 ___
 
@@ -245,149 +408,3 @@ ___
 A custom WebSocket implementation to use instead of the
 one provided by the global scope. Mostly useful for when
 using the client outside of the browser environment.
-
-## Methods
-
-### generateID
-
-▸ `Optional` **generateID**(): `string`
-
-A custom ID generator for identifying subscriptions.
-
-The default generates a v4 UUID to be used as the ID using `Math`
-as the random number generator. Supply your own generator
-in case you need more uniqueness.
-
-Reference: https://gist.github.com/jed/982883
-
-#### Returns
-
-`string`
-
-___
-
-### isFatalConnectionProblem
-
-▸ `Optional` **isFatalConnectionProblem**(`errOrCloseEvent`): `boolean`
-
-**`Deprecated`**
-
- Use `shouldRetry` instead.
-
-Check if the close event or connection error is fatal. If you return `true`,
-the client will fail immediately without additional retries; however, if you
-return `false`, the client will keep retrying until the `retryAttempts` have
-been exceeded.
-
-The argument is either a WebSocket `CloseEvent` or an error thrown during
-the connection phase.
-
-Beware, the library classifies a few close events as fatal regardless of
-what is returned. They are listed in the documentation of the `retryAttempts`
-option.
-
-**`Default`**
-
- 'Any non-`CloseEvent`'
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `errOrCloseEvent` | `unknown` |
-
-#### Returns
-
-`boolean`
-
-___
-
-### onNonLazyError
-
-▸ `Optional` **onNonLazyError**(`errorOrCloseEvent`): `void`
-
-Used ONLY when the client is in non-lazy mode (`lazy = false`). When
-using this mode, the errors might have no sinks to report to; however,
-to avoid swallowing errors, consider using `onNonLazyError`,  which will
-be called when either:
-- An unrecoverable error/close event occurs
-- Silent retry attempts have been exceeded
-
-After a client has errored out, it will NOT perform any automatic actions.
-
-The argument can be a websocket `CloseEvent` or an `Error`. To avoid bundling
-DOM types, you should derive and assert the correct type. When receiving:
-- A `CloseEvent`: retry attempts have been exceeded or the specific
-close event is labeled as fatal (read more in `retryAttempts`).
-- An `Error`: some internal issue has occured, all internal errors are
-fatal by nature.
-
-**`Default`**
-
- console.error
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `errorOrCloseEvent` | `unknown` |
-
-#### Returns
-
-`void`
-
-___
-
-### retryWait
-
-▸ `Optional` **retryWait**(`retries`): `Promise`<`void`\>
-
-Control the wait time between retries. You may implement your own strategy
-by timing the resolution of the returned promise with the retries count.
-`retries` argument counts actual connection attempts, so it will begin with
-0 after the first retryable disconnect.
-
-**`Default`**
-
- 'Randomised exponential backoff'
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `retries` | `number` |
-
-#### Returns
-
-`Promise`<`void`\>
-
-___
-
-### shouldRetry
-
-▸ `Optional` **shouldRetry**(`errOrCloseEvent`): `boolean`
-
-Check if the close event or connection error is fatal. If you return `false`,
-the client will fail immediately without additional retries; however, if you
-return `true`, the client will keep retrying until the `retryAttempts` have
-been exceeded.
-
-The argument is whatever has been thrown during the connection phase.
-
-Beware, the library classifies a few close events as fatal regardless of
-what is returned here. They are listed in the documentation of the `retryAttempts`
-option.
-
-**`Default`**
-
- 'Only `CloseEvent`s'
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `errOrCloseEvent` | `unknown` |
-
-#### Returns
-
-`boolean`

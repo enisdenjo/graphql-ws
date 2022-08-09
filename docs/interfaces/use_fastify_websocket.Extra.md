@@ -8,7 +8,7 @@ The extra that will be put in the `Context`.
 
 **`Deprecated`**
 
- Use `@fastify/websocket` instead.
+Use `@fastify/websocket` instead.
 
 ## Table of contents
 

@@ -12,22 +12,29 @@
 
 ## Table of contents
 
-### Methods
+### Properties
 
 - [dispose](client.Client.md#dispose)
+
+### Methods
+
 - [on](client.Client.md#on)
 - [subscribe](client.Client.md#subscribe)
 - [terminate](client.Client.md#terminate)
 
-## Methods
+## Properties
 
 ### dispose
 
-▸ **dispose**(): `void` \| `Promise`<`void`\>
+• **dispose**: () => `void` \| `Promise`<`void`\>
+
+#### Type declaration
+
+▸ (): `void` \| `Promise`<`void`\>
 
 Dispose of the instance and clear up resources.
 
-#### Returns
+##### Returns
 
 `void` \| `Promise`<`void`\>
 
@@ -35,7 +42,7 @@ Dispose of the instance and clear up resources.
 
 [Disposable](common.Disposable.md).[dispose](common.Disposable.md#dispose)
 
-___
+## Methods
 
 ### on
 
