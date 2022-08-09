@@ -1324,6 +1324,31 @@ httpServer.listen(4000);
 
 </details>
 
+<details id="deprecated-fastify-websocket">
+<summary><a href="#deprecated-fastify-websocket">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.npmjs.com/package/fastify-websocket">deprecated fastify-websocket</a></summary>
+
+```typescript
+import Fastify from 'fastify'; // yarn add fastify@^3
+import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket@4.2.2
+import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+import { schema } from './previous-step';
+
+const fastify = Fastify();
+fastify.register(fastifyWebsocket);
+
+fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
+
+fastify.listen(4000, (err) => {
+  if (err) {
+    fastify.log.error(err);
+    return process.exit(1);
+  }
+  console.log('Listening to port 4000');
+});
+```
+
+</details>
+
 <details id="ws-backwards-compat">
 <summary><a href="#ws-backwards-compat">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://github.com/apollographql/subscriptions-transport-ws">subscriptions-transport-ws</a> backwards compatibility</summary>
 
