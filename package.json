@@ -48,6 +48,11 @@
       "import": "./lib/use/uWebSockets.mjs",
       "types": "./lib/use/uWebSockets.d.ts"
     },
+    "./lib/use/@fastify/websocket": {
+      "require": "./lib/use/@fastify/websocket.js",
+      "import": "./lib/use/@fastify/websocket.mjs",
+      "types": "./lib/use/@fastify/websocket.d.ts"
+    },
     "./lib/use/fastify-websocket": {
       "require": "./lib/use/fastify-websocket.js",
       "import": "./lib/use/fastify-websocket.mjs",
@@ -93,6 +98,7 @@
     "@babel/plugin-proposal-optional-chaining": "^7.18.6",
     "@babel/preset-env": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
+    "@fastify/websocket": "^7.0.0",
     "@rollup/plugin-typescript": "^8.3.3",
     "@semantic-release/changelog": "^6.0.1",
     "@semantic-release/git": "^10.0.1",
@@ -104,7 +110,7 @@
     "eslint": "^8.18.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "fastify": "^3.29.0",
+    "fastify": "^4.4.0",
     "fastify-websocket": "4.2.2",
     "glob": "^8.0.3",
     "graphql": "^16.5.0",
