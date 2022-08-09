@@ -8,7 +8,7 @@ import ws, { WebSocketServer } from 'ws';
 import ws7 from 'ws7';
 import uWS from 'uWebSockets.js';
 import Fastify from 'fastify';
-import fastifyWebsocket from 'fastify-websocket';
+import fastifyWebsocket from '@fastify/websocket';
 
 import { useServer as useWSServer, Extra as WSExtra } from '../../use/ws';
 import {
@@ -18,7 +18,7 @@ import {
 import {
   makeHandler as makeFastifyHandler,
   Extra as FastifyExtra,
-} from '../../use/fastify-websocket';
+} from '../../use/@fastify/websocket';
 export { WSExtra, UWSExtra, FastifyExtra };
 
 // distinct server for each test; if you forget to dispose, the fixture wont
@@ -475,9 +475,6 @@ export async function startFastifyWSTServer(
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
 
-  const fastify = Fastify();
-  fastify.register(fastifyWebsocket);
-
   // sockets to kick off on teardown
   const sockets = new Set<ws>();
 
@@ -500,44 +497,48 @@ export async function startFastifyWSTServer(
     };
   }
 
-  fastify.get(path, { websocket: true }, (connection, request) => {
-    sockets.add(connection.socket);
-    pendingClients.push(toClient(connection.socket));
-    connection.socket.once('close', () => {
-      sockets.delete(connection.socket);
-      pendingCloses++;
-      emitter.emit('close');
-    });
+  const fastify = Fastify();
+  fastify.register(fastifyWebsocket);
+  fastify.register(async (fastify) => {
+    fastify.get(path, { websocket: true }, (connection, request) => {
+      sockets.add(connection.socket);
+      pendingClients.push(toClient(connection.socket));
+      connection.socket.once('close', () => {
+        sockets.delete(connection.socket);
+        pendingCloses++;
+        emitter.emit('close');
+      });
 
-    makeFastifyHandler(
-      {
-        schema,
-        ...options,
-        onConnect: async (...args) => {
-          pendingConnections.push(args[0]);
-          const permitted = await options?.onConnect?.(...args);
-          emitter.emit('conn');
-          return permitted;
+      makeFastifyHandler(
+        {
+          schema,
+          ...options,
+          onConnect: async (...args) => {
+            pendingConnections.push(args[0]);
+            const permitted = await options?.onConnect?.(...args);
+            emitter.emit('conn');
+            return permitted;
+          },
+          onOperation: async (ctx, msg, args, result) => {
+            pendingOperations++;
+            const maybeResult = await options?.onOperation?.(
+              ctx,
+              msg,
+              args,
+              result,
+            );
+            emitter.emit('operation');
+            return maybeResult;
+          },
+          onComplete: async (...args) => {
+            pendingCompletes++;
+            await options?.onComplete?.(...args);
+            emitter.emit('compl');
+          },
         },
-        onOperation: async (ctx, msg, args, result) => {
-          pendingOperations++;
-          const maybeResult = await options?.onOperation?.(
-            ctx,
-            msg,
-            args,
-            result,
-          );
-          emitter.emit('operation');
-          return maybeResult;
-        },
-        onComplete: async (...args) => {
-          pendingCompletes++;
-          await options?.onComplete?.(...args);
-          emitter.emit('compl');
-        },
-      },
-      keepAlive,
-    ).call(fastify, connection, request);
+        keepAlive,
+      ).call(fastify, connection, request);
+    });
   });
 
   const dispose: Dispose = (beNice) => {
@@ -559,12 +560,7 @@ export async function startFastifyWSTServer(
   };
   leftovers.push(dispose);
 
-  await new Promise<void>((resolve, reject) => {
-    fastify.listen(port, (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
+  await fastify.listen({ port });
 
   return {
     url: `ws://localhost:${port}${path}`,
@@ -695,7 +691,7 @@ export const tServers = [
     itForFastify: it.skip,
   },
   {
-    tServer: 'fastify-websocket' as const,
+    tServer: '@fastify/websocket' as const,
     startTServer: startFastifyWSTServer,
     skipWS: it,
     skipUWS: it,

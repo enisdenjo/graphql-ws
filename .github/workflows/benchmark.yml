@@ -76,8 +76,8 @@ jobs:
         run: |
           NODE_ENV=production node benchmark/servers/ws8.mjs &
           SERVER=ws8 ./k6 run benchmark/k6.mjs
-  fastify-websocket_ws8:
-    name: fastify-websocket_ws8
+  fastify-websocket:
+    name: '@fastify/websocket'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -96,8 +96,8 @@ jobs:
         run: yarn run build:esm
       - name: Run
         run: |
-          NODE_ENV=production node benchmark/servers/fastify-websocket_ws8.mjs &
-          SERVER=fastify-websocket_ws8 ./k6 run benchmark/k6.mjs
+          NODE_ENV=production node benchmark/servers/fastify-websocket.mjs &
+          SERVER="@fastify/websocket" ./k6 run benchmark/k6.mjs
   legacy_ws7:
     name: legacy_ws7
     runs-on: ubuntu-latest

@@ -1,19 +1,17 @@
 import type { FastifyRequest } from 'fastify';
-import type * as fastifyWebsocket from 'fastify-websocket';
-import { handleProtocols, makeServer, ServerOptions } from '../server';
+import type * as fastifyWebsocket from '@fastify/websocket';
+import { handleProtocols, makeServer, ServerOptions } from '../../server';
 import {
   DEPRECATED_GRAPHQL_WS_PROTOCOL,
   ConnectionInitMessage,
   CloseCode,
-} from '../common';
-import { limitCloseReason } from '../utils';
+} from '../../common';
+import { limitCloseReason } from '../../utils';
 
 /**
  * The extra that will be put in the `Context`.
  *
- * @deprecated Use `@fastify/websocket` instead.
- *
- * @category Server/fastify-websocket
+ * @category Server/@fastify/websocket
  */
 export interface Extra {
   /**
@@ -29,12 +27,10 @@ export interface Extra {
 }
 
 /**
- * Make a handler to use on a [fastify-websocket](https://github.com/fastify/fastify-websocket) route.
+ * Make a handler to use on a [@fastify/websocket](https://github.com/fastify/fastify-websocket) route.
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
  *
- * @deprecated Use `@fastify/websocket` instead.
- *
- * @category Server/fastify-websocket
+ * @category Server/@fastify/websocket
  */
 export function makeHandler<
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],

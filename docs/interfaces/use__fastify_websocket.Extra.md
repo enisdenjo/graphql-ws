@@ -1,21 +1,17 @@
-[graphql-ws](../README.md) / [use/fastify-websocket](../modules/use_fastify_websocket.md) / Extra
+[graphql-ws](../README.md) / [use/@fastify/websocket](../modules/use__fastify_websocket.md) / Extra
 
 # Interface: Extra
 
-[use/fastify-websocket](../modules/use_fastify_websocket.md).Extra
+[use/@fastify/websocket](../modules/use__fastify_websocket.md).Extra
 
 The extra that will be put in the `Context`.
-
-**`Deprecated`**
-
- Use `@fastify/websocket` instead.
 
 ## Table of contents
 
 ### Properties
 
-- [connection](use_fastify_websocket.Extra.md#connection)
-- [request](use_fastify_websocket.Extra.md#request)
+- [connection](use__fastify_websocket.Extra.md#connection)
+- [request](use__fastify_websocket.Extra.md#request)
 
 ## Properties
 

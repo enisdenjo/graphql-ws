@@ -147,7 +147,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
             expect((ctx.extra as WSExtra).request).toBeInstanceOf(
               http.IncomingMessage,
             );
-          } else if (tServer === 'fastify-websocket') {
+          } else if (tServer === '@fastify/websocket') {
             expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
               stream.Duplex,
             );
@@ -155,7 +155,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
               (ctx.extra as FastifyExtra).connection.socket,
             ).toBeInstanceOf(ws);
             expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
-              'Request',
+              '_Request',
             );
           } else {
             fail('Missing test case for ' + tServer);

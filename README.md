@@ -99,18 +99,20 @@ uWS
   });
 ```
 
-##### With [fastify-websocket](https://github.com/fastify/fastify-websocket)
+##### With [@fastify/websocket](https://github.com/fastify/fastify-websocket)
 
 ```ts
 import Fastify from 'fastify'; // yarn add fastify
-import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket
-import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+import fastifyWebsocket from '@fastify/websocket'; // yarn add @fastify/websocket
+import { makeHandler } from 'graphql-ws/lib/use/@fastify/websocket';
 import { schema } from './previous-step';
 
 const fastify = Fastify();
 fastify.register(fastifyWebsocket);
 
-fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
+fastify.register(async (fastify) => {
+  fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
+});
 
 fastify.listen(4000, (err) => {
   if (err) {

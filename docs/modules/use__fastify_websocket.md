@@ -1,29 +1,25 @@
-[graphql-ws](../README.md) / use/fastify-websocket
+[graphql-ws](../README.md) / use/@fastify/websocket
 
-# Module: use/fastify-websocket
+# Module: use/@fastify/websocket
 
 ## Table of contents
 
 ### Interfaces
 
-- [Extra](../interfaces/use_fastify_websocket.Extra.md)
+- [Extra](../interfaces/use__fastify_websocket.Extra.md)
 
 ### Functions
 
-- [makeHandler](use_fastify_websocket.md#makehandler)
+- [makeHandler](use__fastify_websocket.md#makehandler)
 
-## Server/fastify-websocket
+## Server/@fastify/websocket
 
 ### makeHandler
 
 ▸ **makeHandler**<`P`, `E`\>(`options`, `keepAlive?`): `fastifyWebsocket.WebsocketHandler`
 
-Make a handler to use on a [fastify-websocket](https://github.com/fastify/fastify-websocket) route.
+Make a handler to use on a [@fastify/websocket](https://github.com/fastify/fastify-websocket) route.
 This is a basic starter, feel free to copy the code over and adjust it to your needs
-
-**`Deprecated`**
-
- Use `@fastify/websocket` instead.
 
 #### Type parameters
 
@@ -36,7 +32,7 @@ This is a basic starter, feel free to copy the code over and adjust it to your n
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use_fastify_websocket.Extra.md) & `Partial`<`E`\>\> | `undefined` |
+| `options` | [`ServerOptions`](../interfaces/server.ServerOptions.md)<`P`, [`Extra`](../interfaces/use__fastify_websocket.Extra.md) & `Partial`<`E`\>\> | `undefined` |
 | `keepAlive` | `number` | `12_000` |
 
 #### Returns
