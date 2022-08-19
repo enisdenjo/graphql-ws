@@ -1393,6 +1393,41 @@ describe('lazy', () => {
     await server.waitForClientClose();
   });
 
+  it('should debounce close by lazyCloseTimeout', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // default
+      lazyCloseTimeout: 10,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    // loop subscriptions and delay them by 5ms (while lazy close is 10ms)
+    for (let i = 0; i < 5; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+
+      await new Promise<void>((resolve, reject) => {
+        client.subscribe(
+          { query: '{ getValue }' },
+          {
+            next: () => {
+              // noop
+            },
+            error: reject,
+            complete: resolve,
+          },
+        );
+      });
+    }
+
+    // if the debounce is set up incorrectly, a leftover timeout might close the connection earlier
+    await server.waitForClientClose(() => {
+      fail("Client shouldn't have closed");
+    }, 5);
+  });
+
   it('should report errors to the `onNonLazyError` callback', async (done) => {
     const { url, ...server } = await startTServer();
 

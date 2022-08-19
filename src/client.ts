@@ -468,7 +468,7 @@ export function createClient<
     connectionParams,
     lazy = true,
     onNonLazyError = console.error,
-    lazyCloseTimeout = 0,
+    lazyCloseTimeout: lazyCloseTimeoutMs = 0,
     keepAlive = 0,
     disablePong,
     connectionAckWaitTimeout = 0,
@@ -600,6 +600,7 @@ export function createClient<
   type Connected = [socket: WebSocket, throwOnClose: Promise<void>];
   let connecting: Promise<Connected> | undefined,
     locks = 0,
+    lazyCloseTimeout: ReturnType<typeof setTimeout>,
     retrying = false,
     retries = 0,
     disposed = false;
@@ -610,6 +611,10 @@ export function createClient<
       waitForReleaseOrThrowOnClose: Promise<void>,
     ]
   > {
+    // clear the lazy close timeout immediatelly so that close gets debounced
+    // see: https://github.com/enisdenjo/graphql-ws/issues/388
+    clearTimeout(lazyCloseTimeout);
+
     const [socket, throwOnClose] = await (connecting ??
       (connecting = new Promise<Connected>((connected, denied) =>
         (async () => {
@@ -787,14 +792,12 @@ export function createClient<
           if (!locks) {
             // and if no more locks are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
-            if (isFinite(lazyCloseTimeout) && lazyCloseTimeout > 0) {
+            if (isFinite(lazyCloseTimeoutMs) && lazyCloseTimeoutMs > 0) {
               // if the keepalive is set, allow for the specified calmdown time and
-              // then complete. but only if no lock got created in the meantime and
-              // if the socket is still open
-              setTimeout(() => {
-                if (!locks && socket.readyState === WebSocketImpl.OPEN)
-                  complete();
-              }, lazyCloseTimeout);
+              // then complete if the socket is still open.
+              lazyCloseTimeout = setTimeout(() => {
+                if (socket.readyState === WebSocketImpl.OPEN) complete();
+              }, lazyCloseTimeoutMs);
             } else {
               // otherwise complete immediately
               complete();
