@@ -1,3 +1,10 @@
+## [5.10.1](https://github.com/enisdenjo/graphql-ws/compare/v5.10.0...v5.10.1) (2022-08-19)
+
+
+### Bug Fixes
+
+* **client:** Debounce close by `lazyCloseTimeout` ([c332837](https://github.com/enisdenjo/graphql-ws/commit/c332837c50da09174a9741a1903a5471f8a1c42d)), closes [#388](https://github.com/enisdenjo/graphql-ws/issues/388)
+
 # [5.10.0](https://github.com/enisdenjo/graphql-ws/compare/v5.9.1...v5.10.0) (2022-08-09)
 
 
