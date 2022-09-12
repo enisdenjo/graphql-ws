@@ -22,74 +22,74 @@ exports[`should report invalid messages with descriptive errors 10`] = `"Message
 
 exports[`should report invalid messages with descriptive errors 11`] = `"Message is missing the 'type' property"`;
 
-exports[`should report invalid messages with descriptive errors 12`] = `"Invalid message 'type' property \\"nuxt\\""`;
+exports[`should report invalid messages with descriptive errors 12`] = `"Invalid message 'type' property "nuxt""`;
 
-exports[`should report invalid messages with descriptive errors 13`] = `"\\"connection_init\\" message expects the 'payload' property to be an object or missing, but got \\"\\""`;
+exports[`should report invalid messages with descriptive errors 13`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got """`;
 
-exports[`should report invalid messages with descriptive errors 14`] = `"\\"connection_init\\" message expects the 'payload' property to be an object or missing, but got \\"0\\""`;
+exports[`should report invalid messages with descriptive errors 14`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got "0""`;
 
-exports[`should report invalid messages with descriptive errors 15`] = `"\\"connection_init\\" message expects the 'payload' property to be an object or missing, but got \\"undefined\\""`;
+exports[`should report invalid messages with descriptive errors 15`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got "undefined""`;
 
-exports[`should report invalid messages with descriptive errors 16`] = `"\\"connection_ack\\" message expects the 'payload' property to be an object or missing, but got \\"\\""`;
+exports[`should report invalid messages with descriptive errors 16`] = `""connection_ack" message expects the 'payload' property to be an object or missing, but got """`;
 
-exports[`should report invalid messages with descriptive errors 17`] = `"\\"ping\\" message expects the 'payload' property to be an object or missing, but got \\"0\\""`;
+exports[`should report invalid messages with descriptive errors 17`] = `""ping" message expects the 'payload' property to be an object or missing, but got "0""`;
 
-exports[`should report invalid messages with descriptive errors 18`] = `"\\"pong\\" message expects the 'payload' property to be an object or missing, but got \\"undefined\\""`;
+exports[`should report invalid messages with descriptive errors 18`] = `""pong" message expects the 'payload' property to be an object or missing, but got "undefined""`;
 
-exports[`should report invalid messages with descriptive errors 19`] = `"\\"subscribe\\" message expects the 'id' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 19`] = `""subscribe" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 20`] = `"\\"subscribe\\" message expects the 'id' property to be a string, but got number"`;
+exports[`should report invalid messages with descriptive errors 20`] = `""subscribe" message expects the 'id' property to be a string, but got number"`;
 
-exports[`should report invalid messages with descriptive errors 21`] = `"\\"subscribe\\" message requires a non-empty 'id' property"`;
+exports[`should report invalid messages with descriptive errors 21`] = `""subscribe" message requires a non-empty 'id' property"`;
 
-exports[`should report invalid messages with descriptive errors 22`] = `"\\"subscribe\\" message expects the 'payload' property to be an object, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 22`] = `""subscribe" message expects the 'payload' property to be an object, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 23`] = `"\\"subscribe\\" message expects the 'payload' property to be an object, but got array"`;
+exports[`should report invalid messages with descriptive errors 23`] = `""subscribe" message expects the 'payload' property to be an object, but got array"`;
 
-exports[`should report invalid messages with descriptive errors 24`] = `"\\"subscribe\\" message expects the 'payload' property to be an object, but got string"`;
+exports[`should report invalid messages with descriptive errors 24`] = `""subscribe" message expects the 'payload' property to be an object, but got string"`;
 
-exports[`should report invalid messages with descriptive errors 25`] = `"\\"subscribe\\" message payload expects the 'query' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 25`] = `""subscribe" message payload expects the 'query' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 26`] = `"\\"subscribe\\" message payload expects the 'query' property to be a string, but got number"`;
+exports[`should report invalid messages with descriptive errors 26`] = `""subscribe" message payload expects the 'query' property to be a string, but got number"`;
 
-exports[`should report invalid messages with descriptive errors 27`] = `"\\"subscribe\\" message payload expects the 'query' property to be a string, but got object"`;
+exports[`should report invalid messages with descriptive errors 27`] = `""subscribe" message payload expects the 'query' property to be a string, but got object"`;
 
-exports[`should report invalid messages with descriptive errors 28`] = `"\\"subscribe\\" message payload expects the 'operationName' property to be a string or nullish or missing, but got number"`;
+exports[`should report invalid messages with descriptive errors 28`] = `""subscribe" message payload expects the 'operationName' property to be a string or nullish or missing, but got number"`;
 
-exports[`should report invalid messages with descriptive errors 29`] = `"\\"subscribe\\" message payload expects the 'operationName' property to be a string or nullish or missing, but got object"`;
+exports[`should report invalid messages with descriptive errors 29`] = `""subscribe" message payload expects the 'operationName' property to be a string or nullish or missing, but got object"`;
 
-exports[`should report invalid messages with descriptive errors 30`] = `"\\"subscribe\\" message payload expects the 'variables' property to be a an object or nullish or missing, but got string"`;
+exports[`should report invalid messages with descriptive errors 30`] = `""subscribe" message payload expects the 'variables' property to be a an object or nullish or missing, but got string"`;
 
-exports[`should report invalid messages with descriptive errors 31`] = `"\\"subscribe\\" message payload expects the 'extensions' property to be a an object or nullish or missing, but got string"`;
+exports[`should report invalid messages with descriptive errors 31`] = `""subscribe" message payload expects the 'extensions' property to be a an object or nullish or missing, but got string"`;
 
-exports[`should report invalid messages with descriptive errors 32`] = `"\\"subscribe\\" message payload expects the 'extensions' property to be a an object or nullish or missing, but got number"`;
+exports[`should report invalid messages with descriptive errors 32`] = `""subscribe" message payload expects the 'extensions' property to be a an object or nullish or missing, but got number"`;
 
-exports[`should report invalid messages with descriptive errors 33`] = `"\\"next\\" message expects the 'id' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 33`] = `""next" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 34`] = `"\\"next\\" message expects the 'id' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 34`] = `""next" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 35`] = `"\\"next\\" message requires a non-empty 'id' property"`;
+exports[`should report invalid messages with descriptive errors 35`] = `""next" message requires a non-empty 'id' property"`;
 
-exports[`should report invalid messages with descriptive errors 36`] = `"\\"next\\" message expects the 'payload' property to be an object, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 36`] = `""next" message expects the 'payload' property to be an object, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 37`] = `"\\"next\\" message expects the 'payload' property to be an object, but got string"`;
+exports[`should report invalid messages with descriptive errors 37`] = `""next" message expects the 'payload' property to be an object, but got string"`;
 
-exports[`should report invalid messages with descriptive errors 38`] = `"\\"error\\" message expects the 'id' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 38`] = `""error" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 39`] = `"\\"error\\" message requires a non-empty 'id' property"`;
+exports[`should report invalid messages with descriptive errors 39`] = `""error" message requires a non-empty 'id' property"`;
 
-exports[`should report invalid messages with descriptive errors 40`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 40`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 41`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got {}"`;
+exports[`should report invalid messages with descriptive errors 41`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got {}"`;
 
-exports[`should report invalid messages with descriptive errors 42`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got \\"\\""`;
+exports[`should report invalid messages with descriptive errors 42`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got """`;
 
-exports[`should report invalid messages with descriptive errors 43`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got []"`;
+exports[`should report invalid messages with descriptive errors 43`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got []"`;
 
-exports[`should report invalid messages with descriptive errors 44`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got [{\\"iam\\":\\"invalid\\"}]"`;
+exports[`should report invalid messages with descriptive errors 44`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got [{"iam":"invalid"}]"`;
 
-exports[`should report invalid messages with descriptive errors 45`] = `"\\"complete\\" message expects the 'id' property to be a string, but got undefined"`;
+exports[`should report invalid messages with descriptive errors 45`] = `""complete" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid messages with descriptive errors 46`] = `"\\"complete\\" message requires a non-empty 'id' property"`;
+exports[`should report invalid messages with descriptive errors 46`] = `""complete" message requires a non-empty 'id' property"`;
 
-exports[`should report invalid messages with descriptive errors 47`] = `"\\"complete\\" message expects the 'id' property to be a string, but got number"`;
+exports[`should report invalid messages with descriptive errors 47`] = `""complete" message expects the 'id' property to be a string, but got number"`;

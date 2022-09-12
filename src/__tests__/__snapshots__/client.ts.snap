@@ -1,5 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should report close error even if complete message followed 1`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got \\"malformed\\""`;
+exports[`should report close error even if complete message followed 1`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;
 
-exports[`should report close error even if complete message followed 2`] = `"\\"error\\" message expects the 'payload' property to be an array of GraphQL errors, but got \\"malformed\\""`;
+exports[`should report close error even if complete message followed 2`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;

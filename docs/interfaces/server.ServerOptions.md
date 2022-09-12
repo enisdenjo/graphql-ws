@@ -451,9 +451,9 @@ will be used instead.
 
 | Name | Type |
 | :------ | :------ |
-| `mutation` | `undefined` \| `Record`<`string`, `unknown`\> |
-| `query` | `undefined` \| `Record`<`string`, `unknown`\> |
-| `subscription` | `undefined` \| `Record`<`string`, `unknown`\> |
+| `mutation` | `undefined` \| `Record`<`string`, {}\> |
+| `query` | `undefined` \| `Record`<`string`, {}\> |
+| `subscription` | `undefined` \| `Record`<`string`, {}\> |
 
 ___
 
