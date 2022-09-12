@@ -429,15 +429,9 @@ export function parseMessage(
   data: unknown,
   reviver?: JSONMessageReviver,
 ): Message {
-  try {
-    return validateMessage(data);
-  } catch {
-    if (typeof data !== 'string') {
-      throw new Error('Only strings are parsable messages');
-    }
-    const message = JSON.parse(data, reviver);
-    return validateMessage(message);
-  }
+  return validateMessage(
+    typeof data === 'string' ? JSON.parse(data, reviver) : data,
+  );
 }
 
 /**
