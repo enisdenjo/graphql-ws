@@ -1,3 +1,10 @@
+## [5.10.2](https://github.com/enisdenjo/graphql-ws/compare/v5.10.1...v5.10.2) (2022-09-12)
+
+
+### Performance Improvements
+
+* Easier message parser ([d44c6f1](https://github.com/enisdenjo/graphql-ws/commit/d44c6f18ccd2bc539bb541e6bfd1bf0c769c7856))
+
 ## [5.10.1](https://github.com/enisdenjo/graphql-ws/compare/v5.10.0...v5.10.1) (2022-08-19)
 
 
