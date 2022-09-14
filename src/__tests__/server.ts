@@ -8,7 +8,12 @@ import {
   ExecutionResult,
   GraphQLSchema,
 } from 'graphql';
-import { Context, handleProtocols, makeServer } from '../server';
+import {
+  Context,
+  handleProtocols,
+  makeServer,
+  createOperationHandler,
+} from '../server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
@@ -1814,4 +1819,102 @@ it('should only accept a Set, Array or string in handleProtocols', () => {
       handleProtocols(test.in),
     ).toBe(test.out);
   }
+});
+
+describe('Operation Handler', () => {
+  const handlerMocks = {
+    execute: jest.fn(),
+    subscribe: jest.fn(),
+    parse: jest.fn().mockReturnValue('parse'),
+    validate: jest.fn().mockReturnValue('validate'),
+    getOperationAST: jest.fn().mockReturnValue('getOperationAST'),
+  };
+
+  const query = `query { getValue }`;
+  const execArgs = {
+    schema,
+    document: parse(query),
+    operationName: 'test',
+  };
+
+  beforeEach(() => {
+    Object.values(handlerMocks).forEach((mock) => mock.mockClear());
+  });
+
+  it('should return execute/subscribe from args', () => {
+    const handler = createOperationHandler({
+      ...handlerMocks,
+    });
+
+    expect(handler.execute).toBe(handlerMocks.execute);
+    expect(handler.subscribe).toBe(handlerMocks.subscribe);
+  });
+
+  describe('cache disabled (default)', () => {
+    const handler = createOperationHandler({
+      ...handlerMocks,
+      cacheEnabled: false,
+    });
+
+    it('should call parse method from args every time when handler.parse is called', () => {
+      handler.parse(query);
+      handler.parse(query);
+      expect(handlerMocks.parse).toHaveBeenCalledTimes(2);
+      expect(handlerMocks.parse).toHaveBeenCalledWith(query);
+    });
+
+    it('should call validate method from args every time when handler.validate is called', () => {
+      handler.validate(query, execArgs);
+      handler.validate(query, execArgs);
+      expect(handlerMocks.validate).toHaveBeenCalledTimes(2);
+      expect(handlerMocks.validate).toHaveBeenCalledWith(
+        execArgs.schema,
+        execArgs.document,
+      );
+    });
+
+    it('should call getOperationAST method from args every time when handler.getOperationAST is called', () => {
+      handler.getOperationAST(query, execArgs);
+      handler.getOperationAST(query, execArgs);
+      expect(handlerMocks.getOperationAST).toHaveBeenCalledTimes(2);
+      expect(handlerMocks.getOperationAST).toHaveBeenCalledWith(
+        execArgs.document,
+        execArgs.operationName,
+      );
+    });
+  });
+
+  describe('cache enabled', () => {
+    const handler = createOperationHandler({
+      ...handlerMocks,
+      cacheEnabled: true,
+    });
+
+    it('should call parse method from args only one time for given query', () => {
+      handler.parse(query);
+      handler.parse(query);
+      expect(handlerMocks.parse).toHaveBeenCalledTimes(1);
+      expect(handlerMocks.parse).toHaveBeenCalledWith(query);
+    });
+
+    it('should call validate method from args only one time for given query', () => {
+      handler.validate(query, execArgs);
+      handler.validate(query, execArgs);
+      expect(handlerMocks.validate).toHaveBeenCalledTimes(1);
+      expect(handlerMocks.validate).toHaveBeenCalledWith(
+        execArgs.schema,
+        execArgs.document,
+      );
+    });
+
+    it('should call getOperationAST method from args only one time for given query', () => {
+      handler.getOperationAST(query, execArgs);
+      handler.getOperationAST(query, execArgs);
+      expect(handlerMocks.getOperationAST).toHaveBeenCalledTimes(1);
+      expect(handlerMocks.getOperationAST).toHaveBeenCalledWith(
+        execArgs.document,
+        execArgs.operationName,
+      );
+    });
+  });
 });

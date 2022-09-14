@@ -79,6 +79,7 @@
     "lint": "eslint 'src'",
     "type-check": "tsc --noEmit",
     "test": "jest",
+    "test:watch": "jest --watch",
     "bench:start-servers": "NODE_ENV=production node benchmark/servers/index.mjs",
     "bench": "k6 run benchmark/k6.mjs",
     "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",

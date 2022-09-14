@@ -4,17 +4,19 @@
  *
  */
 
-import {
-  OperationTypeNode,
-  GraphQLSchema,
-  ExecutionArgs,
-  parse,
+ import {
+  parse as graphqlParse,
   validate as graphqlValidate,
   execute as graphqlExecute,
   subscribe as graphqlSubscribe,
-  getOperationAST,
+  getOperationAST as graphqlGetOperationAST,
+  OperationTypeNode,
+  GraphQLSchema,
+  ExecutionArgs,
   GraphQLError,
   SubscriptionArgs,
+  DocumentNode,
+  OperationDefinitionNode,
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -396,6 +398,11 @@ export interface ServerOptions<
    * datatypes out to the client.
    */
   jsonMessageReplacer?: JSONMessageReplacer;
+  /**
+   * Optional parameter to enable in-memory cache for document parsing/validating.
+   * Defaults to false.
+   */
+  cacheEnabled?: boolean;
 }
 
 /** @category Server */
@@ -552,7 +559,15 @@ export function makeServer<
     onComplete,
     jsonMessageReviver: reviver,
     jsonMessageReplacer: replacer,
+    cacheEnabled = false,
   } = options;
+
+  const operationHandler = createOperationHandler({
+    cacheEnabled,
+    subscribe,
+    validate,
+    execute,
+  });
 
   return {
     opened(socket, extra) {
@@ -743,7 +758,7 @@ export function makeServer<
 
                 const args = {
                   operationName: payload.operationName,
-                  document: parse(payload.query),
+                  document: operationHandler.parse(payload.query),
                   variableValues: payload.variables,
                 };
                 execArgs = {
@@ -753,18 +768,21 @@ export function makeServer<
                       ? await schema(ctx, message, args)
                       : schema,
                 };
-                const validationErrors = (validate ?? graphqlValidate)(
-                  execArgs.schema,
-                  execArgs.document,
+
+                const validationErrors = operationHandler.validate(
+                  payload.query,
+                  execArgs,
                 );
+
                 if (validationErrors.length > 0)
                   return await emit.error(validationErrors);
               }
 
-              const operationAST = getOperationAST(
-                execArgs.document,
-                execArgs.operationName,
+              const operationAST = operationHandler.getOperationAST(
+                payload.query,
+                execArgs,
               );
+
               if (!operationAST)
                 return await emit.error([
                   new GraphQLError('Unable to identify operation'),
@@ -785,12 +803,9 @@ export function makeServer<
               // perform the operation and act accordingly
               let operationResult;
               if (operationAST.operation === 'subscription')
-                operationResult = await (subscribe ?? graphqlSubscribe)(
-                  execArgs,
-                );
+                operationResult = await operationHandler.subscribe(execArgs);
               // operation === 'query' || 'mutation'
-              else
-                operationResult = await (execute ?? graphqlExecute)(execArgs);
+              else operationResult = await operationHandler.execute(execArgs);
 
               const maybeResult = await onOperation?.(
                 ctx,
@@ -887,4 +902,67 @@ export function handleProtocols(
     default:
       return false;
   }
+}
+
+/**
+ * Helper utility for operations.
+ * If cacheEnabled option is set to true it caches results for
+ * parse, validate and getOperationAST, basing on query definition
+ *
+ * @category Server
+ */
+export function createOperationHandler({
+  cacheEnabled,
+  parse = graphqlParse,
+  execute = graphqlExecute,
+  validate = graphqlValidate,
+  subscribe = graphqlSubscribe,
+  getOperationAST = graphqlGetOperationAST,
+}: Pick<
+  ServerOptions,
+  'cacheEnabled' | 'execute' | 'subscribe' | 'validate'
+> & {
+  parse?: typeof graphqlParse;
+  getOperationAST?: typeof graphqlGetOperationAST;
+}): {
+  parse: (query: string) => DocumentNode;
+  validate: (
+    query: string,
+    execArgs: ExecutionArgs,
+  ) => ReadonlyArray<GraphQLError>;
+  getOperationAST: (
+    query: string,
+    execArgs: ExecutionArgs,
+  ) => OperationDefinitionNode | null | undefined;
+} & Required<Pick<ServerOptions, 'subscribe' | 'execute'>> {
+  const parseCache: Record<string, DocumentNode> = {};
+  const validationCache: Record<string, ReadonlyArray<GraphQLError>> = {};
+  const astCache: Record<string, OperationDefinitionNode | null | undefined> =
+    {};
+
+  return {
+    execute,
+    subscribe,
+    parse: (query) => {
+      if (!cacheEnabled || !parseCache[query]) {
+        parseCache[query] = parse(query);
+      }
+      return parseCache[query];
+    },
+    validate: (query, execArgs) => {
+      if (!cacheEnabled || !validationCache[query]) {
+        validationCache[query] = validate(execArgs.schema, execArgs.document);
+      }
+      return validationCache[query];
+    },
+    getOperationAST: (query, execArgs) => {
+      if (!cacheEnabled || !astCache[query]) {
+        astCache[query] = getOperationAST(
+          execArgs.document,
+          execArgs.operationName,
+        );
+      }
+      return astCache[query];
+    },
+  };
 }
