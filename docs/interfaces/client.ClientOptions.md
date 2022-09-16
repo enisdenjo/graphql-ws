@@ -86,11 +86,11 @@ ___
 
 ### generateID
 
-• `Optional` **generateID**: () => `string`
+• `Optional` **generateID**: (`payload`: [`SubscribePayload`](common.SubscribePayload.md)) => `string`
 
 #### Type declaration
 
-▸ (): `string`
+▸ (`payload`): `string`
 
 A custom ID generator for identifying subscriptions.
 
@@ -99,6 +99,12 @@ as the random number generator. Supply your own generator
 in case you need more uniqueness.
 
 Reference: https://gist.github.com/jed/982883
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `payload` | [`SubscribePayload`](common.SubscribePayload.md) |
 
 ##### Returns
 

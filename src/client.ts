@@ -410,7 +410,7 @@ export interface ClientOptions<
    *
    * Reference: https://gist.github.com/jed/982883
    */
-  generateID?: () => ID;
+  generateID?: (payload: SubscribePayload) => ID;
   /**
    * An optional override for the JSON.parse function used to hydrate
    * incoming messages to this client. Useful for parsing custom datatypes
@@ -879,7 +879,7 @@ export function createClient<
   return {
     on: emitter.on,
     subscribe(payload, sink) {
-      const id = generateID();
+      const id = generateID(payload);
 
       let done = false,
         errored = false,

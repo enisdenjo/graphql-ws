@@ -1133,6 +1133,27 @@ describe('subscription operation', () => {
     expect(generateIDFn).toBeCalled();
   });
 
+  it('should provide subscription payload in `generateID`', async () => {
+    const { url, ...server } = await startTServer();
+
+    const generateIDFn = jest.fn(() => '1');
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      generateID: generateIDFn,
+    });
+
+    const payload = {
+      query: '{ getValue }',
+    };
+    tsubscribe(client, payload);
+    await server.waitForOperation();
+
+    expect(generateIDFn).toBeCalledWith(payload);
+  });
+
   it('should dispose of the subscription on complete', async () => {
     const { url, ...server } = await startTServer();
 
