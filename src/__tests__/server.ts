@@ -1704,6 +1704,42 @@ describe('Subscribe', () => {
       {},
     );
   });
+
+  it('should not send a complete message back if the client sent it', async () => {
+    const server = await startTServer();
+
+    const client = await createTClient(server.url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // MessageType.ConnectionAck
+
+    client.ws.send(
+      stringifyMessage({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { lateReturn }',
+        },
+      }),
+    );
+    await server.waitForOperation();
+
+    client.ws.send(
+      stringifyMessage({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+    await server.waitForComplete();
+
+    await client.waitForMessage(() => {
+      fail("Shouldn't have received a message");
+    }, 20);
+  });
 });
 
 describe('Disconnect/close', () => {

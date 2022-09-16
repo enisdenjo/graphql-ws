@@ -75,6 +75,31 @@ export const schemaConfig: GraphQLSchemaConfig = {
           };
         },
       },
+      lateReturn: {
+        type: new GraphQLNonNull(GraphQLString),
+        subscribe() {
+          let completed = () => {
+            // noop
+          };
+          return {
+            [Symbol.asyncIterator]() {
+              return this;
+            },
+            async next() {
+              await new Promise<void>((resolve) => (completed = resolve));
+              return { done: true };
+            },
+            return() {
+              completed();
+
+              // resolve return in next tick so that the generator loop breaks first
+              return new Promise((resolve) =>
+                setTimeout(() => resolve({ done: true }), 0),
+              );
+            },
+          };
+        },
+      },
     },
   }),
 };

@@ -831,9 +831,9 @@ export function makeServer<
           }
           case MessageType.Complete: {
             const subscription = ctx.subscriptions[message.id];
+            delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
             if (isAsyncGenerator(subscription))
               await subscription.return(undefined);
-            delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
             return;
           }
           default:
