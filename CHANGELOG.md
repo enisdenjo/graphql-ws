@@ -1,3 +1,10 @@
+# [5.11.0](https://github.com/enisdenjo/graphql-ws/compare/v5.10.2...v5.11.0) (2022-09-16)
+
+
+### Features
+
+* **client:** Provide subscribe payload in `generateID` ([d0bc6e1](https://github.com/enisdenjo/graphql-ws/commit/d0bc6e15169285421fc7961c712d1d07c884a14e)), closes [#398](https://github.com/enisdenjo/graphql-ws/issues/398)
+
 ## [5.10.2](https://github.com/enisdenjo/graphql-ws/compare/v5.10.1...v5.10.2) (2022-09-12)
 
 
