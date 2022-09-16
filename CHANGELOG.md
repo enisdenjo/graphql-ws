@@ -1,3 +1,10 @@
+## [5.11.1](https://github.com/enisdenjo/graphql-ws/compare/v5.11.0...v5.11.1) (2022-09-16)
+
+
+### Bug Fixes
+
+* **server:** Shouldn't send a complete message if client sent it ([331fe47](https://github.com/enisdenjo/graphql-ws/commit/331fe4749227393297da4d97a4370ab6f76cc73a)), closes [#403](https://github.com/enisdenjo/graphql-ws/issues/403)
+
 # [5.11.0](https://github.com/enisdenjo/graphql-ws/compare/v5.10.2...v5.11.0) (2022-09-16)
 
 
