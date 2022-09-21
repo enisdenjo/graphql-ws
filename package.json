@@ -28,6 +28,7 @@
     "node": ">=10"
   },
   "packageManager": "yarn@3.2.3",
+  "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
   "browser": "umd/graphql-ws.js",
@@ -60,7 +61,6 @@
     },
     "./package.json": "./package.json"
   },
-  "types": "lib/index.d.ts",
   "files": [
     "lib",
     "umd",
