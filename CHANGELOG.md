@@ -1,3 +1,10 @@
+## [5.11.2](https://github.com/enisdenjo/graphql-ws/compare/v5.11.1...v5.11.2) (2022-09-21)
+
+
+### Bug Fixes
+
+* Reorder types paths in package.json for better import resolution ([#406](https://github.com/enisdenjo/graphql-ws/issues/406)) ([37263c5](https://github.com/enisdenjo/graphql-ws/commit/37263c51f4c6e92e4955df5058b76f452b2d0399))
+
 ## [5.11.1](https://github.com/enisdenjo/graphql-ws/compare/v5.11.0...v5.11.1) (2022-09-16)
 
 
