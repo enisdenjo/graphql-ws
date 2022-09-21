@@ -33,30 +33,30 @@
   "browser": "umd/graphql-ws.js",
   "exports": {
     ".": {
+      "types": "./lib/index.d.ts",
       "require": "./lib/index.js",
       "import": "./lib/index.mjs",
-      "types": "./lib/index.d.ts",
       "browser": "./umd/graphql-ws.js"
     },
     "./lib/use/ws": {
+      "types": "./lib/use/ws.d.ts",
       "require": "./lib/use/ws.js",
-      "import": "./lib/use/ws.mjs",
-      "types": "./lib/use/ws.d.ts"
+      "import": "./lib/use/ws.mjs"
     },
     "./lib/use/uWebSockets": {
+      "types": "./lib/use/uWebSockets.d.ts",
       "require": "./lib/use/uWebSockets.js",
-      "import": "./lib/use/uWebSockets.mjs",
-      "types": "./lib/use/uWebSockets.d.ts"
+      "import": "./lib/use/uWebSockets.mjs"
     },
     "./lib/use/@fastify/websocket": {
+      "types": "./lib/use/@fastify/websocket.d.ts",
       "require": "./lib/use/@fastify/websocket.js",
-      "import": "./lib/use/@fastify/websocket.mjs",
-      "types": "./lib/use/@fastify/websocket.d.ts"
+      "import": "./lib/use/@fastify/websocket.mjs"
     },
     "./lib/use/fastify-websocket": {
+      "types": "./lib/use/fastify-websocket.d.ts",
       "require": "./lib/use/fastify-websocket.js",
-      "import": "./lib/use/fastify-websocket.mjs",
-      "types": "./lib/use/fastify-websocket.d.ts"
+      "import": "./lib/use/fastify-websocket.mjs"
     },
     "./package.json": "./package.json"
   },
