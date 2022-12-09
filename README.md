@@ -1323,6 +1323,66 @@ httpServer.listen(4000);
 ```
 
 </details>
+  
+  <details id="apollo-server-hapi-js">
+<summary><a href="#apollo-server-hapi-js">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.apollographql.com/docs/apollo-server/v3/integrations/middleware/#apollo-server-hapi">Apollo Server Hapi.js</a></summary>
+
+```typescript
+import { ApolloServer, ApolloServerPluginStopHapiServer } from "apollo-server-hapi";
+import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
+import Hapi from "@hapi/hapi";
+import { WebSocketServer } from "ws";
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { createServer } from "http";
+import { schema } from './my-graphql-schema';
+
+// create hapi.js and HTTP server
+const httpServer = createServer();
+const hapiServer = Hapi.server({
+        port: 4001,
+        host: "localhost",
+        listener: httpServer,
+        routes: { security: true },  // <-- not required yet good practice
+});
+
+// create websocket server
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: '/graphql',
+});
+
+// Save the returned server's info so we can shut down this server later
+const serverCleanup = useServer({ schema }, wsServer);
+
+// create apollo server
+const apolloServer = new ApolloServer({
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Proper shutdown for the Hapi.js server.
+    ApolloServerPluginStopHapiServer({ hapiServer }),
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
+  ],
+});
+
+await apolloServer.start();
+await apolloServer.applyMiddleware({ app: hapiServer });
+
+await hapiServer.start();
+console.log("Open GraphQL editor on: %s/graphql", hapiServer.info.uri);
+```
+
+</details>
 
 <details id="deprecated-fastify-websocket">
 <summary><a href="#deprecated-fastify-websocket">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.npmjs.com/package/fastify-websocket">deprecated fastify-websocket</a></summary>
