@@ -76,7 +76,9 @@
   },
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/",
-    "lint": "eslint 'src'",
+    "lint:eslint": "eslint 'src'",
+    "lint:prettier": "prettier -c .",
+    "lint": "yarn lint:eslint && yarn lint:prettier",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "bench:start-servers": "NODE_ENV=production node benchmark/servers/index.mjs",
@@ -109,7 +111,6 @@
     "babel-jest": "^29.0.3",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1",
     "fastify": "^4.6.0",
     "fastify-websocket": "4.2.2",
     "glob": "^8.0.3",
