@@ -8,18 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'yarn'
+          cache: yarn
       - name: Install
         run: yarn install --immutable
       - name: Build
         run: yarn build
       - name: Upload build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: |
@@ -33,19 +33,19 @@ jobs:
     environment: npm
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0 # necessary for correct CHANGELOGS
       - name: Set up node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v
         with:
           node-version: 18
-          cache: 'yarn'
+          cache: yarn
       - name: Install
         run: yarn install --immutable
       - name: Download build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build
       - name: Release
