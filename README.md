@@ -1324,7 +1324,7 @@ httpServer.listen(4000);
 
 </details>
   
-  <details id="apollo-server-hapi-js">
+<details id="apollo-server-hapi-js">
 <summary><a href="#apollo-server-hapi-js">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.apollographql.com/docs/apollo-server/v3/integrations/middleware/#apollo-server-hapi">Apollo Server Hapi.js</a></summary>
 
 ```typescript
