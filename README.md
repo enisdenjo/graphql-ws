@@ -1328,21 +1328,24 @@ httpServer.listen(4000);
 <summary><a href="#apollo-server-hapi-js">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.apollographql.com/docs/apollo-server/v3/integrations/middleware/#apollo-server-hapi">Apollo Server Hapi.js</a></summary>
 
 ```typescript
-import { ApolloServer, ApolloServerPluginStopHapiServer } from "apollo-server-hapi";
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
-import Hapi from "@hapi/hapi";
-import { WebSocketServer } from "ws";
+import {
+  ApolloServer,
+  ApolloServerPluginStopHapiServer,
+} from 'apollo-server-hapi';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import Hapi from '@hapi/hapi';
+import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
-import { createServer } from "http";
+import { createServer } from 'http';
 import { schema } from './my-graphql-schema';
 
 // create hapi.js and HTTP server
 const httpServer = createServer();
 const hapiServer = Hapi.server({
-        port: 4001,
-        host: "localhost",
-        listener: httpServer,
-        routes: { security: true },  // <-- not required yet good practice
+  port: 4001,
+  host: 'localhost',
+  listener: httpServer,
+  routes: { security: true }, // <-- not required yet good practice
 });
 
 // create websocket server
@@ -1379,7 +1382,7 @@ await apolloServer.start();
 await apolloServer.applyMiddleware({ app: hapiServer });
 
 await hapiServer.start();
-console.log("Open GraphQL editor on: %s/graphql", hapiServer.info.uri);
+console.log('Open GraphQL editor on: %s/graphql', hapiServer.info.uri);
 ```
 
 </details>
