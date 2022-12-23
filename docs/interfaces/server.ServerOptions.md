@@ -540,7 +540,7 @@ will be created from the provided schema.
 | `documentAST` | `DocumentNode` | - |
 | `rules?` | readonly `ValidationRule`[] | - |
 | `options?` | `Object` | - |
-| `typeInfo?` | `TypeInfo` | **`Deprecated`**  will be removed in 17.0.0 |
+| `typeInfo?` | `TypeInfo` | **`Deprecated`** will be removed in 17.0.0 |
 
 ##### Returns
 
