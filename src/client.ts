@@ -902,6 +902,7 @@ export function createClient<
             const unlisten = emitter.onMessage(id, (message) => {
               switch (message.type) {
                 case MessageType.Next: {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
                   sink.next(message.payload as any);
                   return;
                 }
