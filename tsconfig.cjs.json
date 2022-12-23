@@ -2,8 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
+    "rootDir": "./src",
     "outDir": "./lib",
     "declaration": false // already built by `tsconfig.esm.json`
   },
-  "exclude": ["src/__tests__", "lib"]
+  "include": ["src"],
+  "exclude": ["src/__tests__"]
 }

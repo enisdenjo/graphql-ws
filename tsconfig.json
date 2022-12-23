@@ -1,17 +1,23 @@
 {
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig.json to read more about this file */
     "moduleResolution": "node",
     "target": "es2017",
-    "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": "./src",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "checkJs": true
   },
-  "exclude": ["lib"]
+  "include": [
+    "src",
+    "scripts",
+    "rollup.config.ts",
+    "babel.config.js",
+    "jest.config.js",
+    ".eslintrc.js",
+    "typedoc.js"
+  ]
 }

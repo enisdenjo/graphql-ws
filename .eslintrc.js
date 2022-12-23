@@ -1,4 +1,7 @@
-module.exports = {
+/**
+ * @type {import('eslint').Linter.Config}
+ */
+const opts = {
   env: {
     es2020: true,
     node: true,
@@ -18,6 +21,6 @@ module.exports = {
         'ts-expect-error': 'allow-with-description',
       },
     ],
-    '@typescript-eslint/no-explicit-any': 'off',
   },
 };
+module.exports = opts;
