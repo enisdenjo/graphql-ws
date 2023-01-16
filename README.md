@@ -931,7 +931,7 @@ const client = createClient({
 <summary><a href="#client-with-on-reconnect">🔗</a> Client usage with reconnect listener</summary>
 
 ```ts
-import { createClient, Client, ClientOptions } from './client';
+import { createClient, Client, ClientOptions } from 'graphql-ws';
 import { refetchSomeQueries } from './on-reconnected';
 
 interface ClientWithOnReconnected extends Client {
