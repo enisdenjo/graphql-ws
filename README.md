@@ -927,6 +927,67 @@ const client = createClient({
 
 </details>
 
+<details id="client-with-on-reconnect">
+<summary><a href="#client-with-on-reconnect">🔗</a> Client usage with reconnect listener</summary>
+
+```ts
+import { createClient, Client, ClientOptions } from './client';
+import { refetchSomeQueries } from './on-reconnected';
+
+interface ClientWithOnReconnected extends Client {
+  onReconnected(cb: () => void): () => void;
+}
+
+function createClientWithOnReconnected(
+  options: ClientOptions,
+): ClientWithOnReconnected {
+  let abruptlyClosed = false;
+  const reconnectedCbs: (() => void)[] = [];
+
+  const client = createClient({
+    ...options,
+    on: {
+      ...options.on,
+      closed: (event) => {
+        options.on?.closed?.(event);
+        // non-1000 close codes are abrupt closes
+        if ((event as CloseEvent).code !== 1000) {
+          abruptlyClosed = true;
+        }
+      },
+      connected: (...args) => {
+        options.on?.connected?.(...args);
+        // if the client abruptly closed, this is then a reconnect
+        if (abruptlyClosed) {
+          abruptlyClosed = false;
+          reconnectedCbs.forEach((cb) => cb());
+        }
+      },
+    },
+  });
+
+  return {
+    ...client,
+    onReconnected: (cb) => {
+      reconnectedCbs.push(cb);
+      return () => {
+        reconnectedCbs.splice(reconnectedCbs.indexOf(cb), 1);
+      };
+    },
+  };
+}
+
+const client = createClientWithOnReconnected({
+  url: 'ws://ireconnect:4000/and/notify',
+});
+
+const unlisten = client.onReconnected(() => {
+  refetchSomeQueries();
+});
+```
+
+</details>
+
 <details id="ws">
 <summary><a href="#ws">🔗</a> Server usage with <a href="https://github.com/websockets/ws">ws</a></summary>
 
