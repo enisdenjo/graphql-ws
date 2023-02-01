@@ -2115,7 +2115,7 @@ describe('events', () => {
   });
 
   it('should emit the websocket connection error', (done) => {
-    expect.assertions(3);
+    const gotErr = jest.fn();
     createClient({
       url: 'ws://localhost/i/dont/exist',
       lazy: false,
@@ -2123,16 +2123,19 @@ describe('events', () => {
       onNonLazyError: (err) => {
         // connection error
         expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+        expect(gotErr).toBeCalledTimes(2);
         done();
       },
       on: {
         closed: (err) => {
           // websocket closed
           expect((err as CloseEvent).code).toBe(1006);
+          gotErr();
         },
         error: (err) => {
           // connection error
           expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+          gotErr();
         },
       },
     });
