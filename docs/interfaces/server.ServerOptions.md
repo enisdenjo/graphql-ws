@@ -513,24 +513,17 @@ ___
 
 ▸ (`schema`, `documentAST`, `rules?`, `options?`, `typeInfo?`): `ReadonlyArray`<`GraphQLError`\>
 
-Implements the "Validation" section of the spec.
+A custom GraphQL validate function allowing you to apply your
+own validation rules.
 
-Validation runs synchronously, returning an array of encountered errors, or
-an empty array if no errors were encountered and the document is valid.
+Returned, non-empty, array of `GraphQLError`s will be communicated
+to the client through the `ErrorMessage`. Use an empty array if the
+document is valid and no errors have been encountered.
 
-A list of specific validation rules may be provided. If not provided, the
-default list of rules defined by the GraphQL specification will be used.
+Will not be used when implementing a custom `onSubscribe`.
 
-Each validation rules is a function which returns a visitor
-(see the language/visitor API). Visitor methods are expected to return
-GraphQLErrors, or Arrays of GraphQLErrors when invalid.
-
-Validate will stop validation after a `maxErrors` limit has been reached.
-Attackers can send pathologically invalid queries to induce a DoS attack,
-so by default `maxErrors` set to 100 errors.
-
-Optionally a custom TypeInfo instance may be provided. If not provided, one
-will be created from the provided schema.
+Throwing an error from within this function will close the socket
+with the `Error` message in the close event reason.
 
 ##### Parameters
 

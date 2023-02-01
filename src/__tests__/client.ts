@@ -382,7 +382,7 @@ it('should not send the complete message if the socket is not open', async () =>
       close = () => this.close();
     }
 
-    public send(data: unknown) {
+    public send(data: string) {
       if (this.readyState !== WebSocket.OPEN)
         fail("Shouldn't send anything through a non-OPEN socket");
       super.send(data);
