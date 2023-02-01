@@ -218,6 +218,7 @@ export async function startWSTServer(
   const pendingClients: TServerClient[] = [];
   wsServer.on('connection', (client) => {
     pendingClients.push(toClient(client));
+    setTimeout(() => emitter.emit('client'), 0);
     client.once('close', () => {
       pendingCloses++;
       emitter.emit('close');
@@ -253,10 +254,10 @@ export async function startWSTServer(
           resolve();
         }
         if (pendingClients.length > 0) return done();
-        wsServer.once('connection', done);
+        emitter.once('client', done);
         if (expire)
           setTimeout(() => {
-            wsServer.off('connection', done); // expired
+            emitter.off('client', done); // expired
             resolve();
           }, expire);
       });
@@ -506,6 +507,7 @@ export async function startFastifyWSTServer(
     fastify.get(path, { websocket: true }, (connection, request) => {
       sockets.add(connection.socket);
       pendingClients.push(toClient(connection.socket));
+      setTimeout(() => emitter.emit('client'), 0);
       connection.socket.once('close', () => {
         sockets.delete(connection.socket);
         pendingCloses++;
@@ -584,10 +586,10 @@ export async function startFastifyWSTServer(
           resolve();
         }
         if (pendingClients.length > 0) return done();
-        fastify.websocketServer.once('connection', done);
+        emitter.once('client', done);
         if (expire)
           setTimeout(() => {
-            fastify.websocketServer.off('connection', done); // expired
+            emitter.off('client', done); // expired
             resolve();
           }, expire);
       });
