@@ -1,3 +1,10 @@
+## [5.11.3](https://github.com/enisdenjo/graphql-ws/compare/v5.11.2...v5.11.3) (2023-02-01)
+
+
+### Bug Fixes
+
+* **ws,uWebSockets,@fastify/websocket:** Handle internal errors that are not instances of `Error` ([#442](https://github.com/enisdenjo/graphql-ws/issues/442)) ([9884889](https://github.com/enisdenjo/graphql-ws/commit/9884889540d47a29891bd5c2ceb220cfbfd184af)), closes [#441](https://github.com/enisdenjo/graphql-ws/issues/441)
+
 ## [5.11.2](https://github.com/enisdenjo/graphql-ws/compare/v5.11.1...v5.11.2) (2022-09-21)
 
 
