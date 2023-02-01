@@ -504,6 +504,27 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
+    it('should handle and limit internal server errors that are not instances of errors', async () => {
+      const { url } = await startTServer({
+        onConnect: () => {
+          throw 'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte';
+        },
+      });
+
+      const client = await createTClient(url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe('Internal server error');
+        expect(event.wasClean).toBeTruthy(); // because the server reported the error
+      });
+    });
+
     describe('Keep-Alive', () => {
       it('should dispatch pings after the timeout has passed', async (done) => {
         const { url } = await startTServer(undefined, 50);
