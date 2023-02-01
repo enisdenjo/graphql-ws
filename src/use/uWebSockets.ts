@@ -205,7 +205,10 @@ export function makeBehavior<
           CloseCode.InternalServerError,
           isProd
             ? 'Internal server error'
-            : limitCloseReason(err.message, 'Internal server error'),
+            : limitCloseReason(
+                err instanceof Error ? err.message : String(err),
+                'Internal server error',
+              ),
         );
       }
     },

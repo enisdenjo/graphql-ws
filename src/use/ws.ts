@@ -73,7 +73,10 @@ export function useServer<
           CloseCode.InternalServerError,
           isProd
             ? 'Internal server error'
-            : limitCloseReason(err.message, 'Internal server error'),
+            : limitCloseReason(
+                err instanceof Error ? err.message : String(err),
+                'Internal server error',
+              ),
         );
       } catch (err) {
         firstErr = firstErr ?? err;
@@ -94,7 +97,10 @@ export function useServer<
         CloseCode.InternalServerError,
         isProd
           ? 'Internal server error'
-          : limitCloseReason(err.message, 'Internal server error'),
+          : limitCloseReason(
+              err instanceof Error ? err.message : String(err),
+              'Internal server error',
+            ),
       );
     });
 
@@ -146,7 +152,10 @@ export function useServer<
                 CloseCode.InternalServerError,
                 isProd
                   ? 'Internal server error'
-                  : limitCloseReason(err.message, 'Internal server error'),
+                  : limitCloseReason(
+                      err instanceof Error ? err.message : String(err),
+                      'Internal server error',
+                    ),
               );
             }
           }),
