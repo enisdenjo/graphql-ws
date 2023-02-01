@@ -504,7 +504,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should handle and limit internal server errors that are not instances of errors', async () => {
+    it('should handle and limit internal server errors that are not instances of `Error`', async () => {
       const { url } = await startTServer({
         onConnect: () => {
           throw 'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte';
