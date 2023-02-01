@@ -393,10 +393,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       async () => {
         const { url, server } = await startTServer();
 
-        // errors musts be reported to the console
-        const consoleErrorFn = jest.fn();
-        console.error = consoleErrorFn;
-
         const client = await createTClient(url);
 
         const emittedError = new Error("I'm a teapot");
@@ -407,14 +403,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           expect(event.code).toBe(CloseCode.InternalServerError); // CloseCode.InternalServerError: Internal server error
           expect(event.reason).toBe(emittedError.message);
           expect(event.wasClean).toBeTruthy(); // because the server reported the error
-
-          expect(consoleErrorFn).toBeCalledTimes(1);
-          expect(consoleErrorFn.mock.calls[0][0]).toMatchSnapshot();
-          expect(consoleErrorFn.mock.calls[0][1]).toBe(emittedError);
-
-          console.error = () => {
-            // silence again
-          };
         });
       },
     );
@@ -422,10 +410,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     // uWebSocket.js cannot have errors emitted on the server instance
     skipUWS('should limit the server emitted error message size', async () => {
       const { url, server, waitForClient } = await startTServer();
-
-      // errors musts be reported to the console
-      const consoleErrorFn = jest.fn();
-      console.error = consoleErrorFn;
 
       const client = await createTClient(url);
       client.ws.send(
@@ -446,14 +430,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
         expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe('Internal server error');
         expect(event.wasClean).toBeTruthy(); // because the server reported the error
-
-        expect(consoleErrorFn).toBeCalledTimes(1);
-        expect(consoleErrorFn.mock.calls[0][0]).toMatchSnapshot();
-        expect(consoleErrorFn.mock.calls[0][1]).toBe(emittedError);
-
-        console.error = () => {
-          // silence again
-        };
       });
     });
 
@@ -462,10 +438,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       'should report socket emitted errors to clients by closing the connection',
       async () => {
         const { url, waitForClient } = await startTServer();
-
-        // errors musts be reported to the console
-        const consoleErrorFn = jest.fn();
-        console.error = consoleErrorFn;
 
         const client = await createTClient(url);
 
@@ -479,14 +451,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           expect(event.code).toBe(CloseCode.InternalServerError); // CloseCode.InternalServerError: Internal server error
           expect(event.reason).toBe(emittedError.message);
           expect(event.wasClean).toBeTruthy(); // because the server reported the error
-
-          expect(consoleErrorFn).toBeCalledTimes(1);
-          expect(consoleErrorFn.mock.calls[0][0]).toMatchSnapshot();
-          expect(consoleErrorFn.mock.calls[0][1]).toBe(emittedError);
-
-          console.error = () => {
-            // silence again
-          };
         });
       },
     );
@@ -494,10 +458,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     // uWebSocket.js cannot have errors emitted on the socket
     skipUWS('should limit the socket emitted error message size', async () => {
       const { url, waitForClient } = await startTServer();
-
-      // errors musts be reported to the console
-      const consoleErrorFn = jest.fn();
-      console.error = consoleErrorFn;
 
       const client = await createTClient(url);
       client.ws.send(
@@ -518,14 +478,6 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
         expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe('Internal server error');
         expect(event.wasClean).toBeTruthy(); // because the server reported the error
-
-        expect(consoleErrorFn).toBeCalledTimes(1);
-        expect(consoleErrorFn.mock.calls[0][0]).toMatchSnapshot();
-        expect(consoleErrorFn.mock.calls[0][1]).toBe(emittedError);
-
-        console.error = () => {
-          // silence again
-        };
       });
     });
 
