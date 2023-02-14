@@ -1740,6 +1740,44 @@ describe('Subscribe', () => {
       fail("Shouldn't have received a message");
     }, 20);
   });
+
+  it('should execute "return" of the subscription when error occurs in "next" call', async (done) => {
+    const iterator = (async function* () {
+      yield { data: { greetings: 'Hi' } };
+      throw new Error('error');
+    })();
+
+    jest.spyOn(iterator, 'return').mockImplementation(done);
+
+    const { url } = await startTServer({
+      schema,
+      subscribe: () => iterator,
+    });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            operationName: 'Greetings',
+            query: `subscription Greetings {
+                greetings
+              }`,
+            variables: {},
+          },
+        }),
+      );
+    });
+  });
 });
 
 describe('Disconnect/close', () => {

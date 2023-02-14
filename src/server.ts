@@ -824,6 +824,10 @@ export function makeServer<
               // completed the subscription, he doesnt need to be reminded
               await emit.complete(id in ctx.subscriptions);
             } finally {
+              // before delete the subcription, we should call `return` of asyncIterator to prevent it from hanging
+              const sub = ctx.subscriptions[id];
+              if (isAsyncGenerator(sub)) await sub.return(undefined);
+
               // whatever happens to the subscription, we finally want to get rid of the reservation
               delete ctx.subscriptions[id];
             }
