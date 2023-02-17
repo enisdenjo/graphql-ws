@@ -1228,69 +1228,65 @@ wsServer.on('connection', (socket, request) => {
 <summary><a href="#yoga">🔗</a> <a href="https://github.com/websockets/ws">ws</a> server usage with <a href="https://www.graphql-yoga.com">GraphQL Yoga</a></summary>
 
 ```typescript
-import { ExecutionArgs, execute, subscribe } from 'graphql';
-import { createServer } from '@graphql-yoga/node';
+import { createServer } from 'http';
+import { createYoga } from 'graphql-yoga';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { schema } from './my-graphql-schema';
 
-async function main() {
-  const yogaApp = createServer({
-    schema,
-    graphiql: {
-      subscriptionsProtocol: 'WS', // use WebSockets instead of SSE
+const yoga = createYoga({
+  schema,
+  graphiql: {
+    // Use WebSockets in GraphiQL
+    subscriptionsProtocol: 'WS',
+  },
+});
+
+// Get NodeJS Server from Yoga
+const server = createServer(yoga);
+
+// Create WebSocket server instance from our Node server
+const wsServer = new WebSocketServer({
+  server,
+  path: yoga.graphqlEndpoint,
+});
+
+// Integrate through Yoga's Envelop instance
+useServer(
+  {
+    execute: (args: any) => args.rootValue.execute(args),
+    subscribe: (args: any) => args.rootValue.subscribe(args),
+    onSubscribe: async (ctx, msg) => {
+      const { schema, execute, subscribe, contextFactory, parse, validate } =
+        yoga.getEnveloped({
+          ...ctx,
+          req: ctx.extra.request,
+          socket: ctx.extra.socket,
+          params: msg.payload,
+        });
+
+      const args = {
+        schema,
+        operationName: msg.payload.operationName,
+        document: parse(msg.payload.query),
+        variableValues: msg.payload.variables,
+        contextValue: await contextFactory(),
+        rootValue: {
+          execute,
+          subscribe,
+        },
+      };
+
+      const errors = validate(args.schema, args.document);
+      if (errors.length) return errors;
+      return args;
     },
-  });
+  },
+  wsServer,
+);
 
-  const httpServer = await yogaApp.start();
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-    path: yogaApp.getAddressInfo().endpoint,
-  });
-
-  // yoga's envelop may augment the `execute` and `subscribe` operations
-  // so we need to make sure we always use the freshest instance
-  type EnvelopedExecutionArgs = ExecutionArgs & {
-    rootValue: {
-      execute: typeof execute;
-      subscribe: typeof subscribe;
-    };
-  };
-
-  useServer(
-    {
-      execute: (args) =>
-        (args as EnvelopedExecutionArgs).rootValue.execute(args),
-      subscribe: (args) =>
-        (args as EnvelopedExecutionArgs).rootValue.subscribe(args),
-      onSubscribe: async (ctx, msg) => {
-        const { schema, execute, subscribe, contextFactory, parse, validate } =
-          yogaApp.getEnveloped(ctx);
-
-        const args: EnvelopedExecutionArgs = {
-          schema,
-          operationName: msg.payload.operationName,
-          document: parse(msg.payload.query),
-          variableValues: msg.payload.variables,
-          contextValue: await contextFactory(),
-          rootValue: {
-            execute,
-            subscribe,
-          },
-        };
-
-        const errors = validate(args.schema, args.document);
-        if (errors.length) return errors;
-        return args;
-      },
-    },
-    wsServer,
-  );
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
+server.listen(4000, () => {
+  console.log('Listening to port 4000');
 });
 ```
 
