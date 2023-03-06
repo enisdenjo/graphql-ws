@@ -1,3 +1,10 @@
+# [5.12.0](https://github.com/enisdenjo/graphql-ws/compare/v5.11.3...v5.12.0) (2023-03-06)
+
+
+### Features
+
+* Allow null payloads in messages ([#456](https://github.com/enisdenjo/graphql-ws/issues/456)) ([eeb0265](https://github.com/enisdenjo/graphql-ws/commit/eeb02656505e0d56aafc1eb7c39efcdc41748873)), closes [#455](https://github.com/enisdenjo/graphql-ws/issues/455)
+
 ## [5.11.3](https://github.com/enisdenjo/graphql-ws/compare/v5.11.2...v5.11.3) (2023-02-01)
 
 
