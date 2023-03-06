@@ -152,8 +152,8 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
               stream.Duplex,
             );
             expect(
-              (ctx.extra as FastifyExtra).connection.socket,
-            ).toBeInstanceOf(ws);
+              (ctx.extra as FastifyExtra).connection.socket.constructor.name,
+            ).toBe('WebSocket');
             expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
               '_Request',
             );
