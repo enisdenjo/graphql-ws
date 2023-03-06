@@ -342,7 +342,7 @@ export async function startUWSTServer(
   const port = await getAvailablePort();
 
   // sockets to kick off on teardown
-  const sockets = new Set<uWS.WebSocket>();
+  const sockets = new Set<uWS.WebSocket<unknown>>();
 
   const pendingConnections: Context<any, UWSExtra>[] = [];
   let pendingOperations = 0,

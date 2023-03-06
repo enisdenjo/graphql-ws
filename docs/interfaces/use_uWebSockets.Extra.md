@@ -41,7 +41,7 @@ ___
 
 ### socket
 
-• `Readonly` **socket**: `WebSocket` & [`UpgradeData`](use_uWebSockets.UpgradeData.md)
+• `Readonly` **socket**: `WebSocket`<`unknown`\> & [`UpgradeData`](use_uWebSockets.UpgradeData.md)
 
 The actual socket connection between the server and the client
 with the upgrade data.

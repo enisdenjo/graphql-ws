@@ -14,7 +14,7 @@ export interface Extra extends UpgradeData {
    * The actual socket connection between the server and the client
    * with the upgrade data.
    */
-  readonly socket: uWS.WebSocket & UpgradeData;
+  readonly socket: uWS.WebSocket<unknown> & UpgradeData;
 }
 
 /**
@@ -72,7 +72,7 @@ export function makeBehavior<
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
   options: ServerOptions<P, Extra & Partial<E>>,
-  behavior: uWS.WebSocketBehavior = {},
+  behavior: uWS.WebSocketBehavior<unknown> = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
    * to check that the link between the clients and the server is operating and to prevent the link
@@ -81,10 +81,10 @@ export function makeBehavior<
    * @default 12_000 // 12 seconds
    */
   keepAlive = 12_000,
-): uWS.WebSocketBehavior {
+): uWS.WebSocketBehavior<unknown> {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
-  const clients = new Map<uWS.WebSocket, Client>();
+  const clients = new Map<uWS.WebSocket<unknown>, Client>();
 
   let onDrain = () => {
     // gets called when backpressure drains
@@ -132,7 +132,7 @@ export function makeBehavior<
     },
     open(...args) {
       behavior.open?.(...args);
-      const socket = args[0] as uWS.WebSocket & UpgradeData;
+      const socket = args[0] as uWS.WebSocket<unknown> & UpgradeData;
       const persistedRequest = socket.persistedRequest;
 
       // prepare client object

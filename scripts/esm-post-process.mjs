@@ -1,10 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
-import glob from 'glob';
+import glob, { globIterate } from 'glob';
 
 const rootDir = 'lib';
 
-glob(`${rootDir}/**/*.js`, async (_, matches) => {
+(async () => {
+  const matches = await glob(`${rootDir}/**/*.js`);
+
   for (const path of matches) {
     await buildEsm(path);
   }
@@ -13,15 +15,15 @@ glob(`${rootDir}/**/*.js`, async (_, matches) => {
   for (const path of matches) {
     await fs.unlink(path);
   }
-});
+})();
 
-glob(`${rootDir}/**/*.d.ts`, async (_, matches) => {
-  for (const path of matches) {
+(async () => {
+  for await (const path of globIterate(`${rootDir}/**/*.d.ts`)) {
     await buildEsm(path);
   }
 
   // we dont delete raw d.ts files, they're still needed for imports/exports
-});
+})();
 
 /**
  * @param {string} filePath
