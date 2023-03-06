@@ -56,13 +56,11 @@ exports[`should report invalid message {"type":""} with descriptive error 1`] = 
 
 exports[`should report invalid message {"type":"complete"} with descriptive error 1`] = `""complete" message expects the 'id' property to be a string, but got undefined"`;
 
-exports[`should report invalid message {"type":"connection_ack","payload":""} with descriptive error 1`] = `""connection_ack" message expects the 'payload' property to be an object or missing, but got """`;
+exports[`should report invalid message {"type":"connection_ack","payload":""} with descriptive error 1`] = `""connection_ack" message expects the 'payload' property to be an object or nullish or missing, but got """`;
 
-exports[`should report invalid message {"type":"connection_init","payload":""} with descriptive error 1`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got """`;
+exports[`should report invalid message {"type":"connection_init","payload":""} with descriptive error 1`] = `""connection_init" message expects the 'payload' property to be an object or nullish or missing, but got """`;
 
-exports[`should report invalid message {"type":"connection_init","payload":0} with descriptive error 1`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got "0""`;
-
-exports[`should report invalid message {"type":"connection_init"} with descriptive error 1`] = `""connection_init" message expects the 'payload' property to be an object or missing, but got "undefined""`;
+exports[`should report invalid message {"type":"connection_init","payload":0} with descriptive error 1`] = `""connection_init" message expects the 'payload' property to be an object or nullish or missing, but got "0""`;
 
 exports[`should report invalid message {"type":"error"} with descriptive error 1`] = `""error" message expects the 'id' property to be a string, but got undefined"`;
 
@@ -72,9 +70,7 @@ exports[`should report invalid message {"type":"next"} with descriptive error 2`
 
 exports[`should report invalid message {"type":"nuxt"} with descriptive error 1`] = `"Invalid message 'type' property "nuxt""`;
 
-exports[`should report invalid message {"type":"ping","payload":0} with descriptive error 1`] = `""ping" message expects the 'payload' property to be an object or missing, but got "0""`;
-
-exports[`should report invalid message {"type":"pong"} with descriptive error 1`] = `""pong" message expects the 'payload' property to be an object or missing, but got "undefined""`;
+exports[`should report invalid message {"type":"ping","payload":0} with descriptive error 1`] = `""ping" message expects the 'payload' property to be an object or nullish or missing, but got "0""`;
 
 exports[`should report invalid message {"type":"subscribe"} with descriptive error 1`] = `""subscribe" message expects the 'id' property to be a string, but got undefined"`;
 

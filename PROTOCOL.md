@@ -37,7 +37,7 @@ If the server receives more than one `ConnectionInit` message at any given time,
 ```typescript
 interface ConnectionInitMessage {
   type: 'connection_init';
-  payload?: Record<string, unknown>;
+  payload?: Record<string, unknown> | null;
 }
 ```
 
@@ -52,7 +52,7 @@ The server can use the optional `payload` field to transfer additional details a
 ```typescript
 interface ConnectionAckMessage {
   type: 'connection_ack';
-  payload?: Record<string, unknown>;
+  payload?: Record<string, unknown> | null;
 }
 ```
 
@@ -73,7 +73,7 @@ The optional `payload` field can be used to transfer additional details about th
 ```typescript
 interface PingMessage {
   type: 'ping';
-  payload?: Record<string, unknown>;
+  payload?: Record<string, unknown> | null;
 }
 ```
 
@@ -90,7 +90,7 @@ The optional `payload` field can be used to transfer additional details about th
 ```typescript
 interface PongMessage {
   type: 'pong';
-  payload?: Record<string, unknown>;
+  payload?: Record<string, unknown> | null;
 }
 ```
 
