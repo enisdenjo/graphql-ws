@@ -37,20 +37,12 @@ it.each([
     payload: 0,
   },
   {
-    type: MessageType.ConnectionInit,
-    payload: undefined,
-  },
-  {
     type: MessageType.ConnectionAck,
     payload: '',
   },
   {
     type: MessageType.Ping,
     payload: 0,
-  },
-  {
-    type: MessageType.Pong,
-    payload: undefined,
   },
 
   // invalid subscribe message
@@ -220,11 +212,19 @@ it.each([
     payload: {},
   },
   {
+    type: MessageType.ConnectionInit,
+    payload: null,
+  },
+  {
     type: MessageType.ConnectionAck,
   },
   {
     type: MessageType.ConnectionAck,
     payload: {},
+  },
+  {
+    type: MessageType.ConnectionAck,
+    payload: null,
   },
   {
     type: MessageType.Ping,
@@ -234,11 +234,19 @@ it.each([
     payload: {},
   },
   {
+    type: MessageType.Ping,
+    payload: null,
+  },
+  {
     type: MessageType.Pong,
   },
   {
     type: MessageType.Pong,
     payload: {},
+  },
+  {
+    type: MessageType.Pong,
+    payload: null,
   },
 
   // valid subscribe message
