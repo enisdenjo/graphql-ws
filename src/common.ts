@@ -228,9 +228,9 @@ export function validateMessage(val: unknown): Message {
     case MessageType.ConnectionAck:
     case MessageType.Ping:
     case MessageType.Pong: {
-      if ('payload' in val && !isObject(val.payload)) {
+      if (val.payload != null && !isObject(val.payload)) {
         throw new Error(
-          `"${val.type}" message expects the 'payload' property to be an object or missing, but got "${val.payload}"`,
+          `"${val.type}" message expects the 'payload' property to be an object or nullish or missing, but got "${val.payload}"`,
         );
       }
 
