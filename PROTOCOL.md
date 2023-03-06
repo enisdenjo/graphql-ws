@@ -34,6 +34,9 @@ The server must receive the connection initialisation message within the allowed
 
 If the server receives more than one `ConnectionInit` message at any given time, the server will close the socket with the event `4429: Too many initialisation requests`.
 
+If the server wishes to reject the connection, for example after examining any tokens in the `payload`, it should
+close the socket with the event `4403: Forbidden`.
+
 ```typescript
 interface ConnectionInitMessage {
   type: 'connection_init';
