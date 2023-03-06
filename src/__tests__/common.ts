@@ -206,7 +206,7 @@ it.each([
     id: 0,
     type: MessageType.Complete,
   },
-])('should report invalid messages with descriptive errors', (invalid) => {
+])('should report invalid message %j with descriptive error', (invalid) => {
   expect(() => validateMessage(invalid)).toThrowErrorMatchingSnapshot();
 });
 
@@ -282,6 +282,6 @@ it.each([
     id: 'id',
     type: MessageType.Complete,
   },
-])('should accept valid messages', (valid) => {
+])('should accept valid message %j', (valid) => {
   expect(() => validateMessage(valid)).not.toThrow();
 });
