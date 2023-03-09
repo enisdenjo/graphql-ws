@@ -67,9 +67,13 @@ async function createRecursiveMetaFiles(dirPath) {
       continue;
     }
     const nameNoExt = file.name.slice(0, -3);
-    meta[nameNoExt] = nameNoExt
-      // @ts-expect-error we're running this on modern node
-      .replaceAll('_', '/');
+    if (nameNoExt === 'use__fastify_websocket') {
+      meta[nameNoExt] = 'use/@fastify/websocket';
+    } else {
+      meta[nameNoExt] = nameNoExt
+        // @ts-expect-error we're running this on modern node
+        .replaceAll('_', '/');
+    }
   }
 
   await fsp.writeFile(
