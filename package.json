@@ -78,7 +78,7 @@
     "website"
   ],
   "scripts": {
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/postgendocs.mjs",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "lint:eslint": "eslint 'src'",
     "lint:prettier": "prettier -c .",
     "lint": "yarn lint:eslint && yarn lint:prettier",
