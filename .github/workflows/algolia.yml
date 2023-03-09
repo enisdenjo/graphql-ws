@@ -1,0 +1,30 @@
+name: Algolia
+
+on:
+  push:
+    branches:
+      - master
+      # TODO: remove after test
+      - website
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install
+        run: yarn install --immutable
+      - name: Sync
+        run: node website/scripts/algolia-sync.mjs
+        env:
+          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
+          ALGOLIA_INDEX_NAME: ${{ secrets.ALGOLIA_INDEX_NAME }}
+          SITE_URL: https://the-guild.dev/graphql/ws
