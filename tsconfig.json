@@ -19,11 +19,6 @@
     "babel.config.js",
     "jest.config.js",
     ".eslintrc.js",
-    "typedoc.js",
-    "website/src",
-    "website/next.config.mjs",
-    "website/postcss.config.cjs",
-    "website/tailwind.config.cjs",
-    "website/theme.config.tsx"
+    "typedoc.js"
   ]
 }

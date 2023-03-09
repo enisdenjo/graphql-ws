@@ -9,5 +9,12 @@
     "incremental": true,
     "isolatedModules": true
   },
+  "include": [
+    "src",
+    "next.config.mjs",
+    "postcss.config.cjs",
+    "tailwind.config.cjs",
+    "theme.config.tsx"
+  ],
   "exclude": ["node_modules"]
 }
