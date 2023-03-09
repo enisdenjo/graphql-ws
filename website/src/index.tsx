@@ -1,14 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { FiGithub, FiPlay } from 'react-icons/fi';
-import {
-  TbArrowMergeBoth,
-  TbArrowUpCircle,
-  TbChefHat,
-  TbPlugConnected,
-  TbRepeat,
-  TbServer,
-} from 'react-icons/tb';
+import { TbChefHat, TbRepeat, TbServer } from 'react-icons/tb';
 import { BsBoxSeam } from 'react-icons/bs';
 import { FaCreativeCommonsZero } from 'react-icons/fa';
 import { Anchor, Image } from '@theguild/components';
