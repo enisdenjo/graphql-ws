@@ -7,3 +7,6 @@ dist
 .yarn/*
 !.yarn/releases
 !.yarn/plugins
+.next
+website/src/pages/docs
+website/algolia-lockfile.json

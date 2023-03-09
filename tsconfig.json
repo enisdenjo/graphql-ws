@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "useUnknownInCatchVariables": false,
-    "checkJs": true
+    "checkJs": true,
+    "jsx": "preserve"
   },
   "include": [
     "src",
@@ -18,6 +19,11 @@
     "babel.config.js",
     "jest.config.js",
     ".eslintrc.js",
-    "typedoc.js"
+    "typedoc.js",
+    "website/src",
+    "website/next.config.mjs",
+    "website/postcss.config.cjs",
+    "website/tailwind.config.cjs",
+    "website/theme.config.tsx"
   ]
 }
