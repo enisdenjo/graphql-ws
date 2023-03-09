@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "es2021",
+    "target": "es2017",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
