@@ -1,0 +1,169 @@
+import { PackageCmd, Callout } from '@theguild/components';
+
+# Get Started
+
+Coherent, zero-dependency, lazy, simple, [GraphQL over WebSocket spec](https://github.com/enisdenjo/graphql-sse/blob/master/PROTOCOL.md) compliant server and client.
+
+For detailed documentation and API reference, check out the [documentation page](/docs). If you need short and concise code snippets for starting with common use-cases, the [recipes page](/recipes) is the right place for you.
+
+## Install
+
+<PackageCmd packages={['graphql-ws']} />
+
+### Create a GraphQL schema
+
+```ts
+import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+
+/**
+ * Construct a GraphQL schema and define the necessary resolvers.
+ *
+ * type Query {
+ *   hello: String
+ * }
+ * type Subscription {
+ *   greetings: String
+ * }
+ */
+export const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      hello: {
+        type: GraphQLString,
+        resolve: () => 'world',
+      },
+    },
+  }),
+  subscription: new GraphQLObjectType({
+    name: 'Subscription',
+    fields: {
+      greetings: {
+        type: GraphQLString,
+        subscribe: async function* () {
+          for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
+            yield { greetings: hi };
+          }
+        },
+      },
+    },
+  }),
+});
+```
+
+### Start the server
+
+#### With [ws](https://github.com/websockets/ws)
+
+```ts
+import { WebSocketServer } from 'ws'; // yarn add ws
+// import ws from 'ws'; yarn add ws@7
+// const WebSocketServer = ws.Server;
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { schema } from './previous-step';
+
+const server = new WebSocketServer({
+  port: 4000,
+  path: '/graphql',
+});
+
+useServer({ schema }, server);
+
+console.log('Listening to port 4000');
+```
+
+#### With [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
+
+```ts
+import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
+import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+import { schema } from './previous-step';
+
+uWS
+  .App()
+  .ws('/graphql', makeBehavior({ schema }))
+  .listen(4000, (listenSocket) => {
+    if (listenSocket) {
+      console.log('Listening to port 4000');
+    }
+  });
+```
+
+#### With [@fastify/websocket](https://github.com/fastify/fastify-websocket)
+
+```ts
+import Fastify from 'fastify'; // yarn add fastify
+import fastifyWebsocket from '@fastify/websocket'; // yarn add @fastify/websocket
+import { makeHandler } from 'graphql-ws/lib/use/@fastify/websocket';
+import { schema } from './previous-step';
+
+const fastify = Fastify();
+fastify.register(fastifyWebsocket);
+
+fastify.register(async (fastify) => {
+  fastify.get('/graphql', { websocket: true }, makeHandler({ schema }));
+});
+
+fastify.listen(4000, (err) => {
+  if (err) {
+    fastify.log.error(err);
+    return process.exit(1);
+  }
+  console.log('Listening to port 4000');
+});
+```
+
+### Use the client
+
+```ts
+import { createClient } from 'graphql-ws';
+
+const client = createClient({
+  url: 'ws://localhost:4000/graphql',
+});
+
+// query
+(async () => {
+  const result = await new Promise((resolve, reject) => {
+    let result;
+    client.subscribe(
+      {
+        query: '{ hello }',
+      },
+      {
+        next: (data) => (result = data),
+        error: reject,
+        complete: () => resolve(result),
+      },
+    );
+  });
+
+  expect(result).toEqual({ hello: 'Hello World!' });
+})();
+
+// subscription
+(async () => {
+  const onNext = () => {
+    /* handle incoming values */
+  };
+
+  let unsubscribe = () => {
+    /* complete the subscription */
+  };
+
+  await new Promise((resolve, reject) => {
+    unsubscribe = client.subscribe(
+      {
+        query: 'subscription { greetings }',
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: resolve,
+      },
+    );
+  });
+
+  expect(onNext).toBeCalledTimes(5); // we say "Hi" in 5 languages
+})();
+```
