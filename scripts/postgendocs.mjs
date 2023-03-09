@@ -29,7 +29,12 @@ async function fixLinksInDir(dirPath) {
     }
     const contents = await fsp.readFile(filePath);
     const src = contents.toString();
-    await fsp.writeFile(filePath, src.replaceAll('.md', ''));
+    await fsp.writeFile(
+      filePath,
+      src
+        // @ts-expect-error we're running this on modern node
+        .replaceAll('.md', ''),
+    );
   }
 }
 
@@ -62,7 +67,9 @@ async function createRecursiveMetaFiles(dirPath) {
       continue;
     }
     const nameNoExt = file.name.slice(0, -3);
-    meta[nameNoExt] = nameNoExt.replaceAll('_', '/');
+    meta[nameNoExt] = nameNoExt
+      // @ts-expect-error we're running this on modern node
+      .replaceAll('_', '/');
   }
 
   await fsp.writeFile(
