@@ -17,20 +17,18 @@ import Link from 'next/link';
 const classes = {
   button: {
     gray: 'inline-block bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 text-gray-600 px-6 py-3 rounded-lg font-medium shadow-sm',
-    emerald:
-      'inline-block bg-emerald-200 hover:bg-emerald-300 dark:bg-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-700 text-emerald-600 px-6 py-3 rounded-lg font-medium shadow-sm',
+    lime: 'inline-block bg-lime-200 hover:bg-lime-300 dark:bg-lime-800 dark:text-lime-300 dark:hover:bg-lime-700 text-lime-600 px-6 py-3 rounded-lg font-medium shadow-sm',
   },
   link: {
     blue: 'text-blue-600 hover:text-blue-800 dark:hover:text-blue-400',
-    emerald:
-      'text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-400',
+    lime: 'text-lime-600 hover:text-lime-800 dark:hover:text-lime-400',
   },
 };
 
 const gradients: [string, string][] = [
   ['#eab308', '#a16207'], // yellow
   ['#6366f1', '#4338ca'], // indigo
-  ['#10b981', '#047857'], // emerald
+  ['#84cc16', '#4d7c0f'], // lime
 ];
 
 function pickGradient(i: number) {
@@ -189,7 +187,7 @@ export function Index() {
                 <ul>
                   <li>
                     <Link
-                      className={classes.link.emerald}
+                      className={classes.link.lime}
                       href="/recipes#client-usage-with-async-iterator"
                     >
                       Client usage with AsyncIterator
@@ -197,7 +195,7 @@ export function Index() {
                   </li>
                   <li>
                     <Link
-                      className={classes.link.emerald}
+                      className={classes.link.lime}
                       href="/recipes#client-usage-with-relay"
                     >
                       Client usage with Relay
@@ -205,7 +203,7 @@ export function Index() {
                   </li>
                   <li>
                     <Link
-                      className={classes.link.emerald}
+                      className={classes.link.lime}
                       href="/recipes#server-handler-usage-with-custom-context-value"
                     >
                       Server handler usage with custom context value
@@ -213,7 +211,7 @@ export function Index() {
                   </li>
                   <li>
                     <Link
-                      className={classes.link.emerald}
+                      className={classes.link.lime}
                       href="/recipes#server-handler-and-client-usage-with-persisted-queries"
                     >
                       Server handler and client usage with persisted queries
@@ -222,7 +220,7 @@ export function Index() {
                   <li className="flex mt-2">
                     <Anchor
                       className={clsx(
-                        classes.button.emerald,
+                        classes.button.lime,
                         'flex flex-row gap-2 items-center',
                       )}
                       href="/recipes"
