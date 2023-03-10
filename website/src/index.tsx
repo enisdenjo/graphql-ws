@@ -21,8 +21,9 @@ const classes = {
       'inline-block bg-emerald-200 hover:bg-emerald-300 dark:bg-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-700 text-emerald-600 px-6 py-3 rounded-lg font-medium shadow-sm',
   },
   link: {
-    blue: 'text-blue-600 dark:text-blue-300',
-    emerald: 'text-emerald-600 dark:text-emerald-300',
+    blue: 'text-blue-600 hover:text-blue-800 dark:hover:text-blue-400',
+    emerald:
+      'text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-400',
   },
 };
 
