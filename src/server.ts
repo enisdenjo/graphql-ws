@@ -3,7 +3,6 @@
  * server
  *
  */
-
 import {
   OperationTypeNode,
   GraphQLSchema,
@@ -16,14 +15,10 @@ import {
   GraphQLError,
   SubscriptionArgs,
 } from 'graphql';
+import { Context, makeBaseServer, Server } from './base-server';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
-  CloseCode,
   ID,
-  Message,
-  MessageType,
-  stringifyMessage,
-  parseMessage,
   ConnectionInitMessage,
   SubscribeMessage,
   NextMessage,
@@ -31,17 +26,11 @@ import {
   CompleteMessage,
   JSONMessageReplacer,
   JSONMessageReviver,
-  PingMessage,
-  PongMessage,
   ExecutionResult,
   ExecutionPatchResult,
+  MessageType,
 } from './common';
-import {
-  isObject,
-  isAsyncGenerator,
-  isAsyncIterable,
-  areGraphQLErrors,
-} from './utils';
+import { areGraphQLErrors, isAsyncGenerator, isAsyncIterable } from './utils';
 
 /** @category Server */
 export type OperationResult =
@@ -54,6 +43,7 @@ export type OperationResult =
   | AsyncIterable<ExecutionResult | ExecutionPatchResult>
   | ExecutionResult;
 
+export { Context, WebSocket, Server } from './base-server';
 /**
  * A concrete GraphQL execution context value type.
  *
@@ -398,129 +388,6 @@ export interface ServerOptions<
   jsonMessageReplacer?: JSONMessageReplacer;
 }
 
-/** @category Server */
-export interface Server<E = undefined> {
-  /**
-   * New socket has beeen established. The lib will validate
-   * the protocol and use the socket accordingly. Returned promise
-   * will resolve after the socket closes.
-   *
-   * The second argument will be passed in the `extra` field
-   * of the `Context`. You may pass the initial request or the
-   * original WebSocket, if you need it down the road.
-   *
-   * Returns a function that should be called when the same socket
-   * has been closed, for whatever reason. The close code and reason
-   * must be passed for reporting to the `onDisconnect` callback. Returned
-   * promise will resolve once the internal cleanup is complete.
-   */
-  opened(
-    socket: WebSocket,
-    ctxExtra: E,
-  ): (code: number, reason: string) => Promise<void>; // closed
-}
-
-/** @category Server */
-export interface WebSocket {
-  /**
-   * The subprotocol of the WebSocket. Will be used
-   * to validate agains the supported ones.
-   */
-  readonly protocol: string;
-  /**
-   * Sends a message through the socket. Will always
-   * provide a `string` message.
-   *
-   * Please take care that the send is ready. Meaning,
-   * only provide a truly OPEN socket through the `opened`
-   * method of the `Server`.
-   *
-   * The returned promise is used to control the flow of data
-   * (like handling backpressure).
-   */
-  send(data: string): Promise<void> | void;
-  /**
-   * Closes the socket gracefully. Will always provide
-   * the appropriate code and close reason. `onDisconnect`
-   * callback will be called.
-   *
-   * The returned promise is used to control the graceful
-   * closure.
-   */
-  close(code: number, reason: string): Promise<void> | void;
-  /**
-   * Called when message is received. The library requires the data
-   * to be a `string`.
-   *
-   * All operations requested from the client will block the promise until
-   * completed, this means that the callback will not resolve until all
-   * subscription events have been emitted (or until the client has completed
-   * the stream), or until the query/mutation resolves.
-   *
-   * Exceptions raised during any phase of operation processing will
-   * reject the callback's promise, catch them and communicate them
-   * to your clients however you wish.
-   */
-  onMessage(cb: (data: string) => Promise<void>): void;
-  /**
-   * Implement a listener for the `PingMessage` sent from the client to the server.
-   * If the client sent the ping with a payload, it will be passed through the
-   * first argument.
-   *
-   * If this listener is implemented, the server will NOT automatically reply
-   * to any pings from the client. Implementing it makes it your resposibility
-   * to decide how and when to respond.
-   */
-  onPing?(payload: PingMessage['payload']): Promise<void> | void;
-  /**
-   * Implement a listener for the `PongMessage` sent from the client to the server.
-   * If the client sent the pong with a payload, it will be passed through the
-   * first argument.
-   */
-  onPong?(payload: PongMessage['payload']): Promise<void> | void;
-}
-
-/** @category Server */
-export interface Context<
-  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
-  E = unknown,
-> {
-  /**
-   * Indicates that the `ConnectionInit` message
-   * has been received by the server. If this is
-   * `true`, the client wont be kicked off after
-   * the wait timeout has passed.
-   */
-  readonly connectionInitReceived: boolean;
-  /**
-   * Indicates that the connection was acknowledged
-   * by having dispatched the `ConnectionAck` message
-   * to the related client.
-   */
-  readonly acknowledged: boolean;
-  /** The parameters passed during the connection initialisation. */
-  readonly connectionParams?: Readonly<P>;
-  /**
-   * Holds the active subscriptions for this context. **All operations**
-   * that are taking place are aggregated here. The user is _subscribed_
-   * to an operation when waiting for result(s).
-   *
-   * If the subscription behind an ID is an `AsyncIterator` - the operation
-   * is streaming; on the contrary, if the subscription is `null` - it is simply
-   * a reservation, meaning - the operation resolves to a single result or is still
-   * pending/being prepared.
-   */
-  readonly subscriptions: Record<
-    ID,
-    AsyncGenerator<unknown> | AsyncIterable<unknown> | null
-  >;
-  /**
-   * An extra field where you can store your own context values
-   * to pass between callbacks.
-   */
-  extra: E;
-}
-
 /**
  * Makes a Protocol complient WebSocket GraphQL server. The server
  * is actually an API which is to be used with your favourite WebSocket
@@ -550,310 +417,224 @@ export function makeServer<
     onNext,
     onError,
     onComplete,
-    jsonMessageReviver: reviver,
-    jsonMessageReplacer: replacer,
+    jsonMessageReviver,
+    jsonMessageReplacer,
   } = options;
 
-  return {
-    opened(socket, extra) {
-      const ctx: Context<P, E> = {
-        connectionInitReceived: false,
-        acknowledged: false,
-        subscriptions: {},
-        extra,
+  async function toError(
+    id: ID,
+    ctx: Context<P, E>,
+    errors: readonly GraphQLError[],
+  ): Promise<ErrorMessage> {
+    let errorMessage: ErrorMessage = {
+      id: id,
+      type: MessageType.Error,
+      payload: errors,
+    };
+    const maybeErrors = await onError?.(ctx, errorMessage, errors);
+    if (maybeErrors)
+      errorMessage = {
+        ...errorMessage,
+        payload: maybeErrors,
       };
 
-      if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
-        socket.close(
-          CloseCode.SubprotocolNotAcceptable,
-          'Subprotocol not acceptable',
+    return errorMessage;
+  }
+
+  const toNext = async (
+    id: string,
+    ctx: Context<P, E>,
+    execArgs: ExecutionArgs,
+    res: ExecutionResult | ExecutionPatchResult,
+  ) => {
+    let msg: NextMessage = { id: id, payload: res, type: MessageType.Next };
+    const onNextRes = await onNext?.(ctx, msg, execArgs, res);
+    if (onNextRes) {
+      msg = {
+        ...msg,
+        payload: onNextRes,
+      };
+    }
+
+    return msg;
+  };
+
+  async function _execute(props: {
+    setGenerator: (gen: AsyncGenerator) => void;
+    ctx: Context<P, E>;
+    message: SubscribeMessage;
+    emit: (message: NextMessage) => void;
+    stop: () => void;
+    isStopped: () => boolean;
+  }) {
+    const { ctx, isStopped, message, setGenerator, emit, stop } = props;
+    const { id, payload } = message;
+
+    let execArgs: ExecutionArgs;
+    const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
+    if (isStopped()) {
+      return stop();
+    }
+
+    if (maybeExecArgsOrErrors) {
+      if (areGraphQLErrors(maybeExecArgsOrErrors)) {
+        return await toError(id, ctx, maybeExecArgsOrErrors);
+      } else if (Array.isArray(maybeExecArgsOrErrors))
+        throw new Error(
+          'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
         );
-        return async (code, reason) => {
-          /* nothing was set up, just notify the closure */
-          await onClose?.(ctx, code, reason);
-        };
+
+      // not errors, is exec args
+      execArgs = maybeExecArgsOrErrors;
+    } else {
+      // you either provide a schema dynamically through
+      // `onSubscribe` or you set one up during the server setup
+      if (!schema) {
+        throw new Error('The GraphQL schema is not provided');
       }
 
-      // kick the client off (close socket) if the connection has
-      // not been initialised after the specified wait timeout
-      const connectionInitWait =
-        connectionInitWaitTimeout > 0 && isFinite(connectionInitWaitTimeout)
-          ? setTimeout(() => {
-              if (!ctx.connectionInitReceived)
-                socket.close(
-                  CloseCode.ConnectionInitialisationTimeout,
-                  'Connection initialisation timeout',
-                );
-            }, connectionInitWaitTimeout)
-          : null;
+      const args = {
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
+      };
 
-      socket.onMessage(async function onMessage(data) {
-        let message: Message;
-        try {
-          message = parseMessage(data, reviver);
-        } catch (err) {
-          return socket.close(CloseCode.BadRequest, 'Invalid message received');
+      execArgs = {
+        ...args,
+        schema:
+          typeof schema === 'function'
+            ? await schema(ctx, message, args)
+            : schema,
+      };
+
+      if (isStopped()) {
+        return stop();
+      }
+
+      const validationErrors = (validate ?? graphqlValidate)(
+        execArgs.schema,
+        execArgs.document,
+      );
+
+      if (validationErrors.length > 0) {
+        return await toError(id, ctx, validationErrors);
+      }
+    }
+
+    const operationAST = getOperationAST(
+      execArgs.document,
+      execArgs.operationName,
+    );
+
+    if (!operationAST) {
+      return await toError(id, ctx, [
+        new GraphQLError('Unable to identify operation'),
+      ]);
+    }
+
+    // if `onSubscribe` didnt specify a rootValue, inject one
+    if (!('rootValue' in execArgs))
+      execArgs.rootValue = roots?.[operationAST.operation];
+
+    // if `onSubscribe` didn't specify a context, inject one
+    if (!('contextValue' in execArgs))
+      execArgs.contextValue =
+        typeof context === 'function'
+          ? await context(ctx, message, execArgs)
+          : context;
+
+    if (isStopped()) {
+      return stop();
+    }
+
+    // this is the place where subscription part is happening
+    let operationResult: OperationResult;
+    if (operationAST.operation === 'subscription')
+      operationResult = await (subscribe ?? graphqlSubscribe)(execArgs);
+    // operation === 'query' || 'mutation'
+    else operationResult = await (execute ?? graphqlExecute)(execArgs);
+
+    if (isAsyncGenerator(operationResult)) {
+      setGenerator(operationResult);
+    }
+
+    if (isStopped()) {
+      return stop();
+    }
+
+    const maybeResult = await onOperation?.(
+      ctx,
+      message,
+      execArgs,
+      operationResult,
+    );
+
+    if (maybeResult) {
+      operationResult = maybeResult;
+      if (isAsyncGenerator(operationResult)) {
+        setGenerator(operationResult);
+      }
+    }
+
+    if (isStopped()) {
+      return stop();
+    }
+
+    if (isAsyncIterable(operationResult)) {
+      if (isAsyncGenerator(operationResult)) {
+        setGenerator(operationResult);
+      }
+      // subscribe here
+      for await (const r of operationResult) {
+        emit(await toNext(message.id, ctx, execArgs, r));
+      }
+    } else {
+      emit(await toNext(message.id, ctx, execArgs, operationResult));
+    }
+  }
+
+  const baseServer = makeBaseServer<P, E>({
+    connectionInitWaitTimeout,
+    jsonMessageReplacer,
+    jsonMessageReviver,
+    onConnect,
+    subscribe(props) {
+      let generator: AsyncGenerator | null;
+      let running = true;
+      function isStopped() {
+        return !running;
+      }
+
+      function stop() {
+        running = false;
+        if (generator) {
+          generator.return(undefined);
         }
-        switch (message.type) {
-          case MessageType.ConnectionInit: {
-            if (ctx.connectionInitReceived)
-              return socket.close(
-                CloseCode.TooManyInitialisationRequests,
-                'Too many initialisation requests',
-              );
+      }
 
-            // @ts-expect-error: I can write
-            ctx.connectionInitReceived = true;
-
-            if (isObject(message.payload))
-              // @ts-expect-error: I can write
-              ctx.connectionParams = message.payload;
-
-            const permittedOrPayload = await onConnect?.(ctx);
-            if (permittedOrPayload === false)
-              return socket.close(CloseCode.Forbidden, 'Forbidden');
-
-            await socket.send(
-              stringifyMessage<MessageType.ConnectionAck>(
-                isObject(permittedOrPayload)
-                  ? {
-                      type: MessageType.ConnectionAck,
-                      payload: permittedOrPayload,
-                    }
-                  : {
-                      type: MessageType.ConnectionAck,
-                      // payload is completely absent if not provided
-                    },
-                replacer,
-              ),
-            );
-
-            // @ts-expect-error: I can write
-            ctx.acknowledged = true;
-            return;
-          }
-          case MessageType.Ping: {
-            if (socket.onPing)
-              // if the onPing listener is registered, automatic pong is disabled
-              return await socket.onPing(message.payload);
-
-            await socket.send(
-              stringifyMessage(
-                message.payload
-                  ? { type: MessageType.Pong, payload: message.payload }
-                  : {
-                      type: MessageType.Pong,
-                      // payload is completely absent if not provided
-                    },
-              ),
-            );
-            return;
-          }
-          case MessageType.Pong:
-            return await socket.onPong?.(message.payload);
-          case MessageType.Subscribe: {
-            if (!ctx.acknowledged)
-              return socket.close(CloseCode.Unauthorized, 'Unauthorized');
-
-            const { id, payload } = message;
-            if (id in ctx.subscriptions)
-              return socket.close(
-                CloseCode.SubscriberAlreadyExists,
-                `Subscriber for ${id} already exists`,
-              );
-
-            // if this turns out to be a streaming operation, the subscription value
-            // will change to an `AsyncIterable`, otherwise it will stay as is
-            ctx.subscriptions[id] = null;
-
-            const emit = {
-              next: async (
-                result: ExecutionResult | ExecutionPatchResult,
-                args: ExecutionArgs,
-              ) => {
-                let nextMessage: NextMessage = {
-                  id,
-                  type: MessageType.Next,
-                  payload: result,
-                };
-                const maybeResult = await onNext?.(
-                  ctx,
-                  nextMessage,
-                  args,
-                  result,
-                );
-                if (maybeResult)
-                  nextMessage = {
-                    ...nextMessage,
-                    payload: maybeResult,
-                  };
-                await socket.send(
-                  stringifyMessage<MessageType.Next>(nextMessage, replacer),
-                );
-              },
-              error: async (errors: readonly GraphQLError[]) => {
-                let errorMessage: ErrorMessage = {
-                  id,
-                  type: MessageType.Error,
-                  payload: errors,
-                };
-                const maybeErrors = await onError?.(ctx, errorMessage, errors);
-                if (maybeErrors)
-                  errorMessage = {
-                    ...errorMessage,
-                    payload: maybeErrors,
-                  };
-                await socket.send(
-                  stringifyMessage<MessageType.Error>(errorMessage, replacer),
-                );
-              },
-              complete: async (notifyClient: boolean) => {
-                const completeMessage: CompleteMessage = {
-                  id,
-                  type: MessageType.Complete,
-                };
-                await onComplete?.(ctx, completeMessage);
-                if (notifyClient)
-                  await socket.send(
-                    stringifyMessage<MessageType.Complete>(
-                      completeMessage,
-                      replacer,
-                    ),
-                  );
-              },
-            };
-
-            try {
-              let execArgs: ExecutionArgs;
-              const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
-              if (maybeExecArgsOrErrors) {
-                if (areGraphQLErrors(maybeExecArgsOrErrors))
-                  return await emit.error(maybeExecArgsOrErrors);
-                else if (Array.isArray(maybeExecArgsOrErrors))
-                  throw new Error(
-                    'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
-                  );
-                // not errors, is exec args
-                execArgs = maybeExecArgsOrErrors;
-              } else {
-                // you either provide a schema dynamically through
-                // `onSubscribe` or you set one up during the server setup
-                if (!schema)
-                  throw new Error('The GraphQL schema is not provided');
-
-                const args = {
-                  operationName: payload.operationName,
-                  document: parse(payload.query),
-                  variableValues: payload.variables,
-                };
-                execArgs = {
-                  ...args,
-                  schema:
-                    typeof schema === 'function'
-                      ? await schema(ctx, message, args)
-                      : schema,
-                };
-                const validationErrors = (validate ?? graphqlValidate)(
-                  execArgs.schema,
-                  execArgs.document,
-                );
-                if (validationErrors.length > 0)
-                  return await emit.error(validationErrors);
-              }
-
-              const operationAST = getOperationAST(
-                execArgs.document,
-                execArgs.operationName,
-              );
-              if (!operationAST)
-                return await emit.error([
-                  new GraphQLError('Unable to identify operation'),
-                ]);
-
-              // if `onSubscribe` didnt specify a rootValue, inject one
-              if (!('rootValue' in execArgs))
-                execArgs.rootValue = roots?.[operationAST.operation];
-
-              // if `onSubscribe` didn't specify a context, inject one
-              if (!('contextValue' in execArgs))
-                execArgs.contextValue =
-                  typeof context === 'function'
-                    ? await context(ctx, message, execArgs)
-                    : context;
-
-              // the execution arguments have been prepared
-              // perform the operation and act accordingly
-              let operationResult;
-              if (operationAST.operation === 'subscription')
-                operationResult = await (subscribe ?? graphqlSubscribe)(
-                  execArgs,
-                );
-              // operation === 'query' || 'mutation'
-              else
-                operationResult = await (execute ?? graphqlExecute)(execArgs);
-
-              const maybeResult = await onOperation?.(
-                ctx,
-                message,
-                execArgs,
-                operationResult,
-              );
-              if (maybeResult) operationResult = maybeResult;
-
-              if (isAsyncIterable(operationResult)) {
-                /** multiple emitted results */
-                if (!(id in ctx.subscriptions)) {
-                  // subscription was completed/canceled before the operation settled
-                  if (isAsyncGenerator(operationResult))
-                    operationResult.return(undefined);
-                } else {
-                  ctx.subscriptions[id] = operationResult;
-                  for await (const result of operationResult) {
-                    await emit.next(result, execArgs);
-                  }
-                }
-              } else {
-                /** single emitted result */
-                // if the client completed the subscription before the single result
-                // became available, he effectively canceled it and no data should be sent
-                if (id in ctx.subscriptions)
-                  await emit.next(operationResult, execArgs);
-              }
-
-              // lack of subscription at this point indicates that the client
-              // completed the subscription, he doesnt need to be reminded
-              await emit.complete(id in ctx.subscriptions);
-            } finally {
-              // whatever happens to the subscription, we finally want to get rid of the reservation
-              delete ctx.subscriptions[id];
-            }
-            return;
-          }
-          case MessageType.Complete: {
-            const subscription = ctx.subscriptions[message.id];
-            delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
-            if (isAsyncGenerator(subscription))
-              await subscription.return(undefined);
-            return;
-          }
-          default:
-            throw new Error(
-              `Unexpected message of type ${message.type} received`,
-            );
-        }
+      // non blocking
+      const waitForComplete = _execute({
+        ctx: props.ctx,
+        emit: props.emit,
+        stop,
+        isStopped,
+        message: props.message,
+        setGenerator(gen) {
+          generator = gen;
+        },
       });
 
-      // wait for close, cleanup and the disconnect callback
-      return async (code, reason) => {
-        if (connectionInitWait) clearTimeout(connectionInitWait);
-        for (const sub of Object.values(ctx.subscriptions)) {
-          if (isAsyncGenerator(sub)) await sub.return(undefined);
-        }
-        if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
-        await onClose?.(ctx, code, reason);
+      return {
+        waitToResolve: waitForComplete,
+        cancel: stop,
       };
     },
-  };
+    onClose,
+    onComplete,
+    onDisconnect,
+  });
+
+  return baseServer;
 }
 
 /**
