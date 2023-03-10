@@ -14,6 +14,15 @@ export default defineConfig({
           width={36}
           height={36}
           alt="GraphQL WS"
+          className="dark:hidden"
+        />
+        <Image
+          priority
+          src="/logo-inverted.svg"
+          width={36}
+          height={36}
+          alt="GraphQL WS"
+          className="hidden dark:inline"
         />
       </div>
       <div>
