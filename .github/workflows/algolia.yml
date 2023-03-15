@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      # TODO: remove after test
-      - website
 
 jobs:
   sync:
