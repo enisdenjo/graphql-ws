@@ -225,11 +225,11 @@ _The client and the server has already gone through [successful connection initi
      <br>**or**
    - _Client_ stops the subscription by dispatching a `Complete` message
    - _Server_ receives `Complete` message and completes the source stream
-   - _Client_ ignores all further messages that it recives with this ID
+   - _Client_ ignores all further messages that it receives with this ID
      <br>**or**
    - _Server_ dispatches the `Complete` message indicating that the source stream has completed
    - **Simultaneously** _client_ stops the subscription by dispatching a `Complete` message
-   - _Client_ ignores all further messages that it recives with this ID
+   - _Client_ ignores all further messages that it receives with this ID
    - _Server_ ignores the `Complete` message from the client
 
 ### Single result operation
