@@ -30,8 +30,8 @@ jobs:
       - name: Deploy
         uses: the-guild-org/shared-config/website-cf@main
         env:
-          NEXT_BASE_PATH: ${{ github.ref == 'refs/heads/main' && '/graphql/ws' || '' }}
-          SITE_URL: ${{ github.ref == 'refs/heads/main' && 'https://the-guild.dev/graphql/ws' || '' }}
+          NEXT_BASE_PATH: ${{ github.ref == 'refs/heads/master' && '/graphql/ws' || '' }}
+          SITE_URL: ${{ github.ref == 'refs/heads/master' && 'https://the-guild.dev/graphql/ws' || '' }}
         with:
           cloudflareApiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           cloudflareAccountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
