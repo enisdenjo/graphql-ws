@@ -1,0 +1,43 @@
+name: Website
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    paths:
+      - website/**
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install
+        run: yarn install --immutable
+      - name: Generate documentation
+        run: yarn gendocs
+      - name: Deploy
+        uses: the-guild-org/shared-config/website-cf@main
+        env:
+          NEXT_BASE_PATH: ${{ github.ref == 'refs/heads/master' && '/graphql/ws' || '' }}
+          SITE_URL: ${{ github.ref == 'refs/heads/master' && 'https://the-guild.dev/graphql/ws' || '' }}
+        with:
+          cloudflareApiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflareAccountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectName: graphql-ws
+          prId: ${{ github.event.pull_request.number }}
+          websiteDirectory: website
+          buildScript: yarn build
+          artifactDir: dist

@@ -74,8 +74,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "workspaces": [
+    "website"
+  ],
   "scripts": {
-    "gendocs": "typedoc --options typedoc.js src/",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "lint:eslint": "eslint 'src'",
     "lint:prettier": "prettier -c .",
     "lint": "yarn lint:eslint && yarn lint:prettier",

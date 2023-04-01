@@ -2,4 +2,8 @@
 lib
 umd
 docs
+dist
 CHANGELOG.md
+.next
+website/src/pages/docs
+website/algolia-lockfile.json

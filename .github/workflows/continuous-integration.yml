@@ -42,7 +42,7 @@ jobs:
       - name: Install
         run: yarn install --immutable
       - name: Type check
-        run: yarn type-check
+        run: yarn workspaces foreach run type-check
 
   test:
     name: Test

@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "src",
+    "next.config.mjs",
+    "postcss.config.cjs",
+    "tailwind.config.cjs",
+    "theme.config.tsx",
+    "next-sitemap.config.cjs"
+  ],
+  "exclude": ["node_modules"]
+}

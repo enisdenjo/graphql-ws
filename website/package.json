@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "name": "website",
+  "scripts": {
+    "start": "next",
+    "type-check": "tsc --noEmit",
+    "build": "next build && next-sitemap --config next-sitemap.config.cjs && next export -o dist"
+  },
+  "dependencies": {
+    "@theguild/components": "^4.5.7",
+    "clsx": "^1.2.1",
+    "next": "^13.2.3",
+    "next-sitemap": "^4.0.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.8.0"
+  },
+  "devDependencies": {
+    "@theguild/algolia": "^1.1.5",
+    "@theguild/tailwind-config": "^0.2.1",
+    "@types/react": "^18.0.28",
+    "typescript": "^4.9.5"
+  }
+}
