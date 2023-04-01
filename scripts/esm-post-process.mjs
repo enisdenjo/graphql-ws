@@ -35,8 +35,8 @@ async function buildEsm(filePath) {
   const file = await fs.readFile(path.join(process.cwd(), filePath));
   let content = file.toString();
 
-  if (fileExt === 'js') {
-    // add .mjs to all import/export statements, but only on files (keep directory imports as is)
+  if (fileExt === 'js' || fileExt === 'ts') {
+    // add .mjs to all import/export statements, also in the type definitions
     for (const match of content.matchAll(/from '(\.?\.\/[^']*)'/g)) {
       const [statement, relImportPath] = match;
       const absImportPath = path.resolve(

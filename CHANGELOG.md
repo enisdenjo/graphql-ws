@@ -1,3 +1,10 @@
+## [5.12.1](https://github.com/enisdenjo/graphql-ws/compare/v5.12.0...v5.12.1) (2023-03-31)
+
+
+### Bug Fixes
+
+* Add file extensions to imports/exports in ESM type definitions ([48775be](https://github.com/enisdenjo/graphql-ws/commit/48775be92ceffd7c106b98bbd5e05e249a20c237))
+
 # [5.12.0](https://github.com/enisdenjo/graphql-ws/compare/v5.11.3...v5.12.0) (2023-03-06)
 
 
