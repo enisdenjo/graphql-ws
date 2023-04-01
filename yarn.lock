@@ -1703,6 +1703,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@corex/deepmerge@npm:^4.0.37":
+  version: 4.0.37
+  resolution: "@corex/deepmerge@npm:4.0.37"
+  checksum: f6f5daf29762f691dbc1104c092639897d65219e809f7c1028f7797e361c7787bd247bfd09e81f31b70386f1611ed9c4c137dd45c404b4da2f606a6cca51c6d8
+  languageName: node
+  linkType: hard
+
 "@eslint/eslintrc@npm:^2.0.0":
   version: 2.0.0
   resolution: "@eslint/eslintrc@npm:2.0.0"
@@ -10191,7 +10198,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimist@npm:^1.2.0, minimist@npm:^1.2.5, minimist@npm:^1.2.6":
+"minimist@npm:^1.2.0, minimist@npm:^1.2.5, minimist@npm:^1.2.6, minimist@npm:^1.2.8":
   version: 1.2.8
   resolution: "minimist@npm:1.2.8"
   checksum: 75a6d645fb122dad29c06a7597bddea977258957ed88d7a6df59b5cd3fe4a527e253e9bbf2e783e4b73657f9098b96a5fe96ab8a113655d4109108577ecf85b0
@@ -10414,6 +10421,22 @@ __metadata:
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
   checksum: 05b0769d9c9abcc6a0179e5d724e87b1a3a7591a9c2caa4ef5b791769fcf868cb97fbcd90264106101cf7fbc073b0375ab90026aa519d2e899fbabea12cafbfb
+  languageName: node
+  linkType: hard
+
+"next-sitemap@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "next-sitemap@npm:4.0.6"
+  dependencies:
+    "@corex/deepmerge": ^4.0.37
+    minimist: ^1.2.8
+  peerDependencies:
+    "@next/env": "*"
+    next: "*"
+  bin:
+    next-sitemap: bin/next-sitemap.mjs
+    next-sitemap-cjs: bin/next-sitemap.cjs
+  checksum: 0656baaa40327e8a1564218c672bc19afa7dcc8c5c3c5fdfdd394d9415e008ac94f4da92543bc033e421824cc5bae23a1b0cd333f2796a1b9aaa345849c4df51
   languageName: node
   linkType: hard
 
@@ -14550,6 +14573,7 @@ __metadata:
     "@types/react": ^18.0.28
     clsx: ^1.2.1
     next: ^13.2.3
+    next-sitemap: ^4.0.6
     react: ^18.2.0
     react-dom: ^18.2.0
     react-icons: ^4.8.0
