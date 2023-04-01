@@ -127,7 +127,7 @@
     "prettier": "^2.8.7",
     "replacestream": "^4.0.3",
     "rollup": "^3.20.2",
-    "semantic-release": "^21.0.0",
+    "semantic-release": "^21.0.1",
     "subscriptions-transport-ws": "^0.11.0",
     "tslib": "^2.5.0",
     "typedoc": "^0.23.28",
