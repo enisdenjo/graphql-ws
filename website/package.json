@@ -4,7 +4,7 @@
   "scripts": {
     "start": "next",
     "type-check": "tsc --noEmit",
-    "build": "next build && next-sitemap --config next-sitemap.config.cjs && next export"
+    "build": "next build && next-sitemap --config next-sitemap.config.cjs && next export -o dist"
   },
   "dependencies": {
     "@theguild/components": "^4.5.7",
