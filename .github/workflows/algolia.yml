@@ -19,6 +19,8 @@ jobs:
           cache: yarn
       - name: Install
         run: yarn install --immutable
+      - name: Generate documentation
+        run: yarn gendocs
       - name: Sync
         working-directory: website
         run: node scripts/algolia-sync.mjs
