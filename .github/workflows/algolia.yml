@@ -31,6 +31,4 @@ jobs:
           # trailing forward slash is required for algolia links to work
           SITE_URL: https://the-guild.dev/graphql/ws/
       - name: Summary
-        run: |
-          yarn prettier --ignore-path=noignore -w website/algolia-lockfile.json
-          echo -e '# algolia-lockfile.json\n```json\n' $(cat website/algolia-lockfile.json) '\n```' >> $GITHUB_STEP_SUMMARY
+        run: echo -e '# algolia-lockfile.json\n```json\n' $(yarn prettier --ignore-path=noignore website/algolia-lockfile.json) '\n```' >> $GITHUB_STEP_SUMMARY
