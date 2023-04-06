@@ -3161,9 +3161,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theguild/algolia@npm:^1.1.5":
-  version: 1.1.5
-  resolution: "@theguild/algolia@npm:1.1.5"
+"@theguild/algolia@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "@theguild/algolia@npm:1.1.6"
   dependencies:
     algoliasearch: ^4.14.3
     commander: ^10.0.0
@@ -3174,7 +3174,7 @@ __metadata:
     remove-markdown: ^0.5.0
   bin:
     theguild-nextra-algolia: dist/bin.mjs
-  checksum: 3896c70da0fbae60fdf18de3ee31b5e1620cd2336d5cdace0c6813562805022e3250bf40e20db49332dbb909d1f74e36e18977879dc4ffe832a7fb69ac9ea9cb
+  checksum: 0245a5cab794f4b4af3e67bddf01069bf7797f92e6004dc3c4fc0089a190e2d254fb8f3da20a18426ad4b48ff03f80eae10f7cbd02f1adb15c6188b20fefe91a
   languageName: node
   linkType: hard
 
@@ -14512,7 +14512,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "website@workspace:website"
   dependencies:
-    "@theguild/algolia": ^1.1.5
+    "@theguild/algolia": ^1.1.6
     "@theguild/components": ^4.5.8
     "@theguild/tailwind-config": ^0.2.1
     "@types/react": ^18.0.31

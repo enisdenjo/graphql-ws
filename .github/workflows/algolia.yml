@@ -28,9 +28,7 @@ jobs:
           ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
           ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
           ALGOLIA_INDEX_NAME: ${{ secrets.ALGOLIA_INDEX_NAME }}
-          # double trailing slash is required for algolia links to work
-          # TODO: why?
-          SITE_URL: https://the-guild.dev/graphql/ws//
+          SITE_URL: https://the-guild.dev/graphql/ws
       - name: Upload lockfile
         uses: actions/upload-artifact@v3
         with:
