@@ -25,9 +25,9 @@ jobs:
         working-directory: website
         run: node scripts/algolia-sync.mjs
         env:
-          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_APP_ID: ANRJKXZTRW
+          ALGOLIA_INDEX_NAME: searchv2_main
           ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
-          ALGOLIA_INDEX_NAME: ${{ secrets.ALGOLIA_INDEX_NAME }}
           SITE_URL: https://the-guild.dev/graphql/ws
       - name: Upload lockfile
         uses: actions/upload-artifact@v3
