@@ -847,7 +847,12 @@ export function makeServer<
       return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
         for (const sub of Object.values(ctx.subscriptions)) {
-          if (isAsyncGenerator(sub)) await sub.return(undefined);
+          if (isAsyncGenerator(sub)) {
+            let res = await sub.return(undefined);
+            while (!res.done) {
+              res = await sub.next();
+            }
+          }
         }
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
         await onClose?.(ctx, code, reason);
