@@ -1,5 +1,6 @@
 import type * as http from 'http';
 import type * as ws from 'ws';
+import { once } from 'events';
 import { handleProtocols, makeServer, ServerOptions } from '../server';
 import {
   DEPRECATED_GRAPHQL_WS_PROTOCOL,
@@ -175,7 +176,7 @@ export function useServer<
           `Client provided the unsupported and deprecated subprotocol "${socket.protocol}" used by subscriptions-transport-ws.` +
             'Please see https://www.apollographql.com/docs/apollo-server/data/subscriptions/#switching-from-subscriptions-transport-ws.',
         );
-      closed(code, String(reason));
+      closed(code, String(reason)).finally(() => socket.emit('closed'));
     });
   });
 
@@ -185,9 +186,12 @@ export function useServer<
         client.close(1001, 'Going away');
       }
       ws.removeAllListeners();
-      await new Promise<void>((resolve, reject) => {
-        ws.close((err) => (err ? reject(err) : resolve()));
-      });
+      await Promise.all([
+        ...Array.from(ws.clients).map((client) => once(client, 'closed')),
+        new Promise<void>((resolve, reject) => {
+          ws.close((err) => (err ? reject(err) : resolve()));
+        }),
+      ]);
     },
   };
 }
