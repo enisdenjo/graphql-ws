@@ -143,6 +143,34 @@ Bun.serve({
 console.log('Listening to port 4000');
 ```
 
+#### With [Deno](https://deno.com/runtime)
+
+```ts
+import { serve } from 'https://deno.land/std/http/mod.ts';
+import {
+  makeHandler,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+} from 'https://esm.sh/graphql-ws/lib/use/deno';
+import { schema } from './previous-step.ts';
+
+const handler = makeHandler({ schema });
+
+serve(
+  (req: Request) => {
+    if (req.headers.get('upgrade') != 'websocket') {
+      return new Response(null, { status: 501 });
+    }
+    const { socket, response } = Deno.upgradeWebSocket(req, {
+      protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+      idleTimeout: 12_000,
+    });
+    handler(socket);
+    return response;
+  },
+  { port: 4000 },
+);
+```
+
 ### Use the client
 
 ```ts

@@ -28,18 +28,18 @@ export interface Extra {
  * the correct example being:
  *
  * ```ts
- * import { serve } from "https://deno.land/std/http/mod.ts";
+ * import { serve } from 'https://deno.land/std/http/mod.ts';
  * import {
  *   makeHandler,
  *   GRAPHQL_TRANSPORT_WS_PROTOCOL,
- * } from "graphql-ws/lib/use/deno";
- * import { schema } from "./my-schema.ts";
+ * } from 'https://esm.sh/graphql-ws/lib/use/deno';
+ * import { schema } from './my-schema.ts';
  *
  * const handler = makeHandler({ schema });
  *
  * serve(
  *   (req: Request) => {
- *     if (req.headers.get("upgrade") != "websocket") {
+ *     if (req.headers.get('upgrade') != 'websocket') {
  *       return new Response(null, { status: 501 });
  *     }
  *     const { socket, response } = Deno.upgradeWebSocket(req, {
@@ -49,7 +49,7 @@ export interface Extra {
  *     handler(socket);
  *     return response;
  *   },
- *   { port: 4000 }
+ *   { port: 4000 },
  * );
  * ```
  *
