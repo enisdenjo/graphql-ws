@@ -381,8 +381,12 @@ export async function startUWSTServer(
               },
             },
             {
-              open: (socket) => sockets.add(socket),
-              close: (socket) => sockets.delete(socket),
+              open: (socket) => {
+                sockets.add(socket);
+              },
+              close: (socket) => {
+                sockets.delete(socket);
+              },
             },
             keepAlive,
           ),
