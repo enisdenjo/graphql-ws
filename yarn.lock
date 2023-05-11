@@ -4415,6 +4415,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bun-types@npm:^0.5.8":
+  version: 0.5.8
+  resolution: "bun-types@npm:0.5.8"
+  checksum: 8a4a7652b1b877381549195f1fa8d23c7f62f60f39af58b5ca060946576ed4fb728e9f249518e68a0c678a1953b85fe509b50956d7fefe5fcece5abcc6ee6a94
+  languageName: node
+  linkType: hard
+
 "busboy@npm:1.6.0":
   version: 1.6.0
   resolution: "busboy@npm:1.6.0"
@@ -7064,6 +7071,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.59.5
     "@typescript-eslint/parser": ^5.59.5
     babel-jest: ^29.5.0
+    bun-types: ^0.5.8
     eslint: ^8.40.0
     eslint-config-prettier: ^8.8.0
     fastify: ^4.17.0

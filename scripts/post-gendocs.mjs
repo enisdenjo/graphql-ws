@@ -29,12 +29,7 @@ async function fixLinksInDir(dirPath) {
     }
     const contents = await fsp.readFile(filePath);
     const src = contents.toString();
-    await fsp.writeFile(
-      filePath,
-      src
-        // @ts-expect-error we're running this on modern node
-        .replaceAll('.md', ''),
-    );
+    await fsp.writeFile(filePath, src.replaceAll('.md', ''));
   }
 }
 
@@ -70,9 +65,7 @@ async function createRecursiveMetaFiles(dirPath) {
     if (nameNoExt === 'use__fastify_websocket') {
       meta[nameNoExt] = 'use/@fastify/websocket';
     } else {
-      meta[nameNoExt] = nameNoExt
-        // @ts-expect-error we're running this on modern node
-        .replaceAll('_', '/');
+      meta[nameNoExt] = nameNoExt.replaceAll('_', '/');
     }
   }
 
