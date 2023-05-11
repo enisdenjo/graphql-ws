@@ -4,6 +4,7 @@ import {
   ConnectionInitMessage,
   CloseCode,
 } from '../common';
+export { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../common';
 
 /**
  * The extra that will be put in the `Context`.
@@ -23,6 +24,35 @@ export interface Extra {
  *
  * The keep-alive is set in `Deno.upgradeWebSocket` during the upgrade.
  *
+ * Additionally, the required WebSocket protocol is also defined during the upgrade,
+ * the correct example being:
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std/http/mod.ts";
+ * import {
+ *   makeHandler,
+ *   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+ * } from "graphql-ws/lib/use/deno";
+ * import { schema } from "./my-schema.ts";
+ *
+ * const handler = makeHandler({ schema });
+ *
+ * serve(
+ *   (req: Request) => {
+ *     if (req.headers.get("upgrade") != "websocket") {
+ *       return new Response(null, { status: 501 });
+ *     }
+ *     const { socket, response } = Deno.upgradeWebSocket(req, {
+ *       protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+ *       idleTimeout: 12_000,
+ *     });
+ *     handler(socket);
+ *     return response;
+ *   },
+ *   { port: 4000 }
+ * );
+ * ```
+ *
  * @category Server/deno
  */
 export function makeHandler<
@@ -30,7 +60,7 @@ export function makeHandler<
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(options: ServerOptions<P, Extra & Partial<E>>): (socket: WebSocket) => void {
   const server = makeServer(options);
-  return (socket) => {
+  return function handle(socket) {
     socket.onerror = (err) => {
       console.error(
         'Internal error emitted on the WebSocket socket. ' +
@@ -40,31 +70,36 @@ export function makeHandler<
       socket.close(CloseCode.InternalServerError, 'Internal server error');
     };
 
-    const closed = server.opened(
-      {
-        protocol: socket.protocol,
-        send: (msg) => socket.send(msg),
-        close: (code, reason) => socket.close(code, reason),
-        onMessage: (cb) => {
-          socket.onmessage = async (event) => {
-            try {
-              await cb(String(event));
-            } catch (err) {
-              console.error(
-                'Internal error occurred during message handling. ' +
-                  'Please check your implementation.',
-                err,
-              );
-              socket.close(
-                CloseCode.InternalServerError,
-                'Internal server error',
-              );
-            }
-          };
+    let closed: (code: number, reason: string) => void = () => {
+      // noop
+    };
+    socket.onopen = () => {
+      closed = server.opened(
+        {
+          protocol: socket.protocol,
+          send: (msg) => socket.send(msg),
+          close: (code, reason) => socket.close(code, reason),
+          onMessage: (cb) => {
+            socket.onmessage = async (event) => {
+              try {
+                await cb(String(event.data));
+              } catch (err) {
+                console.error(
+                  'Internal error occurred during message handling. ' +
+                    'Please check your implementation.',
+                  err,
+                );
+                socket.close(
+                  CloseCode.InternalServerError,
+                  'Internal server error',
+                );
+              }
+            };
+          },
         },
-      },
-      { socket } as Extra & Partial<E>,
-    );
+        { socket } as Extra & Partial<E>,
+      );
+    };
 
     socket.onclose = (event) => {
       if (
