@@ -122,17 +122,19 @@ import { schema } from './previous-step';
 Bun.serve({
   fetch(req, server) {
     const [path, _search] = req.url.split('?');
-    if (
-      path.endsWith('/graphql') &&
-      handleProtocols(req.headers.get('sec-websocket-protocol') || '')
-    ) {
-      if (server.upgrade(req)) {
-        return new Response();
-      } else {
-        return new Response('Internal Server Error', { status: 500 });
-      }
+    if (!path.endsWith('/graphql')) {
+      return new Response('Not Found', { status: 404 });
     }
-    return new Response('Upgrade Required', { status: 426 });
+    if (req.headers.get('upgrade') != 'websocket') {
+      return new Response('Upgrade Required', { status: 426 });
+    }
+    if (handleProtocols(req.headers.get('sec-websocket-protocol') || '')) {
+      return new Response('Bad Request', { status: 404 });
+    }
+    if (!server.upgrade(req)) {
+      return new Response('Internal Server Error', { status: 500 });
+    }
+    return new Response();
   },
   websocket: makeHandler({ schema }),
   port: 4000,
