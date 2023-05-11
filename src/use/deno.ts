@@ -39,8 +39,12 @@ export interface Extra {
  *
  * serve(
  *   (req: Request) => {
+ *     const [path, _search] = req.url.split('?');
+ *     if (!path.endsWith('/graphql')) {
+ *       return new Response('Not Found', { status: 404 });
+ *     }
  *     if (req.headers.get('upgrade') != 'websocket') {
- *       return new Response(null, { status: 501 });
+ *       return new Response('Upgrade Required', { status: 426 });
  *     }
  *     const { socket, response } = Deno.upgradeWebSocket(req, {
  *       protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,

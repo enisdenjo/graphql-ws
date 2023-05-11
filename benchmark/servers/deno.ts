@@ -14,7 +14,7 @@ const handler = makeHandler({ schema });
 serve(
   (req: Request) => {
     if (req.headers.get('upgrade') != 'websocket') {
-      return new Response(null, { status: 501 });
+      return new Response('Upgrade Required', { status: 426 });
     }
     const { socket, response } = Deno.upgradeWebSocket(req, {
       protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
