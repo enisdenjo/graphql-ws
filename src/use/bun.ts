@@ -36,7 +36,6 @@ export function makeHandler<
 
   return {
     open(ws) {
-      console.log(ws);
       const client: Client = {
         handleMessage: () => {
           throw new Error('Message received before handler was registered');
