@@ -60,7 +60,7 @@
       "import": "./lib/use/fastify-websocket.mjs"
     },
     "./lib/use/bun": {
-      "bun": "./lib/use/bun.d.ts",
+      "bun": "./lib/use/bun.mjs",
       "types": "./lib/use/bun.d.ts",
       "require": "./lib/use/bun.js",
       "import": "./lib/use/bun.mjs"
