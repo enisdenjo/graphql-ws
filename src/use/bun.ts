@@ -4,10 +4,24 @@ import type { WebSocketHandler, ServerWebSocket } from 'bun';
 import { ConnectionInitMessage } from '../common';
 import { makeServer, ServerOptions } from '../server';
 
+/**
+ * The extra that will be put in the `Context`.
+ *
+ * @category Server/bun
+ */
 export interface Extra {
-  ws: ServerWebSocket;
+  /**
+   * The actual socket connection between the server and the client.
+   */
+  readonly socket: ServerWebSocket;
 }
 
+/**
+ * Use the server with [Bun](https://bun.sh/).
+ * This is a basic starter, feel free to copy the code over and adjust it to your needs
+ *
+ * @category Server/bun
+ */
 export function makeHandler<
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
@@ -48,7 +62,7 @@ export function makeHandler<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { ws } as Extra & Partial<E>,
+        { socket: ws } as Extra & Partial<E>,
       );
 
       clients.set(ws, client);
