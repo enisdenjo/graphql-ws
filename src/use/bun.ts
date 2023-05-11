@@ -28,6 +28,9 @@ export interface Extra {
  * Use the server with [Bun](https://bun.sh/).
  * This is a basic starter, feel free to copy the code over and adjust it to your needs
  *
+ * The keep-alive logic _seems_ to be handled by Bun seeing that
+ * they default [`sendPingsAutomatically` to `true`](https://github.com/oven-sh/bun/blob/6a163cf933542506354dc836bd92693bcae5939b/src/deps/uws.zig#L893).
+ *
  * @category Server/bun
  */
 export function makeHandler<
