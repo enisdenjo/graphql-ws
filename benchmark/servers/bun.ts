@@ -9,7 +9,7 @@ Bun.serve({
     if (server.upgrade(req)) {
       return new Response();
     }
-    return new Response('Upgrade failed :(', { status: 500 });
+    return new Response(null, { status: 500 });
   },
   websocket: makeHandler({ schema }),
   port: ports.bun,

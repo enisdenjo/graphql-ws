@@ -113,6 +113,34 @@ fastify.listen(4000, (err) => {
 });
 ```
 
+#### With [Bun](https://bun.sh)
+
+```ts
+import { makeHandler, handleProtocols } from 'graphql-ws/lib/use/lib/bun';
+import { schema } from './previous-step';
+
+Bun.serve({
+  fetch(req, server) {
+    const [path, _search] = req.url.split('?');
+    if (
+      path.endsWith('/graphql') &&
+      handleProtocols(req.headers.get('sec-websocket-protocol') || '')
+    ) {
+      if (server.upgrade(req)) {
+        return new Response();
+      } else {
+        return new Response('Internal Server Error', { status: 500 });
+      }
+    }
+    return new Response('Upgrade Required', { status: 426 });
+  },
+  websocket: makeHandler({ schema }),
+  port: 4000,
+});
+
+console.log('Listening to port 4000');
+```
+
 ### Use the client
 
 ```ts

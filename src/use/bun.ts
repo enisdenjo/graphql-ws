@@ -5,6 +5,11 @@ import { ConnectionInitMessage } from '../common';
 import { makeServer, ServerOptions } from '../server';
 
 /**
+ * Convenience export for checking the WebSocket protocol on the request in `Bun.serve`.
+ */
+export { handleProtocols } from '../server';
+
+/**
  * The extra that will be put in the `Context`.
  *
  * @category Server/bun
