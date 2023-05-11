@@ -36,7 +36,7 @@ export interface Extra {
  *
  * ```ts
  * import { makeHandler, handleProtocols } from 'graphql-ws/lib/use/lib/bun';
- * import { schema } from "./my-schema";
+ * import { schema } from './my-schema';
  *
  * Bun.serve({
  *   fetch(req, server) {
