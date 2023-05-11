@@ -1,7 +1,10 @@
 /// <reference types="bun-types" />
 
 import type { WebSocketHandler, ServerWebSocket } from 'bun';
-import { ConnectionInitMessage } from '../common';
+import {
+  ConnectionInitMessage,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+} from '../common';
 import { makeServer, ServerOptions } from '../server';
 
 /**
@@ -52,7 +55,8 @@ export function makeHandler<
 
       client.closed = server.opened(
         {
-          protocol: 'graphql-transport-ws', // TODO: read actual
+          // TODO: use protocol on socket once Bun exposes it
+          protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
           send: async (message) => {
             // ws might have been destroyed in the meantime, send only if exists
             if (clients.has(ws)) {
