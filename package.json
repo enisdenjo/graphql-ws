@@ -1,6 +1,6 @@
 {
   "name": "graphql-ws",
-  "version": "5.12.1",
+  "version": "5.13.1-rc.0",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "keywords": [
     "protocol",
@@ -58,6 +58,12 @@
       "types": "./lib/use/fastify-websocket.d.ts",
       "require": "./lib/use/fastify-websocket.js",
       "import": "./lib/use/fastify-websocket.mjs"
+    },
+    "./lib/use/bun": {
+      "bun": "./lib/use/bun.d.ts",
+      "types": "./lib/use/bun.d.ts",
+      "require": "./lib/use/bun.js",
+      "import": "./lib/use/bun.mjs"
     },
     "./package.json": "./package.json"
   },
