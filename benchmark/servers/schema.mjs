@@ -18,7 +18,7 @@ export const schema = new GraphQLSchema({
         subscribe: async function* () {
           for (const hi of ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo']) {
             yield { greetings: hi };
-            await new Promise((resolve) => setImmediate(resolve));
+            await new Promise((resolve) => setTimeout(resolve, 0));
           }
         },
       },
