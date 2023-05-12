@@ -1,3 +1,11 @@
+# [5.13.0](https://github.com/enisdenjo/graphql-ws/compare/v5.12.1...v5.13.0) (2023-05-12)
+
+
+### Features
+
+* **server:** Use Bun ([#476](https://github.com/enisdenjo/graphql-ws/issues/476)) ([09c7893](https://github.com/enisdenjo/graphql-ws/commit/09c78936f956d7cc9476220fbf421e259e4e6f8e))
+* **server:** Use Deno ([#477](https://github.com/enisdenjo/graphql-ws/issues/477)) ([0ffd03b](https://github.com/enisdenjo/graphql-ws/commit/0ffd03bc0c0a3801d5f755df289b62fa3d616ea9))
+
 ## [5.12.1](https://github.com/enisdenjo/graphql-ws/compare/v5.12.0...v5.12.1) (2023-03-31)
 
 
