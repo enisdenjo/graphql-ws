@@ -65,6 +65,11 @@
       "require": "./lib/use/bun.js",
       "import": "./lib/use/bun.mjs"
     },
+    "./lib/use/deno": {
+      "types": "./lib/use/deno.d.ts",
+      "require": "./lib/use/deno.js",
+      "import": "./lib/use/deno.mjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
