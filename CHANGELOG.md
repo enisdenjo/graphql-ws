@@ -1,3 +1,10 @@
+## [5.13.1](https://github.com/enisdenjo/graphql-ws/compare/v5.13.0...v5.13.1) (2023-05-15)
+
+
+### Bug Fixes
+
+* Remove unnecessary bun-types directives ([e9a56f7](https://github.com/enisdenjo/graphql-ws/commit/e9a56f788177dde19ebf9d44d2fc8bbe20d2f6ac)), closes [#478](https://github.com/enisdenjo/graphql-ws/issues/478)
+
 # [5.13.0](https://github.com/enisdenjo/graphql-ws/compare/v5.12.1...v5.13.0) (2023-05-12)
 
 
