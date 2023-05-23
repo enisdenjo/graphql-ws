@@ -526,7 +526,7 @@ export interface Context<
  * is actually an API which is to be used with your favourite WebSocket
  * server library!
  *
- * Read more about the Protocol in the PROTOCOL.md documentation file.
+ * Read more about the [GraphQL over WebSocket Protocol](https://github.com/graphql/graphql-over-http/blob/main/rfcs/GraphQLOverWebSocket.md).
  *
  * @category Server
  */

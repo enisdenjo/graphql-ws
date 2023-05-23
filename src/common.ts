@@ -8,7 +8,7 @@ import { GraphQLError } from 'graphql';
 import { areGraphQLErrors, extendedTypeof, isObject } from './utils';
 
 /**
- * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
+ * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](https://github.com/graphql/graphql-over-http/blob/main/rfcs/GraphQLOverWebSocket.md).
  *
  * @category Common
  */
@@ -22,7 +22,7 @@ export const GRAPHQL_TRANSPORT_WS_PROTOCOL = 'graphql-transport-ws';
 export const DEPRECATED_GRAPHQL_WS_PROTOCOL = 'graphql-ws';
 
 /**
- * `graphql-ws` expected and standard close codes of the [GraphQL over WebSocket Protocol](/PROTOCOL.md).
+ * `graphql-ws` expected and standard close codes of the [GraphQL over WebSocket Protocol](https://github.com/graphql/graphql-over-http/blob/main/rfcs/GraphQLOverWebSocket.md).
  *
  * @category Common
  */
