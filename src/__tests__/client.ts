@@ -14,6 +14,7 @@ import {
 } from '../common';
 import { startRawServer, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
+import { pong } from './fixtures/simple';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -2322,5 +2323,263 @@ describe('events', () => {
 
     // opened and connected should be called 6 times (3 times connected, 2 times disconnected)
     expect(expected).toBeCalledTimes(6);
+  });
+});
+
+describe('iterate', () => {
+  it('should iterate a single result query', async () => {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const iterator = client.iterate({
+      query: '{ getValue }',
+    });
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "data": {
+            "getValue": "value",
+          },
+        },
+      }
+    `);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+  });
+
+  it('should iterate over subscription events', async () => {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const iterator = client.iterate({
+      query: 'subscription { greetings }',
+    });
+
+    // Hi
+    await expect(iterator.next()).resolves.toBeDefined();
+    // Bonjour
+    await expect(iterator.next()).resolves.toBeDefined();
+    // Hola
+    await expect(iterator.next()).resolves.toBeDefined();
+    // Ciao
+    await expect(iterator.next()).resolves.toBeDefined();
+    // Zdravo
+    await expect(iterator.next()).resolves.toBeDefined();
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+  });
+
+  it('should report execution errors to iterator', async () => {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const iterator = client.iterate({
+      query: 'subscription { throwing }',
+    });
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "errors": [
+            {
+              "locations": [
+                {
+                  "column": 16,
+                  "line": 1,
+                },
+              ],
+              "message": "Kaboom!",
+              "path": [
+                "throwing",
+              ],
+            },
+          ],
+        },
+      }
+    `);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+  });
+
+  it('should throw in iterator connection errors', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const pingKey = Math.random().toString();
+    const iterator = client.iterate({
+      query: `subscription { ping(key: "${pingKey}") }`,
+    });
+
+    pong(pingKey);
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "data": {
+            "ping": "pong",
+          },
+        },
+      }
+    `);
+
+    await server.dispose(false);
+
+    await expect(iterator.next()).rejects.toEqual(
+      // forceful close
+      expect.objectContaining({
+        code: 1006,
+        reason: '',
+      }),
+    );
+  });
+
+  it('should complete subscription when iterator loop breaks', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const pingKey = Math.random().toString();
+    const iterator = client.iterate({
+      query: `subscription { ping(key: "${pingKey}") }`,
+    });
+    iterator.return = jest.fn(iterator.return);
+
+    setTimeout(() => pong(pingKey), 0);
+
+    for await (const val of iterator) {
+      expect(val).toMatchInlineSnapshot(`
+        {
+          "data": {
+            "ping": "pong",
+          },
+        }
+      `);
+      break;
+    }
+
+    expect(iterator.return).toHaveBeenCalled();
+
+    await server.waitForClientClose();
+  });
+
+  it('should complete subscription when iterator loop throws', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const pingKey = Math.random().toString();
+    const iterator = client.iterate({
+      query: `subscription { ping(key: "${pingKey}") }`,
+    });
+    iterator.return = jest.fn(iterator.return);
+
+    setTimeout(() => pong(pingKey), 0);
+
+    await expect(async () => {
+      for await (const val of iterator) {
+        expect(val).toMatchInlineSnapshot(`
+          {
+            "data": {
+              "ping": "pong",
+            },
+          }
+        `);
+        throw new Error(':)');
+      }
+    }).rejects.toBeDefined();
+
+    expect(iterator.return).toHaveBeenCalled();
+
+    await server.waitForClientClose();
+  });
+
+  it('should complete subscription when calling return directly on iterator', async () => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const pingKey = Math.random().toString();
+    const iterator = client.iterate({
+      query: `subscription { ping(key: "${pingKey}") }`,
+    });
+
+    pong(pingKey);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "data": {
+            "ping": "pong",
+          },
+        },
+      }
+    `);
+
+    await expect(iterator.return?.()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+
+    await server.waitForClientClose();
   });
 });

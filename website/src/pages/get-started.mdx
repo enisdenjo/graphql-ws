@@ -186,46 +186,25 @@ const client = createClient({
 
 // query
 (async () => {
-  const result = await new Promise((resolve, reject) => {
-    let result;
-    client.subscribe(
-      {
-        query: '{ hello }',
-      },
-      {
-        next: (data) => (result = data),
-        error: reject,
-        complete: () => resolve(result),
-      },
-    );
+  const query = client.iterate({
+    query: '{ hello }',
   });
 
-  expect(result).toEqual({ hello: 'Hello World!' });
+  const { value } = await query.next();
+  expect(value).toEqual({ hello: 'world' });
 })();
 
 // subscription
 (async () => {
-  const onNext = () => {
-    /* handle incoming values */
-  };
-
-  let unsubscribe = () => {
-    /* complete the subscription */
-  };
-
-  await new Promise((resolve, reject) => {
-    unsubscribe = client.subscribe(
-      {
-        query: 'subscription { greetings }',
-      },
-      {
-        next: onNext,
-        error: reject,
-        complete: resolve,
-      },
-    );
+  const subscription = client.iterate({
+    query: 'subscription { greetings }',
   });
 
-  expect(onNext).toBeCalledTimes(5); // we say "Hi" in 5 languages
+  for await (const event of subscription) {
+    expect(event).toEqual({ greetings: 'Hi' });
+
+    // complete a running subscription by breaking the iterator loop
+    break;
+  }
 })();
 ```

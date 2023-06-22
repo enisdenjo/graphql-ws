@@ -441,6 +441,13 @@ export interface Client extends Disposable {
     sink: Sink<ExecutionResult<Data, Extensions>>,
   ): () => void;
   /**
+   * Subscribes and iterates over emitted results from the WebSocket
+   * through the returned async iterator.
+   */
+  iterate<Data = Record<string, unknown>, Extensions = unknown>(
+    payload: SubscribePayload,
+  ): AsyncIterableIterator<ExecutionResult<Data, Extensions>>;
+  /**
    * Terminates the WebSocket abruptly and immediately.
    *
    * A close event `4499: Terminated` is issued to the current WebSocket and an
@@ -971,6 +978,73 @@ export function createClient<
         // dispose only of active subscriptions
         if (!done) releaser();
       };
+    },
+    iterate(request) {
+      const pending: ExecutionResult<
+        // TODO: how to not use `any` and not have a redundant function signature?
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any
+      >[] = [];
+      const deferred = {
+        done: false,
+        error: null as unknown,
+        resolve: () => {
+          // noop
+        },
+      };
+      const dispose = this.subscribe(request, {
+        next(val) {
+          pending.push(val);
+          deferred.resolve();
+        },
+        error(err) {
+          deferred.done = true;
+          deferred.error = err;
+          deferred.resolve();
+        },
+        complete() {
+          deferred.done = true;
+          deferred.resolve();
+        },
+      });
+
+      const iterator = (async function* iterator() {
+        for (;;) {
+          if (!pending.length) {
+            // only wait if there are no pending messages available
+            await new Promise<void>((resolve) => (deferred.resolve = resolve));
+          }
+          // first flush
+          while (pending.length) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            yield pending.shift()!;
+          }
+          // then error
+          if (deferred.error) {
+            throw deferred.error;
+          }
+          // or complete
+          if (deferred.done) {
+            return;
+          }
+        }
+      })();
+      iterator.throw = async (err) => {
+        if (!deferred.done) {
+          deferred.done = true;
+          deferred.error = err;
+          deferred.resolve();
+        }
+        return { done: true, value: undefined };
+      };
+      iterator.return = async () => {
+        dispose();
+        return { done: true, value: undefined };
+      };
+
+      return iterator;
     },
     async dispose() {
       disposed = true;

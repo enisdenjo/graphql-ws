@@ -100,6 +100,12 @@ export const schemaConfig: GraphQLSchemaConfig = {
           };
         },
       },
+      throwing: {
+        type: new GraphQLNonNull(GraphQLString),
+        subscribe: async function () {
+          throw new Error('Kaboom!');
+        },
+      },
     },
   }),
 };
