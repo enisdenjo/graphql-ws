@@ -1,3 +1,10 @@
+# [5.14.0](https://github.com/enisdenjo/graphql-ws/compare/v5.13.1...v5.14.0) (2023-06-22)
+
+
+### Features
+
+* **client:** Async iterator for subscriptions ([#486](https://github.com/enisdenjo/graphql-ws/issues/486)) ([fb4b967](https://github.com/enisdenjo/graphql-ws/commit/fb4b9673ed6689dda230c9f9141750b2cb538cb8))
+
 ## [5.13.1](https://github.com/enisdenjo/graphql-ws/compare/v5.13.0...v5.13.1) (2023-05-15)
 
 
