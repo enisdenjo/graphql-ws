@@ -11,25 +11,15 @@ const client = createClient({
   url: 'ws://hey.there:4000/graphql',
 });
 
-async function execute<T>(payload: SubscribePayload) {
-  return new Promise<T>((resolve, reject) => {
-    let result: T;
-    client.subscribe<T>(payload, {
-      next: (data) => (result = data),
-      error: reject,
-      complete: () => resolve(result),
-    });
-  });
-}
-
-// use
 (async () => {
+  const query = client.iterate({
+    query: '{ hello }',
+  });
+
   try {
-    const result = await execute({
-      query: '{ hello }',
-    });
+    const { value } = await query.next();
+    // next = value = { data: { hello: 'Hello World!' } }
     // complete
-    // next = result = { data: { hello: 'Hello World!' } }
   } catch (err) {
     // error
   }
@@ -45,60 +35,15 @@ const client = createClient({
   url: 'ws://iterators.ftw:4000/graphql',
 });
 
-function subscribe<T>(payload: SubscribePayload): AsyncGenerator<T> {
-  let deferred: {
-    resolve: (done: boolean) => void;
-    reject: (err: unknown) => void;
-  } | null = null;
-  const pending: T[] = [];
-  let throwMe: unknown = null,
-    done = false;
-  const dispose = client.subscribe<T>(payload, {
-    next: (data) => {
-      pending.push(data);
-      deferred?.resolve(false);
-    },
-    error: (err) => {
-      throwMe = err;
-      deferred?.reject(throwMe);
-    },
-    complete: () => {
-      done = true;
-      deferred?.resolve(true);
-    },
-  });
-  return {
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    async next() {
-      if (done) return { done: true, value: undefined };
-      if (throwMe) throw throwMe;
-      if (pending.length) return { value: pending.shift()! };
-      return (await new Promise<boolean>(
-        (resolve, reject) => (deferred = { resolve, reject }),
-      ))
-        ? { done: true, value: undefined }
-        : { value: pending.shift()! };
-    },
-    async throw(err) {
-      throw err;
-    },
-    async return() {
-      dispose();
-      return { done: true, value: undefined };
-    },
-  };
-}
-
 (async () => {
-  const subscription = subscribe({
+  const subscription = client.iterate({
     query: 'subscription { greetings }',
   });
-  // subscription.return() to dispose
+  // "subscription.return()" to dispose
 
   for await (const result of subscription) {
     // next = result = { data: { greetings: 5x } }
+    // "break" to dispose
   }
   // complete
 })();
