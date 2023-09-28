@@ -635,6 +635,61 @@ describe('Connect', () => {
       expect(event.wasClean).toBeTruthy();
     });
   });
+
+  it("should have acknowledged connection even if ack message send didn't resolve", (done) => {
+    let sent: Promise<void> | null = null;
+    let resolveSend = () => {
+      // noop
+    };
+    makeServer({
+      schema,
+      onSubscribe(ctx) {
+        expect(ctx.acknowledged).toBeTruthy();
+        resolveSend();
+        done();
+      },
+    }).opened(
+      {
+        protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        send: async () => {
+          // if already set, this is a subsequent send happening after the test
+          if (sent) {
+            return;
+          }
+
+          // message was sent and delivered to the client...
+          sent = new Promise((resolve) => {
+            resolve();
+          });
+          await sent;
+
+          // ...but something else is slow - leading to a potential race condition on the `acknowledged` flag
+          await new Promise<void>((resolve) => (resolveSend = resolve));
+        },
+        close: (code, reason) => {
+          fail(`Unexpected close with ${code}: ${reason}`);
+        },
+        onMessage: async (cb) => {
+          cb(stringifyMessage({ type: MessageType.ConnectionInit }));
+          await sent;
+          cb(
+            stringifyMessage({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: { query: '{ getValue }' },
+            }),
+          );
+        },
+        onPing: () => {
+          /**/
+        },
+        onPong: () => {
+          /**/
+        },
+      },
+      {},
+    );
+  });
 });
 
 describe('Ping/Pong', () => {
