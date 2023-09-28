@@ -613,6 +613,11 @@ export function makeServer<
             if (permittedOrPayload === false)
               return socket.close(CloseCode.Forbidden, 'Forbidden');
 
+            // we should acknowledge before send to avoid race conditions (like those exampled in https://github.com/enisdenjo/graphql-ws/issues/501)
+            // even if the send fails/throws, the connection should be closed because its malfunctioning
+            // @ts-expect-error: I can write
+            ctx.acknowledged = true;
+
             await socket.send(
               stringifyMessage<MessageType.ConnectionAck>(
                 isObject(permittedOrPayload)
@@ -627,9 +632,6 @@ export function makeServer<
                 replacer,
               ),
             );
-
-            // @ts-expect-error: I can write
-            ctx.acknowledged = true;
             return;
           }
           case MessageType.Ping: {
