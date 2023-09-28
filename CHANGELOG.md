@@ -1,3 +1,10 @@
+## [5.14.1](https://github.com/enisdenjo/graphql-ws/compare/v5.14.0...v5.14.1) (2023-09-28)
+
+
+### Bug Fixes
+
+* **server:** Acknowledge connection before notifying the client to avoid race conditions with slow sends ([#506](https://github.com/enisdenjo/graphql-ws/issues/506)) ([8cb82bd](https://github.com/enisdenjo/graphql-ws/commit/8cb82bdba59e5da0b09d03b55e84f8e14973efad)), closes [#501](https://github.com/enisdenjo/graphql-ws/issues/501)
+
 # [5.14.0](https://github.com/enisdenjo/graphql-ws/compare/v5.13.1...v5.14.0) (2023-06-22)
 
 
