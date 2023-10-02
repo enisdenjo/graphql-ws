@@ -100,7 +100,7 @@ export type Event =
   | EventError;
 
 /** @category Client */
-export type EventConnectingListener = () => void;
+export type EventConnectingListener = (isRetry: boolean) => void;
 
 /**
  * The first argument is actually the `WebSocket`, but to avoid
@@ -124,6 +124,7 @@ export type EventOpenedListener = (socket: unknown) => void;
 export type EventConnectedListener = (
   socket: unknown,
   payload: ConnectionAckMessage['payload'],
+  wasRetry: boolean,
 ) => void;
 
 /**
@@ -637,7 +638,7 @@ export function createClient<
             retries++;
           }
 
-          emitter.emit('connecting');
+          emitter.emit('connecting', retrying);
           const socket = new WebSocketImpl(
             typeof url === 'function' ? await url() : url,
             GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -760,7 +761,7 @@ export function createClient<
                 );
               clearTimeout(connectionAckTimeout);
               acknowledged = true;
-              emitter.emit('connected', socket, message.payload); // connected = socket opened + acknowledged
+              emitter.emit('connected', socket, message.payload, retrying); // connected = socket opened + acknowledged
               retrying = false; // future lazy connects are not retries
               retries = 0; // reset the retries on connect
               connected([
