@@ -29,6 +29,7 @@ export const DEPRECATED_GRAPHQL_WS_PROTOCOL = 'graphql-ws';
 export enum CloseCode {
   InternalServerError = 4500,
   InternalClientError = 4005,
+  BadGateway = 1014,
   BadRequest = 4400,
   BadResponse = 4004,
   /** Tried subscribing before connect ack */
