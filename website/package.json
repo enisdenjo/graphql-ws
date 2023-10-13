@@ -16,7 +16,7 @@
     "react-icons": "^4.11.0"
   },
   "devDependencies": {
-    "@theguild/algolia": "^1.1.9",
+    "@theguild/algolia": "2.0.0-alpha-20231013145031-84ddec3",
     "@theguild/tailwind-config": "^0.3.0",
     "@types/react": "^18.2.28",
     "typescript": "^5.1.3"

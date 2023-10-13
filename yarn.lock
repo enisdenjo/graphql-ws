@@ -3877,20 +3877,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theguild/algolia@npm:^1.1.9":
-  version: 1.1.9
-  resolution: "@theguild/algolia@npm:1.1.9"
+"@theguild/algolia@npm:2.0.0-alpha-20231013145031-84ddec3":
+  version: 2.0.0-alpha-20231013145031-84ddec3
+  resolution: "@theguild/algolia@npm:2.0.0-alpha-20231013145031-84ddec3"
   dependencies:
     algoliasearch: ^4.14.3
     commander: ^11.0.0
-    fast-glob: ^3.2.12
+    fast-xml-parser: ^4.3.2
     github-slugger: ^2.0.0
     gray-matter: ^4.0.3
     lodash.sortby: ^4.7.0
     remove-markdown: ^0.5.0
   bin:
     theguild-nextra-algolia: dist/bin.mjs
-  checksum: 40c95718385689bbbfea0637bc61b2dabeeaece99df184c53e8a0413fbe8073613d826b78aff35b25c41912634dc0202afb260af309f673d6c54216ea5da69c8
+  checksum: 0bce14e0df3ce77ccb644706c5a22421adb2f9542dc76cfc356f82a39fe9f090c01b2aaeef93c71f06b470fed6f505a4b37077517bc100b8ff89ca202caeee6e
   languageName: node
   linkType: hard
 
@@ -7412,6 +7412,17 @@ __metadata:
   version: 2.2.0
   resolution: "fast-uri@npm:2.2.0"
   checksum: edac64d50628f21d562cdc19ea86f5af00902dbb09d2f96fff5974e5317157825e9aa163af9defd11a0818aac6ea2e9958597bed98dd041200a08a976809d08b
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "fast-xml-parser@npm:4.3.2"
+  dependencies:
+    strnum: ^1.0.5
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: d507ce2efa5fd13d0a5ba28bd76dd68f2fc30ad8748357c37b70f360d19417866d79e35a688af067d5bceaaa796033fa985206aef9692f7a421e1326b6e73309
   languageName: node
   linkType: hard
 
@@ -14982,6 +14993,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"strnum@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "strnum@npm:1.0.5"
+  checksum: 651b2031db5da1bf4a77fdd2f116a8ac8055157c5420f5569f64879133825915ad461513e7202a16d7fec63c54fd822410d0962f8ca12385c4334891b9ae6dd2
+  languageName: node
+  linkType: hard
+
 "style-to-object@npm:^0.4.0":
   version: 0.4.2
   resolution: "style-to-object@npm:0.4.2"
@@ -16227,7 +16245,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "website@workspace:website"
   dependencies:
-    "@theguild/algolia": ^1.1.9
+    "@theguild/algolia": 2.0.0-alpha-20231013145031-84ddec3
     "@theguild/components": ^6.0.0
     "@theguild/tailwind-config": ^0.3.0
     "@types/react": ^18.2.28
