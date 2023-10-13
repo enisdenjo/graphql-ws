@@ -1,12 +1,22 @@
 import { indexToAlgolia } from '@theguild/algolia';
 
+const source = 'WS';
+
+const domain = process.env.SITE_URL;
+if (!domain) {
+  throw new Error('Missing domain');
+}
+
 indexToAlgolia({
   nextra: {
     docsBaseDir: 'src/pages/',
+    source,
+    domain,
+    sitemapXmlPath: 'public/sitemap.xml',
   },
-  source: 'WS',
-  domain: process.env.SITE_URL,
-  lockfilePath: 'algolia-lockfile.json',
+  source,
+  domain,
   sitemapXmlPath: 'public/sitemap.xml',
+  lockfilePath: 'algolia-lockfile.json',
   dryMode: process.env.ALGOLIA_DRY_RUN === 'true',
 });
