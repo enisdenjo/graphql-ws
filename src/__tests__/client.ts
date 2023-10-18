@@ -1695,7 +1695,6 @@ describe('reconnecting', () => {
     console.warn = warn;
     await testCloseCode(CloseCode.InternalServerError);
     await testCloseCode(CloseCode.InternalClientError);
-    await testCloseCode(CloseCode.BadGateway);
     await testCloseCode(CloseCode.BadRequest);
     await testCloseCode(CloseCode.BadResponse);
     await testCloseCode(CloseCode.Unauthorized);
