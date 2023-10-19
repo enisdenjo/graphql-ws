@@ -1088,7 +1088,7 @@ function isFatalInternalCloseCode(code: number): boolean {
       1005, // No Status Received
       1012, // Service Restart
       1013, // Try Again Later
-      1013, // Bad Gateway
+      1014, // Bad Gateway
     ].includes(code)
   )
     return false;
