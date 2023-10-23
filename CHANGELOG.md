@@ -1,3 +1,10 @@
+## [5.14.2](https://github.com/enisdenjo/graphql-ws/compare/v5.14.1...v5.14.2) (2023-10-23)
+
+
+### Bug Fixes
+
+* **client:** correct close code for Bad Gateway reason ([#512](https://github.com/enisdenjo/graphql-ws/issues/512)) ([0438650](https://github.com/enisdenjo/graphql-ws/commit/0438650b4953cda40edabdce2c4e85373c7b2f24))
+
 ## [5.14.1](https://github.com/enisdenjo/graphql-ws/compare/v5.14.0...v5.14.1) (2023-09-28)
 
 
