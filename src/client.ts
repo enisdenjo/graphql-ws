@@ -883,102 +883,104 @@ export function createClient<
     })();
   }
 
+  function subscribe(payload: SubscribePayload, sink: Sink) {
+    const id = generateID(payload);
+
+    let done = false,
+      errored = false,
+      releaser = () => {
+        // for handling completions before connect
+        locks--;
+        done = true;
+      };
+
+    (async () => {
+      locks++;
+      for (;;) {
+        try {
+          const [socket, release, waitForReleaseOrThrowOnClose] =
+            await connect();
+
+          // if done while waiting for connect, release the connection lock right away
+          if (done) return release();
+
+          const unlisten = emitter.onMessage(id, (message) => {
+            switch (message.type) {
+              case MessageType.Next: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
+                sink.next(message.payload as any);
+                return;
+              }
+              case MessageType.Error: {
+                (errored = true), (done = true);
+                sink.error(message.payload);
+                releaser();
+                return;
+              }
+              case MessageType.Complete: {
+                done = true;
+                releaser(); // release completes the sink
+                return;
+              }
+            }
+          });
+
+          socket.send(
+            stringifyMessage<MessageType.Subscribe>(
+              {
+                id,
+                type: MessageType.Subscribe,
+                payload,
+              },
+              replacer,
+            ),
+          );
+
+          releaser = () => {
+            if (!done && socket.readyState === WebSocketImpl.OPEN)
+              // if not completed already and socket is open, send complete message to server on release
+              socket.send(
+                stringifyMessage<MessageType.Complete>(
+                  {
+                    id,
+                    type: MessageType.Complete,
+                  },
+                  replacer,
+                ),
+              );
+            locks--;
+            done = true;
+            release();
+          };
+
+          // either the releaser will be called, connection completed and
+          // the promise resolved or the socket closed and the promise rejected.
+          // whatever happens though, we want to stop listening for messages
+          await waitForReleaseOrThrowOnClose.finally(unlisten);
+
+          return; // completed, shouldnt try again
+        } catch (errOrCloseEvent) {
+          if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
+        }
+      }
+    })()
+      .then(() => {
+        // delivering either an error or a complete terminates the sequence
+        if (!errored) sink.complete();
+      }) // resolves on release or normal closure
+      .catch((err) => {
+        sink.error(err);
+      }); // rejects on close events and errors
+
+    return () => {
+      // dispose only of active subscriptions
+      if (!done) releaser();
+    };
+  }
+
   return {
     on: emitter.on,
-    subscribe(payload, sink) {
-      const id = generateID(payload);
-
-      let done = false,
-        errored = false,
-        releaser = () => {
-          // for handling completions before connect
-          locks--;
-          done = true;
-        };
-
-      (async () => {
-        locks++;
-        for (;;) {
-          try {
-            const [socket, release, waitForReleaseOrThrowOnClose] =
-              await connect();
-
-            // if done while waiting for connect, release the connection lock right away
-            if (done) return release();
-
-            const unlisten = emitter.onMessage(id, (message) => {
-              switch (message.type) {
-                case MessageType.Next: {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
-                  sink.next(message.payload as any);
-                  return;
-                }
-                case MessageType.Error: {
-                  (errored = true), (done = true);
-                  sink.error(message.payload);
-                  releaser();
-                  return;
-                }
-                case MessageType.Complete: {
-                  done = true;
-                  releaser(); // release completes the sink
-                  return;
-                }
-              }
-            });
-
-            socket.send(
-              stringifyMessage<MessageType.Subscribe>(
-                {
-                  id,
-                  type: MessageType.Subscribe,
-                  payload,
-                },
-                replacer,
-              ),
-            );
-
-            releaser = () => {
-              if (!done && socket.readyState === WebSocketImpl.OPEN)
-                // if not completed already and socket is open, send complete message to server on release
-                socket.send(
-                  stringifyMessage<MessageType.Complete>(
-                    {
-                      id,
-                      type: MessageType.Complete,
-                    },
-                    replacer,
-                  ),
-                );
-              locks--;
-              done = true;
-              release();
-            };
-
-            // either the releaser will be called, connection completed and
-            // the promise resolved or the socket closed and the promise rejected.
-            // whatever happens though, we want to stop listening for messages
-            await waitForReleaseOrThrowOnClose.finally(unlisten);
-
-            return; // completed, shouldnt try again
-          } catch (errOrCloseEvent) {
-            if (!shouldRetryConnectOrThrow(errOrCloseEvent)) return;
-          }
-        }
-      })()
-        .then(() => {
-          // delivering either an error or a complete terminates the sequence
-          if (!errored) sink.complete();
-        }) // resolves on release or normal closure
-        .catch((err) => {
-          sink.error(err);
-        }); // rejects on close events and errors
-
-      return () => {
-        // dispose only of active subscriptions
-        if (!done) releaser();
-      };
-    },
+    subscribe,
     iterate(request) {
       const pending: ExecutionResult<
         // TODO: how to not use `any` and not have a redundant function signature?
@@ -994,9 +996,10 @@ export function createClient<
           // noop
         },
       };
-      const dispose = this.subscribe(request, {
+      const dispose = subscribe(request, {
         next(val) {
-          pending.push(val);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pending.push(val as any);
           deferred.resolve();
         },
         error(err) {
