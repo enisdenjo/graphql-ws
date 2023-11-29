@@ -11,7 +11,7 @@ The WebSocket sub-protocol for this specification is: `graphql-transport-ws`.
 
 Messages are represented through the JSON structure and are stringified before being sent over the network. They are bidirectional, meaning both the server and the client must conform to the specified message structure.
 
-**All** messages contain the `type` field outlining the action this message describes. Depending on the type, the message can contain the _optional_ field `payload` holding the extra "payload" information to go with the specific message type.
+**All** messages contain the `type` field outlining the action this message describes.
 
 Messages corresponding to operations contain the `id` field used for uniquely identifying server responses and connecting them with the client's requests.
 
