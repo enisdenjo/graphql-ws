@@ -13,7 +13,7 @@ Messages are represented through the JSON structure and are stringified before b
 
 **All** messages contain the `type` field outlining the action this message describes.
 
-Messages corresponding to operations contain the `id` field used for uniquely identifying server responses and connecting them with the client's requests.
+Messages corresponding to operations must contain the `id` field used for uniquely identifying server responses and connecting them with the client's requests.
 
 Multiple operations identified with separate IDs can be active at any time and their messages can be interleaved on the connection.
 
