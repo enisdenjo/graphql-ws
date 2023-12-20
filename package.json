@@ -102,6 +102,7 @@
     "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
     "postbuild": "node scripts/fix-declaration-directives.mjs",
+    "prepack": "npm pkg delete workspaces",
     "release": "semantic-release"
   },
   "peerDependencies": {
