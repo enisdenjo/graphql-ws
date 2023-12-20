@@ -1,3 +1,11 @@
+## [5.14.3](https://github.com/enisdenjo/graphql-ws/compare/v5.14.2...v5.14.3) (2023-12-20)
+
+
+### Bug Fixes
+
+* **client:** Use closures instead of bindings (with `this`) ([812129d](https://github.com/enisdenjo/graphql-ws/commit/812129dcd6454ac7850a14b300162977d82e9bf9))
+* remove package.json workspaces entry in release ([63a831e](https://github.com/enisdenjo/graphql-ws/commit/63a831ef11ae85d93547e7eefe8e0b3113814782)), closes [#524](https://github.com/enisdenjo/graphql-ws/issues/524)
+
 ## [5.14.2](https://github.com/enisdenjo/graphql-ws/compare/v5.14.1...v5.14.2) (2023-10-23)
 
 

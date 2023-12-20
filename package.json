@@ -1,6 +1,6 @@
 {
   "name": "graphql-ws",
-  "version": "5.14.2",
+  "version": "5.14.3",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "keywords": [
     "protocol",
@@ -85,9 +85,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "workspaces": [
-    "website"
-  ],
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "lint:eslint": "eslint 'src'",
