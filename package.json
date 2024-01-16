@@ -85,6 +85,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "workspaces": [
+    "website"
+  ],
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "lint:eslint": "eslint 'src'",
