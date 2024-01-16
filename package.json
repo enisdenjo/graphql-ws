@@ -85,9 +85,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "workspaces": [
-    "website"
-  ],
   "scripts": {
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "lint:eslint": "eslint 'src'",
@@ -103,6 +100,7 @@
     "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
     "postbuild": "node scripts/fix-declaration-directives.mjs",
     "prepack": "npm pkg delete workspaces",
+    "postpack": "npm pkg set 'workspaces[]=website'",
     "release": "semantic-release"
   },
   "peerDependencies": {
@@ -150,5 +148,8 @@
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.30.0",
     "ws": "8.12.0",
     "ws7": "npm:ws@^7.5.9"
-  }
+  },
+  "workspaces": [
+    "website"
+  ]
 }
