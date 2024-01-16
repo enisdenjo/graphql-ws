@@ -47,7 +47,7 @@ export interface Extra {
  *     if (req.headers.get('upgrade') != 'websocket') {
  *       return new Response('Upgrade Required', { status: 426 });
  *     }
- *     if (handleProtocols(req.headers.get('sec-websocket-protocol') || '')) {
+ *     if (!handleProtocols(req.headers.get('sec-websocket-protocol') || '')) {
  *       return new Response('Bad Request', { status: 404 });
  *     }
  *     if (!server.upgrade(req)) {
