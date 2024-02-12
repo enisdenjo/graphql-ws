@@ -2051,7 +2051,7 @@ describe('events', () => {
     );
 
     expect(connectingFn).toBeCalledTimes(2);
-    expect(connectingFn.mock.calls[0].length).toBe(0);
+    expect(connectingFn.mock.calls[0].length).toBe(1);
 
     expect(openedFn).toBeCalledTimes(2); // initial and registered listener
     openedFn.mock.calls.forEach((cal) => {
