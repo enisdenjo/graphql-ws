@@ -848,8 +848,9 @@ export function makeServer<
       // wait for close, cleanup and the disconnect callback
       return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
-        for (const sub of Object.values(ctx.subscriptions)) {
+        for (const [id, sub] of Object.entries(ctx.subscriptions)) {
           if (isAsyncGenerator(sub)) await sub.return(undefined);
+          delete ctx.subscriptions[id]; // deleting the subscription means no further activity should take place
         }
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
         await onClose?.(ctx, code, reason);
