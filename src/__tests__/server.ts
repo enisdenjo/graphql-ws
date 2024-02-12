@@ -1841,9 +1841,56 @@ describe('Disconnect/close', () => {
 
     client.ws.close(4321, 'Byebye');
   });
+
+  it('should dispose of subscriptions on close even if added late to the subscriptions list', async () => {
+    let resolveOnOperation: () => void = () => {
+      throw new Error('On operation resolved early');
+    };
+    const waitForOnOperation = new Promise<void>(
+      (resolve) => (resolveOnOperation = resolve),
+    );
+    let resolveOperation: () => void = () => {
+      throw new Error('Operation resolved early');
+    };
+    const { url, waitForConnect, waitForComplete, waitForClientClose } =
+      await startTServer({
+        onOperation: () => {
+          resolveOnOperation();
+          return new Promise((resolve) => (resolveOperation = resolve));
+        },
+      });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await waitForConnect();
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        type: MessageType.Subscribe,
+        id: '1',
+        payload: {
+          query: 'subscription { ping }',
+        },
+      }),
+    );
+
+    await waitForOnOperation;
+
+    client.ws.close(4321, 'Byebye');
+    await waitForClientClose();
+
+    resolveOperation();
+
+    await waitForComplete();
+  });
 });
 
-it('should only accept a Set, Array or string in handleProtocols', () => {
+it('should only accept a Set, Array or string in handleProtocol', () => {
   for (const test of [
     {
       in: new Set(['not', 'me']),
