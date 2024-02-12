@@ -1,3 +1,16 @@
+# [5.15.0](https://github.com/enisdenjo/graphql-ws/compare/v5.14.3...v5.15.0) (2024-02-12)
+
+
+### Bug Fixes
+
+* **client:** Use `TerminatedCloseEvent` class extending an `Error` for rejecting promises when terminating ([74b4ceb](https://github.com/enisdenjo/graphql-ws/commit/74b4ceb944de1ab368dec9b742eb6c0107e35854)), closes [#531](https://github.com/enisdenjo/graphql-ws/issues/531)
+* **server:** Dispose of subscriptions on close even if added late to the subscriptions list ([#534](https://github.com/enisdenjo/graphql-ws/issues/534)) ([e45d6b1](https://github.com/enisdenjo/graphql-ws/commit/e45d6b1eb916ee8a8bece4f8648e181de9a54a32)), closes [#532](https://github.com/enisdenjo/graphql-ws/issues/532)
+
+
+### Features
+
+* **server:** Add is retry flag to connect events ([#507](https://github.com/enisdenjo/graphql-ws/issues/507)) ([9ad853f](https://github.com/enisdenjo/graphql-ws/commit/9ad853f70bd0fe2e20f89ec7b52927d9ed3c73ef))
+
 ## [5.14.3](https://github.com/enisdenjo/graphql-ws/compare/v5.14.2...v5.14.3) (2023-12-20)
 
 
