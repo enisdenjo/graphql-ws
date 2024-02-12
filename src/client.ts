@@ -451,9 +451,9 @@ export interface Client extends Disposable {
   /**
    * Terminates the WebSocket abruptly and immediately.
    *
-   * A close event `4499: Terminated` is issued to the current WebSocket and an
-   * artificial `{ code: 4499, reason: 'Terminated', wasClean: false }` close-event-like
-   * object is immediately emitted without waiting for the one coming from `WebSocket.onclose`.
+   * A close event `4499: Terminated` is issued to the current WebSocket and a
+   * syntetic {@link TerminatedCloseEvent} is immediately emitted without waiting for
+   * the one coming from `WebSocket.onclose`.
    *
    * Terminating is not considered fatal and a connection retry will occur as expected.
    *
@@ -664,7 +664,7 @@ export function createClient<
             clearTimeout(queuedPing);
             denied(errOrEvent);
 
-            if (isLikeCloseEvent(errOrEvent) && errOrEvent.code === 4499) {
+            if (errOrEvent instanceof TerminatedCloseEvent) {
               socket.close(4499, 'Terminated'); // close event is artificial and emitted manually, see `Client.terminate()` below
               socket.onerror = null;
               socket.onclose = null;
@@ -1061,14 +1061,27 @@ export function createClient<
     terminate() {
       if (connecting) {
         // only if there is a connection
-        emitter.emit('closed', {
-          code: 4499,
-          reason: 'Terminated',
-          wasClean: false,
-        });
+        emitter.emit('closed', new TerminatedCloseEvent());
       }
     },
   };
+}
+
+/**
+ * A syntetic close event `4499: Terminated` is issued to the current to immediately
+ * close the connection without waiting for the one coming from `WebSocket.onclose`.
+ *
+ * Terminating is not considered fatal and a connection retry will occur as expected.
+ *
+ * Useful in cases where the WebSocket is stuck and not emitting any events;
+ * can happen on iOS Safari, see: https://github.com/enisdenjo/graphql-ws/discussions/290.
+ */
+export class TerminatedCloseEvent extends Error {
+  public name = 'TerminatedCloseEvent';
+  public message = '4499: Terminated';
+  public code = 4499;
+  public reason = 'Terminated';
+  public wasClean = false;
 }
 
 /** Minimal close event interface required by the lib for error and socket close handling. */

@@ -4,7 +4,12 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { createClient, Client, EventListener } from '../client';
+import {
+  createClient,
+  Client,
+  EventListener,
+  TerminatedCloseEvent,
+} from '../client';
 import {
   CloseCode,
   MessageType,
@@ -815,9 +820,16 @@ it('should terminate socket immediately on terminate', async (done) => {
     on: {
       closed: (event) => {
         expect(event).not.toBeInstanceOf(CloseEvent); // because its an artificial close-event-like object
-        expect((event as any).code).toBe(4499);
-        expect((event as any).reason).toBe('Terminated');
-        expect((event as any).wasClean).toBeFalsy();
+        expect(event).toBeInstanceOf(TerminatedCloseEvent);
+        expect((event as TerminatedCloseEvent).name).toBe(
+          'TerminatedCloseEvent',
+        );
+        expect((event as TerminatedCloseEvent).message).toBe(
+          '4499: Terminated',
+        );
+        expect((event as TerminatedCloseEvent).code).toBe(4499);
+        expect((event as TerminatedCloseEvent).reason).toBe('Terminated');
+        expect((event as TerminatedCloseEvent).wasClean).toBeFalsy();
         done();
       },
     },
