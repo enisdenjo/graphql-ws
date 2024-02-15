@@ -1,5 +1,249 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`failable queries should iterate successfully when nothing is thrown: {} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+]
+`;
+
+exports[`failable queries should iterate successfully when resolve throws: {"resolve":true} 1`] = `
+[
+  {
+    "result": {
+      "data": null,
+      "errors": [
+        {
+          "locations": [
+            {
+              "column": 28,
+              "line": 1,
+            },
+          ],
+          "message": "Kaboom!",
+          "path": [
+            "throwingFrom",
+          ],
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should iterate successfully when nothing is thrown: {} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "2",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "3",
+      },
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should iterate successfully when resolve throws: {"resolveStep":1} 1`] = `
+[
+  {
+    "result": {
+      "data": null,
+      "errors": [
+        {
+          "locations": [
+            {
+              "column": 9,
+              "line": 2,
+            },
+          ],
+          "message": "Kaboom from resolve step 1!",
+          "path": [
+            "throwingFrom",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "2",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "3",
+      },
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should iterate successfully when resolve throws: {"resolveStep":2} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": null,
+      "errors": [
+        {
+          "locations": [
+            {
+              "column": 9,
+              "line": 2,
+            },
+          ],
+          "message": "Kaboom from resolve step 2!",
+          "path": [
+            "throwingFrom",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "3",
+      },
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should iterate successfully when resolve throws: {"resolveStep":3} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "2",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": null,
+      "errors": [
+        {
+          "locations": [
+            {
+              "column": 9,
+              "line": 2,
+            },
+          ],
+          "message": "Kaboom from resolve step 3!",
+          "path": [
+            "throwingFrom",
+          ],
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should iterate successfully when subscribe throws before returning a generator: {"beforeGenerator":true} 1`] = `
+[
+  {
+    "result": {
+      "errors": [
+        {
+          "locations": [
+            {
+              "column": 9,
+              "line": 2,
+            },
+          ],
+          "message": "Kaboom from before generator!",
+          "path": [
+            "throwingFrom",
+          ],
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`failable subscriptions should throw an error when the generator throws from next: {"generatorStep":1} 1`] = `
+[
+  {
+    "failure": "4500 Kaboom from generator step 1! (was clean: true)",
+  },
+]
+`;
+
+exports[`failable subscriptions should throw an error when the generator throws from next: {"generatorStep":2} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+  {
+    "failure": "4500 Kaboom from generator step 2! (was clean: true)",
+  },
+]
+`;
+
+exports[`failable subscriptions should throw an error when the generator throws from next: {"generatorStep":3} 1`] = `
+[
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "1",
+      },
+    },
+  },
+  {
+    "result": {
+      "data": {
+        "throwingFrom": "2",
+      },
+    },
+  },
+  {
+    "failure": "4500 Kaboom from generator step 3! (was clean: true)",
+  },
+]
+`;
+
 exports[`should report close error even if complete message followed 1`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;
 
 exports[`should report close error even if complete message followed 2`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;

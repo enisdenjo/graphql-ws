@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Failable queries should complete with errors when resolve throws: {"resolve":true} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"errors":[{"message":"Kaboom!","locations":[{"line":2,"column":15}],"path":["throwingFrom"]}],"data":null}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable queries should complete without errors when nothing is thrown: {} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable subscriptions should close the socket when the generator throws from next: {"generatorStep":1} 1`] = `
+[
+  {
+    "code": 4500,
+    "reason": "Kaboom from generator step 1!",
+    "wasClean": true,
+  },
+]
+`;
+
+exports[`Failable subscriptions should close the socket when the generator throws from next: {"generatorStep":2} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  {
+    "code": 4500,
+    "reason": "Kaboom from generator step 2!",
+    "wasClean": true,
+  },
+]
+`;
+
+exports[`Failable subscriptions should close the socket when the generator throws from next: {"generatorStep":3} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"2"}}}",
+  {
+    "code": 4500,
+    "reason": "Kaboom from generator step 3!",
+    "wasClean": true,
+  },
+]
+`;
+
+exports[`Failable subscriptions should complete with errors when resolve throws: {"resolveStep":1} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"errors":[{"message":"Kaboom from resolve step 1!","locations":[{"line":2,"column":15}],"path":["throwingFrom"]}],"data":null}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"2"}}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"3"}}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable subscriptions should complete with errors when resolve throws: {"resolveStep":2} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  "{"id":"1","type":"next","payload":{"errors":[{"message":"Kaboom from resolve step 2!","locations":[{"line":2,"column":15}],"path":["throwingFrom"]}],"data":null}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"3"}}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable subscriptions should complete with errors when resolve throws: {"resolveStep":3} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"2"}}}",
+  "{"id":"1","type":"next","payload":{"errors":[{"message":"Kaboom from resolve step 3!","locations":[{"line":2,"column":15}],"path":["throwingFrom"]}],"data":null}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable subscriptions should complete with errors when subscribe throws before returning a generator: {"beforeGenerator":true} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"errors":[{"message":"Kaboom from before generator!","locations":[{"line":2,"column":15}],"path":["throwingFrom"]}]}}",
+  "{"id":"1","type":"complete"}",
+]
+`;
+
+exports[`Failable subscriptions should complete without errors when nothing is thrown: {} 1`] = `
+[
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"1"}}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"2"}}}",
+  "{"id":"1","type":"next","payload":{"data":{"throwingFrom":"3"}}}",
+  "{"id":"1","type":"complete"}",
+]
+`;

@@ -1,9 +1,11 @@
 import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
+  GraphQLBoolean,
+  GraphQLInt,
   GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
   GraphQLSchemaConfig,
+  GraphQLString,
 } from 'graphql';
 
 // use for dispatching a `pong` to the `ping` subscription
@@ -25,6 +27,25 @@ export const schemaConfig: GraphQLSchemaConfig = {
       getValue: {
         type: new GraphQLNonNull(GraphQLString),
         resolve: () => 'value',
+      },
+      throwingFrom: {
+        type: new GraphQLNonNull(GraphQLString),
+        args: {
+          resolve: {
+            type: GraphQLBoolean,
+            defaultValue: null,
+          },
+        },
+        subscribe: function () {
+          throw new Error("shouldn't be called");
+        },
+        resolve: async function (_, { resolve }) {
+          if (resolve) {
+            throw new Error(`Kaboom!`);
+          } else {
+            return '1';
+          }
+        },
       },
     },
   }),
@@ -104,6 +125,47 @@ export const schemaConfig: GraphQLSchemaConfig = {
         type: new GraphQLNonNull(GraphQLString),
         subscribe: async function () {
           throw new Error('Kaboom!');
+        },
+      },
+      throwingFrom: {
+        type: new GraphQLNonNull(GraphQLString),
+        args: {
+          beforeGenerator: {
+            type: GraphQLBoolean,
+            defaultValue: false,
+          },
+          generatorStep: {
+            type: GraphQLInt,
+            defaultValue: null,
+          },
+          resolveStep: {
+            type: GraphQLInt,
+            defaultValue: null,
+          },
+        },
+        subscribe: function (_, { beforeGenerator, generatorStep }) {
+          async function* generator() {
+            for (let step = 1; step <= 3; step++) {
+              if (step === generatorStep) {
+                throw new Error(`Kaboom from generator step ${step}!`);
+              } else {
+                yield step;
+              }
+            }
+          }
+
+          if (beforeGenerator) {
+            throw new Error('Kaboom from before generator!');
+          }
+
+          return generator();
+        },
+        resolve: async function (step, { resolveStep }) {
+          if (step === resolveStep) {
+            throw new Error(`Kaboom from resolve step ${step}!`);
+          } else {
+            return new String(step);
+          }
         },
       },
     },

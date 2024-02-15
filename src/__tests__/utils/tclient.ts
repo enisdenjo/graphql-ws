@@ -1,6 +1,12 @@
 import WebSocket from 'ws';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../common';
 
+type EventHandlerFunction = (event: WebSocket.Event) => void;
+type SnapshotEntry =
+  | WebSocket.Data
+  | { code: number; reason: string; wasClean: boolean }
+  | { failure: string };
+
 export interface TClient {
   ws: WebSocket;
   waitForMessage: (
@@ -11,9 +17,8 @@ export interface TClient {
     test?: (event: WebSocket.CloseEvent) => void,
     expire?: number,
   ) => Promise<void>;
+  waitForSnapshot: () => Promise<SnapshotEntry[]>;
 }
-
-type EventHandlerFunction = (event: WebSocket.Event) => void;
 
 export function createTClient(
   url: string,
@@ -21,19 +26,12 @@ export function createTClient(
 ): Promise<TClient> {
   const waiters: EventHandlerFunction[] = [];
   const events: WebSocket.Event[] = [];
-  const waitForEvent = (
-    type: string,
-    test?: EventHandlerFunction,
+  const waitForAnyEvent = (
     expire?: number,
-  ): Promise<void> => {
-    return new Promise((resolve, reject) => {
+  ): Promise<WebSocket.Event | undefined> => {
+    return new Promise((resolve) => {
       const waiter = (event: WebSocket.Event) => {
-        if (event.type === type) {
-          test?.(event);
-          resolve();
-        } else {
-          reject(new Error(`Unexpected ${event.type}`));
-        }
+        resolve(event);
       };
 
       if (events.length > 0) {
@@ -47,9 +45,24 @@ export function createTClient(
         setTimeout(() => {
           const index = waiters.findIndex((w) => w === waiter);
           if (index >= 0) waiters.splice(index);
-          resolve();
+          resolve(undefined);
         }, expire);
     });
+  };
+  const waitForEvent = async (
+    type: string,
+    test?: EventHandlerFunction,
+    expire?: number,
+  ): Promise<void> => {
+    const event = await waitForAnyEvent(expire);
+
+    if (!event) {
+      return;
+    } else if (event.type !== type) {
+      throw new Error(`Unexpected ${event.type}`);
+    }
+
+    test?.(event);
   };
   const handleEvent = (event: WebSocket.Event) => {
     if (waiters.length > 0) {
@@ -72,6 +85,29 @@ export function createTClient(
           waitForEvent('message', test as EventHandlerFunction, expire),
         waitForClose: (test, expire) =>
           waitForEvent('close', test as EventHandlerFunction, expire),
+        waitForSnapshot: async () => {
+          const snapshot: SnapshotEntry[] = [];
+
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const event = await waitForAnyEvent(30);
+            switch (event?.type) {
+              case 'message': {
+                const { data } = event as WebSocket.MessageEvent;
+                snapshot.push(data);
+                break;
+              }
+              case 'close': {
+                const { code, reason, wasClean } =
+                  event as WebSocket.CloseEvent;
+                snapshot.push({ code, reason, wasClean });
+                break;
+              }
+              default:
+                return snapshot;
+            }
+          }
+        },
       }),
     );
   });

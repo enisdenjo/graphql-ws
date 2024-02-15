@@ -18,7 +18,7 @@ import {
   SubscribePayload,
 } from '../common';
 import { startRawServer, startWSTServer as startTServer } from './utils';
-import { ExecutionResult } from 'graphql';
+import { ExecutionResult, GraphQLError } from 'graphql';
 import { pong } from './fixtures/simple';
 
 // silence console.error calls for nicer tests overview
@@ -134,6 +134,40 @@ function tsubscribe<T = unknown>(
     },
     dispose,
   };
+}
+
+type SnapshotEntry = { result: ExecutionResult } | { failure: string };
+
+function tsnapshot(
+  client: Client,
+  payload: SubscribePayload,
+): Promise<SnapshotEntry[]> {
+  return new Promise((resolve) => {
+    const results: SnapshotEntry[] = [];
+
+    client.subscribe(payload, {
+      next(value: ExecutionResult) {
+        results.push({ result: value });
+      },
+      error(error: Error | readonly GraphQLError[] | CloseEvent) {
+        if ('code' in error) {
+          results.push({
+            failure: `${error.code} ${error.reason} (was clean: ${error.wasClean})`,
+          });
+        } else if (Array.isArray(error)) {
+          results.push({ failure: JSON.stringify(error) });
+        } else if ('message' in error) {
+          results.push({ failure: error.message });
+        } else {
+          results.push({ failure: 'Unknown error' });
+        }
+        resolve(results);
+      },
+      complete() {
+        resolve(results);
+      },
+    });
+  });
 }
 
 /**
@@ -2593,5 +2627,79 @@ describe('iterate', () => {
     `);
 
     await server.waitForClientClose();
+  });
+});
+
+describe('failable queries', () => {
+  async function queryThrowingFrom(variables: {
+    resolve?: boolean;
+  }): Promise<void> {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const results = await tsnapshot(client, {
+      query: 'query($resolve: Boolean) { throwingFrom(resolve: $resolve) }',
+      variables,
+    });
+
+    expect(results).toMatchSnapshot(JSON.stringify(variables));
+  }
+
+  it('should iterate successfully when nothing is thrown', async () => {
+    await queryThrowingFrom({});
+  });
+
+  it('should iterate successfully when resolve throws', async () => {
+    await queryThrowingFrom({ resolve: true });
+  });
+});
+
+describe('failable subscriptions', () => {
+  async function subscribeThrowingFrom(variables: {
+    beforeGenerator?: boolean;
+    generatorStep?: number;
+    resolveStep?: number;
+  }): Promise<void> {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const results = await tsnapshot(client, {
+      query: `subscription($beforeGenerator: Boolean, $generatorStep: Int, $resolveStep: Int) {
+        throwingFrom(beforeGenerator: $beforeGenerator, generatorStep: $generatorStep, resolveStep: $resolveStep)
+      }`,
+      variables,
+    });
+
+    expect(results).toMatchSnapshot(JSON.stringify(variables));
+  }
+
+  it('should iterate successfully when nothing is thrown', async () => {
+    await subscribeThrowingFrom({});
+  });
+
+  it('should iterate successfully when subscribe throws before returning a generator', async () => {
+    await subscribeThrowingFrom({ beforeGenerator: true });
+  });
+
+  it('should throw an error when the generator throws from next', async () => {
+    await subscribeThrowingFrom({ generatorStep: 1 });
+    await subscribeThrowingFrom({ generatorStep: 2 });
+    await subscribeThrowingFrom({ generatorStep: 3 });
+  });
+
+  it('should iterate successfully when resolve throws', async () => {
+    await subscribeThrowingFrom({ resolveStep: 1 });
+    await subscribeThrowingFrom({ resolveStep: 2 });
+    await subscribeThrowingFrom({ resolveStep: 3 });
   });
 });
