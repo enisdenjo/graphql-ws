@@ -182,7 +182,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           throw error;
         },
       });
-      const client = await createTClient(server.url);
+      let client = await createTClient(server.url);
       client.ws.send(
         stringifyMessage<MessageType.ConnectionInit>({
           type: MessageType.ConnectionInit,
@@ -235,6 +235,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       await test(server.url);
       await server.dispose();
 
+      // onOperation
       server = await startTServer({
         onOperation: () => {
           throw error;
@@ -285,7 +286,32 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           throw error;
         },
       });
-      await test(server.url);
+      client = await createTClient(server.url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+        client.ws.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: '1',
+            type: MessageType.Subscribe,
+            payload: {
+              query: `query { getValue }`,
+            },
+          }),
+        );
+      });
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data).type).toBe(MessageType.Next);
+      });
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe(error.message);
+        expect(event.wasClean).toBeTruthy();
+      });
       await server.dispose();
     });
 
@@ -563,6 +589,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
             type: MessageType.ConnectionInit,
           }),
         );
+        await client.waitForMessage(({ data }) => {
+          expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+        });
 
         // disable pong
         client.ws.pong = () => {

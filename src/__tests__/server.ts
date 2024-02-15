@@ -888,6 +888,7 @@ describe('Subscribe', () => {
       });
     });
 
+    await client.waitForMessage();
     await client.waitForClose(() => {
       fail('Shouldt have closed');
     }, 30);
@@ -1089,6 +1090,7 @@ describe('Subscribe', () => {
       });
     }
 
+    await client.waitForMessage();
     await client.waitForClose(() => {
       fail('Shouldt have closed');
     }, 30);

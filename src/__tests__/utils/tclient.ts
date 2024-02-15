@@ -13,60 +13,65 @@ export interface TClient {
   ) => Promise<void>;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+type EventHandlerFunction = (event: WebSocket.Event) => void;
+
 export function createTClient(
   url: string,
   protocols: string | string[] = GRAPHQL_TRANSPORT_WS_PROTOCOL,
 ): Promise<TClient> {
-  let closeEvent: WebSocket.CloseEvent;
-  const queue: WebSocket.MessageEvent[] = [];
+  const waiters: EventHandlerFunction[] = [];
+  const events: WebSocket.Event[] = [];
+  const waitForEvent = (
+    type: string,
+    test?: EventHandlerFunction,
+    expire?: number,
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const waiter = (event: WebSocket.Event) => {
+        if (event.type === type) {
+          test?.(event);
+          resolve();
+        } else {
+          reject(new Error(`Unexpected ${event.type}`));
+        }
+      };
+
+      if (events.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        waiter(events.shift()!);
+      } else {
+        waiters.push(waiter);
+      }
+
+      if (expire)
+        setTimeout(() => {
+          const index = waiters.findIndex((w) => w === waiter);
+          if (index >= 0) waiters.splice(index);
+          resolve();
+        }, expire);
+    });
+  };
+  const handleEvent = (event: WebSocket.Event) => {
+    if (waiters.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      waiters.shift()!(event);
+    } else {
+      events.push(event);
+    }
+  };
+
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, protocols);
-    ws.onclose = (event) => (closeEvent = event); // just so that none are missed
-    ws.onmessage = (message) => queue.push(message); // guarantee message delivery with a queue
+    ws.onclose = handleEvent;
+    ws.onmessage = handleEvent;
     ws.once('error', reject);
     ws.once('open', () =>
       resolve({
         ws,
-        async waitForMessage(test, expire) {
-          return new Promise((resolve) => {
-            const done = () => {
-              // the onmessage listener above will be called before our listener, populating the queue
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const next = queue.shift()!;
-              test?.(next);
-              resolve();
-            };
-            if (queue.length > 0) return done();
-            ws.once('message', done);
-            if (expire)
-              setTimeout(() => {
-                ws.removeListener('message', done); // expired
-                resolve();
-              }, expire);
-          });
-        },
-        async waitForClose(
-          test?: (event: WebSocket.CloseEvent) => void,
-          expire?: number,
-        ) {
-          return new Promise((resolve) => {
-            if (closeEvent) {
-              test?.(closeEvent);
-              return resolve();
-            }
-            ws.onclose = (event) => {
-              closeEvent = event;
-              test?.(event);
-              resolve();
-            };
-            if (expire)
-              setTimeout(() => {
-                ws.onclose = null; // expired
-                resolve();
-              }, expire);
-          });
-        },
+        waitForMessage: (test, expire) =>
+          waitForEvent('message', test as EventHandlerFunction, expire),
+        waitForClose: (test, expire) =>
+          waitForEvent('close', test as EventHandlerFunction, expire),
       }),
     );
   });
