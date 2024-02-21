@@ -1416,6 +1416,51 @@ useServer(
 );
 ```
 
+## [ws](https://github.com/websockets/ws) server usage with custom subscribe method that gracefully handles thrown errors
+
+`graphql-js` does not catch errors thrown from async iterables ([see issue](https://github.com/graphql/graphql-js/issues/4001)). This will bubble the error to the WebSocket server and abruptly exit the process because no error should be uncaught.
+
+Note that `graphql-ws` will NOT offer built-in handling of internal errors because there's no one-glove-fits-all. Errors are important and should be handled with care, exactly to the needs of the user - not the library author.
+
+Therefore, you may instead implement your own `subscribe` function that gracefully handles thrown errors.
+
+```typescript
+import { WebSocketServer } from 'ws'; // yarn add ws
+// import ws from 'ws'; yarn add ws@7
+// const WebSocketServer = ws.Server;
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { subscribe } from 'graphql';
+import { schema, myValidationRules } from './my-graphql';
+
+const wsServer = new WebSocketServer({
+  port: 4000,
+  path: '/graphql',
+});
+
+useServer(
+  {
+    schema,
+    async subscribe(...args) {
+      const result = await subscribe(...args);
+      if ('next' in result) {
+        // is an async iterable, augment the next method to handle thrown errors
+        const originalNext = result.next;
+        result.next = async () => {
+          try {
+            return await originalNext();
+          } catch (err) {
+            // gracefully handle the error thrown from the next method
+            return { value: { errors: [err] } };
+          }
+        };
+      }
+      return result;
+    },
+  },
+  wsServer,
+);
+```
+
 ## [ws](https://github.com/websockets/ws) server usage accepting only subscription operations
 
 ```typescript
