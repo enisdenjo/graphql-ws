@@ -104,7 +104,7 @@
     "release": "semantic-release"
   },
   "peerDependencies": {
-    "graphql": ">=0.11 <=16"
+    "graphql": ">=0.11 <=16.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
