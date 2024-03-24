@@ -40,4 +40,4 @@ jobs:
           prId: ${{ github.event.pull_request.number }}
           websiteDirectory: website
           buildScript: yarn build
-          artifactDir: dist
+          artifactDir: out
