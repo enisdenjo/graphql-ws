@@ -5,5 +5,5 @@ export default defineConfig({
   description:
     'Coherent, simple GraphQL over WebSocket protocol compliant server and client.',
   docsRepositoryBase: 'https://github.com/enisdenjo/graphql-ws',
-  logo: PRODUCTS.WS.logo({ className: 'w-8' }),
+  logo: PRODUCTS.WS.logo({ className: 'w-9' }),
 });
