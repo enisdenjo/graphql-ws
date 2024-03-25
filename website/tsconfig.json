@@ -12,6 +12,7 @@
   "include": [
     "src",
     "scripts",
+    "next.config.mjs",
     "postcss.config.cjs",
     "tailwind.config.cjs",
     "theme.config.tsx",
