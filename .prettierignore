@@ -2,6 +2,7 @@
 lib
 umd
 docs
+dist
 out
 CHANGELOG.md
 .next

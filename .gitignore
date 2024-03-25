@@ -2,6 +2,7 @@
 node_modules/
 lib/
 umd/
+dist/
 out/
 .vscode/
 .yarn/*
