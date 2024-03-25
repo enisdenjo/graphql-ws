@@ -3,6 +3,7 @@ lib
 umd
 docs
 dist
+out
 CHANGELOG.md
 .next
 website/src/pages/docs
