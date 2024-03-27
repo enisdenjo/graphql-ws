@@ -240,8 +240,8 @@ export interface ServerOptions<
    */
   onDisconnect?: (
     ctx: Context<P, E>,
-    code: number,
-    reason: string,
+    code?: number,
+    reason?: string,
   ) => Promise<void> | void;
   /**
    * Called when the socket closes for whatever reason, at any
@@ -259,8 +259,8 @@ export interface ServerOptions<
    */
   onClose?: (
     ctx: Context<P, E>,
-    code: number,
-    reason: string,
+    code?: number,
+    reason?: string,
   ) => Promise<void> | void;
   /**
    * The subscribe callback executed right after
@@ -417,7 +417,7 @@ export interface Server<E = undefined> {
   opened(
     socket: WebSocket,
     ctxExtra: E,
-  ): (code: number, reason: string) => Promise<void>; // closed
+  ): (code?: number, reason?: string) => Promise<void>; // closed
 }
 
 /** @category Server */
