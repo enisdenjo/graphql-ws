@@ -1888,6 +1888,71 @@ describe('Disconnect/close', () => {
 
     await waitForComplete();
   });
+
+  it('should dispose of all subscriptions on close even if some return is problematic', async () => {
+    let resolveReturn: () => void = () => {
+      throw new Error('Return resolved early');
+    };
+    let i = 0;
+
+    const {
+      url,
+      waitForConnect,
+      waitForOperation,
+      waitForComplete,
+      waitForClientClose,
+    } = await startTServer({
+      onOperation(_ctx, _msg, _args, result) {
+        const origReturn = (result as AsyncGenerator).return;
+        (result as AsyncGenerator).return = async (...args) => {
+          if (++i === 1) {
+            // slow down the first return
+            await new Promise<void>((resolve) => (resolveReturn = resolve));
+          }
+          return origReturn(...args);
+        };
+        return result;
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await waitForConnect();
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        type: MessageType.Subscribe,
+        id: '1',
+        payload: {
+          query: 'subscription { ping(key: "slow") }',
+        },
+      }),
+    );
+    await waitForOperation();
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        type: MessageType.Subscribe,
+        id: '2',
+        payload: {
+          query: 'subscription { ping(key: "ok") }',
+        },
+      }),
+    );
+    await waitForOperation();
+
+    client.ws.close(4321, 'Byebye');
+    await waitForClientClose();
+
+    await waitForComplete();
+    resolveReturn();
+    await waitForComplete();
+  });
 });
 
 it('should only accept a Set, Array or string in handleProtocol', () => {

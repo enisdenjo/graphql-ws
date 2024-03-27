@@ -848,10 +848,18 @@ export function makeServer<
       // wait for close, cleanup and the disconnect callback
       return async (code, reason) => {
         if (connectionInitWait) clearTimeout(connectionInitWait);
-        for (const [id, sub] of Object.entries(ctx.subscriptions)) {
-          if (isAsyncGenerator(sub)) await sub.return(undefined);
-          delete ctx.subscriptions[id]; // deleting the subscription means no further activity should take place
-        }
+
+        const subs = { ...ctx.subscriptions };
+        // @ts-expect-error: I can write
+        ctx.subscriptions = {}; // deleting the subscription means no further activity should take place
+
+        // we return all iterable subscriptions immediatelly, independant of the order
+        await Promise.all(
+          Object.values(subs)
+            .filter(isAsyncGenerator)
+            .map((sub) => sub.return(undefined)),
+        );
+
         if (ctx.acknowledged) await onDisconnect?.(ctx, code, reason);
         await onClose?.(ctx, code, reason);
       };
