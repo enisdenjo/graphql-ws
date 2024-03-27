@@ -1,3 +1,16 @@
+# [5.16.0](https://github.com/enisdenjo/graphql-ws/compare/v5.15.0...v5.16.0) (2024-03-27)
+
+
+### Bug Fixes
+
+* **server:** Return all subscriptions regardless of the return invocation order ([f442288](https://github.com/enisdenjo/graphql-ws/commit/f442288ad59be451bc0f23e615079ef57b8fc5d7))
+* **server:** should not send error messages if socket closes before onSubscribe hooks resolves ([db47a66](https://github.com/enisdenjo/graphql-ws/commit/db47a6665a376afd1b9872daf0f47509225dd288)), closes [#539](https://github.com/enisdenjo/graphql-ws/issues/539)
+
+
+### Features
+
+* **server:** Close code and reason are optional ([6ae6e6f](https://github.com/enisdenjo/graphql-ws/commit/6ae6e6f4e392975ad786cf61e4947fd57f5cf56c)), closes [#547](https://github.com/enisdenjo/graphql-ws/issues/547)
+
 # [5.15.0](https://github.com/enisdenjo/graphql-ws/compare/v5.14.3...v5.15.0) (2024-02-12)
 
 
