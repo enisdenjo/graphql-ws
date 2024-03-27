@@ -730,7 +730,9 @@ export function makeServer<
               const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
               if (maybeExecArgsOrErrors) {
                 if (areGraphQLErrors(maybeExecArgsOrErrors))
-                  return await emit.error(maybeExecArgsOrErrors);
+                  return id in ctx.subscriptions
+                    ? await emit.error(maybeExecArgsOrErrors)
+                    : void 0;
                 else if (Array.isArray(maybeExecArgsOrErrors))
                   throw new Error(
                     'Invalid return value from onSubscribe hook, expected an array of GraphQLError objects',
@@ -760,7 +762,9 @@ export function makeServer<
                   execArgs.document,
                 );
                 if (validationErrors.length > 0)
-                  return await emit.error(validationErrors);
+                  return id in ctx.subscriptions
+                    ? await emit.error(validationErrors)
+                    : void 0;
               }
 
               const operationAST = getOperationAST(
@@ -768,9 +772,11 @@ export function makeServer<
                 execArgs.operationName,
               );
               if (!operationAST)
-                return await emit.error([
-                  new GraphQLError('Unable to identify operation'),
-                ]);
+                return id in ctx.subscriptions
+                  ? await emit.error([
+                      new GraphQLError('Unable to identify operation'),
+                    ])
+                  : void 0;
 
               // if `onSubscribe` didn't specify a rootValue, inject one
               if (!('rootValue' in execArgs))

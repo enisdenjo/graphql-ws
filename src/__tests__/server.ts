@@ -1795,6 +1795,65 @@ describe('Subscribe', () => {
       fail("Shouldn't have received a message");
     }, 20);
   });
+
+  it('should not send error messages if socket closes before onSubscribe hooks resolves', async () => {
+    let resolveOnSubscribe: () => void = () => {
+      throw new Error('On subscribe resolved early');
+    };
+    const waitForOnSubscribe = new Promise<void>(
+      (resolve) => (resolveOnSubscribe = resolve),
+    );
+
+    let resolveSubscribe: () => void = () => {
+      throw new Error('Subscribe resolved early');
+    };
+
+    const sendFn = jest.fn();
+
+    const closed = makeServer({
+      schema,
+      async onSubscribe() {
+        resolveOnSubscribe();
+        await new Promise<void>((resolve) => (resolveSubscribe = resolve));
+        return [new GraphQLError('Oopsie!')];
+      },
+    }).opened(
+      {
+        protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
+        send: sendFn,
+        close: () => {
+          // noop
+        },
+        onMessage: async (cb) => {
+          await cb(stringifyMessage({ type: MessageType.ConnectionInit }));
+          await cb(
+            stringifyMessage({
+              id: '1',
+              type: MessageType.Subscribe,
+              payload: { query: '{ getValue }' },
+            }),
+          );
+        },
+        onPing: () => {
+          /**/
+        },
+        onPong: () => {
+          /**/
+        },
+      },
+      {},
+    );
+
+    await waitForOnSubscribe;
+
+    closed(4321, 'Bye bye!');
+
+    resolveSubscribe();
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(sendFn).toBeCalledTimes(1); // only the ack message
+  });
 });
 
 describe('Disconnect/close', () => {
