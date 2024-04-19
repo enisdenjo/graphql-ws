@@ -12,11 +12,11 @@ indexToAlgolia({
     docsBaseDir: 'src/pages/',
     source,
     domain,
-    sitemapXmlPath: 'public/sitemap.xml',
+    sitemapXmlPath: 'out/sitemap.xml',
   },
   source,
   domain,
-  sitemapXmlPath: 'public/sitemap.xml',
+  sitemapXmlPath: 'out/sitemap.xml',
   lockfilePath: 'algolia-lockfile.json',
   dryMode: process.env.ALGOLIA_DRY_RUN === 'true',
 });
