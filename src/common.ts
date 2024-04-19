@@ -183,20 +183,20 @@ export type Message<T extends MessageType = MessageType> =
   T extends MessageType.ConnectionAck
     ? ConnectionAckMessage
     : T extends MessageType.ConnectionInit
-    ? ConnectionInitMessage
-    : T extends MessageType.Ping
-    ? PingMessage
-    : T extends MessageType.Pong
-    ? PongMessage
-    : T extends MessageType.Subscribe
-    ? SubscribeMessage
-    : T extends MessageType.Next
-    ? NextMessage
-    : T extends MessageType.Error
-    ? ErrorMessage
-    : T extends MessageType.Complete
-    ? CompleteMessage
-    : never;
+      ? ConnectionInitMessage
+      : T extends MessageType.Ping
+        ? PingMessage
+        : T extends MessageType.Pong
+          ? PongMessage
+          : T extends MessageType.Subscribe
+            ? SubscribeMessage
+            : T extends MessageType.Next
+              ? NextMessage
+              : T extends MessageType.Error
+                ? ErrorMessage
+                : T extends MessageType.Complete
+                  ? CompleteMessage
+                  : never;
 
 /**
  * Validates the message against the GraphQL over WebSocket Protocol.

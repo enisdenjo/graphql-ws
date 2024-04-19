@@ -120,7 +120,7 @@ export function makeHandler<
     socket.once('error', handleEmittedError);
 
     // keep alive through ping-pong messages
-    let pongWait: NodeJS.Timeout | null = null;
+    let pongWait: ReturnType<typeof setTimeout> | null = null;
     const pingInterval =
       keepAlive > 0 && isFinite(keepAlive)
         ? setInterval(() => {

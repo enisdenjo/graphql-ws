@@ -1989,7 +1989,7 @@ describe('reconnecting', () => {
     await server.waitForClientClose();
 
     // only one retry had happened (for first subscription)
-    expect(retry).toBeCalledTimes(1);
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 
   it('should subscribe even if socket is in CLOSING state due to all subscriptions being completed', async () => {
@@ -2062,15 +2062,15 @@ describe('events', () => {
       },
     );
 
-    expect(connectingFn).toBeCalledTimes(2);
+    expect(connectingFn).toHaveBeenCalledTimes(2);
     expect(connectingFn.mock.calls[0].length).toBe(1);
 
-    expect(openedFn).toBeCalledTimes(2); // initial and registered listener
+    expect(openedFn).toHaveBeenCalledTimes(2); // initial and registered listener
     openedFn.mock.calls.forEach((cal) => {
       expect(cal[0]).toBeInstanceOf(WebSocket);
     });
 
-    expect(connectedFn).toBeCalledTimes(2); // initial and registered listener
+    expect(connectedFn).toHaveBeenCalledTimes(2); // initial and registered listener
     connectedFn.mock.calls.forEach((cal) => {
       expect(cal[0]).toBeInstanceOf(WebSocket);
     });
@@ -2078,7 +2078,7 @@ describe('events', () => {
     // (connection ack + pong) * 2
     server.pong();
     await sub.waitForNext();
-    expect(messageFn).toBeCalledTimes(4);
+    expect(messageFn).toHaveBeenCalledTimes(4);
 
     expect(closedFn).not.toBeCalled();
 
@@ -2096,11 +2096,11 @@ describe('events', () => {
     }
 
     // retrying is disabled
-    expect(connectingFn).toBeCalledTimes(2);
-    expect(openedFn).toBeCalledTimes(2);
-    expect(connectedFn).toBeCalledTimes(2);
+    expect(connectingFn).toHaveBeenCalledTimes(2);
+    expect(openedFn).toHaveBeenCalledTimes(2);
+    expect(connectedFn).toHaveBeenCalledTimes(2);
 
-    expect(closedFn).toBeCalledTimes(2); // initial and registered listener
+    expect(closedFn).toHaveBeenCalledTimes(2); // initial and registered listener
     closedFn.mock.calls.forEach((cal) => {
       // CloseEvent
       expect(cal[0]).toHaveProperty('code');
@@ -2135,8 +2135,8 @@ describe('events', () => {
       retryAttempts: 0,
       onNonLazyError: (err) => {
         // connection error
-        expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
-        expect(gotErr).toBeCalledTimes(2);
+        expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
+        expect(gotErr).toHaveBeenCalledTimes(2);
         done();
       },
       on: {
@@ -2147,7 +2147,7 @@ describe('events', () => {
         },
         error: (err) => {
           // connection error
-          expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+          expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
           gotErr();
         },
       },
@@ -2171,7 +2171,7 @@ describe('events', () => {
 
     client.on('error', (err) => {
       // connection error
-      expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
+      expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
       expected();
     });
 
@@ -2182,8 +2182,8 @@ describe('events', () => {
         complete: noop,
         error: (err) => {
           // connection error
-          expect((err as ErrorEvent).message).toContain('connect ECONNREFUSED');
-          expect(expected).toBeCalledTimes(2);
+          expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
+          expect(expected).toHaveBeenCalledTimes(2);
           done();
         },
       },
@@ -2225,13 +2225,13 @@ describe('events', () => {
       client.on('pong', () => resolve());
     });
 
-    expect(pingFn).toBeCalledTimes(2);
+    expect(pingFn).toHaveBeenCalledTimes(2);
     expect(pingFn.mock.calls[0][0]).toBeFalsy();
     expect(pingFn.mock.calls[0][1]).toBeUndefined();
     expect(pingFn.mock.calls[1][0]).toBeFalsy();
     expect(pingFn.mock.calls[1][1]).toBeUndefined();
 
-    expect(pongFn).toBeCalledTimes(2);
+    expect(pongFn).toHaveBeenCalledTimes(2);
     expect(pongFn.mock.calls[0][0]).toBeTruthy();
     expect(pongFn.mock.calls[0][1]).toBeUndefined();
     expect(pongFn.mock.calls[1][0]).toBeTruthy();
@@ -2267,13 +2267,13 @@ describe('events', () => {
       client.on('pong', () => resolve());
     });
 
-    expect(pingFn).toBeCalledTimes(2);
+    expect(pingFn).toHaveBeenCalledTimes(2);
     expect(pingFn.mock.calls[0][0]).toBeTruthy();
     expect(pingFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pingFn.mock.calls[1][0]).toBeTruthy();
     expect(pingFn.mock.calls[1][1]).toEqual({ some: 'data' });
 
-    expect(pongFn).toBeCalledTimes(2);
+    expect(pongFn).toHaveBeenCalledTimes(2);
     expect(pongFn.mock.calls[0][0]).toBeFalsy();
     expect(pongFn.mock.calls[0][1]).toEqual({ some: 'data' });
     expect(pongFn.mock.calls[1][0]).toBeFalsy();
@@ -2334,7 +2334,7 @@ describe('events', () => {
     await tsubscribe(client, { query: '{ getValue }' }).waitForComplete();
 
     // opened and connected should be called 6 times (3 times connected, 2 times disconnected)
-    expect(expected).toBeCalledTimes(6);
+    expect(expected).toHaveBeenCalledTimes(6);
   });
 });
 

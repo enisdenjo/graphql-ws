@@ -21,6 +21,7 @@ const opts = {
         'ts-expect-error': 'allow-with-description',
       },
     ],
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
 };
 module.exports = opts;

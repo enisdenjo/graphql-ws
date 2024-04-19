@@ -359,7 +359,6 @@ function FeatureHighlights({
           <Comp
             key={title}
             className="flex flex-row md:flex-col lg:flex-row flex-1 gap-4"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...(link && ({ href: link } as any))}
           >
             {icon && (

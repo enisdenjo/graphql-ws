@@ -55,8 +55,8 @@ export interface PersistedRequest {
 }
 
 interface Client {
-  pingInterval: NodeJS.Timeout | null;
-  pongWaitTimeout: NodeJS.Timeout | null;
+  pingInterval: ReturnType<typeof setInterval> | null;
+  pongWaitTimeout: ReturnType<typeof setTimeout> | null;
   handleMessage: (data: string) => Promise<void>;
   closed: (code: number, reason: string) => Promise<void>;
 }

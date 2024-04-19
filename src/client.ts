@@ -178,20 +178,20 @@ export type EventErrorListener = (error: unknown) => void;
 export type EventListener<E extends Event> = E extends EventConnecting
   ? EventConnectingListener
   : E extends EventOpened
-  ? EventOpenedListener
-  : E extends EventConnected
-  ? EventConnectedListener
-  : E extends EventPing
-  ? EventPingListener
-  : E extends EventPong
-  ? EventPongListener
-  : E extends EventMessage
-  ? EventMessageListener
-  : E extends EventClosed
-  ? EventClosedListener
-  : E extends EventError
-  ? EventErrorListener
-  : never;
+    ? EventOpenedListener
+    : E extends EventConnected
+      ? EventConnectedListener
+      : E extends EventPing
+        ? EventPingListener
+        : E extends EventPong
+          ? EventPongListener
+          : E extends EventMessage
+            ? EventMessageListener
+            : E extends EventClosed
+              ? EventClosedListener
+              : E extends EventError
+                ? EventErrorListener
+                : never;
 
 /**
  * Configuration used for the GraphQL over WebSocket client.
@@ -983,13 +983,7 @@ export function createClient<
     on: emitter.on,
     subscribe,
     iterate(request) {
-      const pending: ExecutionResult<
-        // TODO: how to not use `any` and not have a redundant function signature?
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any
-      >[] = [];
+      const pending: ExecutionResult<any, any>[] = [];
       const deferred = {
         done: false,
         error: null as unknown,
@@ -999,7 +993,7 @@ export function createClient<
       };
       const dispose = subscribe(request, {
         next(val) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
           pending.push(val as any);
           deferred.resolve();
         },

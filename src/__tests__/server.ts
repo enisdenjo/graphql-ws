@@ -1852,7 +1852,7 @@ describe('Subscribe', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(sendFn).toBeCalledTimes(1); // only the ack message
+    expect(sendFn).toHaveBeenCalledTimes(1); // only the ack message
   });
 });
 
