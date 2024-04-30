@@ -264,7 +264,7 @@ export interface ClientOptions<
    */
   lazyCloseTimeout?: number;
   /**
-   * The timout between dispatched keep-alive messages, naimly server pings. Internally
+   * The timeout between dispatched keep-alive messages, namely server pings. Internally
    * dispatches the `PingMessage` type to the server and expects a `PongMessage` in response.
    * This helps with making sure that the connection with the server is alive and working.
    *
