@@ -452,7 +452,7 @@ export interface Client extends Disposable {
    * Terminates the WebSocket abruptly and immediately.
    *
    * A close event `4499: Terminated` is issued to the current WebSocket and a
-   * syntetic {@link TerminatedCloseEvent} is immediately emitted without waiting for
+   * synthetic {@link TerminatedCloseEvent} is immediately emitted without waiting for
    * the one coming from `WebSocket.onclose`.
    *
    * Terminating is not considered fatal and a connection retry will occur as expected.
@@ -1062,7 +1062,7 @@ export function createClient<
 }
 
 /**
- * A syntetic close event `4499: Terminated` is issued to the current to immediately
+ * A synthetic close event `4499: Terminated` is issued to the current to immediately
  * close the connection without waiting for the one coming from `WebSocket.onclose`.
  *
  * Terminating is not considered fatal and a connection retry will occur as expected.
