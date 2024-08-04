@@ -447,7 +447,7 @@ export interface WebSocket {
    * The returned promise is used to control the graceful
    * closure.
    */
-  close(code: number, reason: string): Promise<void> | void;
+  close(code?: number, reason?: string): Promise<void> | void;
   /**
    * Called when message is received. The library requires the data
    * to be a `string`.
