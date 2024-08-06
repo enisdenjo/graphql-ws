@@ -4,6 +4,7 @@
 <!-- Uncomment when we remove GraphQL Conf banner -->
 <!-- <br /> -->
 
+  <h3>graphql-sse</h3>
 
 <!-- ![GraphQLOverWebSocket](https://user-images.githubusercontent.com/25294569/94527042-172dba00-023f-11eb-944b-88c0bd58a8d2.gif) -->
 
