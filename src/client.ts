@@ -400,8 +400,17 @@ export interface ClientOptions<
    * A custom WebSocket implementation to use instead of the
    * one provided by the global scope. Mostly useful for when
    * using the client outside of the browser environment.
+   * Use `webSocketOpts` if the custom WebSocket implementation
+   * needs other options than the 2 standard constructor arguments.
    */
   webSocketImpl?: unknown;
+  /**
+   * A custom option object that will be provided as a third argument to the WebSocket constructor.
+   * This should be used in conjunction with `webSocketImpl` option to provide additional arguments
+   * to your custom WebSocket implementation.
+   * This has no effect if `webSocketImp` is not provided.
+   */
+  webSocketOpts?: unknown;
   /**
    * A custom ID generator for identifying subscriptions.
    *
@@ -499,6 +508,7 @@ export function createClient<
     isFatalConnectionProblem,
     on,
     webSocketImpl,
+    webSocketOpts,
     /**
      * Generates a v4 UUID to be used as the ID using `Math`
      * as the random number generator. Supply your own generator
@@ -639,10 +649,16 @@ export function createClient<
           }
 
           emitter.emit('connecting', retrying);
-          const socket = new WebSocketImpl(
-            typeof url === 'function' ? await url() : url,
-            GRAPHQL_TRANSPORT_WS_PROTOCOL,
-          );
+          const actualURL = typeof url === 'function' ? await url() : url;
+          const socket =
+            webSocketImpl && webSocketOpts
+              ? new WebSocketImpl(
+                  actualURL,
+                  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+                  // @ts-expect-error Custom WebSocket implementations can take an additional third argument if provided.
+                  webSocketOpts,
+                )
+              : new WebSocketImpl(actualURL, GRAPHQL_TRANSPORT_WS_PROTOCOL);
 
           let connectionAckTimeout: ReturnType<typeof setTimeout>,
             queuedPing: ReturnType<typeof setTimeout>;
