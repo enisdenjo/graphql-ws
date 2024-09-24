@@ -2595,3 +2595,29 @@ describe('iterate', () => {
     await server.waitForClientClose();
   });
 });
+
+it('should pass additional options when provided', async () => {
+  const server = await startTServer();
+
+  const expectedOptions = {};
+
+  class CustomWebSocket extends WebSocket {
+    constructor(url: string, protocol: string, options: object) {
+      expect(options).toBe(expectedOptions);
+      super(url, protocol);
+    }
+  }
+
+  let client = createClient({
+    url: server.url,
+    retryAttempts: 0,
+    onNonLazyError: noop,
+    lazy: false,
+    webSocketImpl: CustomWebSocket,
+    webSocketOpts: expectedOptions,
+  });
+
+  await server.waitForConnect();
+  await client.dispose();
+  expect.assertions(1);
+});
