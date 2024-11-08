@@ -7488,7 +7488,7 @@ __metadata:
     typedoc-plugin-markdown: ^3.17.1
     typescript: ^5.4.5
     uWebSockets.js: "uNetworking/uWebSockets.js#v20.43.0"
-    ws: 8.12.0
+    ws: 8.17.1
     ws7: "npm:ws@^7.5.9"
   peerDependencies:
     graphql: ">=0.11 <=16"
@@ -15947,9 +15947,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.12.0":
-  version: 8.12.0
-  resolution: "ws@npm:8.12.0"
+"ws@npm:8.17.1":
+  version: 8.17.1
+  resolution: "ws@npm:8.17.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -15958,7 +15958,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 818ff3f8749c172a95a114cceb8b89cedd27e43a82d65c7ad0f7882b1e96a2ee6709e3746a903c3fa88beec0c8bae9a9fcd75f20858b32a166dfb7519316a5d7
+  checksum: 442badcce1f1178ec87a0b5372ae2e9771e07c4929a3180321901f226127f252441e8689d765aa5cfba5f50ac60dd830954afc5aeae81609aefa11d3ddf5cecf
   languageName: node
   linkType: hard
 
