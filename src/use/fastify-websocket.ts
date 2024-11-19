@@ -38,7 +38,7 @@ export function makeHandler<
 >(
   options: ServerOptions<P, Extra & Partial<E>>,
   /**
-   * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs]((https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss))
+   * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs](https://developer.mozilla.org/en-US/docs/Web/API/wss_API/Writing_ws_servers#Pings_and_Pongs_The_Heartbeat_of_wss)
    * to check that the link between the clients and the server is operating and to prevent the link
    * from being broken due to idling.
    *
