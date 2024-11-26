@@ -3,7 +3,7 @@
  * utils
  *
  */
-import { GraphQLError } from 'graphql';
+import { GraphQLFormattedError } from 'graphql';
 
 /** @private */
 export function extendedTypeof(
@@ -55,7 +55,9 @@ export function isAsyncGenerator<T = unknown>(
 }
 
 /** @private */
-export function areGraphQLErrors(obj: unknown): obj is readonly GraphQLError[] {
+export function areGraphQLFormattedErrors(
+  obj: unknown,
+): obj is readonly GraphQLFormattedError[] {
   return (
     Array.isArray(obj) &&
     // must be at least one error
