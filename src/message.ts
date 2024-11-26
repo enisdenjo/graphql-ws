@@ -4,7 +4,7 @@
  *
  */
 
-import { GraphQLError, ExecutionResult } from 'graphql';
+import { GraphQLFormattedError, ExecutionResult } from 'graphql';
 import {
   isObject,
   areGraphQLErrors,
@@ -54,7 +54,7 @@ export interface NextMessage {
 export interface ErrorMessage {
   readonly id: string;
   readonly type: MessageType.Error;
-  readonly payload: readonly GraphQLError[];
+  readonly payload: readonly GraphQLFormattedError[];
 }
 
 export interface CompleteMessage {

@@ -16,6 +16,8 @@ import {
   GraphQLError,
   SubscriptionArgs,
   ExecutionResult,
+  GraphQLFormattedError,
+  formatError,
 } from 'graphql';
 import { Disposable } from './types';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from './protocol';
@@ -247,7 +249,10 @@ export interface ServerOptions {
     ctx: Context,
     message: ErrorMessage,
     errors: readonly GraphQLError[],
-  ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
+  ) =>
+    | Promise<readonly GraphQLFormattedError[] | void>
+    | readonly GraphQLFormattedError[]
+    | void;
   /**
    * Executed after an operation has emitted a result right before
    * that result has been sent to the client. Results from both
@@ -524,7 +529,7 @@ export function createServer(
                 let errorMessage: ErrorMessage = {
                   id: message.id,
                   type: MessageType.Error,
-                  payload: errors,
+                  payload: errors.map(formatError),
                 };
                 if (onError) {
                   const maybeErrors = await onError(ctx, errorMessage, errors);
