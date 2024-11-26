@@ -16,7 +16,6 @@ import {
   GraphQLError,
   SubscriptionArgs,
   GraphQLFormattedError,
-  formatError,
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -702,7 +701,9 @@ export function makeServer<
                 let errorMessage: ErrorMessage = {
                   id,
                   type: MessageType.Error,
-                  payload: errors.map(formatError),
+                  payload: errors.map((e) =>
+                    typeof e.toJSON === 'function' ? e.toJSON() : e,
+                  ),
                 };
                 const maybeErrors = await onError?.(ctx, errorMessage, errors);
                 if (maybeErrors)
