@@ -15,6 +15,7 @@ import {
   getOperationAST,
   GraphQLError,
   SubscriptionArgs,
+  GraphQLFormattedError,
 } from 'graphql';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -40,7 +41,7 @@ import {
   isObject,
   isAsyncGenerator,
   isAsyncIterable,
-  areGraphQLErrors,
+  areGraphQLFormattedErrors,
 } from './utils';
 
 /** @category Server */
@@ -342,7 +343,10 @@ export interface ServerOptions<
     ctx: Context<P, E>,
     message: ErrorMessage,
     errors: readonly GraphQLError[],
-  ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
+  ) =>
+    | Promise<readonly GraphQLFormattedError[] | void>
+    | readonly GraphQLFormattedError[]
+    | void;
   /**
    * Executed after an operation has emitted a result right before
    * that result has been sent to the client. Results from both
@@ -697,7 +701,9 @@ export function makeServer<
                 let errorMessage: ErrorMessage = {
                   id,
                   type: MessageType.Error,
-                  payload: errors,
+                  payload: errors.map((e) =>
+                    typeof e.toJSON === 'function' ? e.toJSON() : e,
+                  ),
                 };
                 const maybeErrors = await onError?.(ctx, errorMessage, errors);
                 if (maybeErrors)
@@ -729,7 +735,7 @@ export function makeServer<
               let execArgs: ExecutionArgs;
               const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
               if (maybeExecArgsOrErrors) {
-                if (areGraphQLErrors(maybeExecArgsOrErrors))
+                if (areGraphQLFormattedErrors(maybeExecArgsOrErrors))
                   return id in ctx.subscriptions
                     ? await emit.error(maybeExecArgsOrErrors)
                     : void 0;

@@ -4,8 +4,8 @@
  *
  */
 
-import { GraphQLError } from 'graphql';
-import { areGraphQLErrors, extendedTypeof, isObject } from './utils';
+import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { areGraphQLFormattedErrors, extendedTypeof, isObject } from './utils';
 
 /**
  * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](https://github.com/graphql/graphql-over-http/blob/main/rfcs/GraphQLOverWebSocket.md).
@@ -169,7 +169,7 @@ export interface NextMessage {
 export interface ErrorMessage {
   readonly id: ID;
   readonly type: MessageType.Error;
-  readonly payload: readonly GraphQLError[];
+  readonly payload: readonly GraphQLFormattedError[];
 }
 
 /** @category Common */
@@ -354,7 +354,7 @@ export function validateMessage(val: unknown): Message {
         );
       }
 
-      if (!areGraphQLErrors(val.payload)) {
+      if (!areGraphQLFormattedErrors(val.payload)) {
         throw new Error(
           `"${
             val.type
