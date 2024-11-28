@@ -256,7 +256,7 @@ export interface ClientOptions<
    */
   onNonLazyError?: (errorOrCloseEvent: unknown) => void;
   /**
-   * How long should the client wait before closing the socket after the last oparation has
+   * How long should the client wait before closing the socket after the last operation has
    * completed. This is meant to be used in combination with `lazy`. You might want to have
    * a calmdown time before actually closing the connection. Kinda' like a lazy close "debounce".
    *
