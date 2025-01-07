@@ -2125,6 +2125,8 @@ describe.concurrent('events', () => {
     const messageFn = vitest.fn(noop as EventListener<'message'>);
     const closedFn = vitest.fn(noop as EventListener<'closed'>);
 
+    const pongKey = randomUUID();
+
     // wait for connected
     const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
       (resolve) => {
@@ -2147,7 +2149,9 @@ describe.concurrent('events', () => {
         client.on('closed', closedFn);
 
         // trigger connecting
-        const sub = tsubscribe(client, { query: 'subscription { ping }' });
+        const sub = tsubscribe(client, {
+          query: `subscription { ping(key: "${pongKey}") }`,
+        });
 
         // resolve once subscribed
         server.waitForOperation().then(() => resolve([client, sub]));
@@ -2168,7 +2172,7 @@ describe.concurrent('events', () => {
     });
 
     // (connection ack + pong) * 2
-    server.pong();
+    server.pong(pongKey);
     await sub.waitForNext();
     expect(messageFn).toHaveBeenCalledTimes(4);
 
