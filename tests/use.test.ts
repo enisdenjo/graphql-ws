@@ -20,6 +20,8 @@ import {
   TClient,
 } from './utils';
 import { beforeAll, afterAll, it, expect, describe } from 'vitest';
+import { setTimeout } from 'timers/promises';
+import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -46,25 +48,19 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       try {
         client = await createTClient(url, ['notme', 'notmeither']);
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
         client = await createTClient(url, 'notme');
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
         client = await createTClient(url, ['graphql', 'json']);
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
@@ -73,14 +69,14 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
         );
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
       await client.waitForClose(
-        () => fail('shouldnt close for valid protocol'),
+        () => {
+          throw new Error('shouldnt close for valid protocol');
+        },
         30, // should be kicked off within this time
       );
 
@@ -92,7 +88,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       await client.waitForClose(
         (e) => {
           console.log(e);
-          fail('shouldnt close for valid protocol');
+          throw new Error('shouldnt close for valid protocol');
         },
         30, // should be kicked off within this time
       );
@@ -120,7 +116,8 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should add the initial request and websocket in the context extra', async (done) => {
+    it('should add the initial request and websocket in the context extra', async () => {
+      const { resolve: connected, promise: waitForConnect } = createDeferred();
       const server = await startTServer({
         onConnect: (ctx) => {
           if (tServer === 'uWebSockets.js') {
@@ -159,9 +156,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
               '_Request',
             );
           } else {
-            fail('Missing test case for ' + tServer);
+            throw new Error('Missing test case for ' + tServer);
           }
-          done();
+          connected();
           return false; // reject client for sake of test
         },
       });
@@ -172,6 +169,8 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           type: MessageType.ConnectionInit,
         }),
       );
+
+      await waitForConnect;
     });
 
     it('should close the socket with errors thrown from any callback', async () => {
@@ -527,7 +526,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     });
 
     describe('Keep-Alive', () => {
-      it('should dispatch pings after the timeout has passed', async (done) => {
+      it('should dispatch pings after the timeout has passed', async () => {
         const { url } = await startTServer(undefined, 50);
 
         const client = await createTClient(url);
@@ -537,10 +536,12 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           }),
         );
 
-        client.ws.once('ping', () => done());
+        const { resolve: pinged, promise: waitForPing } = createDeferred();
+        client.ws.once('ping', () => pinged());
+        await waitForPing;
       });
 
-      it('should not dispatch pings if disabled with nullish timeout', async (done) => {
+      it('should not dispatch pings if disabled with nullish timeout', async () => {
         const { url } = await startTServer(undefined, 0);
 
         const client = await createTClient(url);
@@ -550,9 +551,12 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           }),
         );
 
-        client.ws.once('ping', () => fail('Shouldnt have pinged'));
+        client.ws.once('ping', () => {
+          throw new Error('Shouldnt have pinged');
+        });
 
-        setTimeout(done, 50);
+        // wait some time for ping
+        await setTimeout(50);
       });
 
       it('should terminate the socket if no pong is sent in response to a ping', async () => {
