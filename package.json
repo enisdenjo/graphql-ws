@@ -124,6 +124,7 @@
     "fastify-websocket": "4.2.2",
     "glob": "^10.3.12",
     "graphql": "^16.8.1",
+    "jsdom": "^25.0.1",
     "prettier": "^3.2.5",
     "replacestream": "^4.0.3",
     "rollup": "^4.14.3",

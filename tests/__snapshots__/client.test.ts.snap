@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`should report close causing internal client errors to listeners 1`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;
+
+exports[`should report close causing internal client errors to subscription sinks 1`] = `""error" message expects the 'payload' property to be an array of GraphQL errors, but got "malformed""`;

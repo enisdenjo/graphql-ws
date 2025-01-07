@@ -1,6 +1,4 @@
-/**
- * @jest-environment jsdom
- */
+// @vitest-environment jsdom
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
@@ -20,8 +18,15 @@ import {
 import { startRawServer, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 import { pong } from './fixtures/simple';
-import { beforeAll, afterAll, it, describe, expect } from 'vitest';
-import { beforeEach } from 'bun:test';
+import {
+  beforeEach,
+  beforeAll,
+  afterAll,
+  it,
+  describe,
+  expect,
+  vitest,
+} from 'vitest';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -204,11 +209,7 @@ it('should recieve optional connection ack payload in event handler', async (don
     lazy: false,
     on: {
       connected: (_socket, payload) => {
-        try {
-          expect(payload).toEqual({ itsa: 'me' });
-        } catch (err) {
-          fail(err);
-        }
+        expect(payload).toEqual({ itsa: 'me' });
         done();
       },
     },
@@ -392,7 +393,7 @@ it('should not send the complete message if the socket is not open', async () =>
 
     public send(data: string) {
       if (this.readyState !== WebSocket.OPEN)
-        fail("Shouldn't send anything through a non-OPEN socket");
+        throw new Error("Shouldn't send anything through a non-OPEN socket");
       super.send(data);
     }
   }
@@ -433,7 +434,7 @@ it('should not call complete after subscription error', async () => {
 
   // but not complete
   await sub.waitForComplete(() => {
-    fail("shouldn't have completed");
+    throw new Error("shouldn't have completed");
   }, 20);
 });
 
@@ -460,7 +461,7 @@ it('should not call complete after connection error', async () => {
 
   // but not complete
   await sub.waitForComplete(() => {
-    fail("shouldn't have completed");
+    throw new Error("shouldn't have completed");
   }, 20);
 });
 
@@ -866,7 +867,7 @@ describe('ping/pong', () => {
     });
 
     await waitForClientClose(() => {
-      fail("Shouldn't have closed");
+      throw new Error("Shouldn't have closed");
     }, 20);
   });
 
@@ -901,7 +902,7 @@ describe('ping/pong', () => {
     });
 
     await waitForClientClose(() => {
-      fail("Shouldn't have closed");
+      throw new Error("Shouldn't have closed");
     }, 20);
   });
 
@@ -922,12 +923,12 @@ describe('ping/pong', () => {
     await waitForClient((client) => {
       client.send(stringifyMessage({ type: MessageType.Ping }));
       client.onMessage(() => {
-        fail("Shouldn't have received a message");
+        throw new Error("Shouldn't have received a message");
       });
     });
 
     await waitForClientClose(() => {
-      fail("Shouldn't have closed");
+      throw new Error("Shouldn't have closed");
     }, 20);
   });
 
@@ -947,12 +948,12 @@ describe('ping/pong', () => {
     await waitForClient((client) => {
       client.send(stringifyMessage({ type: MessageType.Pong }));
       client.onMessage(() => {
-        fail("Shouldn't have received a message");
+        throw new Error("Shouldn't have received a message");
       });
     });
 
     await waitForClientClose(() => {
-      fail("Shouldn't have closed");
+      throw new Error("Shouldn't have closed");
     }, 20);
   });
 
@@ -1062,7 +1063,7 @@ describe('subscription operation', () => {
     server.pong();
 
     await sub.waitForNext(() => {
-      fail('Next shouldnt have been called');
+      throw new Error('Next shouldnt have been called');
     }, 10);
     await sub.waitForComplete();
   });
@@ -1094,7 +1095,7 @@ describe('subscription operation', () => {
 
     server.pong('1');
     await sub2.waitForNext(() => {
-      fail('Shouldnt have nexted');
+      throw new Error('Shouldnt have nexted');
     }, 10);
     await sub1.waitForNext((result) => {
       expect(result).toEqual({
@@ -1104,7 +1105,7 @@ describe('subscription operation', () => {
 
     server.pong('2');
     await sub1.waitForNext(() => {
-      fail('Shouldnt have nexted');
+      throw new Error('Shouldnt have nexted');
     }, 10);
     await sub2.waitForNext((result) => {
       expect(result).toEqual({
@@ -1117,10 +1118,10 @@ describe('subscription operation', () => {
     });
     await server.waitForOperation();
     await sub1.waitForNext(() => {
-      fail('Shouldnt have nexted');
+      throw new Error('Shouldnt have nexted');
     }, 10);
     await sub2.waitForNext(() => {
-      fail('Shouldnt have nexted');
+      throw new Error('Shouldnt have nexted');
     }, 10);
     await sub3.waitForNext((result) => {
       expect(result).toEqual({ data: { getValue: 'value' } });
@@ -1131,7 +1132,7 @@ describe('subscription operation', () => {
   it('should use the provided `generateID` for subscription IDs', async () => {
     const { url, ...server } = await startTServer();
 
-    const generateIDFn = jest.fn(() => 'not unique');
+    const generateIDFn = vitest.fn(() => 'not unique');
 
     const client = createClient({
       url,
@@ -1151,7 +1152,7 @@ describe('subscription operation', () => {
   it('should provide subscription payload in `generateID`', async () => {
     const { url, ...server } = await startTServer();
 
-    const generateIDFn = jest.fn(() => '1');
+    const generateIDFn = vitest.fn(() => '1');
 
     const client = createClient({
       url,
@@ -1224,7 +1225,7 @@ describe('subscription operation', () => {
     for (const client of getClients()) {
       client.onMessage(() => {
         // no more messages from the client
-        fail("Shouldn't have dispatched a message");
+        throw new Error("Shouldn't have dispatched a message");
       });
     }
 
@@ -1245,7 +1246,7 @@ describe('subscription operation', () => {
     await waitForClient((client) => {
       client.onMessage((msg) => {
         if (parseMessage(msg).type === MessageType.Complete)
-          fail("Shouldn't have sent a complete message");
+          throw new Error("Shouldn't have sent a complete message");
       });
     });
 
@@ -1287,7 +1288,7 @@ describe('"concurrency"', () => {
     });
 
     await sub1.waitForNext(() => {
-      fail('Shouldnt have nexted');
+      throw new Error('Shouldnt have nexted');
     }, 10);
     await sub1.waitForComplete();
 
@@ -1339,7 +1340,7 @@ describe('lazy', () => {
     });
 
     await server.waitForClient(() => {
-      fail('Client shouldnt have appeared');
+      throw new Error('Client shouldnt have appeared');
     }, 10);
 
     client.subscribe(
@@ -1367,7 +1368,7 @@ describe('lazy', () => {
     });
 
     await server.waitForClient(() => {
-      fail('Client shouldnt have appeared');
+      throw new Error('Client shouldnt have appeared');
     }, 10);
 
     const sub1 = tsubscribe(client, {
@@ -1388,7 +1389,7 @@ describe('lazy', () => {
 
     // still is connected
     await server.waitForClientClose(() => {
-      fail('Client should have closed');
+      throw new Error('Client should have closed');
     }, 10);
 
     // everyone unsubscribed
@@ -1414,7 +1415,7 @@ describe('lazy', () => {
 
     // still is connected
     await server.waitForClientClose(() => {
-      fail("Client shouldn't have closed");
+      throw new Error("Client shouldn't have closed");
     }, 10);
 
     // everyone unsubscribed
@@ -1422,7 +1423,7 @@ describe('lazy', () => {
 
     // still connected because of the lazyCloseTimeout
     await server.waitForClientClose(() => {
-      fail("Client shouldn't have closed");
+      throw new Error("Client shouldn't have closed");
     }, 10);
 
     // but will close eventually
@@ -1460,7 +1461,7 @@ describe('lazy', () => {
 
     // if the debounce is set up incorrectly, a leftover timeout might close the connection earlier
     await server.waitForClientClose(() => {
-      fail("Client shouldn't have closed");
+      throw new Error("Client shouldn't have closed");
     }, 5);
   });
 
@@ -1508,11 +1509,11 @@ describe('lazy', () => {
 
     // first subscription shouldnt complete and the client shouldnt disconnect
     await sub0.waitForComplete(() => {
-      fail("subscription shouldn't have completed");
+      throw new Error("subscription shouldn't have completed");
     }, 20);
 
     await server.waitForClientClose(() => {
-      fail("client shouldn't have closed");
+      throw new Error("client shouldn't have closed");
     }, 20);
   });
 });
@@ -1868,7 +1869,7 @@ describe('reconnecting', () => {
 
     // client should NOT leave yet
     await server.waitForClientClose(() => {
-      fail("Client should've stayed connected");
+      throw new Error("Client should've stayed connected");
     }, 10);
 
     // and client should still be connected
@@ -1925,7 +1926,7 @@ describe('reconnecting', () => {
     retry();
 
     await server.waitForClient(() => {
-      fail("Client shouldn't have reconnected");
+      throw new Error("Client shouldn't have reconnected");
     }, 20);
 
     // case 2
@@ -1948,14 +1949,14 @@ describe('reconnecting', () => {
     retry();
 
     await server.waitForClient(() => {
-      fail("Client shouldn't have reconnected");
+      throw new Error("Client shouldn't have reconnected");
     }, 20);
   });
 
   it('should not count lazy connect after succesful reconnect as another retry', async () => {
     const { url, ...server } = await startTServer();
 
-    const retry = jest.fn();
+    const retry = vitest.fn();
     const client = createClient({
       url,
       retryAttempts: 1,
@@ -2029,11 +2030,11 @@ describe('events', () => {
   it('should emit to relevant listeners with expected arguments', async () => {
     const { url, ...server } = await startTServer();
 
-    const connectingFn = jest.fn(noop as EventListener<'connecting'>);
-    const openedFn = jest.fn(noop as EventListener<'opened'>);
-    const connectedFn = jest.fn(noop as EventListener<'connected'>);
-    const messageFn = jest.fn(noop as EventListener<'message'>);
-    const closedFn = jest.fn(noop as EventListener<'closed'>);
+    const connectingFn = vitest.fn(noop as EventListener<'connecting'>);
+    const openedFn = vitest.fn(noop as EventListener<'opened'>);
+    const connectedFn = vitest.fn(noop as EventListener<'connected'>);
+    const messageFn = vitest.fn(noop as EventListener<'message'>);
+    const closedFn = vitest.fn(noop as EventListener<'closed'>);
 
     // wait for connected
     const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
@@ -2130,7 +2131,7 @@ describe('events', () => {
   });
 
   it('should emit the websocket connection error', (done) => {
-    const gotErr = jest.fn();
+    const gotErr = vitest.fn();
     createClient({
       url: 'ws://localhost/i/dont/exist',
       lazy: false,
@@ -2158,7 +2159,7 @@ describe('events', () => {
 
   it('should emit the websocket connection error on first subscribe in lazy mode', (done) => {
     // dont use expect.assertions(3) because https://github.com/facebook/jest/issues/8297
-    const expected = jest.fn();
+    const expected = vitest.fn();
 
     const client = createClient({
       url: 'ws://localhost/i/dont/exist',
@@ -2195,8 +2196,8 @@ describe('events', () => {
   it('should emit ping and pong events when pinging server', async () => {
     const { url, ...server } = await startTServer();
 
-    const pingFn = jest.fn(noop as EventListener<'ping'>);
-    const pongFn = jest.fn(noop as EventListener<'pong'>);
+    const pingFn = vitest.fn(noop as EventListener<'ping'>);
+    const pongFn = vitest.fn(noop as EventListener<'pong'>);
 
     const client = createClient({
       url,
@@ -2243,8 +2244,8 @@ describe('events', () => {
   it('should emit ping and pong events when receiving server pings', async () => {
     const { url, ...server } = await startTServer();
 
-    const pingFn = jest.fn(noop as EventListener<'ping'>);
-    const pongFn = jest.fn(noop as EventListener<'pong'>);
+    const pingFn = vitest.fn(noop as EventListener<'ping'>);
+    const pongFn = vitest.fn(noop as EventListener<'pong'>);
 
     const client = createClient({
       url,
@@ -2284,7 +2285,7 @@ describe('events', () => {
 
   it('should provide the latest socket reference to event listeners', async () => {
     // dont use expect.assertions(6) because https://github.com/facebook/jest/issues/8297
-    const expected = jest.fn();
+    const expected = vitest.fn();
 
     const { url, ...server } = await startTServer();
 
@@ -2498,7 +2499,7 @@ describe('iterate', () => {
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
-    iterator.return = jest.fn(iterator.return);
+    iterator.return = vitest.fn(iterator.return);
 
     setTimeout(() => pong(pingKey), 0);
 
@@ -2531,7 +2532,7 @@ describe('iterate', () => {
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
-    iterator.return = jest.fn(iterator.return);
+    iterator.return = vitest.fn(iterator.return);
 
     setTimeout(() => pong(pingKey), 0);
 
