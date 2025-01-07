@@ -27,6 +27,7 @@ import {
   expect,
   vitest,
 } from 'vitest';
+import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -147,13 +148,14 @@ function tsubscribe<T = unknown>(
  * Tests
  */
 
-it('should use the provided WebSocket implementation', async (done) => {
+it('should use the provided WebSocket implementation', async () => {
   const { url } = await startTServer();
 
   Object.assign(global, {
     WebSocket: null,
   });
 
+  const { resolve: connected, promise: waitForConnect } = createDeferred();
   createClient({
     url,
     retryAttempts: 0,
@@ -161,9 +163,10 @@ it('should use the provided WebSocket implementation', async (done) => {
     lazy: false,
     webSocketImpl: WebSocket,
     on: {
-      connected: () => done(),
+      connected: () => connected(),
     },
   });
+  await waitForConnect;
 });
 
 it('should accept a function for the url', async () => {
@@ -197,11 +200,12 @@ it('should not accept invalid WebSocket implementations', async () => {
   ).toThrow();
 });
 
-it('should recieve optional connection ack payload in event handler', async (done) => {
+it('should recieve optional connection ack payload in event handler', async () => {
   const { url } = await startTServer({
     onConnect: () => ({ itsa: 'me' }),
   });
 
+  const { resolve: connected, promise: waitForConnect } = createDeferred();
   createClient({
     url,
     retryAttempts: 0,
@@ -210,17 +214,19 @@ it('should recieve optional connection ack payload in event handler', async (don
     on: {
       connected: (_socket, payload) => {
         expect(payload).toEqual({ itsa: 'me' });
-        done();
+        connected();
       },
     },
   });
+  await waitForConnect;
 });
 
-it('should close with error message during connecting issues', async (done) => {
+it('should close with error message during connecting issues', async () => {
   expect.assertions(4);
 
   const { url } = await startTServer();
 
+  const { resolve: closed, promise: waitForClose } = createDeferred();
   const someErr = new Error('Welcome');
   const client = createClient({
     url,
@@ -232,7 +238,7 @@ it('should close with error message during connecting issues', async (done) => {
         expect((event as CloseEvent).reason).toBe('Welcome');
         expect((event as CloseEvent).wasClean).toBeTruthy();
 
-        done();
+        closed();
       },
       connected: () => {
         // the `connected` listener is called right before successful connection
@@ -248,6 +254,8 @@ it('should close with error message during connecting issues', async (done) => {
   await sub.waitForError((err) => {
     expect(err).toBe(someErr);
   });
+
+  await waitForClose;
 });
 
 it('should pass the `connectionParams` through', async () => {
@@ -289,7 +297,7 @@ it('should pass the `connectionParams` through', async () => {
   });
 });
 
-it('should close the socket if the `connectionParams` rejects or throws', async (done) => {
+it('should close the socket if the `connectionParams` rejects or throws', async () => {
   expect.assertions(8);
 
   const server = await startTServer();
@@ -317,6 +325,8 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
     expect(err).toBe(someErr);
   });
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
+
   client = createClient({
     url: server.url,
     retryAttempts: 0,
@@ -327,7 +337,7 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
         expect((event as CloseEvent).reason).toBe('No auth?');
         expect((event as CloseEvent).wasClean).toBeTruthy();
 
-        done();
+        closed();
       },
     },
     connectionParams: () => Promise.reject(someErr),
@@ -337,9 +347,11 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   await sub.waitForError((err) => {
     expect(err).toBe(someErr);
   });
+
+  await waitForClosed;
 });
 
-it('should report close events when `connectionParams` takes too long', async (done) => {
+it('should report close events when `connectionParams` takes too long', async () => {
   const server = await startTServer({
     connectionInitWaitTimeout: 10,
   });
@@ -361,6 +373,9 @@ it('should report close events when `connectionParams` takes too long', async (d
     );
   });
 
+  const { resolve: nonLazyError, promise: waitForNonLazyError } =
+    createDeferred();
+
   // non-lazy
   createClient({
     url: server.url,
@@ -370,12 +385,14 @@ it('should report close events when `connectionParams` takes too long', async (d
       expect((event as CloseEvent).code).toBe(
         CloseCode.ConnectionInitialisationTimeout,
       );
-      done();
+      nonLazyError();
     },
     connectionParams: () =>
       // takes longer than the connectionInitWaitTimeout
       new Promise<undefined>((resolve) => setTimeout(resolve, 20)),
   });
+
+  await waitForNonLazyError;
 });
 
 it('should not send the complete message if the socket is not open', async () => {
@@ -488,7 +505,7 @@ it('should use a custom JSON message reviver function', async () => {
   });
 });
 
-it('should use a custom JSON message replacer function', async (done) => {
+it('should use a custom JSON message replacer function', async () => {
   const { url, waitForClient } = await startTServer();
 
   createClient({
@@ -504,15 +521,17 @@ it('should use a custom JSON message replacer function', async (done) => {
     },
   });
 
+  const { resolve: messaged, promise: waitForMessage } = createDeferred();
   await waitForClient((client) => {
     client.onMessage((data) => {
       expect(data).toBe('{"type":"CONNECTION_INIT"}');
-      done();
+      messaged();
     });
   });
+  await waitForMessage;
 });
 
-it('should close socket if connection not acknowledged', async (done) => {
+it('should close socket if connection not acknowledged', async () => {
   const { url, ...server } = await startTServer({
     onConnect: () =>
       new Promise(() => {
@@ -528,16 +547,18 @@ it('should close socket if connection not acknowledged', async (done) => {
     connectionAckWaitTimeout: 10,
   });
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
   client.on('closed', async (err) => {
     expect((err as CloseEvent).code).toBe(
       CloseCode.ConnectionAcknowledgementTimeout,
     );
     await server.dispose();
-    done();
+    closed();
   });
+  await waitForClosed;
 });
 
-it('should close socket with error on malformed request', async (done) => {
+it('should close socket with error on malformed request', async () => {
   expect.assertions(4);
 
   const { url } = await startTServer();
@@ -557,6 +578,7 @@ it('should close socket with error on malformed request', async (done) => {
     },
   });
 
+  const { resolve: errored, promise: waitForError } = createDeferred();
   client.subscribe(
     {
       query: 'notaquery',
@@ -569,14 +591,15 @@ it('should close socket with error on malformed request', async (done) => {
           'Syntax Error: Unexpected Name "notaquery".',
         );
         client.dispose();
-        done();
+        errored();
       },
       complete: noop,
     },
   );
+  await waitForError;
 });
 
-it('should report close error even if complete message followed', async (done) => {
+it('should report close error even if complete message followed', async () => {
   expect.assertions(3);
 
   const { url, server } = await startRawServer();
@@ -605,6 +628,7 @@ it('should report close error even if complete message followed', async (done) =
     });
   });
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
   const client = createClient({
     url,
     lazy: false,
@@ -615,7 +639,7 @@ it('should report close error even if complete message followed', async (done) =
         expect((err as CloseEvent).code).toBe(CloseCode.BadResponse);
         expect((err as CloseEvent).reason).toMatchSnapshot();
 
-        done();
+        closed();
       },
     },
   });
@@ -633,6 +657,8 @@ it('should report close error even if complete message followed', async (done) =
       complete: noop,
     },
   );
+
+  await waitForClosed;
 });
 
 it('should report close causing internal client errors to listeners', async () => {
@@ -744,13 +770,14 @@ it('should report close causing internal client errors to subscription sinks', a
   });
 });
 
-it('should limit the internal client error message size', async (done) => {
+it('should limit the internal client error message size', async () => {
   const { url } = await startTServer();
 
   const longError = new Error(
     'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
   );
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
   createClient({
     url,
     retryAttempts: 0,
@@ -762,22 +789,25 @@ it('should limit the internal client error message size', async (done) => {
         expect((event as CloseEvent).reason).toBe('Internal client error');
         expect((event as CloseEvent).wasClean).toBeTruthy(); // because the client reported the error
 
-        done();
+        closed();
       },
     },
     connectionParams: () => {
       throw longError;
     },
   });
+
+  await waitForClosed;
 });
 
-it('should limit the internal client bad response error message size', async (done) => {
+it('should limit the internal client bad response error message size', async () => {
   const { url } = await startTServer();
 
   const longError = new Error(
     'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
   );
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
   createClient({
     url,
     retryAttempts: 0,
@@ -794,13 +824,14 @@ it('should limit the internal client bad response error message size', async (do
         expect((event as CloseEvent).reason).toBe('Bad response');
         expect((event as CloseEvent).wasClean).toBeTruthy(); // because the client reported the error
 
-        done();
+        closed();
       },
     },
   });
+  await waitForClosed;
 });
 
-it('should terminate socket immediately on terminate', async (done) => {
+it('should terminate socket immediately on terminate', async () => {
   const { url, waitForConnect } = await startTServer();
 
   class CannotCloseWebSocket extends WebSocket {
@@ -814,6 +845,7 @@ it('should terminate socket immediately on terminate', async (done) => {
     }
   }
 
+  const { resolve: closed, promise: waitForClosed } = createDeferred();
   const client = createClient({
     url,
     retryAttempts: 0,
@@ -833,7 +865,7 @@ it('should terminate socket immediately on terminate', async (done) => {
         expect((event as TerminatedCloseEvent).code).toBe(4499);
         expect((event as TerminatedCloseEvent).reason).toBe('Terminated');
         expect((event as TerminatedCloseEvent).wasClean).toBeFalsy();
-        done();
+        closed();
       },
     },
   });
@@ -841,6 +873,8 @@ it('should terminate socket immediately on terminate', async (done) => {
   await waitForConnect();
 
   client.terminate();
+
+  await waitForClosed;
 });
 
 describe('ping/pong', () => {
@@ -957,7 +991,7 @@ describe('ping/pong', () => {
     }, 20);
   });
 
-  it('should ping the server after the keepAlive timeout', async (done) => {
+  it('should ping the server after the keepAlive timeout', async () => {
     const { url, waitForConnect, waitForClient } = await startTServer();
 
     createClient({
@@ -970,12 +1004,14 @@ describe('ping/pong', () => {
 
     await waitForConnect();
 
+    const { resolve: messaged, promise: waitForMessage } = createDeferred();
     await waitForClient((client) => {
       client.onMessage((data) => {
         expect(data).toBe('{"type":"ping"}');
-        done();
+        messaged();
       });
     });
+    await waitForMessage;
   });
 });
 
@@ -1465,8 +1501,11 @@ describe('lazy', () => {
     }, 5);
   });
 
-  it('should report errors to the `onNonLazyError` callback', async (done) => {
+  it('should report errors to the `onNonLazyError` callback', async () => {
     const { url, ...server } = await startTServer();
+
+    const { resolve: nonLazyError, promise: waitForNonLazyError } =
+      createDeferred();
 
     createClient({
       url,
@@ -1474,13 +1513,15 @@ describe('lazy', () => {
       retryAttempts: 0,
       onNonLazyError: (err) => {
         expect((err as CloseEvent).code).toBe(1005);
-        done();
+        nonLazyError();
       },
     });
 
     await server.waitForClient((client) => {
       client.close();
     });
+
+    await waitForNonLazyError;
   });
 
   it('should not close connection if a subscription is disposed multiple times', async () => {
@@ -1771,8 +1812,10 @@ describe('reconnecting', () => {
     }, 20);
   });
 
-  it('should allow retrying non-CloseEvent connection problems', async (done) => {
+  it('should allow retrying non-CloseEvent connection problems', async () => {
     let count = 0;
+    const { resolve: connecting, promise: waitForConnecting } =
+      createDeferred();
     createClient({
       url: 'ws://idontexitst.no',
       lazy: false,
@@ -1784,11 +1827,12 @@ describe('reconnecting', () => {
         connecting: () => {
           count++;
           if (count === 2) {
-            done();
+            connecting();
           }
         },
       },
     });
+    await waitForConnecting;
   });
 
   it.todo(
@@ -2112,8 +2156,10 @@ describe('events', () => {
     });
   });
 
-  it('should emit closed event when disposing', async (done) => {
+  it('should emit closed event when disposing', async () => {
     const { url, waitForClient } = await startTServer();
+
+    const { resolve: closed, promise: waitForClosed } = createDeferred();
 
     const client = createClient({
       url,
@@ -2121,17 +2167,21 @@ describe('events', () => {
       retryAttempts: 0,
       onNonLazyError: noop,
       on: {
-        closed: () => done(),
+        closed: () => closed(),
       },
     });
 
     await waitForClient();
 
     client.dispose();
+
+    await waitForClosed;
   });
 
-  it('should emit the websocket connection error', (done) => {
+  it('should emit the websocket connection error', async () => {
     const gotErr = vitest.fn();
+    const { resolve: nonLazyError, promise: waitForNonLazyError } =
+      createDeferred();
     createClient({
       url: 'ws://localhost/i/dont/exist',
       lazy: false,
@@ -2140,7 +2190,7 @@ describe('events', () => {
         // connection error
         expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
         expect(gotErr).toHaveBeenCalledTimes(2);
-        done();
+        nonLazyError();
       },
       on: {
         closed: (err) => {
@@ -2155,9 +2205,10 @@ describe('events', () => {
         },
       },
     });
+    await waitForNonLazyError;
   });
 
-  it('should emit the websocket connection error on first subscribe in lazy mode', (done) => {
+  it('should emit the websocket connection error on first subscribe in lazy mode', async () => {
     // dont use expect.assertions(3) because https://github.com/facebook/jest/issues/8297
     const expected = vitest.fn();
 
@@ -2178,6 +2229,7 @@ describe('events', () => {
       expected();
     });
 
+    const { resolve: errored, promise: waitForError } = createDeferred();
     client.subscribe(
       { query: '' },
       {
@@ -2187,10 +2239,11 @@ describe('events', () => {
           // connection error
           expect((err as ErrorEvent).error.code).toBe('ECONNREFUSED');
           expect(expected).toHaveBeenCalledTimes(2);
-          done();
+          errored();
         },
       },
     );
+    await waitForError;
   });
 
   it('should emit ping and pong events when pinging server', async () => {
