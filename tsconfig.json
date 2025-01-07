@@ -14,6 +14,7 @@
   },
   "include": [
     "src",
+    "tests",
     "scripts",
     "rollup.config.ts",
     "babel.config.js",

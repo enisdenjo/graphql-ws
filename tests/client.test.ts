@@ -20,6 +20,8 @@ import {
 import { startRawServer, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 import { pong } from './fixtures/simple';
+import { beforeAll, afterAll, it, describe, expect } from 'vitest';
+import { beforeEach } from 'bun:test';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;

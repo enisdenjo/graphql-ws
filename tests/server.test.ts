@@ -18,6 +18,8 @@ import {
 } from '../src/common';
 import { schema, schemaConfig } from './fixtures/simple';
 import { createTClient, startWSTServer as startTServer } from './utils';
+import { describe, beforeAll, afterAll, it, expect, vitest } from 'vitest';
+import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -34,8 +36,9 @@ afterAll(() => {
  * Tests
  */
 
-it('should use the schema resolved from a promise on subscribe', async (done) => {
+it('should use the schema resolved from a promise on subscribe', async () => {
   expect.assertions(2);
+  const { resolve: completed, promise: waitForComplete } = createDeferred();
 
   const schema = new GraphQLSchema(schemaConfig);
 
@@ -48,7 +51,7 @@ it('should use the schema resolved from a promise on subscribe', async (done) =>
       expect(args.schema).toBe(schema);
       return execute(args);
     },
-    onComplete: () => done(),
+    onComplete: () => completed(),
   });
   const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
   client.ws.send(
@@ -67,6 +70,8 @@ it('should use the schema resolved from a promise on subscribe', async (done) =>
       },
     }),
   );
+
+  await waitForComplete;
 });
 
 it('should use the provided validate function', async () => {
@@ -190,8 +195,8 @@ it('should use the provided roots as resolvers', async () => {
 it('should pass in the context value from the config', async () => {
   const context = {};
 
-  const executeFn = jest.fn((args) => execute(args));
-  const subscribeFn = jest.fn((args) => subscribe(args));
+  const executeFn = vitest.fn((args) => execute(args));
+  const subscribeFn = vitest.fn((args) => subscribe(args));
 
   const { url } = await startTServer({
     context,
@@ -254,7 +259,10 @@ it('should pass in the context value from the config', async () => {
   expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
 });
 
-it('should pass the `onSubscribe` exec args to the `context` option and use it', async (done) => {
+it('should pass the `onSubscribe` exec args to the `context` option and use it', async () => {
+  const { resolve: executionDone, promise: waitForExecuteDone } =
+    createDeferred();
+
   const context = {};
   const execArgs = {
     // no context here
@@ -273,7 +281,7 @@ it('should pass the `onSubscribe` exec args to the `context` option and use it',
     execute: (args) => {
       expect(args).toBe(execArgs); // from `onSubscribe`
       expect(args.contextValue).toBe(context); // injected by `context`
-      done();
+      executionDone();
       return execute(args);
     },
     subscribe,
@@ -298,9 +306,14 @@ it('should pass the `onSubscribe` exec args to the `context` option and use it',
       },
     }),
   );
+
+  await waitForExecuteDone;
 });
 
-it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async (done) => {
+it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async () => {
+  const { resolve: executionDone, promise: waitForExecuteDone } =
+    createDeferred();
+
   const rootValue = {};
   const execArgs = {
     // no rootValue here
@@ -318,7 +331,7 @@ it('should use the root from the `roots` option if the `onSubscribe` doesnt prov
     execute: (args) => {
       expect(args).toBe(execArgs); // from `onSubscribe`
       expect(args.rootValue).toBe(rootValue); // injected by `roots`
-      done();
+      executionDone();
       return execute(args);
     },
     subscribe,
@@ -343,9 +356,14 @@ it('should use the root from the `roots` option if the `onSubscribe` doesnt prov
       },
     }),
   );
+
+  await waitForExecuteDone;
 });
 
-it('should prefer the `onSubscribe` context value even if `context` option is set', async (done) => {
+it('should prefer the `onSubscribe` context value even if `context` option is set', async () => {
+  const { resolve: executionDone, promise: waitForExecuteDone } =
+    createDeferred();
+
   const context = 'not-me';
   const execArgs = {
     contextValue: 'me-me', // my custom context
@@ -361,7 +379,7 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
     execute: (args) => {
       expect(args).toBe(execArgs); // from `onSubscribe`
       expect(args.contextValue).not.toBe(context); // from `onSubscribe`
-      done();
+      executionDone();
       return execute(args);
     },
     subscribe,
@@ -386,6 +404,8 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
       },
     }),
   );
+
+  await waitForExecuteDone;
 });
 
 it('should use a custom JSON message replacer function', async () => {
@@ -517,7 +537,9 @@ describe('Connect', () => {
     });
   });
 
-  it('should pass in the `connectionParams` through the context and have other flags correctly set', async (done) => {
+  it('should pass in the `connectionParams` through the context and have other flags correctly set', async () => {
+    const { resolve: connected, promise: waitForConnect } = createDeferred();
+
     const connectionParams = {
       some: 'string',
       with: 'a',
@@ -529,7 +551,7 @@ describe('Connect', () => {
         expect(ctx.connectionParams).toEqual(connectionParams);
         expect(ctx.connectionInitReceived).toBeTruthy(); // obviously received
         expect(ctx.acknowledged).toBeFalsy(); // not yet acknowledged
-        done();
+        connected();
         return true;
       },
     });
@@ -540,6 +562,8 @@ describe('Connect', () => {
         payload: connectionParams,
       }),
     );
+
+    await waitForConnect;
   });
 
   it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
@@ -573,7 +597,7 @@ describe('Connect', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldnt have closed');
+      throw new Error('Shouldnt have closed');
     }, 30);
   });
 
@@ -636,7 +660,9 @@ describe('Connect', () => {
     });
   });
 
-  it("should have acknowledged connection even if ack message send didn't resolve", (done) => {
+  it("should have acknowledged connection even if ack message send didn't resolve", async () => {
+    const { resolve: subscribed, promise: waitForSubscribe } = createDeferred();
+
     let sent: Promise<void> | null = null;
     let resolveSend = () => {
       // noop
@@ -646,7 +672,7 @@ describe('Connect', () => {
       onSubscribe(ctx) {
         expect(ctx.acknowledged).toBeTruthy();
         resolveSend();
-        done();
+        subscribed();
       },
     }).opened(
       {
@@ -667,7 +693,7 @@ describe('Connect', () => {
           await new Promise<void>((resolve) => (resolveSend = resolve));
         },
         close: (code, reason) => {
-          fail(`Unexpected close with ${code}: ${reason}`);
+          throw new Error(`Unexpected close with ${code}: ${reason}`);
         },
         onMessage: async (cb) => {
           cb(stringifyMessage({ type: MessageType.ConnectionInit }));
@@ -689,6 +715,8 @@ describe('Connect', () => {
       },
       {},
     );
+
+    await waitForSubscribe;
   });
 });
 
@@ -743,21 +771,25 @@ describe('Ping/Pong', () => {
     );
 
     await client.waitForMessage(() => {
-      fail('Shouldt have received a message');
+      throw new Error('Shouldt have received a message');
     }, 20);
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 20);
   });
 
-  it('should invoke the websocket callback on ping and not reply automatically', async (done) => {
+  it('should invoke the websocket callback on ping and not reply automatically', async () => {
+    const { resolve: pinged, promise: waitForPing } = createDeferred();
+
     const payload = { not: 'relevant' };
 
     const closed = makeServer({}).opened(
       {
         protocol: GRAPHQL_TRANSPORT_WS_PROTOCOL,
-        send: () => fail('Shouldnt have responded to a ping'),
+        send: () => {
+          throw new Error('Shouldnt have responded to a ping');
+        },
         close: () => {
           /**/
         },
@@ -768,16 +800,22 @@ describe('Ping/Pong', () => {
           setImmediate(() => {
             expect(pyld).toEqual(payload);
             closed(1000, '');
-            done();
+            pinged();
           });
         },
-        onPong: () => fail('Nothing shouldve ponged'),
+        onPong: () => {
+          throw new Error('Nothing shouldve ponged');
+        },
       },
       {},
     );
+
+    await waitForPing;
   });
 
-  it('should invoke the websocket callback on pong', async (done) => {
+  it('should invoke the websocket callback on pong', async () => {
+    const { resolve: ponged, promise: waitForPong } = createDeferred();
+
     const payload = { not: 'relevant' };
 
     const closed = makeServer({}).opened(
@@ -790,17 +828,21 @@ describe('Ping/Pong', () => {
         onMessage: (cb) => {
           cb(stringifyMessage({ type: MessageType.Pong, payload }));
         },
-        onPing: () => fail('Nothing shouldve pinged'),
+        onPing: () => {
+          throw new Error('Nothing shouldve pinged');
+        },
         onPong: (pyld) => {
           setImmediate(() => {
             expect(pyld).toEqual(payload);
             closed(1000, '');
-            done();
+            ponged();
           });
         },
       },
       {},
     );
+
+    await waitForPong;
   });
 });
 
@@ -889,7 +931,7 @@ describe('Subscribe', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 30);
   });
 
@@ -936,7 +978,7 @@ describe('Subscribe', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 30);
   });
 
@@ -992,7 +1034,7 @@ describe('Subscribe', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 30);
   });
 
@@ -1038,7 +1080,7 @@ describe('Subscribe', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 30);
   });
 
@@ -1090,7 +1132,7 @@ describe('Subscribe', () => {
     }
 
     await client.waitForClose(() => {
-      fail('Shouldt have closed');
+      throw new Error('Shouldt have closed');
     }, 30);
   });
 
@@ -1271,7 +1313,7 @@ describe('Subscribe', () => {
     resultIsHere({ data: { getValue: 'nope' } });
 
     await client.waitForMessage(() => {
-      fail('No further activity expected after complete');
+      throw new Error('No further activity expected after complete');
     }, 30);
   });
 
@@ -1333,7 +1375,7 @@ describe('Subscribe', () => {
     });
 
     await client.waitForClose(() => {
-      fail('Shouldnt close because of GraphQL errors');
+      throw new Error('Shouldnt close because of GraphQL errors');
     }, 30);
   });
 
@@ -1429,7 +1471,7 @@ describe('Subscribe', () => {
     server.pong();
 
     await client.waitForMessage(() => {
-      fail("Shouldn't have received a message");
+      throw new Error("Shouldn't have received a message");
     }, 30);
   });
 
@@ -1568,10 +1610,12 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should call `onComplete` callback when client completes', async (done) => {
+  it('should call `onComplete` callback when client completes', async () => {
+    const { resolve: completed, promise: waitForComplete } = createDeferred();
+
     const server = await startTServer({
       onComplete: () => {
-        done();
+        completed();
       },
     });
 
@@ -1610,12 +1654,16 @@ describe('Subscribe', () => {
         type: MessageType.Complete,
       }),
     );
+
+    await waitForComplete;
   });
 
-  it('should call `onComplete` callback even if socket terminates abruptly', async (done) => {
+  it('should call `onComplete` callback even if socket terminates abruptly', async () => {
+    const { resolve: completed, promise: waitForComplete } = createDeferred();
+
     const server = await startTServer({
       onComplete: () => {
-        done();
+        completed();
       },
     });
 
@@ -1649,6 +1697,8 @@ describe('Subscribe', () => {
 
     // terminate socket abruptly
     client.ws.terminate();
+
+    await waitForComplete;
   });
 
   it('should respect completed subscriptions even if subscribe operation stalls', async () => {
@@ -1708,13 +1758,15 @@ describe('Subscribe', () => {
     server.pong();
 
     await client.waitForMessage(() => {
-      fail("Shouldn't have received a message");
+      throw new Error("Shouldn't have received a message");
     }, 30);
 
     await server.waitForComplete();
   });
 
-  it('should clean up subscription reservations on abrupt errors without relying on close', async (done) => {
+  it('should clean up subscription reservations on abrupt errors without relying on close', async () => {
+    const { resolve: messaged, promise: waitForMessage } = createDeferred();
+
     let currCtx: Context;
     makeServer({
       connectionInitWaitTimeout: 0, // defaults to 3 seconds
@@ -1732,7 +1784,7 @@ describe('Subscribe', () => {
           /**/
         },
         close: () => {
-          fail("Shouldn't have closed");
+          throw new Error("Shouldn't have closed");
         },
         onMessage: async (cb) => {
           await cb(stringifyMessage({ type: MessageType.ConnectionInit }));
@@ -1748,16 +1800,18 @@ describe('Subscribe', () => {
                 },
               }),
             );
-            fail("Subscribe shouldn't have succeeded");
+            throw new Error("Subscribe shouldn't have succeeded");
           } catch {
             // we dont close the connection but still expect the subscriptions to clean up
             expect(Object.entries(currCtx.subscriptions)).toHaveLength(0);
-            done();
+            messaged();
           }
         },
       },
       {},
     );
+
+    await waitForMessage;
   });
 
   it('should not send a complete message back if the client sent it', async () => {
@@ -1792,7 +1846,7 @@ describe('Subscribe', () => {
     await server.waitForComplete();
 
     await client.waitForMessage(() => {
-      fail("Shouldn't have received a message");
+      throw new Error("Shouldn't have received a message");
     }, 20);
   });
 
@@ -1808,7 +1862,7 @@ describe('Subscribe', () => {
       throw new Error('Subscribe resolved early');
     };
 
-    const sendFn = jest.fn();
+    const sendFn = vitest.fn();
 
     const closed = makeServer({
       schema,
@@ -1857,7 +1911,9 @@ describe('Subscribe', () => {
 });
 
 describe('Disconnect/close', () => {
-  it('should report close code and reason to disconnect and close callback after connection acknowledgement', async (done) => {
+  it('should report close code and reason to disconnect and close callback after connection acknowledgement', async () => {
+    const { resolve: closed, promise: waitForClose } = createDeferred();
+
     const { url, waitForConnect } = await startTServer({
       // 1st
       onDisconnect: (_ctx, code, reason) => {
@@ -1868,7 +1924,7 @@ describe('Disconnect/close', () => {
       onClose: (_ctx, code, reason) => {
         expect(code).toBe(4321);
         expect(String(reason)).toBe('Byebye');
-        done();
+        closed();
       },
     });
 
@@ -1882,23 +1938,29 @@ describe('Disconnect/close', () => {
     await waitForConnect();
 
     client.ws.close(4321, 'Byebye');
+
+    await waitForClose;
   });
 
-  it('should trigger the close callback instead of disconnect if connection is not acknowledged', async (done) => {
+  it('should trigger the close callback instead of disconnect if connection is not acknowledged', async () => {
+    const { resolve: closed, promise: waitForClose } = createDeferred();
+
     const { url } = await startTServer({
       onDisconnect: () => {
-        fail("Disconnect callback shouldn't be triggered");
+        throw new Error("Disconnect callback shouldn't be triggered");
       },
       onClose: (_ctx, code, reason) => {
         expect(code).toBe(4321);
         expect(String(reason)).toBe('Byebye');
-        done();
+        closed();
       },
     });
 
     const client = await createTClient(url);
 
     client.ws.close(4321, 'Byebye');
+
+    await waitForClose;
   });
 
   it('should dispose of subscriptions on close even if added late to the subscriptions list', async () => {

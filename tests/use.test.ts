@@ -19,6 +19,7 @@ import {
   FastifyExtra,
   TClient,
 } from './utils';
+import { beforeAll, afterAll, it, expect, describe } from 'vitest';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;

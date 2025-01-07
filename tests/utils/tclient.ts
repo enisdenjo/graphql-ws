@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../common';
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../../src/common';
 
 export interface TClient {
   ws: WebSocket;

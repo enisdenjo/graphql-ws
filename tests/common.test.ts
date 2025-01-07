@@ -1,4 +1,5 @@
 import { validateMessage, MessageType } from '../src/common';
+import { it, expect } from 'vitest';
 
 it.each([
   // straight up invalid
