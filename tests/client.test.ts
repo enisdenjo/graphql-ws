@@ -18,16 +18,9 @@ import {
 import { startRawServer, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 import { pong } from './fixtures/simple';
-import {
-  beforeEach,
-  beforeAll,
-  afterAll,
-  it,
-  describe,
-  expect,
-  vitest,
-} from 'vitest';
+import { beforeEach, beforeAll, afterAll, it, describe, vitest } from 'vitest';
 import { createDeferred } from './utils/deferred';
+import { randomUUID } from 'crypto';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -182,7 +175,9 @@ it('should accept a function for the url', async () => {
   await server.waitForClient();
 });
 
-it('should not accept invalid WebSocket implementations', async () => {
+it('should not accept invalid WebSocket implementations', async ({
+  expect,
+}) => {
   const { url } = await startTServer();
 
   Object.assign(global, {
@@ -200,7 +195,9 @@ it('should not accept invalid WebSocket implementations', async () => {
   ).toThrow();
 });
 
-it('should recieve optional connection ack payload in event handler', async () => {
+it('should recieve optional connection ack payload in event handler', async ({
+  expect,
+}) => {
   const { url } = await startTServer({
     onConnect: () => ({ itsa: 'me' }),
   });
@@ -221,7 +218,9 @@ it('should recieve optional connection ack payload in event handler', async () =
   await waitForConnect;
 });
 
-it('should close with error message during connecting issues', async () => {
+it('should close with error message during connecting issues', async ({
+  expect,
+}) => {
   expect.assertions(4);
 
   const { url } = await startTServer();
@@ -258,7 +257,7 @@ it('should close with error message during connecting issues', async () => {
   await waitForClose;
 });
 
-it('should pass the `connectionParams` through', async () => {
+it('should pass the `connectionParams` through', async ({ expect }) => {
   const server = await startTServer();
 
   let client = createClient({
@@ -297,7 +296,9 @@ it('should pass the `connectionParams` through', async () => {
   });
 });
 
-it('should close the socket if the `connectionParams` rejects or throws', async () => {
+it('should close the socket if the `connectionParams` rejects or throws', async ({
+  expect,
+}) => {
   expect.assertions(8);
 
   const server = await startTServer();
@@ -351,7 +352,9 @@ it('should close the socket if the `connectionParams` rejects or throws', async 
   await waitForClosed;
 });
 
-it('should report close events when `connectionParams` takes too long', async () => {
+it('should report close events when `connectionParams` takes too long', async ({
+  expect,
+}) => {
   const server = await startTServer({
     connectionInitWaitTimeout: 10,
   });
@@ -482,7 +485,7 @@ it('should not call complete after connection error', async () => {
   }, 20);
 });
 
-it('should use a custom JSON message reviver function', async () => {
+it('should use a custom JSON message reviver function', async ({ expect }) => {
   const { url } = await startTServer();
 
   const client = createClient({
@@ -505,7 +508,7 @@ it('should use a custom JSON message reviver function', async () => {
   });
 });
 
-it('should use a custom JSON message replacer function', async () => {
+it('should use a custom JSON message replacer function', async ({ expect }) => {
   const { url, waitForClient } = await startTServer();
 
   createClient({
@@ -531,7 +534,7 @@ it('should use a custom JSON message replacer function', async () => {
   await waitForMessage;
 });
 
-it('should close socket if connection not acknowledged', async () => {
+it('should close socket if connection not acknowledged', async ({ expect }) => {
   const { url, ...server } = await startTServer({
     onConnect: () =>
       new Promise(() => {
@@ -558,7 +561,9 @@ it('should close socket if connection not acknowledged', async () => {
   await waitForClosed;
 });
 
-it('should close socket with error on malformed request', async () => {
+it('should close socket with error on malformed request', async ({
+  expect,
+}) => {
   expect.assertions(4);
 
   const { url } = await startTServer();
@@ -599,7 +604,9 @@ it('should close socket with error on malformed request', async () => {
   await waitForError;
 });
 
-it('should report close error even if complete message followed', async () => {
+it('should report close error even if complete message followed', async ({
+  expect,
+}) => {
   expect.assertions(3);
 
   const { url, server } = await startRawServer();
@@ -661,7 +668,9 @@ it('should report close error even if complete message followed', async () => {
   await waitForClosed;
 });
 
-it('should report close causing internal client errors to listeners', async () => {
+it('should report close causing internal client errors to listeners', async ({
+  expect,
+}) => {
   expect.assertions(4);
 
   const { url } = await startTServer();
@@ -711,7 +720,9 @@ it('should report close causing internal client errors to listeners', async () =
   );
 });
 
-it('should report close causing internal client errors to subscription sinks', async () => {
+it('should report close causing internal client errors to subscription sinks', async ({
+  expect,
+}) => {
   const { url } = await startTServer();
 
   const someError = new Error('Something went wrong!');
@@ -770,7 +781,9 @@ it('should report close causing internal client errors to subscription sinks', a
   });
 });
 
-it('should limit the internal client error message size', async () => {
+it('should limit the internal client error message size', async ({
+  expect,
+}) => {
   const { url } = await startTServer();
 
   const longError = new Error(
@@ -800,7 +813,9 @@ it('should limit the internal client error message size', async () => {
   await waitForClosed;
 });
 
-it('should limit the internal client bad response error message size', async () => {
+it('should limit the internal client bad response error message size', async ({
+  expect,
+}) => {
   const { url } = await startTServer();
 
   const longError = new Error(
@@ -831,7 +846,7 @@ it('should limit the internal client bad response error message size', async () 
   await waitForClosed;
 });
 
-it('should terminate socket immediately on terminate', async () => {
+it('should terminate socket immediately on terminate', async ({ expect }) => {
   const { url, waitForConnect } = await startTServer();
 
   class CannotCloseWebSocket extends WebSocket {
@@ -877,8 +892,8 @@ it('should terminate socket immediately on terminate', async () => {
   await waitForClosed;
 });
 
-describe('ping/pong', () => {
-  it('should respond with a pong to a ping', async () => {
+describe.concurrent('ping/pong', () => {
+  it('should respond with a pong to a ping', async ({ expect }) => {
     expect.assertions(1);
 
     const { url, waitForConnect, waitForClient, waitForClientClose } =
@@ -905,7 +920,7 @@ describe('ping/pong', () => {
     }, 20);
   });
 
-  it("should return ping's payload through the pong", async () => {
+  it("should return ping's payload through the pong", async ({ expect }) => {
     expect.assertions(1);
 
     const { url, waitForConnect, waitForClient, waitForClientClose } =
@@ -991,7 +1006,9 @@ describe('ping/pong', () => {
     }, 20);
   });
 
-  it('should ping the server after the keepAlive timeout', async () => {
+  it('should ping the server after the keepAlive timeout', async ({
+    expect,
+  }) => {
     const { url, waitForConnect, waitForClient } = await startTServer();
 
     createClient({
@@ -1015,8 +1032,10 @@ describe('ping/pong', () => {
   });
 });
 
-describe('query operation', () => {
-  it('should execute the query, "next" the result and then complete', async () => {
+describe.concurrent('query operation', () => {
+  it('should execute the query, "next" the result and then complete', async ({
+    expect,
+  }) => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -1068,8 +1087,10 @@ describe('query operation', () => {
   });
 });
 
-describe('subscription operation', () => {
-  it('should execute and "next" the emitted results until disposed', async () => {
+describe.concurrent('subscription operation', () => {
+  it('should execute and "next" the emitted results until disposed', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1104,7 +1125,7 @@ describe('subscription operation', () => {
     await sub.waitForComplete();
   });
 
-  it('should emit results to correct distinct sinks', async () => {
+  it('should emit results to correct distinct sinks', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1113,23 +1134,25 @@ describe('subscription operation', () => {
       onNonLazyError: noop,
     });
 
+    const sub1Key = randomUUID();
     const sub1 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
         ping(key: $key)
       }`,
-      variables: { key: '1' },
+      variables: { key: sub1Key },
     });
     await server.waitForOperation();
 
+    const sub2Key = randomUUID();
     const sub2 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
         ping(key: $key)
       }`,
-      variables: { key: '2' },
+      variables: { key: sub2Key },
     });
     await server.waitForOperation();
 
-    server.pong('1');
+    server.pong(sub1Key);
     await sub2.waitForNext(() => {
       throw new Error('Shouldnt have nexted');
     }, 10);
@@ -1139,7 +1162,7 @@ describe('subscription operation', () => {
       });
     });
 
-    server.pong('2');
+    server.pong(sub2Key);
     await sub1.waitForNext(() => {
       throw new Error('Shouldnt have nexted');
     }, 10);
@@ -1165,7 +1188,9 @@ describe('subscription operation', () => {
     await sub3.waitForComplete();
   });
 
-  it('should use the provided `generateID` for subscription IDs', async () => {
+  it('should use the provided `generateID` for subscription IDs', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const generateIDFn = vitest.fn(() => 'not unique');
@@ -1185,7 +1210,9 @@ describe('subscription operation', () => {
     expect(generateIDFn).toBeCalled();
   });
 
-  it('should provide subscription payload in `generateID`', async () => {
+  it('should provide subscription payload in `generateID`', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const generateIDFn = vitest.fn(() => '1');
@@ -1206,7 +1233,7 @@ describe('subscription operation', () => {
     expect(generateIDFn).toBeCalledWith(payload);
   });
 
-  it('should dispose of the subscription on complete', async () => {
+  it('should dispose of the subscription on complete', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1226,7 +1253,7 @@ describe('subscription operation', () => {
     expect(server.getClients().length).toBe(0);
   });
 
-  it('should dispose of the subscription on error', async () => {
+  it('should dispose of the subscription on error', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1296,8 +1323,10 @@ describe('subscription operation', () => {
   });
 });
 
-describe('"concurrency"', () => {
-  it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async () => {
+describe.concurrent('"concurrency"', () => {
+  it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1332,7 +1361,7 @@ describe('"concurrency"', () => {
   });
 });
 
-describe('lazy', () => {
+describe.concurrent('lazy', () => {
   it('should connect immediately when mode is disabled', async () => {
     const { url, ...server } = await startTServer();
 
@@ -1416,7 +1445,7 @@ describe('lazy', () => {
     const sub2 = tsubscribe(client, {
       operationName: 'Pong',
       query: 'subscription Pong($key: String!) { ping(key: $key) }',
-      variables: { key: '1' },
+      variables: { key: randomUUID() },
     });
     await server.waitForOperation();
 
@@ -1501,7 +1530,9 @@ describe('lazy', () => {
     }, 5);
   });
 
-  it('should report errors to the `onNonLazyError` callback', async () => {
+  it('should report errors to the `onNonLazyError` callback', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const { resolve: nonLazyError, promise: waitForNonLazyError } =
@@ -1535,12 +1566,12 @@ describe('lazy', () => {
 
     // create 2 subscriptions
     const sub0 = tsubscribe(client, {
-      query: 'subscription { ping(key: "0") }',
+      query: `subscription { ping(key: "${randomUUID()}") }`,
     });
     await server.waitForOperation();
 
     const sub1 = tsubscribe(client, {
-      query: 'subscription { ping(key: "1") }',
+      query: `subscription { ping(key: "${randomUUID()}") }`,
     });
     await server.waitForOperation();
 
@@ -1559,8 +1590,8 @@ describe('lazy', () => {
   });
 });
 
-describe('reconnecting', () => {
-  it('should not reconnect if retry attempts is zero', async () => {
+describe.concurrent('reconnecting', () => {
+  it('should not reconnect if retry attempts is zero', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const sub = tsubscribe(
@@ -1584,7 +1615,7 @@ describe('reconnecting', () => {
     });
   });
 
-  it('should reconnect silently after socket closes', async () => {
+  it('should reconnect silently after socket closes', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1635,7 +1666,7 @@ describe('reconnecting', () => {
     for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
-          query: `subscription Sub${i} { ping(key: "${i}") }`,
+          query: `subscription Sub${i} { ping(key: "${randomUUID()}") }`,
         }),
       );
       await server.waitForOperation();
@@ -1677,7 +1708,7 @@ describe('reconnecting', () => {
     const client = createClient({
       url,
       retryAttempts: 3,
-      retryWait: () => new Promise((resolve) => setTimeout(resolve, 500)),
+      retryWait: () => new Promise((resolve) => setTimeout(resolve, 50)),
     });
 
     // add subscribers
@@ -1685,7 +1716,7 @@ describe('reconnecting', () => {
     for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
-          query: `subscription Sub${i} { ping(key: "${i}") }`,
+          query: `subscription Sub${i} { ping(key: "${randomUUID()}") }`,
         }),
       );
       await server.waitForOperation();
@@ -1715,7 +1746,9 @@ describe('reconnecting', () => {
     client.dispose();
   });
 
-  it('should report some close events immediately and not reconnect', async () => {
+  it('should report some close events immediately and not reconnect', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     async function testCloseCode(code: number) {
@@ -1758,7 +1791,9 @@ describe('reconnecting', () => {
     await testCloseCode(CloseCode.TooManyInitialisationRequests);
   });
 
-  it('should report fatal connection problems immediately', async () => {
+  it('should report fatal connection problems immediately', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const sub = tsubscribe(
@@ -1785,7 +1820,9 @@ describe('reconnecting', () => {
     }, 20);
   });
 
-  it('should report fatal connection problems immediately (using deprecated `isFatalConnectionProblem`)', async () => {
+  it('should report fatal connection problems immediately (using deprecated `isFatalConnectionProblem`)', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const sub = tsubscribe(
@@ -1839,7 +1876,9 @@ describe('reconnecting', () => {
     'should attempt reconnecting silently a few times before closing for good',
   );
 
-  it('should lazy disconnect after retries when all subscriptions are completed', async () => {
+  it('should lazy disconnect after retries when all subscriptions are completed', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1876,7 +1915,9 @@ describe('reconnecting', () => {
     expect(server.getClients().length).toBe(0);
   });
 
-  it('should lazy disconnect even if subscription is created during retries after all get completed', async () => {
+  it('should lazy disconnect even if subscription is created during retries after all get completed', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1887,7 +1928,7 @@ describe('reconnecting', () => {
     });
 
     const sub1 = tsubscribe(client, {
-      query: 'subscription { ping(key: "1") }',
+      query: `subscription { ping(key: "${randomUUID()}") }`,
     });
 
     await server.waitForClient((client) => client.close());
@@ -1897,7 +1938,7 @@ describe('reconnecting', () => {
     await server.waitForClientClose();
 
     const sub2 = tsubscribe(client, {
-      query: 'subscription { ping(key: "2") }',
+      query: `subscription { ping(key: "${randomUUID()}") }`,
     });
 
     await server.waitForClient((client) => client.close());
@@ -1997,7 +2038,9 @@ describe('reconnecting', () => {
     }, 20);
   });
 
-  it('should not count lazy connect after succesful reconnect as another retry', async () => {
+  it('should not count lazy connect after succesful reconnect as another retry', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const retry = vitest.fn();
@@ -2070,8 +2113,10 @@ describe('reconnecting', () => {
   });
 });
 
-describe('events', () => {
-  it('should emit to relevant listeners with expected arguments', async () => {
+describe.concurrent('events', () => {
+  it('should emit to relevant listeners with expected arguments', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const connectingFn = vitest.fn(noop as EventListener<'connecting'>);
@@ -2102,7 +2147,7 @@ describe('events', () => {
         client.on('closed', closedFn);
 
         // trigger connecting
-        const sub = tsubscribe(client, { query: 'subscription {ping}' });
+        const sub = tsubscribe(client, { query: 'subscription { ping }' });
 
         // resolve once subscribed
         server.waitForOperation().then(() => resolve([client, sub]));
@@ -2178,7 +2223,7 @@ describe('events', () => {
     await waitForClosed;
   });
 
-  it('should emit the websocket connection error', async () => {
+  it('should emit the websocket connection error', async ({ expect }) => {
     const gotErr = vitest.fn();
     const { resolve: nonLazyError, promise: waitForNonLazyError } =
       createDeferred();
@@ -2208,7 +2253,9 @@ describe('events', () => {
     await waitForNonLazyError;
   });
 
-  it('should emit the websocket connection error on first subscribe in lazy mode', async () => {
+  it('should emit the websocket connection error on first subscribe in lazy mode', async ({
+    expect,
+  }) => {
     // dont use expect.assertions(3) because https://github.com/facebook/jest/issues/8297
     const expected = vitest.fn();
 
@@ -2246,7 +2293,9 @@ describe('events', () => {
     await waitForError;
   });
 
-  it('should emit ping and pong events when pinging server', async () => {
+  it('should emit ping and pong events when pinging server', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const pingFn = vitest.fn(noop as EventListener<'ping'>);
@@ -2294,7 +2343,9 @@ describe('events', () => {
     expect(pongFn.mock.calls[1][1]).toBeUndefined();
   });
 
-  it('should emit ping and pong events when receiving server pings', async () => {
+  it('should emit ping and pong events when receiving server pings', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const pingFn = vitest.fn(noop as EventListener<'ping'>);
@@ -2336,7 +2387,9 @@ describe('events', () => {
     expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
   });
 
-  it('should provide the latest socket reference to event listeners', async () => {
+  it('should provide the latest socket reference to event listeners', async ({
+    expect,
+  }) => {
     // dont use expect.assertions(6) because https://github.com/facebook/jest/issues/8297
     const expected = vitest.fn();
 
@@ -2394,8 +2447,8 @@ describe('events', () => {
   });
 });
 
-describe('iterate', () => {
-  it('should iterate a single result query', async () => {
+describe.concurrent('iterate', () => {
+  it('should iterate a single result query', async ({ expect }) => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -2427,7 +2480,7 @@ describe('iterate', () => {
     `);
   });
 
-  it('should iterate over subscription events', async () => {
+  it('should iterate over subscription events', async ({ expect }) => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -2459,7 +2512,7 @@ describe('iterate', () => {
     `);
   });
 
-  it('should report execution errors to iterator', async () => {
+  it('should report execution errors to iterator', async ({ expect }) => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -2502,7 +2555,7 @@ describe('iterate', () => {
     `);
   });
 
-  it('should throw in iterator connection errors', async () => {
+  it('should throw in iterator connection errors', async ({ expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2511,7 +2564,7 @@ describe('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = Math.random().toString();
+    const pingKey = randomUUID();
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
@@ -2539,7 +2592,9 @@ describe('iterate', () => {
     );
   });
 
-  it('should complete subscription when iterator loop breaks', async () => {
+  it('should complete subscription when iterator loop breaks', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2548,7 +2603,7 @@ describe('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = Math.random().toString();
+    const pingKey = randomUUID();
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
@@ -2572,7 +2627,9 @@ describe('iterate', () => {
     await server.waitForClientClose();
   });
 
-  it('should complete subscription when iterator loop throws', async () => {
+  it('should complete subscription when iterator loop throws', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2581,7 +2638,7 @@ describe('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = Math.random().toString();
+    const pingKey = randomUUID();
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
@@ -2607,7 +2664,9 @@ describe('iterate', () => {
     await server.waitForClientClose();
   });
 
-  it('should complete subscription when calling return directly on iterator', async () => {
+  it('should complete subscription when calling return directly on iterator', async ({
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2616,7 +2675,7 @@ describe('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = Math.random().toString();
+    const pingKey = randomUUID();
     const iterator = client.iterate({
       query: `subscription { ping(key: "${pingKey}") }`,
     });
