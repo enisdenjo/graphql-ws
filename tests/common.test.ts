@@ -1,4 +1,4 @@
-import { validateMessage, MessageType } from '../common';
+import { validateMessage, MessageType } from '../src/common';
 
 it.each([
   // straight up invalid

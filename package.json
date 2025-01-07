@@ -91,7 +91,7 @@
     "lint:prettier": "prettier -c .",
     "lint": "yarn lint:eslint && yarn lint:prettier",
     "type-check": "tsc --noEmit",
-    "test": "jest",
+    "test": "vitest",
     "bench:start-servers": "NODE_ENV=production node benchmark/servers/index.mjs",
     "bench": "k6 run benchmark/k6.mjs",
     "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",

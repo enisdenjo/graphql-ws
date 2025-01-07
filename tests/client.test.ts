@@ -9,14 +9,14 @@ import {
   Client,
   EventListener,
   TerminatedCloseEvent,
-} from '../client';
+} from '../src/client';
 import {
   CloseCode,
   MessageType,
   parseMessage,
   stringifyMessage,
   SubscribePayload,
-} from '../common';
+} from '../src/common';
 import { startRawServer, startWSTServer as startTServer } from './utils';
 import { ExecutionResult } from 'graphql';
 import { pong } from './fixtures/simple';

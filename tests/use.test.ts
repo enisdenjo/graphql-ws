@@ -10,7 +10,7 @@ import {
   SubscribePayload,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
-} from '../common';
+} from '../src/common';
 import {
   createTClient,
   tServers,
