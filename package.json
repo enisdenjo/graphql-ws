@@ -4,7 +4,7 @@
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "repository": {
     "type": "git",
-    "url": "https://github.com/enisdenjo/graphql-ws.git"
+    "url": "git+https://github.com/enisdenjo/graphql-ws.git"
   },
   "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
   "author": "Denis Badurina <badurinadenis@gmail.com>",
