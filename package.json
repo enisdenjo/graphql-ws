@@ -99,7 +99,6 @@
     "postbuild": "node scripts/fix-declaration-directives.mjs",
     "prepack": "npm pkg delete workspaces",
     "postpack": "npm pkg set 'workspaces[]=website'",
-    "release": "semantic-release",
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs"
   },
   "peerDependencies": {
@@ -111,8 +110,6 @@
     "@fastify/websocket": "^9.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
     "@types/eslint": "^8.56.10",
     "@types/glob": "^8.1.0",
     "@types/ws": "^8.5.10",
@@ -129,7 +126,6 @@
     "prettier": "^3.2.5",
     "replacestream": "^4.0.3",
     "rollup": "^4.14.3",
-    "semantic-release": "^23.0.8",
     "subscriptions-transport-ws": "^0.11.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.13",
