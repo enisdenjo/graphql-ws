@@ -91,6 +91,7 @@
     "check:lint": "eslint 'src'",
     "check:type": "tsc --noEmit",
     "test": "vitest",
+    "changeset": "changeset",
     "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
     "build:cjs": "tsc -b tsconfig.cjs.json",
     "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
