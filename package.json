@@ -86,11 +86,10 @@
     "access": "public"
   },
   "scripts": {
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
-    "lint:eslint": "eslint 'src'",
-    "lint:prettier": "prettier -c .",
-    "lint": "yarn lint:eslint && yarn lint:prettier",
-    "type-check": "tsc --noEmit",
+    "check:format": "prettier --check .",
+    "format": "yarn check:format --write",
+    "check:lint": "eslint 'src'",
+    "check:type": "tsc --noEmit",
     "test": "vitest",
     "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
     "build:cjs": "tsc -b tsconfig.cjs.json",
@@ -99,7 +98,8 @@
     "postbuild": "node scripts/fix-declaration-directives.mjs",
     "prepack": "npm pkg delete workspaces",
     "postpack": "npm pkg set 'workspaces[]=website'",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs"
   },
   "peerDependencies": {
     "graphql": ">=0.11 <=16"

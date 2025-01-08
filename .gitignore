@@ -13,3 +13,4 @@ website/src/pages/docs
 website/algolia-lockfile.json
 website/public/sitemap.xml
 .idea/
+tsconfig.tsbuildinfo
