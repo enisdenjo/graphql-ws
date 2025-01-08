@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/enisdenjo/graphql-ws.git"
   },
-  "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
+  "homepage": "https://the-guild.dev/graphql/ws",
   "author": "Denis Badurina <badurinadenis@gmail.com>",
   "license": "MIT",
   "packageManager": "yarn@4.6.0",
