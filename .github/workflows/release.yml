@@ -22,7 +22,7 @@ jobs:
       githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}
   stable:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     name: Stable
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
     with:
