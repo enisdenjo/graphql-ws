@@ -1,0 +1,49 @@
+diff --git a/dist/changesets-cli.cjs.js b/dist/changesets-cli.cjs.js
+index eaba708933af221632c9b54d09721ae5982e448a..c1eeb7d8374d0c68d966beb6e3d9fc7d251f7ef0 100644
+--- a/dist/changesets-cli.cjs.js
++++ b/dist/changesets-cli.cjs.js
+@@ -7,7 +7,7 @@ var util = require('util');
+ var config = require('@changesets/config');
+ var getDependentsGraph = require('@changesets/get-dependents-graph');
+ var shouldSkipPackage = require('@changesets/should-skip-package');
+-var getPackages = require('@manypkg/get-packages');
++var getPackages = require('./get-packages.cjs');
+ var fs = require('fs-extra');
+ var path = require('path');
+ var pc = require('picocolors');
+diff --git a/dist/changesets-cli.esm.js b/dist/changesets-cli.esm.js
+index 817d3ceeca7adcdea87b1f5603b2aee4f06c57c8..9c0ac4f629af950850d36ca82208e9a449c90fe8 100644
+--- a/dist/changesets-cli.esm.js
++++ b/dist/changesets-cli.esm.js
+@@ -6,7 +6,8 @@ import { format } from 'util';
+ import { defaultWrittenConfig, read } from '@changesets/config';
+ import { getDependentsGraph } from '@changesets/get-dependents-graph';
+ import { shouldSkipPackage } from '@changesets/should-skip-package';
+-import { getPackages } from '@manypkg/get-packages';
++import patchedGetPackages from './get-packages.cjs';
++const { getPackages } = patchedGetPackages;
+ import fs from 'fs-extra';
+ import path, { join } from 'path';
+ import pc from 'picocolors';
+diff --git a/dist/get-packages.cjs b/dist/get-packages.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..8603427a1d4f7a80ad168f354c3d843b676a11ab
+--- /dev/null
++++ b/dist/get-packages.cjs
+@@ -0,0 +1,16 @@
++var fs = require('fs-extra');
++var path = require('path');
++module.exports = {
++  // even though there's a "website" workspace, we only care are about the root
++  getPackages: (cwd) => {
++    const root = {
++      dir: cwd,
++      packageJson: fs.readJsonSync(path.join(cwd, 'package.json')),
++    };
++    return {
++      tool: 'root',
++      root,
++      packages: [root],
++    };
++  },
++};
