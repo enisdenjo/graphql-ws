@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 5.16.1
+
+### Patch Changes
+
+- [#607](https://github.com/enisdenjo/graphql-ws/pull/607) [`a629ec7`](https://github.com/enisdenjo/graphql-ws/commit/a629ec74ad9ab58ded4487c9f93609fe49d56632) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Release with [changesets](https://github.com/changesets/changesets)
+
+  This version does not contain any code changes.
+
 ## [5.16.0](https://github.com/enisdenjo/graphql-ws/compare/v5.15.0...v5.16.0) (2024-03-27)
 
 ### Bug Fixes
