@@ -140,6 +140,7 @@
     "ws7": "npm:ws@^7.5.9"
   },
   "workspaces": [
+    ".",
     "website"
   ]
 }
