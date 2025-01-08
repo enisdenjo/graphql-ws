@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 
-import WebSocket from 'ws';
+import { randomUUID } from 'crypto';
 import { EventEmitter } from 'events';
+import { ExecutionResult } from 'graphql';
+import { afterAll, beforeAll, beforeEach, describe, it, vitest } from 'vitest';
+import WebSocket from 'ws';
 import {
-  createClient,
   Client,
+  createClient,
   EventListener,
   TerminatedCloseEvent,
 } from '../src/client';
@@ -15,12 +18,9 @@ import {
   stringifyMessage,
   SubscribePayload,
 } from '../src/common';
-import { startRawServer, startWSTServer as startTServer } from './utils';
-import { ExecutionResult } from 'graphql';
 import { pong } from './fixtures/simple';
-import { beforeEach, beforeAll, afterAll, it, describe, vitest } from 'vitest';
+import { startRawServer, startWSTServer as startTServer } from './utils';
 import { createDeferred } from './utils/deferred';
-import { randomUUID } from 'crypto';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;

@@ -1,9 +1,9 @@
 import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
   GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
   GraphQLSchemaConfig,
+  GraphQLString,
 } from 'graphql';
 
 // use for dispatching a `pong` to the `ping` subscription

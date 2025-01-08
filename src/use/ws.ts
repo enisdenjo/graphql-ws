@@ -1,12 +1,12 @@
 import type * as http from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
-import { handleProtocols, makeServer, ServerOptions } from '../server';
 import {
-  DEPRECATED_GRAPHQL_WS_PROTOCOL,
-  ConnectionInitMessage,
   CloseCode,
+  ConnectionInitMessage,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
   Disposable,
 } from '../common';
+import { handleProtocols, makeServer, ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
 
 // for nicer documentation

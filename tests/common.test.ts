@@ -1,5 +1,5 @@
-import { validateMessage, MessageType } from '../src/common';
-import { it, expect } from 'vitest';
+import { expect, it } from 'vitest';
+import { MessageType, validateMessage } from '../src/common';
 
 it.each([
   // straight up invalid

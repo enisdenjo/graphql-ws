@@ -1,11 +1,11 @@
-import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from '@fastify/websocket';
-import { handleProtocols, makeServer, ServerOptions } from '../../server';
+import type { FastifyRequest } from 'fastify';
 import {
-  DEPRECATED_GRAPHQL_WS_PROTOCOL,
-  ConnectionInitMessage,
   CloseCode,
+  ConnectionInitMessage,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
 } from '../../common';
+import { handleProtocols, makeServer, ServerOptions } from '../../server';
 import { limitCloseReason } from '../../utils';
 
 /**

@@ -1,7 +1,7 @@
-import type * as uWS from 'uWebSockets.js';
 import type http from 'http';
+import type * as uWS from 'uWebSockets.js';
+import { CloseCode, ConnectionInitMessage } from '../common';
 import { handleProtocols, makeServer, ServerOptions } from '../server';
-import { ConnectionInitMessage, CloseCode } from '../common';
 import { limitCloseReason } from '../utils';
 
 /**

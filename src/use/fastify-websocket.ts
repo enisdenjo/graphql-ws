@@ -1,8 +1,8 @@
 import type { FastifyRequest } from 'fastify';
 import type * as fastifyWebsocket from 'fastify-websocket';
-import { makeHandler as makeHandlerCurrent } from './@fastify/websocket';
-import { ServerOptions } from '../server';
 import { ConnectionInitMessage } from '../common';
+import { ServerOptions } from '../server';
+import { makeHandler as makeHandlerCurrent } from './@fastify/websocket';
 
 /**
  * The extra that will be put in the `Context`.

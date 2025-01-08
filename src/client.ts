@@ -6,22 +6,22 @@
 
 import { ExecutionResult } from 'graphql';
 import {
-  GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
-  Sink,
-  ID,
+  ConnectionAckMessage,
+  ConnectionInitMessage,
   Disposable,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  ID,
+  JSONMessageReplacer,
+  JSONMessageReviver,
   Message,
   MessageType,
-  ConnectionInitMessage,
-  ConnectionAckMessage,
+  parseMessage,
   PingMessage,
   PongMessage,
-  parseMessage,
+  Sink,
   stringifyMessage,
   SubscribePayload,
-  JSONMessageReviver,
-  JSONMessageReplacer,
 } from './common';
 import { isObject, limitCloseReason } from './utils';
 

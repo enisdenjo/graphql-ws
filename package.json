@@ -2,36 +2,19 @@
   "name": "graphql-ws",
   "version": "5.16.0",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
-  "keywords": [
-    "protocol",
-    "graphql",
-    "transport",
-    "subscriptions",
-    "websockets",
-    "server",
-    "client",
-    "observables",
-    "express",
-    "relay",
-    "apollo",
-    "fastify",
-    "uwebsockets"
-  ],
-  "author": "Denis Badurina <badurinadenis@gmail.com>",
-  "license": "MIT",
-  "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/enisdenjo/graphql-ws.git"
   },
+  "homepage": "https://github.com/enisdenjo/graphql-ws#readme",
+  "author": "Denis Badurina <badurinadenis@gmail.com>",
+  "license": "MIT",
+  "packageManager": "yarn@4.6.0",
   "engines": {
     "node": ">=10"
   },
-  "packageManager": "yarn@4.6.0",
-  "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
-  "browser": "umd/graphql-ws.js",
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
@@ -72,34 +55,48 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "lib",
-    "umd",
-    "README.md",
-    "LICENSE.md",
-    "PROTOCOL.md"
-  ],
+  "browser": "umd/graphql-ws.js",
+  "types": "lib/index.d.ts",
   "sideEffects": [
     "umd/*"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
+  "files": [
+    "LICENSE.md",
+    "PROTOCOL.md",
+    "lib",
+    "umd",
+    "README.md"
+  ],
+  "keywords": [
+    "protocol",
+    "graphql",
+    "transport",
+    "subscriptions",
+    "websockets",
+    "server",
+    "client",
+    "observables",
+    "express",
+    "relay",
+    "apollo",
+    "fastify",
+    "uwebsockets"
+  ],
   "scripts": {
+    "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
+    "build:cjs": "tsc -b tsconfig.cjs.json",
+    "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
+    "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
+    "changeset": "changeset",
     "check:format": "prettier --check .",
-    "format": "yarn check:format --write",
     "check:lint": "eslint 'src'",
     "check:type": "tsc --noEmit",
-    "test": "vitest",
-    "changeset": "changeset",
-    "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
-    "build:cjs": "tsc -b tsconfig.cjs.json",
-    "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
-    "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
+    "format": "yarn check:format --write",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "postbuild": "node scripts/fix-declaration-directives.mjs",
-    "prepack": "npm pkg delete workspaces",
     "postpack": "npm pkg set --no-json workspaces[]=. workspaces[]=website",
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs"
+    "prepack": "npm pkg delete workspaces",
+    "test": "vitest"
   },
   "peerDependencies": {
     "graphql": ">=0.11 <=16"
@@ -108,6 +105,7 @@
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.11",
     "@fastify/websocket": "^9.0.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/eslint": "^8.56.10",
@@ -117,13 +115,13 @@
     "@typescript-eslint/parser": "^7.7.0",
     "bun-types": "^1.1.4",
     "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
     "fastify": "^4.26.2",
     "fastify-websocket": "4.2.2",
     "glob": "^10.3.12",
     "graphql": "^16.8.1",
     "jsdom": "^25.0.1",
-    "prettier": "^3.2.5",
+    "prettier": "^3.4.2",
+    "prettier-plugin-sh": "^0.14.0",
     "replacestream": "^4.0.3",
     "rollup": "^4.14.3",
     "subscriptions-transport-ws": "^0.11.0",

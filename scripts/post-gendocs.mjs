@@ -1,5 +1,5 @@
-import path from 'path';
 import fsp from 'fs/promises';
+import path from 'path';
 
 const docsDir = path.join('website', 'src', 'pages', 'docs');
 

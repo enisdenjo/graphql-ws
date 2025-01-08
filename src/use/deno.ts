@@ -1,9 +1,10 @@
-import { makeServer, ServerOptions } from '../server';
 import {
-  DEPRECATED_GRAPHQL_WS_PROTOCOL,
-  ConnectionInitMessage,
   CloseCode,
+  ConnectionInitMessage,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
 } from '../common';
+import { makeServer, ServerOptions } from '../server';
+
 export { GRAPHQL_TRANSPORT_WS_PROTOCOL } from '../common';
 
 /**

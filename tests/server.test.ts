@@ -1,24 +1,24 @@
 import {
-  parse,
   buildSchema,
   execute,
-  subscribe,
-  GraphQLError,
   ExecutionArgs,
   ExecutionResult,
+  GraphQLError,
   GraphQLSchema,
+  parse,
+  subscribe,
 } from 'graphql';
-import { Context, handleProtocols, makeServer } from '../src/server';
+import { afterAll, beforeAll, describe, expect, it, vitest } from 'vitest';
 import {
-  GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
   MessageType,
   parseMessage,
   stringifyMessage,
 } from '../src/common';
+import { Context, handleProtocols, makeServer } from '../src/server';
 import { schema, schemaConfig } from './fixtures/simple';
 import { createTClient, startWSTServer as startTServer } from './utils';
-import { describe, beforeAll, afterAll, it, expect, vitest } from 'vitest';
 import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview

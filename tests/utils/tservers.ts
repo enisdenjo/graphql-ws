@@ -1,26 +1,25 @@
 import { EventEmitter } from 'events';
 import http from 'http';
-import { schema, pong } from '../fixtures/simple';
-import { ServerOptions, Context } from '../../src/server';
-
+import fastifyWebsocket from '@fastify/websocket';
+import Fastify from 'fastify';
+import uWS from 'uWebSockets.js';
+import { afterAll, it } from 'vitest';
 import ws, { WebSocketServer } from 'ws';
 // @ts-expect-error: ws7 has no definitions
 import ws7 from 'ws7';
-import uWS from 'uWebSockets.js';
-import Fastify from 'fastify';
-import fastifyWebsocket from '@fastify/websocket';
-
-import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
+import { Context, ServerOptions } from '../../src/server';
+import {
+  Extra as FastifyExtra,
+  makeHandler as makeFastifyHandler,
+} from '../../src/use/@fastify/websocket';
 import {
   makeBehavior as makeUWSBehavior,
   Extra as UWSExtra,
 } from '../../src/use/uWebSockets';
-import {
-  makeHandler as makeFastifyHandler,
-  Extra as FastifyExtra,
-} from '../../src/use/@fastify/websocket';
+import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
+import { pong, schema } from '../fixtures/simple';
+
 export { WSExtra, UWSExtra, FastifyExtra };
-import { afterAll, it } from 'vitest';
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];

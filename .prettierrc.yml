@@ -1,0 +1,9 @@
+singleQuote: true
+plugins:
+  - '@ianvs/prettier-plugin-sort-imports'
+  - prettier-plugin-sh
+importOrderParserPlugins:
+  - typescript
+  - jsx
+  - decorators-legacy
+  - explicitResourceManagement

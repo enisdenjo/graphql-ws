@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 
-import type { WebSocketHandler, ServerWebSocket } from 'bun';
+import type { ServerWebSocket, WebSocketHandler } from 'bun';
 import {
   ConnectionInitMessage,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,

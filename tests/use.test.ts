@@ -1,26 +1,26 @@
 import http from 'http';
+import stream from 'stream';
+import { setTimeout } from 'timers/promises';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import ws from 'ws';
 // @ts-expect-error: ws7 has no definitions
 import ws7 from 'ws7';
-import stream from 'stream';
 import {
-  MessageType,
-  stringifyMessage,
-  parseMessage,
-  SubscribePayload,
-  GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
+  GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  MessageType,
+  parseMessage,
+  stringifyMessage,
+  SubscribePayload,
 } from '../src/common';
 import {
   createTClient,
-  tServers,
-  WSExtra,
-  UWSExtra,
   FastifyExtra,
   TClient,
+  tServers,
+  UWSExtra,
+  WSExtra,
 } from './utils';
-import { beforeAll, afterAll, it, describe } from 'vitest';
-import { setTimeout } from 'timers/promises';
 import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview

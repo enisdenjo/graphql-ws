@@ -4,8 +4,8 @@
  *
  * This script removes the bun-typings directive everywhere except for Bun.
  */
-import { glob } from 'glob';
 import fs from 'fs/promises';
+import { glob } from 'glob';
 
 (async () => {
   const matches = await glob('lib/**/*.d.?(m)ts');
