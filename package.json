@@ -91,25 +91,25 @@
     "check:lint": "eslint 'src'",
     "check:type": "tsc --noEmit",
     "test": "vitest",
+    "changeset": "changeset",
     "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
     "build:cjs": "tsc -b tsconfig.cjs.json",
     "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
     "postbuild": "node scripts/fix-declaration-directives.mjs",
     "prepack": "npm pkg delete workspaces",
-    "postpack": "npm pkg set 'workspaces[]=website'",
-    "release": "semantic-release",
+    "postpack": "npm pkg set --no-json workspaces[]=. workspaces[]=website",
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs"
   },
   "peerDependencies": {
     "graphql": ">=0.11 <=16"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.11",
     "@fastify/websocket": "^9.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
     "@types/eslint": "^8.56.10",
     "@types/glob": "^8.1.0",
     "@types/ws": "^8.5.10",
@@ -126,7 +126,6 @@
     "prettier": "^3.2.5",
     "replacestream": "^4.0.3",
     "rollup": "^4.14.3",
-    "semantic-release": "^23.0.8",
     "subscriptions-transport-ws": "^0.11.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.13",
@@ -138,6 +137,7 @@
     "ws7": "npm:ws@^7.5.9"
   },
   "workspaces": [
+    ".",
     "website"
   ]
 }
