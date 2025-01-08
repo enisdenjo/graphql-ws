@@ -7,11 +7,7 @@ const opts = {
     node: true,
     jest: true,
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   rules: {
     // unused vars will be handled by the TS compiler
     '@typescript-eslint/no-unused-vars': 'off',
