@@ -27,7 +27,7 @@
   "engines": {
     "node": ">=10"
   },
-  "packageManager": "yarn@3.6.0",
+  "packageManager": "yarn@4.6.0",
   "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
