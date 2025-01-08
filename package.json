@@ -96,7 +96,8 @@
     "postbuild": "node scripts/fix-declaration-directives.mjs",
     "postpack": "npm pkg set --no-json workspaces[]=. workspaces[]=website",
     "prepack": "npm pkg delete workspaces",
-    "test": "vitest"
+    "test": "vitest",
+    "release": "yarn build && yarn changeset publish"
   },
   "peerDependencies": {
     "graphql": ">=0.11 <=16"
