@@ -10,7 +10,7 @@ import {
   SubscribePayload,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   CloseCode,
-} from '../common';
+} from '../src/common';
 import {
   createTClient,
   tServers,
@@ -19,6 +19,9 @@ import {
   FastifyExtra,
   TClient,
 } from './utils';
+import { beforeAll, afterAll, it, describe } from 'vitest';
+import { setTimeout } from 'timers/promises';
+import { createDeferred } from './utils/deferred';
 
 // silence console.error calls for nicer tests overview
 const consoleError = console.error;
@@ -32,8 +35,10 @@ afterAll(() => {
 });
 
 for (const { tServer, skipUWS, startTServer } of tServers) {
-  describe(tServer, () => {
-    it("should omit the subprotocol from the response if there's no valid one offered by the client", async () => {
+  describe.concurrent(tServer, () => {
+    it("should omit the subprotocol from the response if there's no valid one offered by the client", async ({
+      expect,
+    }) => {
       const { url } = await startTServer();
 
       const warn = console.warn;
@@ -45,25 +50,19 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       try {
         client = await createTClient(url, ['notme', 'notmeither']);
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
         client = await createTClient(url, 'notme');
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
         client = await createTClient(url, ['graphql', 'json']);
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       try {
@@ -72,14 +71,14 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           GRAPHQL_TRANSPORT_WS_PROTOCOL + 'gibberish',
         );
       } catch (err) {
-        expect(err).toMatchInlineSnapshot(
-          '[Error: Server sent no subprotocol]',
-        );
+        expect(String(err)).toBe('Error: Server sent no subprotocol');
       }
 
       client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
       await client.waitForClose(
-        () => fail('shouldnt close for valid protocol'),
+        () => {
+          throw new Error('shouldnt close for valid protocol');
+        },
         30, // should be kicked off within this time
       );
 
@@ -91,7 +90,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       await client.waitForClose(
         (e) => {
           console.log(e);
-          fail('shouldnt close for valid protocol');
+          throw new Error('shouldnt close for valid protocol');
         },
         30, // should be kicked off within this time
       );
@@ -99,7 +98,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       console.warn = warn;
     });
 
-    it('should gracefully go away when disposing', async () => {
+    it('should gracefully go away when disposing', async ({ expect }) => {
       const server = await startTServer();
 
       const client1 = await createTClient(server.url);
@@ -119,7 +118,10 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should add the initial request and websocket in the context extra', async (done) => {
+    it('should add the initial request and websocket in the context extra', async ({
+      expect,
+    }) => {
+      const { resolve: connected, promise: waitForConnect } = createDeferred();
       const server = await startTServer({
         onConnect: (ctx) => {
           if (tServer === 'uWebSockets.js') {
@@ -158,9 +160,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
               '_Request',
             );
           } else {
-            fail('Missing test case for ' + tServer);
+            throw new Error('Missing test case for ' + tServer);
           }
-          done();
+          connected();
           return false; // reject client for sake of test
         },
       });
@@ -171,9 +173,13 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           type: MessageType.ConnectionInit,
         }),
       );
+
+      await waitForConnect;
     });
 
-    it('should close the socket with errors thrown from any callback', async () => {
+    it('should close the socket with errors thrown from any callback', async ({
+      expect,
+    }) => {
       const error = new Error('Stop');
 
       // onConnect
@@ -289,7 +295,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       await server.dispose();
     });
 
-    it('should close the socket on request if schema is left undefined', async () => {
+    it('should close the socket on request if schema is left undefined', async ({
+      expect,
+    }) => {
       const { url } = await startTServer({
         schema: undefined,
       });
@@ -326,7 +334,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should close the socket on empty arrays returned from `onSubscribe`', async () => {
+    it('should close the socket on empty arrays returned from `onSubscribe`', async ({
+      expect,
+    }) => {
       const { url } = await startTServer({
         onSubscribe: () => {
           return [];
@@ -364,7 +374,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should close socket with error thrown from the callback', async () => {
+    it('should close socket with error thrown from the callback', async ({
+      expect,
+    }) => {
       const error = new Error("I'm a teapot");
 
       const { url } = await startTServer({
@@ -390,7 +402,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     // uWebSocket.js cannot have errors emitted on the server instance
     skipUWS(
       'should report server emitted errors to clients by closing the connection',
-      async () => {
+      async ({ expect }) => {
         const { url, server } = await startTServer();
 
         const client = await createTClient(url);
@@ -408,35 +420,38 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     );
 
     // uWebSocket.js cannot have errors emitted on the server instance
-    skipUWS('should limit the server emitted error message size', async () => {
-      const { url, server, waitForClient } = await startTServer();
+    skipUWS(
+      'should limit the server emitted error message size',
+      async ({ expect }) => {
+        const { url, server, waitForClient } = await startTServer();
 
-      const client = await createTClient(url);
-      client.ws.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
+        const client = await createTClient(url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
 
-      await waitForClient();
+        await waitForClient();
 
-      const emittedError = new Error(
-        'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
-      );
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      server!.emit('error', emittedError);
+        const emittedError = new Error(
+          'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+        );
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        server!.emit('error', emittedError);
 
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(CloseCode.InternalServerError);
-        expect(event.reason).toBe('Internal server error');
-        expect(event.wasClean).toBeTruthy(); // because the server reported the error
-      });
-    });
+        await client.waitForClose((event) => {
+          expect(event.code).toBe(CloseCode.InternalServerError);
+          expect(event.reason).toBe('Internal server error');
+          expect(event.wasClean).toBeTruthy(); // because the server reported the error
+        });
+      },
+    );
 
     // uWebSocket.js cannot have errors emitted on the socket
     skipUWS(
       'should report socket emitted errors to clients by closing the connection',
-      async () => {
+      async ({ expect }) => {
         const { url, waitForClient } = await startTServer();
 
         const client = await createTClient(url);
@@ -456,32 +471,37 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     );
 
     // uWebSocket.js cannot have errors emitted on the socket
-    skipUWS('should limit the socket emitted error message size', async () => {
-      const { url, waitForClient } = await startTServer();
+    skipUWS(
+      'should limit the socket emitted error message size',
+      async ({ expect }) => {
+        const { url, waitForClient } = await startTServer();
 
-      const client = await createTClient(url);
-      client.ws.send(
-        stringifyMessage<MessageType.ConnectionInit>({
-          type: MessageType.ConnectionInit,
-        }),
-      );
+        const client = await createTClient(url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
 
-      const emittedError = new Error(
-        'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
-      );
-      await waitForClient((client) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        client.socket!.emit('error', emittedError);
-      });
+        const emittedError = new Error(
+          'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte',
+        );
+        await waitForClient((client) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          client.socket!.emit('error', emittedError);
+        });
 
-      await client.waitForClose((event) => {
-        expect(event.code).toBe(CloseCode.InternalServerError);
-        expect(event.reason).toBe('Internal server error');
-        expect(event.wasClean).toBeTruthy(); // because the server reported the error
-      });
-    });
+        await client.waitForClose((event) => {
+          expect(event.code).toBe(CloseCode.InternalServerError);
+          expect(event.reason).toBe('Internal server error');
+          expect(event.wasClean).toBeTruthy(); // because the server reported the error
+        });
+      },
+    );
 
-    it('should limit the internal server error message size', async () => {
+    it('should limit the internal server error message size', async ({
+      expect,
+    }) => {
       const { url } = await startTServer({
         onConnect: () => {
           throw new Error(
@@ -504,7 +524,9 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    it('should handle and limit internal server errors that are not instances of `Error`', async () => {
+    it('should handle and limit internal server errors that are not instances of `Error`', async ({
+      expect,
+    }) => {
       const { url } = await startTServer({
         onConnect: () => {
           throw 'i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characters long i am exactly 124 characte';
@@ -526,7 +548,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     });
 
     describe('Keep-Alive', () => {
-      it('should dispatch pings after the timeout has passed', async (done) => {
+      it('should dispatch pings after the timeout has passed', async () => {
         const { url } = await startTServer(undefined, 50);
 
         const client = await createTClient(url);
@@ -536,10 +558,12 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           }),
         );
 
-        client.ws.once('ping', () => done());
+        const { resolve: pinged, promise: waitForPing } = createDeferred();
+        client.ws.once('ping', () => pinged());
+        await waitForPing;
       });
 
-      it('should not dispatch pings if disabled with nullish timeout', async (done) => {
+      it('should not dispatch pings if disabled with nullish timeout', async () => {
         const { url } = await startTServer(undefined, 0);
 
         const client = await createTClient(url);
@@ -549,12 +573,17 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           }),
         );
 
-        client.ws.once('ping', () => fail('Shouldnt have pinged'));
+        client.ws.once('ping', () => {
+          throw new Error('Shouldnt have pinged');
+        });
 
-        setTimeout(done, 50);
+        // wait some time for ping
+        await setTimeout(50);
       });
 
-      it('should terminate the socket if no pong is sent in response to a ping', async () => {
+      it('should terminate the socket if no pong is sent in response to a ping', async ({
+        expect,
+      }) => {
         const { url } = await startTServer(undefined, 50);
 
         const client = await createTClient(url);

@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`should report invalid message "" with descriptive error 1`] = `[Error: Message is expected to be an object, but got string]`;
+
+exports[`should report invalid message %j with descriptive error 1`] = `[Error: Message is expected to be an object, but got array]`;
+
+exports[`should report invalid message {"id":"","type":"complete"} with descriptive error 1`] = `[Error: "complete" message requires a non-empty 'id' property]`;
+
+exports[`should report invalid message {"id":"","type":"error"} with descriptive error 1`] = `[Error: "error" message requires a non-empty 'id' property]`;
+
+exports[`should report invalid message {"id":"","type":"next"} with descriptive error 1`] = `[Error: "next" message requires a non-empty 'id' property]`;
+
+exports[`should report invalid message {"id":"","type":"subscribe"} with descriptive error 1`] = `[Error: "subscribe" message requires a non-empty 'id' property]`;
+
+exports[`should report invalid message {"id":"id","type":"error","payload":""} with descriptive error 1`] = `[Error: "error" message expects the 'payload' property to be an array of GraphQL errors, but got ""]`;
+
+exports[`should report invalid message {"id":"id","type":"error","payload":[]} with descriptive error 1`] = `[Error: "error" message expects the 'payload' property to be an array of GraphQL errors, but got []]`;
+
+exports[`should report invalid message {"id":"id","type":"error","payload":[{"iam":"invalid"}]} with descriptive error 1`] = `[Error: "error" message expects the 'payload' property to be an array of GraphQL errors, but got [{"iam":"invalid"}]]`;
+
+exports[`should report invalid message {"id":"id","type":"error","payload":{}} with descriptive error 1`] = `[Error: "error" message expects the 'payload' property to be an array of GraphQL errors, but got {}]`;
+
+exports[`should report invalid message {"id":"id","type":"error"} with descriptive error 1`] = `[Error: "error" message expects the 'payload' property to be an array of GraphQL errors, but got undefined]`;
+
+exports[`should report invalid message {"id":"id","type":"next","payload":""} with descriptive error 1`] = `[Error: "next" message expects the 'payload' property to be an object, but got string]`;
+
+exports[`should report invalid message {"id":"id","type":"next"} with descriptive error 1`] = `[Error: "next" message expects the 'payload' property to be an object, but got undefined]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":""} with descriptive error 1`] = `[Error: "subscribe" message expects the 'payload' property to be an object, but got string]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":[]} with descriptive error 1`] = `[Error: "subscribe" message expects the 'payload' property to be an object, but got array]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"operationName":{},"query":""}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'operationName' property to be a string or nullish or missing, but got object]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"operationName":0,"query":""}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'operationName' property to be a string or nullish or missing, but got number]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"query":"","extensions":""}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'extensions' property to be a an object or nullish or missing, but got string]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"query":"","extensions":0}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'extensions' property to be a an object or nullish or missing, but got number]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"query":"","variables":""}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'variables' property to be a an object or nullish or missing, but got string]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"query":{}}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'query' property to be a string, but got object]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{"query":0}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'query' property to be a string, but got number]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe","payload":{}} with descriptive error 1`] = `[Error: "subscribe" message payload expects the 'query' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"id":"id","type":"subscribe"} with descriptive error 1`] = `[Error: "subscribe" message expects the 'payload' property to be an object, but got undefined]`;
+
+exports[`should report invalid message {"id":0,"type":"complete"} with descriptive error 1`] = `[Error: "complete" message expects the 'id' property to be a string, but got number]`;
+
+exports[`should report invalid message {"id":0,"type":"subscribe"} with descriptive error 1`] = `[Error: "subscribe" message expects the 'id' property to be a string, but got number]`;
+
+exports[`should report invalid message {"type":""} with descriptive error 1`] = `[Error: Message is missing the 'type' property]`;
+
+exports[`should report invalid message {"type":"complete"} with descriptive error 1`] = `[Error: "complete" message expects the 'id' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"type":"connection_ack","payload":""} with descriptive error 1`] = `[Error: "connection_ack" message expects the 'payload' property to be an object or nullish or missing, but got ""]`;
+
+exports[`should report invalid message {"type":"connection_init","payload":""} with descriptive error 1`] = `[Error: "connection_init" message expects the 'payload' property to be an object or nullish or missing, but got ""]`;
+
+exports[`should report invalid message {"type":"connection_init","payload":0} with descriptive error 1`] = `[Error: "connection_init" message expects the 'payload' property to be an object or nullish or missing, but got "0"]`;
+
+exports[`should report invalid message {"type":"error"} with descriptive error 1`] = `[Error: "error" message expects the 'id' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"type":"next"} with descriptive error 1`] = `[Error: "next" message expects the 'id' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"type":"next"} with descriptive error 2`] = `[Error: "next" message expects the 'id' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"type":"nuxt"} with descriptive error 1`] = `[Error: Invalid message 'type' property "nuxt"]`;
+
+exports[`should report invalid message {"type":"ping","payload":0} with descriptive error 1`] = `[Error: "ping" message expects the 'payload' property to be an object or nullish or missing, but got "0"]`;
+
+exports[`should report invalid message {"type":"subscribe"} with descriptive error 1`] = `[Error: "subscribe" message expects the 'id' property to be a string, but got undefined]`;
+
+exports[`should report invalid message {"type":0} with descriptive error 1`] = `[Error: Message is missing the 'type' property]`;
+
+exports[`should report invalid message {} with descriptive error 1`] = `[Error: Message is missing the 'type' property]`;
+
+exports[`should report invalid message {} with descriptive error 2`] = `[Error: Message is missing the 'type' property]`;
+
+exports[`should report invalid message 0 with descriptive error 1`] = `[Error: Message is expected to be an object, but got number]`;
+
+exports[`should report invalid message 9 with descriptive error 1`] = `[Error: Message is expected to be an object, but got number]`;
+
+exports[`should report invalid message undefined with descriptive error 1`] = `[Error: Message is expected to be an object, but got function]`;
+
+exports[`should report invalid message undefined with descriptive error 2`] = `[Error: Message is expected to be an object, but got function]`;
+
+exports[`should report invalid message undefined with descriptive error 3`] = `[Error: Message is expected to be an object, but got function]`;
