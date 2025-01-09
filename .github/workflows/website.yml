@@ -23,6 +23,7 @@ jobs:
           node-version-file: .node-version
           working-directory: website
       - name: Check
+        working-directory: website
         run: yarn check:type
 
   deploy:
