@@ -3,8 +3,6 @@
   "private": true,
   "scripts": {
     "build": "next build && next-sitemap --config next-sitemap.config.cjs",
-    "check:format": "echo 'Check is done in root...'",
-    "check:lint": "echo 'Check is done in root...'",
     "check:type": "tsc --noEmit",
     "start": "next"
   },
