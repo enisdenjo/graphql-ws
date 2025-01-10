@@ -25,7 +25,7 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Check
-        run: yarn workspaces foreach -A -p -v run check:${{ matrix.check }}
+        run: yarn check:${{ matrix.check }}
 
   test:
     name: Test

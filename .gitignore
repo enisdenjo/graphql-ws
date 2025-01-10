@@ -6,6 +6,7 @@ dist/
 out/
 .vscode/
 .yarn/*
+website/.yarn/*
 !.yarn/releases
 !.yarn/plugins
 !.yarn/patches

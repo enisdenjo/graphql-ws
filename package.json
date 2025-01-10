@@ -94,8 +94,6 @@
     "format": "yarn check:format --write",
     "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
     "postbuild": "node scripts/fix-declaration-directives.mjs",
-    "postpack": "npm pkg set --no-json workspaces[]=. workspaces[]=website",
-    "prepack": "npm pkg delete workspaces",
     "test": "vitest",
     "release": "yarn build && yarn changeset publish"
   },
@@ -104,7 +102,7 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "patch:@changesets/cli@npm%3A2.27.11#~/.yarn/patches/@changesets-cli-npm-2.27.11-fc68e5c2cd.patch",
+    "@changesets/cli": "^2.27.11",
     "@fastify/websocket": "^9.0.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@rollup/plugin-terser": "^0.4.4",
@@ -134,9 +132,5 @@
     "vitest": "^2.1.8",
     "ws": "8.12.0",
     "ws7": "npm:ws@^7.5.9"
-  },
-  "workspaces": [
-    ".",
-    "website"
-  ]
+  }
 }
