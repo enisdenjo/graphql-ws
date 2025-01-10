@@ -2993,7 +2993,7 @@ __metadata:
     fastify: "npm:^4.26.2"
     fastify-websocket: "npm:4.2.2"
     glob: "npm:^10.3.12"
-    graphql: "npm:^16.8.1"
+    graphql: "npm:^16.9.0"
     jsdom: "npm:^25.0.1"
     pkgroll: "npm:^2.6.1"
     prettier: "npm:^3.4.2"
@@ -3010,11 +3010,11 @@ __metadata:
     ws: "npm:8.12.0"
     ws7: "npm:ws@^7.5.9"
   peerDependencies:
-    graphql: ">=0.11 <=16"
+    graphql: ^15.9.0 || ^16.9.0
   languageName: unknown
   linkType: soft
 
-"graphql@npm:^16.8.1":
+"graphql@npm:^16.9.0":
   version: 16.10.0
   resolution: "graphql@npm:16.10.0"
   checksum: 10c0/303730675538c8bd6c76b447dc6f03e61242e2d2596b408c34759666ec4877409e5593a7a0467d590ac5407b8c663b093b599556a77f24f281abea69ddc53de6
