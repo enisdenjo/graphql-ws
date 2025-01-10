@@ -25,7 +25,7 @@ jobs:
           working-directory: website
       - name: Check
         working-directory: website
-        run: yarn check:type
+        run: yarn check:types
 
   deploy:
     name: Deploy
