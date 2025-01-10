@@ -11,6 +11,7 @@ const opts = {
   categorizeByGroup: false, // removes redundant category names in matching modules
   githubPages: false,
   exclude: ['**/index.ts', '**/utils.ts', '**/parser.ts', '**/__tests__/**/*'],
+  hidePageHeader: true,
   entryFileName: 'index.md',
   publicPath: '/docs/',
   hideBreadcrumbs: true,
