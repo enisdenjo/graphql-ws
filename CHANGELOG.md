@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 5.16.2
+
+### Patch Changes
+
+- [#611](https://github.com/enisdenjo/graphql-ws/pull/611) [`6a5fde1`](https://github.com/enisdenjo/graphql-ws/commit/6a5fde1c1a623ab5ac87450ef51584881ddf104c) Thanks [@enisdenjo](https://github.com/enisdenjo)! - No more workspaces
+
+  This version does not contain any code changes.
+
 ## 5.16.1
 
 ### Patch Changes
