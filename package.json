@@ -11,7 +11,7 @@
   "license": "MIT",
   "packageManager": "yarn@4.6.0",
   "engines": {
-    "node": ">=10"
+    "node": ">=20"
   },
   "main": "lib/index.js",
   "module": "lib/index.mjs",
