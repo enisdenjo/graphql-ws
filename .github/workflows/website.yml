@@ -7,8 +7,9 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - website/**
+    # we always want new site previews because the api reference changes are in code
+    # paths:
+    #   - website/**
 
 jobs:
   check-type:
