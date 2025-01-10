@@ -1,9 +1,7 @@
 import terser from '@rollup/plugin-terser';
-import typescript from '@rollup/plugin-typescript';
 
 export default {
-  input: './src/client.ts',
-  plugins: [typescript()],
+  input: './dist/client.js',
   output: [
     {
       file: './umd/graphql-ws.js',

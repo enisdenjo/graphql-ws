@@ -77,8 +77,7 @@
     "uwebsockets"
   ],
   "scripts": {
-    "build": "pkgroll --clean-dist",
-    "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
+    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "prepack": "yarn build",
     "changeset": "changeset",
     "check:format": "prettier --check .",
@@ -97,7 +96,6 @@
     "@fastify/websocket": "^11.0.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@tsconfig/node20": "^20.1.4",
     "@tsconfig/strictest": "^2.0.5",
     "@types/glob": "^8.1.0",
@@ -111,7 +109,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-sh": "^0.14.0",
     "replacestream": "^4.0.3",
-    "rollup": "^4.14.3",
+    "rollup": "^4.30.1",
     "subscriptions-transport-ws": "^0.11.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.13",
