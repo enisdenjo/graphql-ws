@@ -13,8 +13,7 @@ jobs:
       matrix:
         check:
           - format
-          - lint
-          - type
+          - types
     name: Check ${{ matrix.check }}
     runs-on: ubuntu-latest
     steps:
