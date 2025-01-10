@@ -119,6 +119,7 @@
     "glob": "^10.3.12",
     "graphql": "^16.8.1",
     "jsdom": "^25.0.1",
+    "pkgroll": "^2.6.1",
     "prettier": "^3.4.2",
     "prettier-plugin-sh": "^0.14.0",
     "replacestream": "^4.0.3",
