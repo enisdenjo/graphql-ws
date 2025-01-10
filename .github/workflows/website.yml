@@ -12,8 +12,8 @@ on:
     #   - website/**
 
 jobs:
-  check-type:
-    name: Check type
+  check-types:
+    name: Check types
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
