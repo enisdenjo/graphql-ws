@@ -97,7 +97,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@tsconfig/strictest": "^2.0.5",
     "@types/glob": "^8.1.0",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.5.13",
     "bun-types": "^1.1.4",
     "fastify": "^5.2.1",
     "glob": "^10.3.12",
@@ -112,6 +112,6 @@
     "typescript": "^5.7.3",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.51.0",
     "vitest": "^2.1.8",
-    "ws": "8.12.0"
+    "ws": "^8.18.0"
   }
 }

@@ -1262,7 +1262,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:^8.5.10, @types/ws@npm:~8.5.10":
+"@types/ws@npm:^8.5.13, @types/ws@npm:~8.5.10":
   version: 8.5.13
   resolution: "@types/ws@npm:8.5.13"
   dependencies:
@@ -2416,7 +2416,7 @@ __metadata:
     "@rollup/plugin-terser": "npm:^0.4.4"
     "@tsconfig/strictest": "npm:^2.0.5"
     "@types/glob": "npm:^8.1.0"
-    "@types/ws": "npm:^8.5.10"
+    "@types/ws": "npm:^8.5.13"
     bun-types: "npm:^1.1.4"
     fastify: "npm:^5.2.1"
     glob: "npm:^10.3.12"
@@ -2431,7 +2431,7 @@ __metadata:
     typescript: "npm:^5.7.3"
     uWebSockets.js: "uNetworking/uWebSockets.js#v20.51.0"
     vitest: "npm:^2.1.8"
-    ws: "npm:8.12.0"
+    ws: "npm:^8.18.0"
   peerDependencies:
     graphql: ^15.9.0 || ^16.9.0
   languageName: unknown
@@ -4545,21 +4545,6 @@ __metadata:
   version: 1.0.2
   resolution: "wrappy@npm:1.0.2"
   checksum: 10c0/56fece1a4018c6a6c8e28fbc88c87e0fbf4ea8fd64fc6c63b18f4acc4bd13e0ad2515189786dd2c30d3eec9663d70f4ecf699330002f8ccb547e4a18231fc9f0
-  languageName: node
-  linkType: hard
-
-"ws@npm:8.12.0":
-  version: 8.12.0
-  resolution: "ws@npm:8.12.0"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/2a84d769be015f3644a99a33c1b4c1c268b97315a8387067c242f26ab7ac1f655640220c23ddcbd2f7911649cd00478aaafbb4dff073f0b75f3531ebabd7cced
   languageName: node
   linkType: hard
 
