@@ -411,7 +411,7 @@ it('should not send the complete message if the socket is not open', async () =>
       close = () => this.close();
     }
 
-    public send(data: string) {
+    public override send(data: string) {
       if (this.readyState !== WebSocket.OPEN)
         throw new Error("Shouldn't send anything through a non-OPEN socket");
       super.send(data);
@@ -855,7 +855,7 @@ it('should terminate socket immediately on terminate', async ({ expect }) => {
       super(...args);
     }
 
-    public close() {
+    public override close() {
       // unresponsive
     }
   }
@@ -2159,7 +2159,7 @@ describe.concurrent('events', () => {
     );
 
     expect(connectingFn).toHaveBeenCalledTimes(2);
-    expect(connectingFn.mock.calls[0].length).toBe(1);
+    expect(connectingFn.mock.calls[0]?.length).toBe(1);
 
     expect(openedFn).toHaveBeenCalledTimes(2); // initial and registered listener
     openedFn.mock.calls.forEach((cal) => {
@@ -2335,16 +2335,16 @@ describe.concurrent('events', () => {
     });
 
     expect(pingFn).toHaveBeenCalledTimes(2);
-    expect(pingFn.mock.calls[0][0]).toBeFalsy();
-    expect(pingFn.mock.calls[0][1]).toBeUndefined();
-    expect(pingFn.mock.calls[1][0]).toBeFalsy();
-    expect(pingFn.mock.calls[1][1]).toBeUndefined();
+    expect(pingFn.mock.calls[0]?.[0]).toBeFalsy();
+    expect(pingFn.mock.calls[0]?.[1]).toBeUndefined();
+    expect(pingFn.mock.calls[1]?.[0]).toBeFalsy();
+    expect(pingFn.mock.calls[1]?.[1]).toBeUndefined();
 
     expect(pongFn).toHaveBeenCalledTimes(2);
-    expect(pongFn.mock.calls[0][0]).toBeTruthy();
-    expect(pongFn.mock.calls[0][1]).toBeUndefined();
-    expect(pongFn.mock.calls[1][0]).toBeTruthy();
-    expect(pongFn.mock.calls[1][1]).toBeUndefined();
+    expect(pongFn.mock.calls[0]?.[0]).toBeTruthy();
+    expect(pongFn.mock.calls[0]?.[1]).toBeUndefined();
+    expect(pongFn.mock.calls[1]?.[0]).toBeTruthy();
+    expect(pongFn.mock.calls[1]?.[1]).toBeUndefined();
   });
 
   it('should emit ping and pong events when receiving server pings', async ({
@@ -2379,16 +2379,16 @@ describe.concurrent('events', () => {
     });
 
     expect(pingFn).toHaveBeenCalledTimes(2);
-    expect(pingFn.mock.calls[0][0]).toBeTruthy();
-    expect(pingFn.mock.calls[0][1]).toEqual({ some: 'data' });
-    expect(pingFn.mock.calls[1][0]).toBeTruthy();
-    expect(pingFn.mock.calls[1][1]).toEqual({ some: 'data' });
+    expect(pingFn.mock.calls[0]?.[0]).toBeTruthy();
+    expect(pingFn.mock.calls[0]?.[1]).toEqual({ some: 'data' });
+    expect(pingFn.mock.calls[1]?.[0]).toBeTruthy();
+    expect(pingFn.mock.calls[1]?.[1]).toEqual({ some: 'data' });
 
     expect(pongFn).toHaveBeenCalledTimes(2);
-    expect(pongFn.mock.calls[0][0]).toBeFalsy();
-    expect(pongFn.mock.calls[0][1]).toEqual({ some: 'data' });
-    expect(pongFn.mock.calls[1][0]).toBeFalsy();
-    expect(pongFn.mock.calls[1][1]).toEqual({ some: 'data' });
+    expect(pongFn.mock.calls[0]?.[0]).toBeFalsy();
+    expect(pongFn.mock.calls[0]?.[1]).toEqual({ some: 'data' });
+    expect(pongFn.mock.calls[1]?.[0]).toBeFalsy();
+    expect(pongFn.mock.calls[1]?.[1]).toEqual({ some: 'data' });
   });
 
   it('should provide the latest socket reference to event listeners', async ({

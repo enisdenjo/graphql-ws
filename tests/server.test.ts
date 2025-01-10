@@ -237,7 +237,7 @@ it('should pass in the context value from the config', async () => {
   });
 
   expect(executeFn).toBeCalled();
-  expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
+  expect(executeFn.mock.calls[0]?.[0].contextValue).toBe(context);
 
   client.ws.send(
     stringifyMessage<MessageType.Subscribe>({
@@ -256,7 +256,7 @@ it('should pass in the context value from the config', async () => {
   });
 
   expect(subscribeFn).toBeCalled();
-  expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
+  expect(subscribeFn.mock.calls[0]?.[0].contextValue).toBe(context);
 });
 
 it('should pass the `onSubscribe` exec args to the `context` option and use it', async () => {
@@ -1573,7 +1573,7 @@ describe('Subscribe', () => {
       onSubscribe: (_ctx, msg) => {
         // search using `SubscriptionPayload.query` as QueryID
         // check the client example below for better understanding
-        const hit = queriesStore[msg.payload.query as string];
+        const hit = queriesStore[msg.payload.query as string]!;
         return {
           ...hit,
           variableValues: msg.payload.variables, // use the variables from the client

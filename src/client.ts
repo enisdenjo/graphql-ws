@@ -718,7 +718,7 @@ export function createClient<
               socket.close(
                 CloseCode.InternalClientError,
                 limitCloseReason(
-                  err instanceof Error ? err.message : new Error(err).message,
+                  err instanceof Error ? err.message : String(err),
                   'Internal client error',
                 ),
               );
@@ -774,7 +774,7 @@ export function createClient<
               socket.close(
                 CloseCode.BadResponse,
                 limitCloseReason(
-                  err instanceof Error ? err.message : new Error(err).message,
+                  err instanceof Error ? err.message : String(err),
                   'Bad response',
                 ),
               );
@@ -1071,8 +1071,8 @@ export function createClient<
  * can happen on iOS Safari, see: https://github.com/enisdenjo/graphql-ws/discussions/290.
  */
 export class TerminatedCloseEvent extends Error {
-  public name = 'TerminatedCloseEvent';
-  public message = '4499: Terminated';
+  public override name = 'TerminatedCloseEvent';
+  public override message = '4499: Terminated';
   public code = 4499;
   public reason = 'Terminated';
   public wasClean = false;

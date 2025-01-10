@@ -1,5 +1,5 @@
 import type * as http from 'http';
-import type { WebSocket, WebSocketServer } from 'ws';
+import type WebSocket from 'ws';
 import {
   CloseCode,
   ConnectionInitMessage,
@@ -9,8 +9,10 @@ import {
 import { handleProtocols, makeServer, ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
 
+export type WebSocketServer = WebSocket.Server;
+
 // for nicer documentation
-export type { WebSocket, WebSocketServer };
+export type { WebSocket };
 
 /**
  * The extra that will be put in the `Context`.
@@ -63,7 +65,7 @@ export function useServer<
     );
 
     // catch the first thrown error and re-throw it once all clients have been notified
-    let firstErr: Error | null = null;
+    let firstErr: unknown = null;
 
     // report server errors by erroring out all clients with the same error
     for (const client of ws.clients) {

@@ -17,9 +17,10 @@ import {
   Extra as UWSExtra,
 } from '../../src/use/uWebSockets';
 import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
+import { isObject } from '../../src/utils';
 import { pong, schema } from '../fixtures/simple';
 
-export { WSExtra, UWSExtra, FastifyExtra };
+export type { WSExtra, UWSExtra, FastifyExtra };
 
 // distinct server for each test; if you forget to dispose, the fixture wont
 const leftovers: Dispose[] = [];
@@ -74,7 +75,7 @@ async function getAvailablePort() {
       });
       break; // listening
     } catch (err) {
-      if ('code' in err && err.code === 'EADDRINUSE') {
+      if (isObject(err) && 'code' in err && err.code === 'EADDRINUSE') {
         tried++;
         if (tried > 10)
           throw new Error(
@@ -560,7 +561,7 @@ export async function startFastifyWSTServer(
         sockets.delete(socket);
       }
 
-      fastify.websocketServer.close((err) => {
+      fastify.websocketServer.close((err: unknown) => {
         if (err) return reject(err);
         fastify.close(() => {
           resolve();
