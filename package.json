@@ -77,15 +77,14 @@
     "uwebsockets"
   ],
   "scripts": {
-    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
-    "prepack": "yarn build",
     "changeset": "changeset",
     "check:format": "prettier --check .",
-    "check:types": "tsc --noEmit",
     "format": "yarn check:format --write",
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.js",
-    "postbuild": "node scripts/fix-declaration-directives.js",
-    "test": "vitest"
+    "check:types": "tsc --noEmit",
+    "test": "vitest",
+    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
+    "prepack": "yarn build",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.js"
   },
   "peerDependencies": {
     "graphql": "^15.9.0 || ^16.9.0"
