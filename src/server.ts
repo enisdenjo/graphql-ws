@@ -9,13 +9,13 @@ import {
   getOperationAST,
   GraphQLError,
   execute as graphqlExecute,
+  GraphQLFormattedError,
   GraphQLSchema,
   subscribe as graphqlSubscribe,
   validate as graphqlValidate,
   OperationTypeNode,
   parse,
   SubscriptionArgs,
-  GraphQLFormattedError,
 } from 'graphql';
 import {
   CloseCode,
@@ -38,7 +38,7 @@ import {
   SubscribeMessage,
 } from './common';
 import {
-  areGraphQLFormattedErrors,
+  areGraphQLErrors,
   isAsyncGenerator,
   isAsyncIterable,
   isObject,
@@ -752,7 +752,7 @@ export function makeServer<
               let execArgs: ExecutionArgs;
               const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
               if (maybeExecArgsOrErrors) {
-                if (areGraphQLFormattedErrors(maybeExecArgsOrErrors))
+                if (areGraphQLErrors(maybeExecArgsOrErrors))
                   return id in ctx.subscriptions
                     ? await emit.error(maybeExecArgsOrErrors)
                     : void 0;
