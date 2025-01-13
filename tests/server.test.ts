@@ -1041,7 +1041,10 @@ describe('Subscribe', () => {
   it('should use the graphql errors returned from `onError`', async () => {
     const { url } = await startTServer({
       onError: (_ctx, _message) => {
-        return [new GraphQLError('Itsa me!'), new GraphQLError('Anda me!')];
+        return [
+          new GraphQLError('Itsa me!').toJSON(),
+          new GraphQLError('Anda me!').toJSON(),
+        ];
       },
     });
 
