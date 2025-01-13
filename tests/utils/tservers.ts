@@ -39,7 +39,7 @@ export interface TServer {
   url: string;
   server: WebSocketServer | null; // null when uWS because it does not have a server instance
   getClients: () => TServerClient[];
-  pong: (key?: string) => void;
+  pong: (key: string) => void;
   waitForClient: (
     test?: (client: TServerClient) => void,
     expire?: number,

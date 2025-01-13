@@ -324,6 +324,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     });
 
     it('should close the socket on empty arrays returned from `onSubscribe`', async ({
+      task,
       expect,
     }) => {
       const { url } = await startTServer({
@@ -349,7 +350,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            query: 'subscription { ping }',
+            query: `subscription { ping(key: "${task.id}") }`,
           },
         }),
       );
@@ -536,7 +537,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    describe('Keep-Alive', () => {
+    describe.concurrent('Keep-Alive', () => {
       it('should dispatch pings after the timeout has passed', async () => {
         const { url } = await startTServer(undefined, 50);
 

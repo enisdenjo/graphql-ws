@@ -9,7 +9,7 @@ import {
 // use for dispatching a `pong` to the `ping` subscription
 const pendingPongs: Record<string, number | undefined> = {};
 const pongListeners: Record<string, ((done: boolean) => void) | undefined> = {};
-export function pong(key = 'global'): void {
+export function pong(key: string): void {
   if (pongListeners[key]) {
     pongListeners[key]?.(false);
   } else {
@@ -43,11 +43,11 @@ export const schemaConfig: GraphQLSchemaConfig = {
         type: new GraphQLNonNull(GraphQLString),
         args: {
           key: {
-            type: GraphQLString,
+            type: new GraphQLNonNull(GraphQLString),
           },
         },
         subscribe: function (_src, args) {
-          const key = args.key ? args.key : 'global';
+          const key = args.key;
           return {
             [Symbol.asyncIterator]() {
               return this;

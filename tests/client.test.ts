@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 
-import { randomUUID } from 'crypto';
 import { EventEmitter } from 'events';
 import { ExecutionResult } from 'graphql';
 import { afterAll, beforeAll, beforeEach, describe, it, vitest } from 'vitest';
@@ -398,7 +397,9 @@ it('should report close events when `connectionParams` takes too long', async ({
   await waitForNonLazyError;
 });
 
-it('should not send the complete message if the socket is not open', async () => {
+it('should not send the complete message if the socket is not open', async ({
+  task,
+}) => {
   const { url, waitForOperation } = await startTServer();
 
   let close = () => {
@@ -424,7 +425,9 @@ it('should not send the complete message if the socket is not open', async () =>
     retryAttempts: 0,
     onNonLazyError: noop,
   });
-  const sub = tsubscribe(client, { query: 'subscription { ping }' });
+  const sub = tsubscribe(client, {
+    query: `subscription { ping(key: "${task.id}") }`,
+  });
   await waitForOperation();
 
   // client leaves
@@ -1089,6 +1092,7 @@ describe.concurrent('query operation', () => {
 
 describe.concurrent('subscription operation', () => {
   it('should execute and "next" the emitted results until disposed', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1100,12 +1104,12 @@ describe.concurrent('subscription operation', () => {
     });
 
     const sub = tsubscribe(client, {
-      query: 'subscription Ping { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     await server.waitForOperation();
 
-    server.pong();
-    server.pong();
+    server.pong(task.id);
+    server.pong(task.id);
 
     await sub.waitForNext((result) => {
       expect(result).toEqual({ data: { ping: 'pong' } });
@@ -1116,8 +1120,8 @@ describe.concurrent('subscription operation', () => {
 
     sub.dispose();
 
-    server.pong();
-    server.pong();
+    server.pong(task.id);
+    server.pong(task.id);
 
     await sub.waitForNext(() => {
       throw new Error('Next shouldnt have been called');
@@ -1125,7 +1129,10 @@ describe.concurrent('subscription operation', () => {
     await sub.waitForComplete();
   });
 
-  it('should emit results to correct distinct sinks', async ({ expect }) => {
+  it('should emit results to correct distinct sinks', async ({
+    task,
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1134,7 +1141,7 @@ describe.concurrent('subscription operation', () => {
       onNonLazyError: noop,
     });
 
-    const sub1Key = randomUUID();
+    const sub1Key = task.id + '1';
     const sub1 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
         ping(key: $key)
@@ -1143,7 +1150,7 @@ describe.concurrent('subscription operation', () => {
     });
     await server.waitForOperation();
 
-    const sub2Key = randomUUID();
+    const sub2Key = task.id + '2';
     const sub2 = tsubscribe(client, {
       query: `subscription Ping($key: String!) {
         ping(key: $key)
@@ -1325,6 +1332,7 @@ describe.concurrent('subscription operation', () => {
 
 describe.concurrent('"concurrency"', () => {
   it('should dispatch and receive messages even if one subscriber disposes while another one subscribes', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1336,17 +1344,17 @@ describe.concurrent('"concurrency"', () => {
     });
 
     const sub1 = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}_1") }`,
     });
     await server.waitForOperation();
 
     sub1.dispose();
     const sub2 = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}_2") }`,
     });
     await server.waitForOperation();
 
-    server.pong();
+    server.pong(task.id + '_2');
 
     await sub2.waitForNext((result) => {
       expect(result).toEqual({ data: { ping: 'pong' } });
@@ -1422,7 +1430,9 @@ describe.concurrent('lazy', () => {
     await server.waitForClient();
   });
 
-  it('should disconnect on last unsubscribe when mode is enabled', async () => {
+  it('should disconnect on last unsubscribe when mode is enabled', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1438,14 +1448,14 @@ describe.concurrent('lazy', () => {
 
     const sub1 = tsubscribe(client, {
       operationName: 'PingPlease',
-      query: 'subscription PingPlease { ping }',
+      query: `subscription PingPlease { ping(key: "${task.id}_please") }`,
     });
     await server.waitForOperation();
 
     const sub2 = tsubscribe(client, {
       operationName: 'Pong',
       query: 'subscription Pong($key: String!) { ping(key: $key) }',
-      variables: { key: randomUUID() },
+      variables: { key: task.id },
     });
     await server.waitForOperation();
 
@@ -1462,7 +1472,9 @@ describe.concurrent('lazy', () => {
     await server.waitForClientClose();
   });
 
-  it('should disconnect after the lazyCloseTimeout has passed after last unsubscribe', async () => {
+  it('should disconnect after the lazyCloseTimeout has passed after last unsubscribe', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1474,7 +1486,7 @@ describe.concurrent('lazy', () => {
     });
 
     const sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     await server.waitForOperation();
 
@@ -1555,7 +1567,9 @@ describe.concurrent('lazy', () => {
     await waitForNonLazyError;
   });
 
-  it('should not close connection if a subscription is disposed multiple times', async () => {
+  it('should not close connection if a subscription is disposed multiple times', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1566,12 +1580,12 @@ describe.concurrent('lazy', () => {
 
     // create 2 subscriptions
     const sub0 = tsubscribe(client, {
-      query: `subscription { ping(key: "${randomUUID()}") }`,
+      query: `subscription { ping(key: "${task.id}_0") }`,
     });
     await server.waitForOperation();
 
     const sub1 = tsubscribe(client, {
-      query: `subscription { ping(key: "${randomUUID()}") }`,
+      query: `subscription { ping(key: "${task.id}_1") }`,
     });
     await server.waitForOperation();
 
@@ -1591,7 +1605,10 @@ describe.concurrent('lazy', () => {
 });
 
 describe.concurrent('reconnecting', () => {
-  it('should not reconnect if retry attempts is zero', async ({ expect }) => {
+  it('should not reconnect if retry attempts is zero', async ({
+    task,
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const sub = tsubscribe(
@@ -1601,7 +1618,7 @@ describe.concurrent('reconnecting', () => {
         onNonLazyError: noop,
       }),
       {
-        query: 'subscription { ping }',
+        query: `subscription { ping(key: "${task.id}") }`,
       },
     );
 
@@ -1615,7 +1632,10 @@ describe.concurrent('reconnecting', () => {
     });
   });
 
-  it('should reconnect silently after socket closes', async ({ expect }) => {
+  it('should reconnect silently after socket closes', async ({
+    task,
+    expect,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1624,7 +1644,7 @@ describe.concurrent('reconnecting', () => {
       retryWait: () => Promise.resolve(),
     });
     const sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
     await server.waitForClient((client) => {
@@ -1652,7 +1672,9 @@ describe.concurrent('reconnecting', () => {
     });
   });
 
-  it('should resubscribe all subscribers on silent reconnects', async () => {
+  it('should resubscribe all subscribers on silent reconnects', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1666,7 +1688,7 @@ describe.concurrent('reconnecting', () => {
     for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
-          query: `subscription Sub${i} { ping(key: "${randomUUID()}") }`,
+          query: `subscription Sub${i} { ping(key: "${task.id + i}") }`,
         }),
       );
       await server.waitForOperation();
@@ -1702,7 +1724,9 @@ describe.concurrent('reconnecting', () => {
     client.dispose();
   });
 
-  it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async () => {
+  it('should resubscribe all subscribers on silent reconnect when using retry wait delay', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -1716,7 +1740,7 @@ describe.concurrent('reconnecting', () => {
     for (let i = 0; i < 50; i++) {
       subs.push(
         tsubscribe(client, {
-          query: `subscription Sub${i} { ping(key: "${randomUUID()}") }`,
+          query: `subscription Sub${i} { ping(key: "${task.id + i}") }`,
         }),
       );
       await server.waitForOperation();
@@ -1747,6 +1771,7 @@ describe.concurrent('reconnecting', () => {
   });
 
   it('should report some close events immediately and not reconnect', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1760,7 +1785,7 @@ describe.concurrent('reconnecting', () => {
           shouldRetry: () => false,
         }),
         {
-          query: 'subscription { ping }',
+          query: `subscription { ping(key: "${task.id}") }`,
         },
       );
 
@@ -1790,6 +1815,7 @@ describe.concurrent('reconnecting', () => {
   });
 
   it('should report fatal connection problems immediately', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1805,7 +1831,7 @@ describe.concurrent('reconnecting', () => {
         },
       }),
       {
-        query: 'subscription { ping }',
+        query: `subscription { ping(key: "${task.id}") }`,
       },
     );
 
@@ -1846,6 +1872,7 @@ describe.concurrent('reconnecting', () => {
   );
 
   it('should lazy disconnect after retries when all subscriptions are completed', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1858,7 +1885,7 @@ describe.concurrent('reconnecting', () => {
     });
 
     const sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
     await server.waitForClient((client) => client.close());
@@ -1885,6 +1912,7 @@ describe.concurrent('reconnecting', () => {
   });
 
   it('should lazy disconnect even if subscription is created during retries after all get completed', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -1897,7 +1925,7 @@ describe.concurrent('reconnecting', () => {
     });
 
     const sub1 = tsubscribe(client, {
-      query: `subscription { ping(key: "${randomUUID()}") }`,
+      query: `subscription { ping(key: "${task.id}_1") }`,
     });
 
     await server.waitForClient((client) => client.close());
@@ -1907,7 +1935,7 @@ describe.concurrent('reconnecting', () => {
     await server.waitForClientClose();
 
     const sub2 = tsubscribe(client, {
-      query: `subscription { ping(key: "${randomUUID()}") }`,
+      query: `subscription { ping(key: "${task.id}_2") }`,
     });
 
     await server.waitForClient((client) => client.close());
@@ -1940,7 +1968,9 @@ describe.concurrent('reconnecting', () => {
     expect(server.getClients().length).toBe(0);
   });
 
-  it('should not reconnect if the subscription completes while waiting for a retry', async () => {
+  it('should not reconnect if the subscription completes while waiting for a retry', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     let retryAttempt = () => {
@@ -1964,7 +1994,7 @@ describe.concurrent('reconnecting', () => {
 
     // subscribe and wait for operation
     let sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     await server.waitForOperation();
 
@@ -1987,7 +2017,7 @@ describe.concurrent('reconnecting', () => {
 
     // subscribe but close connection immediately (dont wait for operation)
     sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     retry(); // this still counts as a retry, so retry
 
@@ -2008,6 +2038,7 @@ describe.concurrent('reconnecting', () => {
   });
 
   it('should not count lazy connect after succesful reconnect as another retry', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -2023,7 +2054,7 @@ describe.concurrent('reconnecting', () => {
     });
 
     let sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
     // closed connection, retried and successfully subscribed
@@ -2039,7 +2070,7 @@ describe.concurrent('reconnecting', () => {
 
     // new subscription, connect again
     sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     await server.waitForClient();
 
@@ -2051,7 +2082,9 @@ describe.concurrent('reconnecting', () => {
     expect(retry).toHaveBeenCalledTimes(1);
   });
 
-  it('should subscribe even if socket is in CLOSING state due to all subscriptions being completed', async () => {
+  it('should subscribe even if socket is in CLOSING state due to all subscriptions being completed', async ({
+    task,
+  }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2062,7 +2095,7 @@ describe.concurrent('reconnecting', () => {
 
     // subscribe and wait for operation
     let sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     await server.waitForOperation();
 
@@ -2074,7 +2107,7 @@ describe.concurrent('reconnecting', () => {
 
     // immediately subscribe again
     sub = tsubscribe(client, {
-      query: 'subscription { ping }',
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
     // the new subscription should go through
@@ -2084,6 +2117,7 @@ describe.concurrent('reconnecting', () => {
 
 describe.concurrent('events', () => {
   it('should emit to relevant listeners with expected arguments', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -2093,8 +2127,6 @@ describe.concurrent('events', () => {
     const connectedFn = vitest.fn(noop as EventListener<'connected'>);
     const messageFn = vitest.fn(noop as EventListener<'message'>);
     const closedFn = vitest.fn(noop as EventListener<'closed'>);
-
-    const pongKey = randomUUID();
 
     // wait for connected
     const [client, sub] = await new Promise<[Client, TSubscribe<unknown>]>(
@@ -2119,7 +2151,7 @@ describe.concurrent('events', () => {
 
         // trigger connecting
         const sub = tsubscribe(client, {
-          query: `subscription { ping(key: "${pongKey}") }`,
+          query: `subscription { ping(key: "${task.id}") }`,
         });
 
         // resolve once subscribed
@@ -2141,7 +2173,7 @@ describe.concurrent('events', () => {
     });
 
     // (connection ack + pong) * 2
-    server.pong(pongKey);
+    server.pong(task.id);
     await sub.waitForNext();
     expect(messageFn).toHaveBeenCalledTimes(4);
 
@@ -2528,7 +2560,7 @@ describe.concurrent('iterate', () => {
     `);
   });
 
-  it('should throw in iterator connection errors', async ({ expect }) => {
+  it('should throw in iterator connection errors', async ({ task, expect }) => {
     const { url, ...server } = await startTServer();
 
     const client = createClient({
@@ -2537,12 +2569,11 @@ describe.concurrent('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = randomUUID();
     const iterator = client.iterate({
-      query: `subscription { ping(key: "${pingKey}") }`,
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
-    pong(pingKey);
+    pong(task.id);
     await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
       {
         "done": false,
@@ -2566,6 +2597,7 @@ describe.concurrent('iterate', () => {
   });
 
   it('should complete subscription when iterator loop breaks', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -2576,13 +2608,12 @@ describe.concurrent('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = randomUUID();
     const iterator = client.iterate({
-      query: `subscription { ping(key: "${pingKey}") }`,
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     iterator.return = vitest.fn(iterator.return);
 
-    setTimeout(() => pong(pingKey), 0);
+    setTimeout(() => pong(task.id), 0);
 
     for await (const val of iterator) {
       expect(val).toMatchInlineSnapshot(`
@@ -2601,6 +2632,7 @@ describe.concurrent('iterate', () => {
   });
 
   it('should complete subscription when iterator loop throws', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -2611,13 +2643,12 @@ describe.concurrent('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = randomUUID();
     const iterator = client.iterate({
-      query: `subscription { ping(key: "${pingKey}") }`,
+      query: `subscription { ping(key: "${task.id}") }`,
     });
     iterator.return = vitest.fn(iterator.return);
 
-    setTimeout(() => pong(pingKey), 0);
+    setTimeout(() => pong(task.id), 0);
 
     await expect(async () => {
       for await (const val of iterator) {
@@ -2638,6 +2669,7 @@ describe.concurrent('iterate', () => {
   });
 
   it('should complete subscription when calling return directly on iterator', async ({
+    task,
     expect,
   }) => {
     const { url, ...server } = await startTServer();
@@ -2648,12 +2680,11 @@ describe.concurrent('iterate', () => {
       onNonLazyError: noop,
     });
 
-    const pingKey = randomUUID();
     const iterator = client.iterate({
-      query: `subscription { ping(key: "${pingKey}") }`,
+      query: `subscription { ping(key: "${task.id}") }`,
     });
 
-    pong(pingKey);
+    pong(task.id);
 
     await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
       {
