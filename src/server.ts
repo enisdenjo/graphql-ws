@@ -718,9 +718,7 @@ export function makeServer<
                 let errorMessage: ErrorMessage = {
                   id,
                   type: MessageType.Error,
-                  payload: errors.map((e) =>
-                    typeof e.toJSON === 'function' ? e.toJSON() : e,
-                  ),
+                  payload: errors.map((e) => e.toJSON()),
                 };
                 const maybeErrors = await onError?.(ctx, errorMessage, errors);
                 if (maybeErrors)
