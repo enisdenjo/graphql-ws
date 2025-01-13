@@ -1,6 +1,11 @@
-import React from 'react';
+import { Anchor, Image } from '@theguild/components';
 import clsx from 'clsx';
+import Link from 'next/link';
+import React from 'react';
+import { BsBoxSeam } from 'react-icons/bs';
+import { FaCreativeCommonsZero } from 'react-icons/fa';
 import { FiGithub, FiPlay } from 'react-icons/fi';
+import { MdOutlineHdrStrong } from 'react-icons/md';
 import {
   TbChefHat,
   TbPingPong,
@@ -8,11 +13,6 @@ import {
   TbServer,
   TbShield,
 } from 'react-icons/tb';
-import { BsBoxSeam } from 'react-icons/bs';
-import { FaCreativeCommonsZero } from 'react-icons/fa';
-import { MdOutlineHdrStrong } from 'react-icons/md';
-import { Anchor, Image } from '@theguild/components';
-import Link from 'next/link';
 
 const classes = {
   button: {

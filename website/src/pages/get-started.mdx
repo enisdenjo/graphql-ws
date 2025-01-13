@@ -15,7 +15,7 @@ npm i graphql-ws
 ### Create a GraphQL schema
 
 ```ts
-import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
 
 /**
  * Construct a GraphQL schema and define the necessary resolvers.
@@ -58,10 +58,11 @@ export const schema = new GraphQLSchema({
 #### With [ws](https://github.com/websockets/ws)
 
 ```ts
-import { WebSocketServer } from 'ws'; // yarn add ws
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/lib/use/ws';
+import { WebSocketServer } from 'ws'; // yarn add ws
+
 import { schema } from './previous-step';
 
 const server = new WebSocketServer({
@@ -77,8 +78,9 @@ console.log('Listening to port 4000');
 #### With [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
 
 ```ts
-import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
 import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
+
 import { schema } from './previous-step';
 
 uWS
@@ -94,8 +96,9 @@ uWS
 #### With [@fastify/websocket](https://github.com/fastify/fastify-websocket)
 
 ```ts
-import Fastify from 'fastify'; // yarn add fastify
 import fastifyWebsocket from '@fastify/websocket'; // yarn add @fastify/websocket
+import Fastify from 'fastify'; // yarn add fastify
+
 import { makeHandler } from 'graphql-ws/lib/use/@fastify/websocket';
 import { schema } from './previous-step';
 
@@ -118,7 +121,7 @@ fastify.listen(4000, (err) => {
 #### With [Bun](https://bun.sh)
 
 ```ts
-import { makeHandler, handleProtocols } from 'graphql-ws/lib/use/bun';
+import { handleProtocols, makeHandler } from 'graphql-ws/lib/use/bun';
 import { schema } from './previous-step';
 
 Bun.serve({
@@ -150,8 +153,8 @@ console.log('Listening to port 4000');
 ```ts
 import { serve } from 'https://deno.land/std/http/mod.ts';
 import {
-  makeHandler,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
+  makeHandler,
 } from 'https://esm.sh/graphql-ws/lib/use/deno';
 import { schema } from './previous-step.ts';
 

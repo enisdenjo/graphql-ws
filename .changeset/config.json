@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.5/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "enisdenjo/graphql-ws" }
+  ],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "master",
+  "privatePackages": false,
+  "snapshot": {
+    "useCalculatedVersion": true,
+    "prereleaseTemplate": "{tag}-{commit}"
+  }
+}

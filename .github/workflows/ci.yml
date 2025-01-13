@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - format
+          - types
+    name: Check ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: the-guild-org/shared-config/setup@v1
+        with:
+          node-version-file: .node-version
+      - name: Check
+        run: yarn check:${{ matrix.check }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: the-guild-org/shared-config/setup@v1
+        with:
+          node-version-file: .node-version
+      - name: Test
+        run: yarn test

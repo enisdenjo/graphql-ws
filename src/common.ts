@@ -128,10 +128,10 @@ export interface SubscribeMessage {
 
 /** @category Common */
 export interface SubscribePayload {
-  readonly operationName?: string | null;
+  readonly operationName?: string | null | undefined;
   readonly query: string;
-  readonly variables?: Record<string, unknown> | null;
-  readonly extensions?: Record<string, unknown> | null;
+  readonly variables?: Record<string, unknown> | null | undefined;
+  readonly extensions?: Record<string, unknown> | null | undefined;
 }
 
 /** @category Common */
@@ -139,10 +139,10 @@ export interface ExecutionResult<
   Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: Data | null;
-  hasNext?: boolean;
-  extensions?: Extensions;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
+  data?: Data | null | undefined;
+  hasNext?: boolean | undefined;
+  extensions?: Extensions | undefined;
 }
 
 /** @category Common */
@@ -150,12 +150,12 @@ export interface ExecutionPatchResult<
   Data = unknown,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: Data | null;
-  path?: ReadonlyArray<string | number>;
-  label?: string;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
+  data?: Data | null | undefined;
+  path?: ReadonlyArray<string | number> | undefined;
+  label?: string | undefined;
   hasNext: boolean;
-  extensions?: Extensions;
+  extensions?: Extensions | undefined;
 }
 
 /** @category Common */
@@ -391,22 +391,6 @@ export function validateMessage(val: unknown): Message {
   }
 
   return val as unknown as Message;
-}
-
-/**
- * Checks if the provided value is a valid GraphQL over WebSocket message.
- *
- * @deprecated Use `validateMessage` instead.
- *
- * @category Common
- */
-export function isMessage(val: unknown): val is Message {
-  try {
-    validateMessage(val);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**

@@ -5,7 +5,7 @@
 
   <h6>Coherent, zero-dependency, lazy, simple, <a href="PROTOCOL.md">GraphQL over WebSocket Protocol</a> compliant server and client.</h6>
 
-[![Continuous integration](https://github.com/enisdenjo/graphql-ws/workflows/Continuous%20integration/badge.svg)](https://github.com/enisdenjo/graphql-ws/actions?query=workflow%3A%22Continuous+integration%22) [![graphql-ws](https://img.shields.io/npm/v/graphql-ws.svg?label=graphql-ws&logo=npm)](https://www.npmjs.com/package/graphql-ws)
+[![CI](https://github.com/enisdenjo/graphql-ws/workflows/CI/badge.svg)](https://github.com/enisdenjo/graphql-ws/actions?query=workflow%3A%22CI%22) [![graphql-ws](https://img.shields.io/npm/v/graphql-ws.svg?label=graphql-ws&logo=npm)](https://www.npmjs.com/package/graphql-ws)
 
 <i>Use [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) instead? Check out <b>[graphql-sse](https://github.com/enisdenjo/graphql-sse)</b>!</i>
 

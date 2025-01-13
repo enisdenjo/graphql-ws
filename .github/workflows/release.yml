@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  snapshot:
+    if: github.event_name == 'pull_request'
+    name: Snapshot
+    uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
+    with:
+      node-version-file: .node-version
+      npmTag: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && 'rc' || 'alpha' }}
+      restoreDeletedChangesets: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && true || false }}
+    secrets:
+      githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
+      npmToken: ${{ secrets.NPM_TOKEN }}
+  stable:
+    if: github.ref == 'refs/heads/master'
+    name: Stable
+    uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
+    with:
+      node-version-file: .node-version
+    secrets:
+      githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
+      npmToken: ${{ secrets.NPM_TOKEN }}

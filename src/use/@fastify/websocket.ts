@@ -1,11 +1,11 @@
+import type { WebSocket, WebsocketHandler } from '@fastify/websocket';
 import type { FastifyRequest } from 'fastify';
-import type * as fastifyWebsocket from '@fastify/websocket';
-import { handleProtocols, makeServer, ServerOptions } from '../../server';
 import {
-  DEPRECATED_GRAPHQL_WS_PROTOCOL,
-  ConnectionInitMessage,
   CloseCode,
+  ConnectionInitMessage,
+  DEPRECATED_GRAPHQL_WS_PROTOCOL,
 } from '../../common';
+import { handleProtocols, makeServer, ServerOptions } from '../../server';
 import { limitCloseReason } from '../../utils';
 
 /**
@@ -18,7 +18,7 @@ export interface Extra {
    * The underlying socket connection between the server and the client.
    * The WebSocket socket is located under the `socket` parameter.
    */
-  readonly connection: fastifyWebsocket.SocketStream;
+  readonly socket: WebSocket;
   /**
    * The initial HTTP upgrade request before the actual
    * socket and connection is established.
@@ -45,7 +45,7 @@ export function makeHandler<
    * @default 12_000 // 12 seconds
    */
   keepAlive = 12_000,
-): fastifyWebsocket.WebsocketHandler {
+): WebsocketHandler {
   const isProd = process.env.NODE_ENV === 'production';
   const server = makeServer(options);
 
@@ -53,16 +53,14 @@ export function makeHandler<
   // register an error handler on first connection ONCE only
   let handlingServerEmittedErrors = false;
 
-  return function handler(connection, request) {
-    const { socket } = connection;
-
+  return function handler(socket, request) {
     // might be too late, but meh
     this.websocketServer.options.handleProtocols = handleProtocols;
 
     // handle server emitted errors only if not already handling
     if (!handlingServerEmittedErrors) {
       handlingServerEmittedErrors = true;
-      this.websocketServer.once('error', (err) => {
+      this.websocketServer.once('error', (err: unknown) => {
         console.error(
           'Internal error emitted on the WebSocket server. ' +
             'Please check your implementation.',
@@ -70,7 +68,7 @@ export function makeHandler<
         );
 
         // catch the first thrown error and re-throw it once all clients have been notified
-        let firstErr: Error | null = null;
+        let firstErr: unknown = null;
 
         // report server errors by erroring out all clients with the same error
         for (const client of this.websocketServer.clients) {
@@ -114,9 +112,6 @@ export function makeHandler<
       );
     }
 
-    // fastify-websocket uses the WebSocket.createWebSocketStream,
-    // therefore errors get emitted on both the connection and the socket
-    connection.once('error', handleEmittedError);
     socket.once('error', handleEmittedError);
 
     // keep alive through ping-pong messages
@@ -175,7 +170,7 @@ export function makeHandler<
             }
           }),
       },
-      { connection, request } as Extra & Partial<E>,
+      { socket, request } as Extra & Partial<E>,
     );
 
     socket.once('close', (code, reason) => {
