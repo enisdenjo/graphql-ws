@@ -196,7 +196,7 @@ const client = createClient({
   });
 
   const { value } = await query.next();
-  expect(value).toEqual({ hello: 'world' });
+  expect(value).toEqual({ data: { hello: 'world' } });
 })();
 
 // subscription
