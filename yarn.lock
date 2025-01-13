@@ -2474,7 +2474,7 @@ __metadata:
     bun-types: "npm:^1.1.4"
     fastify: "npm:^5.2.1"
     glob: "npm:^10.3.12"
-    graphql: "npm:^16.9.0"
+    graphql: "npm:^16.10.0"
     jsdom: "npm:^25.0.1"
     pkgroll: "patch:pkgroll@npm%3A2.6.1#~/.yarn/patches/pkgroll-npm-2.6.1-193e78e84e.patch"
     prettier: "npm:^3.4.2"
@@ -2487,11 +2487,11 @@ __metadata:
     vitest: "npm:^2.1.8"
     ws: "npm:^8.18.0"
   peerDependencies:
-    graphql: ^15.9.0 || ^16.9.0
+    graphql: ^15.10.0 || ^16.10.0
   languageName: unknown
   linkType: soft
 
-"graphql@npm:^16.9.0":
+"graphql@npm:^16.10.0":
   version: 16.10.0
   resolution: "graphql@npm:16.10.0"
   checksum: 10c0/303730675538c8bd6c76b447dc6f03e61242e2d2596b408c34759666ec4877409e5593a7a0467d590ac5407b8c663b093b599556a77f24f281abea69ddc53de6
