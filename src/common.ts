@@ -394,22 +394,6 @@ export function validateMessage(val: unknown): Message {
 }
 
 /**
- * Checks if the provided value is a valid GraphQL over WebSocket message.
- *
- * @deprecated Use `validateMessage` instead.
- *
- * @category Common
- */
-export function isMessage(val: unknown): val is Message {
-  try {
-    validateMessage(val);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Function for transforming values within a message during JSON parsing
  * The values are produced by parsing the incoming raw JSON.
  *
