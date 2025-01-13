@@ -371,24 +371,6 @@ export interface ClientOptions<
    */
   shouldRetry?: (errOrCloseEvent: unknown) => boolean;
   /**
-   * @deprecated Use `shouldRetry` instead.
-   *
-   * Check if the close event or connection error is fatal. If you return `true`,
-   * the client will fail immediately without additional retries; however, if you
-   * return `false`, the client will keep retrying until the `retryAttempts` have
-   * been exceeded.
-   *
-   * The argument is either a WebSocket `CloseEvent` or an error thrown during
-   * the connection phase.
-   *
-   * Beware, the library classifies a few close events as fatal regardless of
-   * what is returned. They are listed in the documentation of the `retryAttempts`
-   * option.
-   *
-   * @default 'Any non-`CloseEvent`'
-   */
-  isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
-  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -496,7 +478,6 @@ export function createClient<
       );
     },
     shouldRetry = isLikeCloseEvent,
-    isFatalConnectionProblem,
     on,
     webSocketImpl,
     /**
@@ -856,9 +837,6 @@ export function createClient<
 
     // throw non-retryable connection problems
     if (!shouldRetry(errOrCloseEvent)) throw errOrCloseEvent;
-
-    // @deprecated throw fatal connection problems immediately
-    if (isFatalConnectionProblem?.(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
     return (retrying = true);

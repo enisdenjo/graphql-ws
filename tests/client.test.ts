@@ -1758,8 +1758,6 @@ describe.concurrent('reconnecting', () => {
           retryAttempts: Infinity, // keep retrying forever
           // even if all connection problems are fatal
           shouldRetry: () => false,
-          // @deprecated
-          isFatalConnectionProblem: () => true,
         }),
         {
           query: 'subscription { ping }',
@@ -1804,35 +1802,6 @@ describe.concurrent('reconnecting', () => {
           expect((err as CloseEvent).code).toBe(4444);
           expect((err as CloseEvent).reason).toBe('Is fatal?');
           return false;
-        },
-      }),
-      {
-        query: 'subscription { ping }',
-      },
-    );
-
-    await server.waitForClient((client) => {
-      client.close(4444, 'Is fatal?');
-    });
-
-    await sub.waitForError((err) => {
-      expect((err as CloseEvent).code).toBe(4444);
-    }, 20);
-  });
-
-  it('should report fatal connection problems immediately (using deprecated `isFatalConnectionProblem`)', async ({
-    expect,
-  }) => {
-    const { url, ...server } = await startTServer();
-
-    const sub = tsubscribe(
-      createClient({
-        url,
-        retryAttempts: Infinity, // keep retrying forever
-        isFatalConnectionProblem: (err) => {
-          expect((err as CloseEvent).code).toBe(4444);
-          expect((err as CloseEvent).reason).toBe('Is fatal?');
-          return true;
         },
       }),
       {
