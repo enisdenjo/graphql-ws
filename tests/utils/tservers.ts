@@ -237,13 +237,17 @@ export async function startWSTServer(
       return Array.from(wsServer.clients, toClient);
     },
     waitForClient(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           // the on connect listener below will be called before our listener, populating the queue
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const client = pendingClients.shift()!;
-          test?.(client);
-          resolve();
+          try {
+            test?.(client);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingClients.length > 0) return done();
         wsServer.once('connection', done);
@@ -255,11 +259,15 @@ export async function startWSTServer(
       });
     },
     waitForClientClose(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingCloses--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingCloses > 0) return done();
 
@@ -273,13 +281,17 @@ export async function startWSTServer(
     },
     pong,
     waitForConnect(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           // the on connect listener below will be called before our listener, populating the queue
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const ctx = pendingConnections.shift()!;
-          test?.(ctx);
-          resolve();
+          try {
+            test?.(ctx);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingConnections.length > 0) return done();
         emitter.once('conn', done);
@@ -291,11 +303,15 @@ export async function startWSTServer(
       });
     },
     waitForOperation(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingOperations--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingOperations > 0) return done();
         emitter.once('operation', done);
@@ -307,11 +323,15 @@ export async function startWSTServer(
       });
     },
     waitForComplete(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingCompletes--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingCompletes > 0) return done();
         emitter.once('compl', done);
@@ -414,13 +434,17 @@ export async function startUWSTServer(
     waitForClientClose: null,
     pong,
     waitForConnect(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           // the on connect listener below will be called before our listener, populating the queue
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const ctx = pendingConnections.shift()!;
-          test?.(ctx);
-          resolve();
+          try {
+            test?.(ctx);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingConnections.length > 0) return done();
         emitter.once('conn', done);
@@ -432,11 +456,15 @@ export async function startUWSTServer(
       });
     },
     waitForOperation(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingOperations--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingOperations > 0) return done();
         emitter.once('operation', done);
@@ -448,11 +476,15 @@ export async function startUWSTServer(
       });
     },
     waitForComplete(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingCompletes--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingCompletes > 0) return done();
         emitter.once('compl', done);
@@ -572,13 +604,17 @@ export async function startFastifyWSTServer(
       return Array.from(fastify.websocketServer.clients, toClient);
     },
     waitForClient(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           // the on connect listener below will be called before our listener, populating the queue
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const client = pendingClients.shift()!;
-          test?.(client);
-          resolve();
+          try {
+            test?.(client);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingClients.length > 0) return done();
         fastify.websocketServer.once('connection', done);
@@ -590,11 +626,15 @@ export async function startFastifyWSTServer(
       });
     },
     waitForClientClose(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingCloses--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingCloses > 0) return done();
 
@@ -608,13 +648,17 @@ export async function startFastifyWSTServer(
     },
     pong,
     waitForConnect(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           // the on connect listener below will be called before our listener, populating the queue
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const ctx = pendingConnections.shift()!;
-          test?.(ctx);
-          resolve();
+          try {
+            test?.(ctx);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingConnections.length > 0) return done();
         emitter.once('conn', done);
@@ -626,11 +670,15 @@ export async function startFastifyWSTServer(
       });
     },
     waitForOperation(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingOperations--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingOperations > 0) return done();
         emitter.once('operation', done);
@@ -642,11 +690,15 @@ export async function startFastifyWSTServer(
       });
     },
     waitForComplete(test, expire) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         function done() {
           pendingCompletes--;
-          test?.();
-          resolve();
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
         }
         if (pendingCompletes > 0) return done();
         emitter.once('compl', done);
