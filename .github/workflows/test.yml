@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test on Node v${{matrix.node}} with graphql@${{matrix.node}}
+    name: Test on Node v${{matrix.node}} with graphql@${{matrix.graphql}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
