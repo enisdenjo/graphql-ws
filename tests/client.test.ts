@@ -2517,7 +2517,55 @@ describe.concurrent('iterate', () => {
     `);
   });
 
-  it('should report execution errors to iterator', async ({ expect }) => {
+  it('should report errors thrown from query execution through execution result', async ({
+    expect,
+  }) => {
+    const { url } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const iterator = client.iterate({
+      query: '{ throwing }',
+    });
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "data": null,
+          "errors": [
+            {
+              "locations": [
+                {
+                  "column": 3,
+                  "line": 1,
+                },
+              ],
+              "message": "Query Kaboom!",
+              "path": [
+                "throwing",
+              ],
+            },
+          ],
+        },
+      }
+    `);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": true,
+        "value": undefined,
+      }
+    `);
+  });
+
+  it('should report errors thrown from subscription iterable by throwing', async ({
+    expect,
+  }) => {
     const { url } = await startTServer();
 
     const client = createClient({
@@ -2530,26 +2578,12 @@ describe.concurrent('iterate', () => {
       query: 'subscription { throwing }',
     });
 
-    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
-      {
-        "done": false,
-        "value": {
-          "errors": [
-            {
-              "locations": [
-                {
-                  "column": 16,
-                  "line": 1,
-                },
-              ],
-              "message": "Kaboom!",
-              "path": [
-                "throwing",
-              ],
-            },
-          ],
+    await expect(iterator.next()).rejects.toMatchInlineSnapshot(`
+      [
+        {
+          "message": "Subscribe Kaboom!",
         },
-      }
+      ]
     `);
 
     await expect(iterator.next()).resolves.toMatchInlineSnapshot(`

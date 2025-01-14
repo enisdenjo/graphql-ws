@@ -26,6 +26,12 @@ export const schemaConfig: GraphQLSchemaConfig = {
         type: new GraphQLNonNull(GraphQLString),
         resolve: () => 'value',
       },
+      throwing: {
+        type: new GraphQLNonNull(GraphQLString),
+        resolve: function () {
+          throw new Error('Query Kaboom!');
+        },
+      },
     },
   }),
   subscription: new GraphQLObjectType({
@@ -102,8 +108,8 @@ export const schemaConfig: GraphQLSchemaConfig = {
       },
       throwing: {
         type: new GraphQLNonNull(GraphQLString),
-        subscribe: async function () {
-          throw new Error('Kaboom!');
+        subscribe: async function* () {
+          throw new Error('Subscribe Kaboom!');
         },
       },
     },

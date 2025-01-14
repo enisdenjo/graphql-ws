@@ -15,6 +15,7 @@ import {
   OperationTypeNode,
   parse,
   SubscriptionArgs,
+  versionInfo,
 } from 'graphql';
 import {
   CloseCode,
@@ -836,8 +837,28 @@ export function makeServer<
                     operationResult.return(undefined);
                 } else {
                   ctx.subscriptions[id] = operationResult;
-                  for await (const result of operationResult) {
-                    await emit.next(result, execArgs);
+                  try {
+                    for await (const result of operationResult) {
+                      await emit.next(result, execArgs);
+                    }
+                  } catch (err) {
+                    const originalError =
+                      err instanceof Error ? err : new Error(String(err));
+                    await emit.error([
+                      versionInfo.major >= 16
+                        ? new GraphQLError(originalError.message, {
+                            originalError,
+                          })
+                        : // versionInfo.major <= 15
+                          new GraphQLError(
+                            originalError.message,
+                            null,
+                            null,
+                            null,
+                            null,
+                            originalError,
+                          ),
+                    ]);
                   }
                 }
               } else {
