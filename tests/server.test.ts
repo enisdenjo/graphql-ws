@@ -8,7 +8,7 @@ import {
   parse,
   subscribe,
 } from 'graphql';
-import { afterAll, beforeAll, describe, expect, it, vitest } from 'vitest';
+import { afterAll, beforeAll, describe, it, vitest } from 'vitest';
 import {
   CloseCode,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -36,7 +36,9 @@ afterAll(() => {
  * Tests
  */
 
-it('should use the schema resolved from a promise on subscribe', async () => {
+it('should use the schema resolved from a promise on subscribe', async ({
+  expect,
+}) => {
   expect.assertions(2);
   const { resolve: completed, promise: waitForComplete } = createDeferred();
 
@@ -74,7 +76,7 @@ it('should use the schema resolved from a promise on subscribe', async () => {
   await waitForComplete;
 });
 
-it('should use the provided validate function', async () => {
+it('should use the provided validate function', async ({ expect }) => {
   const { url } = await startTServer({
     schema,
     validate: () => [new GraphQLError('Nothing is valid')],
@@ -105,7 +107,7 @@ it('should use the provided validate function', async () => {
   });
 });
 
-it('should use the provided roots as resolvers', async () => {
+it('should use the provided roots as resolvers', async ({ expect }) => {
   const schema = buildSchema(`
     type Query {
       hello: String
@@ -192,7 +194,7 @@ it('should use the provided roots as resolvers', async () => {
   });
 });
 
-it('should pass in the context value from the config', async () => {
+it('should pass in the context value from the config', async ({ expect }) => {
   const context = {};
 
   const executeFn = vitest.fn((args) => execute(args));
@@ -237,7 +239,7 @@ it('should pass in the context value from the config', async () => {
   });
 
   expect(executeFn).toBeCalled();
-  expect(executeFn.mock.calls[0][0].contextValue).toBe(context);
+  expect(executeFn.mock.calls[0]?.[0].contextValue).toBe(context);
 
   client.ws.send(
     stringifyMessage<MessageType.Subscribe>({
@@ -256,10 +258,12 @@ it('should pass in the context value from the config', async () => {
   });
 
   expect(subscribeFn).toBeCalled();
-  expect(subscribeFn.mock.calls[0][0].contextValue).toBe(context);
+  expect(subscribeFn.mock.calls[0]?.[0].contextValue).toBe(context);
 });
 
-it('should pass the `onSubscribe` exec args to the `context` option and use it', async () => {
+it('should pass the `onSubscribe` exec args to the `context` option and use it', async ({
+  expect,
+}) => {
   const { resolve: executionDone, promise: waitForExecuteDone } =
     createDeferred();
 
@@ -310,7 +314,9 @@ it('should pass the `onSubscribe` exec args to the `context` option and use it',
   await waitForExecuteDone;
 });
 
-it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async () => {
+it('should use the root from the `roots` option if the `onSubscribe` doesnt provide one', async ({
+  expect,
+}) => {
   const { resolve: executionDone, promise: waitForExecuteDone } =
     createDeferred();
 
@@ -360,7 +366,9 @@ it('should use the root from the `roots` option if the `onSubscribe` doesnt prov
   await waitForExecuteDone;
 });
 
-it('should prefer the `onSubscribe` context value even if `context` option is set', async () => {
+it('should prefer the `onSubscribe` context value even if `context` option is set', async ({
+  expect,
+}) => {
   const { resolve: executionDone, promise: waitForExecuteDone } =
     createDeferred();
 
@@ -408,7 +416,7 @@ it('should prefer the `onSubscribe` context value even if `context` option is se
   await waitForExecuteDone;
 });
 
-it('should use a custom JSON message replacer function', async () => {
+it('should use a custom JSON message replacer function', async ({ expect }) => {
   const { url } = await startTServer({
     schema,
     jsonMessageReplacer: (key, value) => {
@@ -431,7 +439,7 @@ it('should use a custom JSON message replacer function', async () => {
   });
 });
 
-it('should use a custom JSON message reviver function', async () => {
+it('should use a custom JSON message reviver function', async ({ expect }) => {
   const { url } = await startTServer({
     schema,
     jsonMessageReviver: (key, value) => {
@@ -454,8 +462,10 @@ it('should use a custom JSON message reviver function', async () => {
   });
 });
 
-describe('Connect', () => {
-  it('should refuse connection and close socket if returning `false`', async () => {
+describe.concurrent('Connect', () => {
+  it('should refuse connection and close socket if returning `false`', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onConnect: () => {
         return false;
@@ -477,7 +487,9 @@ describe('Connect', () => {
     });
   });
 
-  it('should acknowledge connection if not implemented, returning `true` or nothing', async () => {
+  it('should acknowledge connection if not implemented, returning `true` or nothing', async ({
+    expect,
+  }) => {
     async function test(url: string) {
       const client = await createTClient(url);
       client.ws.send(
@@ -513,7 +525,9 @@ describe('Connect', () => {
     await test(server.url);
   });
 
-  it('should send optional payload with connection ack message', async () => {
+  it('should send optional payload with connection ack message', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onConnect: () => {
         return {
@@ -537,7 +551,9 @@ describe('Connect', () => {
     });
   });
 
-  it('should pass in the `connectionParams` through the context and have other flags correctly set', async () => {
+  it('should pass in the `connectionParams` through the context and have other flags correctly set', async ({
+    expect,
+  }) => {
     const { resolve: connected, promise: waitForConnect } = createDeferred();
 
     const connectionParams = {
@@ -566,7 +582,9 @@ describe('Connect', () => {
     await waitForConnect;
   });
 
-  it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async () => {
+  it('should close the socket after the `connectionInitWaitTimeout` has passed without having received a `ConnectionInit` message', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({ connectionInitWaitTimeout: 10 });
 
     await (
@@ -578,7 +596,9 @@ describe('Connect', () => {
     });
   });
 
-  it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async () => {
+  it('should not close the socket after the `connectionInitWaitTimeout` has passed but the callback is still resolving', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
@@ -601,7 +621,9 @@ describe('Connect', () => {
     }, 30);
   });
 
-  it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async () => {
+  it('should close the socket if an additional `ConnectionInit` message is received while one is pending', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       connectionInitWaitTimeout: 10,
       onConnect: () =>
@@ -632,7 +654,9 @@ describe('Connect', () => {
     });
   });
 
-  it('should close the socket if more than one `ConnectionInit` message is received at any given time', async () => {
+  it('should close the socket if more than one `ConnectionInit` message is received at any given time', async ({
+    expect,
+  }) => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -660,7 +684,9 @@ describe('Connect', () => {
     });
   });
 
-  it("should have acknowledged connection even if ack message send didn't resolve", async () => {
+  it("should have acknowledged connection even if ack message send didn't resolve", async ({
+    expect,
+  }) => {
     const { resolve: subscribed, promise: waitForSubscribe } = createDeferred();
 
     let sent: Promise<void> | null = null;
@@ -720,8 +746,8 @@ describe('Connect', () => {
   });
 });
 
-describe('Ping/Pong', () => {
-  it('should respond with a pong to a ping', async () => {
+describe.concurrent('Ping/Pong', () => {
+  it('should respond with a pong to a ping', async ({ expect }) => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -739,7 +765,7 @@ describe('Ping/Pong', () => {
     });
   });
 
-  it("should return ping's payload through the pong", async () => {
+  it("should return ping's payload through the pong", async ({ expect }) => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -779,7 +805,9 @@ describe('Ping/Pong', () => {
     }, 20);
   });
 
-  it('should invoke the websocket callback on ping and not reply automatically', async () => {
+  it('should invoke the websocket callback on ping and not reply automatically', async ({
+    expect,
+  }) => {
     const { resolve: pinged, promise: waitForPing } = createDeferred();
 
     const payload = { not: 'relevant' };
@@ -813,7 +841,7 @@ describe('Ping/Pong', () => {
     await waitForPing;
   });
 
-  it('should invoke the websocket callback on pong', async () => {
+  it('should invoke the websocket callback on pong', async ({ expect }) => {
     const { resolve: ponged, promise: waitForPong } = createDeferred();
 
     const payload = { not: 'relevant' };
@@ -846,8 +874,10 @@ describe('Ping/Pong', () => {
   });
 });
 
-describe('Subscribe', () => {
-  it('should close the socket on request if connection is not acknowledged', async () => {
+describe.concurrent('Subscribe', () => {
+  it('should close the socket on request if connection is not acknowledged', async ({
+    expect,
+  }) => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -871,7 +901,10 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should directly use the execution arguments returned from `onSubscribe`', async () => {
+  it('should directly use the execution arguments returned from `onSubscribe`', async ({
+    expect,
+    task,
+  }) => {
     const nopeArgs = {
       schema,
       operationName: 'Nope',
@@ -911,9 +944,7 @@ describe('Subscribe', () => {
           type: MessageType.Subscribe,
           payload: {
             operationName: 'Ping',
-            query: `subscribe Ping {
-              ping
-            }`,
+            query: `subscription Ping { ping(key: "${task.id}") }`,
             variables: {},
           },
         }),
@@ -935,7 +966,10 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should report the graphql errors returned from `onSubscribe`', async () => {
+  it('should report the graphql errors returned from `onSubscribe`', async ({
+    expect,
+    task,
+  }) => {
     const { url } = await startTServer({
       onSubscribe: (_ctx, _message) => {
         return [new GraphQLError('Report'), new GraphQLError('Me')];
@@ -958,9 +992,7 @@ describe('Subscribe', () => {
           type: MessageType.Subscribe,
           payload: {
             operationName: 'Ping',
-            query: `subscribe Ping {
-              ping
-            }`,
+            query: `subscription Ping { ping(key: "${task.id}") }`,
             variables: {},
           },
         }),
@@ -982,7 +1014,9 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should use the execution result returned from `onNext`', async () => {
+  it('should use the execution result returned from `onNext`', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onNext: (_ctx, _message) => {
         return {
@@ -1038,10 +1072,15 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should use the graphql errors returned from `onError`', async () => {
+  it('should use the graphql errors returned from `onError`', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onError: (_ctx, _message) => {
-        return [new GraphQLError('Itsa me!'), new GraphQLError('Anda me!')];
+        return [
+          new GraphQLError('Itsa me!').toJSON(),
+          new GraphQLError('Anda me!').toJSON(),
+        ];
       },
     });
 
@@ -1084,7 +1123,9 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should use the operation result returned from `onOperation`', async () => {
+  it('should use the operation result returned from `onOperation`', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onOperation: (_ctx, _message) => {
         return (async function* () {
@@ -1136,7 +1177,9 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should execute the query of `string` type, "next" the result and then "complete"', async () => {
+  it('should execute the query of `string` type, "next" the result and then "complete"', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       schema,
     });
@@ -1181,7 +1224,9 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should execute the live query, "next" multiple results and then "complete"', async () => {
+  it('should execute the live query, "next" multiple results and then "complete"', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       schema,
       execute: async function* () {
@@ -1251,7 +1296,9 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should be able to complete a long running query before the result becomes available', async () => {
+  it('should be able to complete a long running query before the result becomes available', async ({
+    expect,
+  }) => {
     let resultIsHere = (_result: ExecutionResult) => {
         /* noop for calming typescript */
       },
@@ -1317,7 +1364,9 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should execute the query and "error" out because of validation errors', async () => {
+  it('should execute the query and "error" out because of validation errors', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       schema,
     });
@@ -1379,7 +1428,9 @@ describe('Subscribe', () => {
     }, 30);
   });
 
-  it('should execute the subscription and "next" the published payload', async () => {
+  it('should execute the subscription and "next" the published payload', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       schema,
     });
@@ -1421,7 +1472,10 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should stop dispatching messages after completing a subscription', async () => {
+  it('should stop dispatching messages after completing a subscription', async ({
+    expect,
+    task,
+  }) => {
     const server = await startTServer({
       schema,
     });
@@ -1440,13 +1494,13 @@ describe('Subscribe', () => {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            query: `subscription { ping }`,
+            query: `subscription { ping(key: "${task.id}") }`,
           },
         }),
       );
     });
 
-    server.pong();
+    server.pong(task.id);
 
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data)).toEqual({
@@ -1466,16 +1520,19 @@ describe('Subscribe', () => {
 
     await server.waitForComplete();
 
-    server.pong();
-    server.pong();
-    server.pong();
+    server.pong(task.id);
+    server.pong(task.id);
+    server.pong(task.id);
 
     await client.waitForMessage(() => {
       throw new Error("Shouldn't have received a message");
     }, 30);
   });
 
-  it('should close the socket on duplicate operation requests', async () => {
+  it('should close the socket on duplicate operation requests', async ({
+    expect,
+    task,
+  }) => {
     const { url } = await startTServer();
 
     const client = await createTClient(url);
@@ -1492,7 +1549,7 @@ describe('Subscribe', () => {
           id: 'not-unique',
           type: MessageType.Subscribe,
           payload: {
-            query: 'subscription { ping }',
+            query: `subscription { ping(key: "${task.id}") }`,
           },
         }),
       );
@@ -1516,7 +1573,9 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should close the socket on duplicate operation requests even if one is still preparing', async () => {
+  it('should close the socket on duplicate operation requests even if one is still preparing', async ({
+    expect,
+  }) => {
     const { url } = await startTServer({
       onSubscribe: () =>
         new Promise(() => {
@@ -1561,7 +1620,7 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should support persisted queries', async () => {
+  it('should support persisted queries', async ({ expect }) => {
     const queriesStore: Record<string, ExecutionArgs> = {
       iWantTheValue: {
         schema,
@@ -1570,13 +1629,13 @@ describe('Subscribe', () => {
     };
 
     const { url } = await startTServer({
-      onSubscribe: (_ctx, msg) => {
+      onSubscribe: (_ctx, _id, payload) => {
         // search using `SubscriptionPayload.query` as QueryID
         // check the client example below for better understanding
-        const hit = queriesStore[msg.payload.query as string];
+        const hit = queriesStore[payload.query as string]!;
         return {
           ...hit,
-          variableValues: msg.payload.variables, // use the variables from the client
+          variableValues: payload.variables, // use the variables from the client
         };
       },
     });
@@ -1610,7 +1669,10 @@ describe('Subscribe', () => {
     });
   });
 
-  it('should call `onComplete` callback when client completes', async () => {
+  it('should call `onComplete` callback when client completes', async ({
+    expect,
+    task,
+  }) => {
     const { resolve: completed, promise: waitForComplete } = createDeferred();
 
     const server = await startTServer({
@@ -1635,14 +1697,14 @@ describe('Subscribe', () => {
         id: '1',
         type: MessageType.Subscribe,
         payload: {
-          query: 'subscription { ping }',
+          query: `subscription { ping(key: "${task.id}") }`,
         },
       }),
     );
     await server.waitForOperation();
 
     // just to make sure we're streaming
-    server.pong();
+    server.pong(task.id);
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data).type).toBe(MessageType.Next);
     });
@@ -1658,7 +1720,10 @@ describe('Subscribe', () => {
     await waitForComplete;
   });
 
-  it('should call `onComplete` callback even if socket terminates abruptly', async () => {
+  it('should call `onComplete` callback even if socket terminates abruptly', async ({
+    expect,
+    task,
+  }) => {
     const { resolve: completed, promise: waitForComplete } = createDeferred();
 
     const server = await startTServer({
@@ -1683,14 +1748,14 @@ describe('Subscribe', () => {
         id: '1',
         type: MessageType.Subscribe,
         payload: {
-          query: 'subscription { ping }',
+          query: `subscription { ping(key: "${task.id}") }`,
         },
       }),
     );
     await server.waitForOperation();
 
     // just to make sure we're streaming
-    server.pong();
+    server.pong(task.id);
     await client.waitForMessage(({ data }) => {
       expect(parseMessage(data).type).toBe(MessageType.Next);
     });
@@ -1701,7 +1766,9 @@ describe('Subscribe', () => {
     await waitForComplete;
   });
 
-  it('should respect completed subscriptions even if subscribe operation stalls', async () => {
+  it('should respect completed subscriptions even if subscribe operation stalls', async ({
+    task,
+  }) => {
     let continueSubscribe: (() => void) | undefined = undefined;
     const server = await startTServer({
       subscribe: async (...args) => {
@@ -1723,7 +1790,7 @@ describe('Subscribe', () => {
         id: '1',
         type: MessageType.Subscribe,
         payload: {
-          query: 'subscription { ping }',
+          query: `subscription { ping(key: "${task.id}") }`,
         },
       }),
     );
@@ -1755,7 +1822,7 @@ describe('Subscribe', () => {
     (continueSubscribe as () => void)();
 
     // emit
-    server.pong();
+    server.pong(task.id);
 
     await client.waitForMessage(() => {
       throw new Error("Shouldn't have received a message");
@@ -1764,7 +1831,9 @@ describe('Subscribe', () => {
     await server.waitForComplete();
   });
 
-  it('should clean up subscription reservations on abrupt errors without relying on close', async () => {
+  it('should clean up subscription reservations on abrupt errors without relying on close', async ({
+    expect,
+  }) => {
     const { resolve: messaged, promise: waitForMessage } = createDeferred();
 
     let currCtx: Context;
@@ -1850,7 +1919,9 @@ describe('Subscribe', () => {
     }, 20);
   });
 
-  it('should not send error messages if socket closes before onSubscribe hooks resolves', async () => {
+  it('should not send error messages if socket closes before onSubscribe hooks resolves', async ({
+    expect,
+  }) => {
     let resolveOnSubscribe: () => void = () => {
       throw new Error('On subscribe resolved early');
     };
@@ -1908,10 +1979,48 @@ describe('Subscribe', () => {
 
     expect(sendFn).toHaveBeenCalledTimes(1); // only the ack message
   });
+
+  it('should not close connection if a subscription iterable throws', async ({
+    expect,
+  }) => {
+    const server = await startTServer();
+
+    const client = await createTClient(server.url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // MessageType.ConnectionAck
+
+    client.ws.send(
+      stringifyMessage({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { throwing }',
+        },
+      }),
+    );
+    await server.waitForOperation();
+
+    await client.waitForClose(() => {
+      throw new Error("Shouldn't have closed");
+    }, 20);
+
+    await client.waitForMessage((msg) => {
+      expect(msg.data).toMatchInlineSnapshot(
+        `"{"id":"1","type":"error","payload":[{"message":"Subscribe Kaboom!"}]}"`,
+      );
+    });
+  });
 });
 
-describe('Disconnect/close', () => {
-  it('should report close code and reason to disconnect and close callback after connection acknowledgement', async () => {
+describe.concurrent('Disconnect/close', () => {
+  it('should report close code and reason to disconnect and close callback after connection acknowledgement', async ({
+    expect,
+  }) => {
     const { resolve: closed, promise: waitForClose } = createDeferred();
 
     const { url, waitForConnect } = await startTServer({
@@ -1942,7 +2051,9 @@ describe('Disconnect/close', () => {
     await waitForClose;
   });
 
-  it('should trigger the close callback instead of disconnect if connection is not acknowledged', async () => {
+  it('should trigger the close callback instead of disconnect if connection is not acknowledged', async ({
+    expect,
+  }) => {
     const { resolve: closed, promise: waitForClose } = createDeferred();
 
     const { url } = await startTServer({
@@ -1963,7 +2074,9 @@ describe('Disconnect/close', () => {
     await waitForClose;
   });
 
-  it('should dispose of subscriptions on close even if added late to the subscriptions list', async () => {
+  it('should dispose of subscriptions on close even if added late to the subscriptions list', async ({
+    task,
+  }) => {
     let resolveOnOperation: () => void = () => {
       throw new Error('On operation resolved early');
     };
@@ -1995,7 +2108,7 @@ describe('Disconnect/close', () => {
         type: MessageType.Subscribe,
         id: '1',
         payload: {
-          query: 'subscription { ping }',
+          query: `subscription { ping(key: "${task.id}") }`,
         },
       }),
     );
@@ -2010,7 +2123,9 @@ describe('Disconnect/close', () => {
     await waitForComplete();
   });
 
-  it('should dispose of all subscriptions on close even if some return is problematic', async () => {
+  it('should dispose of all subscriptions on close even if some return is problematic', async ({
+    task,
+  }) => {
     let resolveReturn: () => void = () => {
       throw new Error('Return resolved early');
     };
@@ -2050,7 +2165,7 @@ describe('Disconnect/close', () => {
         type: MessageType.Subscribe,
         id: '1',
         payload: {
-          query: 'subscription { ping(key: "slow") }',
+          query: `subscription { ping(key: "${task.id}_slow") }`,
         },
       }),
     );
@@ -2061,7 +2176,7 @@ describe('Disconnect/close', () => {
         type: MessageType.Subscribe,
         id: '2',
         payload: {
-          query: 'subscription { ping(key: "ok") }',
+          query: `subscription { ping(key: "${task.id}_ok") }`,
         },
       }),
     );
@@ -2076,7 +2191,9 @@ describe('Disconnect/close', () => {
   });
 });
 
-it('should only accept a Set, Array or string in handleProtocol', () => {
+it('should only accept a Set, Array or string in handleProtocol', ({
+  expect,
+}) => {
   for (const test of [
     {
       in: new Set(['not', 'me']),

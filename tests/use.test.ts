@@ -1,10 +1,7 @@
 import http from 'http';
-import stream from 'stream';
 import { setTimeout } from 'timers/promises';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import ws from 'ws';
-// @ts-expect-error: ws7 has no definitions
-import ws7 from 'ws7';
 import {
   CloseCode,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -144,18 +141,10 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
             expect((ctx.extra as WSExtra).request).toBeInstanceOf(
               http.IncomingMessage,
             );
-          } else if (tServer === 'ws7') {
-            expect((ctx.extra as WSExtra).socket).toBeInstanceOf(ws7);
-            expect((ctx.extra as WSExtra).request).toBeInstanceOf(
-              http.IncomingMessage,
-            );
           } else if (tServer === '@fastify/websocket') {
-            expect((ctx.extra as FastifyExtra).connection).toBeInstanceOf(
-              stream.Duplex,
+            expect((ctx.extra as FastifyExtra).socket.constructor.name).toBe(
+              'WebSocket',
             );
-            expect(
-              (ctx.extra as FastifyExtra).connection.socket.constructor.name,
-            ).toBe('WebSocket');
             expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
               '_Request',
             );
@@ -335,6 +324,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     });
 
     it('should close the socket on empty arrays returned from `onSubscribe`', async ({
+      task,
       expect,
     }) => {
       const { url } = await startTServer({
@@ -360,7 +350,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
           id: '1',
           type: MessageType.Subscribe,
           payload: {
-            query: 'subscription { ping }',
+            query: `subscription { ping(key: "${task.id}") }`,
           },
         }),
       );
@@ -547,7 +537,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
       });
     });
 
-    describe('Keep-Alive', () => {
+    describe.concurrent('Keep-Alive', () => {
       it('should dispatch pings after the timeout has passed', async () => {
         const { url } = await startTServer(undefined, 50);
 

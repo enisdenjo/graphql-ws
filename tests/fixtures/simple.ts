@@ -9,7 +9,7 @@ import {
 // use for dispatching a `pong` to the `ping` subscription
 const pendingPongs: Record<string, number | undefined> = {};
 const pongListeners: Record<string, ((done: boolean) => void) | undefined> = {};
-export function pong(key = 'global'): void {
+export function pong(key: string): void {
   if (pongListeners[key]) {
     pongListeners[key]?.(false);
   } else {
@@ -25,6 +25,12 @@ export const schemaConfig: GraphQLSchemaConfig = {
       getValue: {
         type: new GraphQLNonNull(GraphQLString),
         resolve: () => 'value',
+      },
+      throwing: {
+        type: new GraphQLNonNull(GraphQLString),
+        resolve: function () {
+          throw new Error('Query Kaboom!');
+        },
       },
     },
   }),
@@ -43,11 +49,11 @@ export const schemaConfig: GraphQLSchemaConfig = {
         type: new GraphQLNonNull(GraphQLString),
         args: {
           key: {
-            type: GraphQLString,
+            type: new GraphQLNonNull(GraphQLString),
           },
         },
         subscribe: function (_src, args) {
-          const key = args.key ? args.key : 'global';
+          const key = args.key;
           return {
             [Symbol.asyncIterator]() {
               return this;
@@ -102,8 +108,8 @@ export const schemaConfig: GraphQLSchemaConfig = {
       },
       throwing: {
         type: new GraphQLNonNull(GraphQLString),
-        subscribe: async function () {
-          throw new Error('Kaboom!');
+        subscribe: async function* () {
+          throw new Error('Subscribe Kaboom!');
         },
       },
     },

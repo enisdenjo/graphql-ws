@@ -4,8 +4,8 @@
  *
  */
 
-import { GraphQLError } from 'graphql';
-import { areGraphQLErrors, extendedTypeof, isObject } from './utils';
+import type { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { areGraphQLFormattedErrors, extendedTypeof, isObject } from './utils';
 
 /**
  * The WebSocket sub-protocol used for the [GraphQL over WebSocket Protocol](https://github.com/graphql/graphql-over-http/blob/main/rfcs/GraphQLOverWebSocket.md).
@@ -128,10 +128,10 @@ export interface SubscribeMessage {
 
 /** @category Common */
 export interface SubscribePayload {
-  readonly operationName?: string | null;
+  readonly operationName?: string | null | undefined;
   readonly query: string;
-  readonly variables?: Record<string, unknown> | null;
-  readonly extensions?: Record<string, unknown> | null;
+  readonly variables?: Record<string, unknown> | null | undefined;
+  readonly extensions?: Record<string, unknown> | null | undefined;
 }
 
 /** @category Common */
@@ -139,10 +139,10 @@ export interface ExecutionResult<
   Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: Data | null;
-  hasNext?: boolean;
-  extensions?: Extensions;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
+  data?: Data | null | undefined;
+  hasNext?: boolean | undefined;
+  extensions?: Extensions | undefined;
 }
 
 /** @category Common */
@@ -150,26 +150,50 @@ export interface ExecutionPatchResult<
   Data = unknown,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: Data | null;
-  path?: ReadonlyArray<string | number>;
-  label?: string;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
+  data?: Data | null | undefined;
+  path?: ReadonlyArray<string | number> | undefined;
+  label?: string | undefined;
   hasNext: boolean;
-  extensions?: Extensions;
+  extensions?: Extensions | undefined;
+}
+
+/** @category Common */
+export interface FormattedExecutionResult<
+  Data = Record<string, unknown>,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<FormattedExecutionResult> | undefined;
+  data?: Data | null | undefined;
+  hasNext?: boolean | undefined;
+  extensions?: Extensions | undefined;
+}
+
+/** @category Common */
+export interface FormattedExecutionPatchResult<
+  Data = unknown,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError> | undefined;
+  data?: Data | null | undefined;
+  path?: ReadonlyArray<string | number> | undefined;
+  label?: string | undefined;
+  hasNext: boolean;
+  extensions?: Extensions | undefined;
 }
 
 /** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
-  readonly payload: ExecutionResult | ExecutionPatchResult;
+  readonly payload: FormattedExecutionResult | FormattedExecutionPatchResult;
 }
 
 /** @category Common */
 export interface ErrorMessage {
   readonly id: ID;
   readonly type: MessageType.Error;
-  readonly payload: readonly GraphQLError[];
+  readonly payload: readonly GraphQLFormattedError[];
 }
 
 /** @category Common */
@@ -354,7 +378,7 @@ export function validateMessage(val: unknown): Message {
         );
       }
 
-      if (!areGraphQLErrors(val.payload)) {
+      if (!areGraphQLFormattedErrors(val.payload)) {
         throw new Error(
           `"${
             val.type
@@ -391,22 +415,6 @@ export function validateMessage(val: unknown): Message {
   }
 
   return val as unknown as Message;
-}
-
-/**
- * Checks if the provided value is a valid GraphQL over WebSocket message.
- *
- * @deprecated Use `validateMessage` instead.
- *
- * @category Common
- */
-export function isMessage(val: unknown): val is Message {
-  try {
-    validateMessage(val);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**

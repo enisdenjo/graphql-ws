@@ -29,13 +29,17 @@ export function createTClient(
       resolve({
         ws,
         async waitForMessage(test, expire) {
-          return new Promise((resolve) => {
+          return new Promise((resolve, reject) => {
             const done = () => {
               // the onmessage listener above will be called before our listener, populating the queue
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const next = queue.shift()!;
-              test?.(next);
-              resolve();
+              try {
+                test?.(next);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
             };
             if (queue.length > 0) return done();
             ws.once('message', done);
@@ -50,15 +54,19 @@ export function createTClient(
           test?: (event: WebSocket.CloseEvent) => void,
           expire?: number,
         ) {
-          return new Promise((resolve) => {
+          return new Promise((resolve, reject) => {
             if (closeEvent) {
               test?.(closeEvent);
               return resolve();
             }
             ws.onclose = (event) => {
               closeEvent = event;
-              test?.(event);
-              resolve();
+              try {
+                test?.(event);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
             };
             if (expire)
               setTimeout(() => {

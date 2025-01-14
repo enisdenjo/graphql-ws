@@ -7,12 +7,13 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - website/**
+    # we always want new site previews because the api reference changes are in code
+    # paths:
+    #   - website/**
 
 jobs:
-  check-type:
-    name: Check type
+  check-types:
+    name: Check types
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +25,7 @@ jobs:
           working-directory: website
       - name: Check
         working-directory: website
-        run: yarn check:type
+        run: yarn check:types
 
   deploy:
     name: Deploy

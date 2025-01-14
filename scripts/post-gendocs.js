@@ -12,7 +12,7 @@ const docsDir = path.join('website', 'src', 'pages', 'docs');
 });
 
 /**
- * Fixes links in markdown files by removing the `.md` extension.
+ * Fixes links in markdown files by removing the `.md` extension and by removing the last `/index` if available.
  *
  * @param {string} dirPath
  */
@@ -28,8 +28,14 @@ async function fixLinksInDir(dirPath) {
       continue;
     }
     const contents = await fsp.readFile(filePath);
-    const src = contents.toString();
-    await fsp.writeFile(filePath, src.replaceAll('.md', ''));
+    let src = contents.toString();
+
+    // remove .md extensions everywhere
+    src = src.replaceAll('.md', '');
+    // remove /index from all links `](/some/where/index)` -> `](/some/where)`
+    src = src.replaceAll(/]\((.*)\/index\)/g, ']($1)');
+
+    await fsp.writeFile(filePath, src);
   }
 }
 

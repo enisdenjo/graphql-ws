@@ -6,42 +6,38 @@
 
 import {
   ExecutionArgs,
+  FormattedExecutionResult,
   getOperationAST,
   GraphQLError,
   execute as graphqlExecute,
+  GraphQLFormattedError,
   GraphQLSchema,
   subscribe as graphqlSubscribe,
   validate as graphqlValidate,
   OperationTypeNode,
   parse,
-  SubscriptionArgs,
+  versionInfo,
 } from 'graphql';
 import {
   CloseCode,
-  CompleteMessage,
   ConnectionInitMessage,
-  ErrorMessage,
   ExecutionPatchResult,
   ExecutionResult,
+  FormattedExecutionPatchResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
   JSONMessageReplacer,
   JSONMessageReviver,
   Message,
   MessageType,
-  NextMessage,
   parseMessage,
   PingMessage,
   PongMessage,
   stringifyMessage,
   SubscribeMessage,
+  SubscribePayload,
 } from './common';
-import {
-  areGraphQLErrors,
-  isAsyncGenerator,
-  isAsyncIterable,
-  isObject,
-} from './utils';
+import { isAsyncGenerator, isAsyncIterable, isObject } from './utils';
 
 /** @category Server */
 export type OperationResult =
@@ -96,6 +92,7 @@ export interface ServerOptions<
    * in the close event reason.
    */
   schema?:
+    | undefined
     | GraphQLSchema
     | ((
         ctx: Context<P, E>,
@@ -122,6 +119,7 @@ export interface ServerOptions<
    * in subscriptions here: https://github.com/graphql/graphql-js/issues/894.
    */
   context?:
+    | undefined
     | GraphQLExecutionContextValue
     | ((
         ctx: Context<P, E>,
@@ -139,12 +137,14 @@ export interface ServerOptions<
    * missing the `rootValue` field, the relevant operation root
    * will be used instead.
    */
-  roots?: {
-    [operation in OperationTypeNode]?: Record<
-      string,
-      NonNullable<SubscriptionArgs['rootValue']>
-    >;
-  };
+  roots?:
+    | undefined
+    | {
+        [operation in OperationTypeNode]?: Record<
+          string,
+          NonNullable<ExecutionArgs['rootValue']>
+        >;
+      };
   /**
    * A custom GraphQL validate function allowing you to apply your
    * own validation rules.
@@ -158,7 +158,7 @@ export interface ServerOptions<
    * Throwing an error from within this function will close the socket
    * with the `Error` message in the close event reason.
    */
-  validate?: typeof graphqlValidate;
+  validate?: undefined | typeof graphqlValidate;
   /**
    * Is the `execute` function from GraphQL which is
    * used to execute the query and mutation operations.
@@ -167,7 +167,7 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  execute?: (args: ExecutionArgs) => OperationResult;
+  execute?: undefined | ((args: ExecutionArgs) => OperationResult);
   /**
    * Is the `subscribe` function from GraphQL which is
    * used to execute the subscription operation.
@@ -176,7 +176,7 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  subscribe?: (args: ExecutionArgs) => OperationResult;
+  subscribe?: undefined | ((args: ExecutionArgs) => OperationResult);
   /**
    * The amount of time for which the server will wait
    * for `ConnectionInit` message.
@@ -190,7 +190,7 @@ export interface ServerOptions<
    *
    * @default 3_000 // 3 seconds
    */
-  connectionInitWaitTimeout?: number;
+  connectionInitWaitTimeout?: undefined | number;
   /**
    * Is the connection callback called when the
    * client requests the connection initialisation
@@ -215,13 +215,15 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onConnect?: (
-    ctx: Context<P, E>,
-  ) =>
-    | Promise<Record<string, unknown> | boolean | void>
-    | Record<string, unknown>
-    | boolean
-    | void;
+  onConnect?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+      ) =>
+        | Promise<Record<string, unknown> | boolean | void>
+        | Record<string, unknown>
+        | boolean
+        | void);
   /**
    * Called when the client disconnects for whatever reason after
    * he successfully went through the connection initialisation phase.
@@ -238,11 +240,13 @@ export interface ServerOptions<
    * For tracking socket closures at any point in time, regardless
    * of the connection state - consider using the `onClose` callback.
    */
-  onDisconnect?: (
-    ctx: Context<P, E>,
-    code?: number,
-    reason?: string,
-  ) => Promise<void> | void;
+  onDisconnect?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        code?: number,
+        reason?: string,
+      ) => Promise<void> | void);
   /**
    * Called when the socket closes for whatever reason, at any
    * point in time. Provides the close event too. Beware
@@ -257,11 +261,13 @@ export interface ServerOptions<
    * the connection initialisation or not. `onConnect` might not
    * called before the `onClose`.
    */
-  onClose?: (
-    ctx: Context<P, E>,
-    code?: number,
-    reason?: string,
-  ) => Promise<void> | void;
+  onClose?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        code?: number,
+        reason?: string,
+      ) => Promise<void> | void);
   /**
    * The subscribe callback executed right after
    * acknowledging the request before any payload
@@ -291,14 +297,17 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onSubscribe?: (
-    ctx: Context<P, E>,
-    message: SubscribeMessage,
-  ) =>
-    | Promise<ExecutionArgs | readonly GraphQLError[] | void>
-    | ExecutionArgs
-    | readonly GraphQLError[]
-    | void;
+  onSubscribe?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        id: string,
+        payload: SubscribePayload,
+      ) =>
+        | Promise<ExecutionArgs | readonly GraphQLError[] | void>
+        | ExecutionArgs
+        | readonly GraphQLError[]
+        | void);
   /**
    * Executed after the operation call resolves. For streaming
    * operations, triggering this callback does not necessarily
@@ -319,12 +328,14 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onOperation?: (
-    ctx: Context<P, E>,
-    message: SubscribeMessage,
-    args: ExecutionArgs,
-    result: OperationResult,
-  ) => Promise<OperationResult | void> | OperationResult | void;
+  onOperation?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        id: string,
+        args: ExecutionArgs,
+        result: OperationResult,
+      ) => Promise<OperationResult | void> | OperationResult | void);
   /**
    * Executed after an error occurred right before it
    * has been dispatched to the client.
@@ -338,11 +349,16 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onError?: (
-    ctx: Context<P, E>,
-    message: ErrorMessage,
-    errors: readonly GraphQLError[],
-  ) => Promise<readonly GraphQLError[] | void> | readonly GraphQLError[] | void;
+  onError?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        id: string,
+        errors: readonly GraphQLError[],
+      ) =>
+        | Promise<readonly GraphQLFormattedError[] | void>
+        | readonly GraphQLFormattedError[]
+        | void);
   /**
    * Executed after an operation has emitted a result right before
    * that result has been sent to the client. Results from both
@@ -357,16 +373,20 @@ export interface ServerOptions<
    * close the socket with the `Error` message
    * in the close event reason.
    */
-  onNext?: (
-    ctx: Context<P, E>,
-    message: NextMessage,
-    args: ExecutionArgs,
-    result: ExecutionResult | ExecutionPatchResult,
-  ) =>
-    | Promise<ExecutionResult | ExecutionPatchResult | void>
-    | ExecutionResult
-    | ExecutionPatchResult
-    | void;
+  onNext?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        id: string,
+        args: ExecutionArgs,
+        result: ExecutionResult | ExecutionPatchResult,
+      ) =>
+        | Promise<
+            FormattedExecutionResult | FormattedExecutionPatchResult | void
+          >
+        | FormattedExecutionResult
+        | FormattedExecutionPatchResult
+        | void);
   /**
    * The complete callback is executed after the
    * operation has completed right before sending
@@ -380,22 +400,21 @@ export interface ServerOptions<
    * operations even after an abrupt closure, this callback
    * will still be called.
    */
-  onComplete?: (
-    ctx: Context<P, E>,
-    message: CompleteMessage,
-  ) => Promise<void> | void;
+  onComplete?:
+    | undefined
+    | ((ctx: Context<P, E>, id: string) => Promise<void> | void);
   /**
    * An optional override for the JSON.parse function used to hydrate
    * incoming messages to this server. Useful for parsing custom datatypes
    * out of the incoming JSON.
    */
-  jsonMessageReviver?: JSONMessageReviver;
+  jsonMessageReviver?: undefined | JSONMessageReviver;
   /**
    * An optional override for the JSON.stringify function used to serialize
    * outgoing messages to from server. Useful for serializing custom
    * datatypes out to the client.
    */
-  jsonMessageReplacer?: JSONMessageReplacer;
+  jsonMessageReplacer?: undefined | JSONMessageReplacer;
 }
 
 /** @category Server */
@@ -673,52 +692,47 @@ export function makeServer<
                 result: ExecutionResult | ExecutionPatchResult,
                 args: ExecutionArgs,
               ) => {
-                let nextMessage: NextMessage = {
-                  id,
-                  type: MessageType.Next,
-                  payload: result,
-                };
-                const maybeResult = await onNext?.(
-                  ctx,
-                  nextMessage,
-                  args,
-                  result,
-                );
-                if (maybeResult)
-                  nextMessage = {
-                    ...nextMessage,
-                    payload: maybeResult,
-                  };
+                const { errors, ...resultWithoutErrors } = result;
+                const maybeResult = await onNext?.(ctx, id, args, result);
                 await socket.send(
-                  stringifyMessage<MessageType.Next>(nextMessage, replacer),
+                  stringifyMessage<MessageType.Next>(
+                    {
+                      id,
+                      type: MessageType.Next,
+                      payload: maybeResult || {
+                        ...resultWithoutErrors,
+                        // omit errors completely if not defined
+                        ...(errors
+                          ? { errors: errors.map((e) => e.toJSON()) }
+                          : {}),
+                      },
+                    },
+                    replacer,
+                  ),
                 );
               },
               error: async (errors: readonly GraphQLError[]) => {
-                let errorMessage: ErrorMessage = {
-                  id,
-                  type: MessageType.Error,
-                  payload: errors,
-                };
-                const maybeErrors = await onError?.(ctx, errorMessage, errors);
-                if (maybeErrors)
-                  errorMessage = {
-                    ...errorMessage,
-                    payload: maybeErrors,
-                  };
+                const maybeErrors = await onError?.(ctx, id, errors);
                 await socket.send(
-                  stringifyMessage<MessageType.Error>(errorMessage, replacer),
+                  stringifyMessage<MessageType.Error>(
+                    {
+                      id,
+                      type: MessageType.Error,
+                      payload: maybeErrors || errors.map((e) => e.toJSON()),
+                    },
+                    replacer,
+                  ),
                 );
               },
               complete: async (notifyClient: boolean) => {
-                const completeMessage: CompleteMessage = {
-                  id,
-                  type: MessageType.Complete,
-                };
-                await onComplete?.(ctx, completeMessage);
+                await onComplete?.(ctx, id);
                 if (notifyClient)
                   await socket.send(
                     stringifyMessage<MessageType.Complete>(
-                      completeMessage,
+                      {
+                        id,
+                        type: MessageType.Complete,
+                      },
                       replacer,
                     ),
                   );
@@ -727,7 +741,11 @@ export function makeServer<
 
             try {
               let execArgs: ExecutionArgs;
-              const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
+              const maybeExecArgsOrErrors = await onSubscribe?.(
+                ctx,
+                message.id,
+                message.payload,
+              );
               if (maybeExecArgsOrErrors) {
                 if (areGraphQLErrors(maybeExecArgsOrErrors))
                   return id in ctx.subscriptions
@@ -802,7 +820,7 @@ export function makeServer<
 
               const maybeResult = await onOperation?.(
                 ctx,
-                message,
+                message.id,
                 execArgs,
                 operationResult,
               );
@@ -816,8 +834,30 @@ export function makeServer<
                     operationResult.return(undefined);
                 } else {
                   ctx.subscriptions[id] = operationResult;
-                  for await (const result of operationResult) {
-                    await emit.next(result, execArgs);
+                  try {
+                    for await (const result of operationResult) {
+                      await emit.next(result, execArgs);
+                    }
+                  } catch (err) {
+                    const originalError =
+                      err instanceof Error ? err : new Error(String(err));
+                    await emit.error([
+                      versionInfo.major >= 16
+                        ? new GraphQLError(
+                            originalError.message,
+                            // @ts-ignore graphql@15 and less dont have the second arg as object (version is ensured by versionInfo.major check above)
+                            { originalError },
+                          )
+                        : // versionInfo.major <= 15
+                          new GraphQLError(
+                            originalError.message,
+                            null,
+                            null,
+                            null,
+                            null,
+                            originalError,
+                          ),
+                    ]);
                   }
                 }
               } else {
@@ -904,4 +944,15 @@ export function handleProtocols(
     default:
       return false;
   }
+}
+
+/** @private */
+export function areGraphQLErrors(obj: unknown): obj is readonly GraphQLError[] {
+  return (
+    Array.isArray(obj) &&
+    // must be at least one error
+    obj.length > 0 &&
+    // error has at least a message
+    obj.every((ob) => ob instanceof GraphQLError)
+  );
 }

@@ -1,4 +1,4 @@
-name: CI
+name: Check
 
 on:
   push:
@@ -7,15 +7,8 @@ on:
   pull_request:
 
 jobs:
-  check:
-    strategy:
-      fail-fast: false
-      matrix:
-        check:
-          - format
-          - lint
-          - type
-    name: Check ${{ matrix.check }}
+  format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,11 +18,15 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Check
-        run: yarn check:${{ matrix.check }}
+        run: yarn check:format
 
-  test:
-    name: Test
+  types:
+    name: Types with graphql@${{matrix.graphql}}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        graphql: [15, 16]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -37,5 +34,9 @@ jobs:
         uses: the-guild-org/shared-config/setup@v1
         with:
           node-version-file: .node-version
-      - name: Test
-        run: yarn test
+      - name: Install
+        run: yarn add --dev graphql@${{matrix.graphql}}
+      - name: Info
+        run: yarn info graphql
+      - name: Check
+        run: yarn check:types

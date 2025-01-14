@@ -4,12 +4,13 @@
  *
  */
 
-import { ExecutionResult } from 'graphql';
 import {
   CloseCode,
   ConnectionAckMessage,
   ConnectionInitMessage,
   Disposable,
+  FormattedExecutionPatchResult,
+  FormattedExecutionResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
   JSONMessageReplacer,
@@ -371,24 +372,6 @@ export interface ClientOptions<
    */
   shouldRetry?: (errOrCloseEvent: unknown) => boolean;
   /**
-   * @deprecated Use `shouldRetry` instead.
-   *
-   * Check if the close event or connection error is fatal. If you return `true`,
-   * the client will fail immediately without additional retries; however, if you
-   * return `false`, the client will keep retrying until the `retryAttempts` have
-   * been exceeded.
-   *
-   * The argument is either a WebSocket `CloseEvent` or an error thrown during
-   * the connection phase.
-   *
-   * Beware, the library classifies a few close events as fatal regardless of
-   * what is returned. They are listed in the documentation of the `retryAttempts`
-   * option.
-   *
-   * @default 'Any non-`CloseEvent`'
-   */
-  isFatalConnectionProblem?: (errOrCloseEvent: unknown) => boolean;
-  /**
    * Register listeners before initialising the client. This way
    * you can ensure to catch all client relevant emitted events.
    *
@@ -439,7 +422,10 @@ export interface Client extends Disposable {
    */
   subscribe<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-    sink: Sink<ExecutionResult<Data, Extensions>>,
+    sink: Sink<
+      | FormattedExecutionResult<Data, Extensions>
+      | FormattedExecutionPatchResult<Data, Extensions>
+    >,
   ): () => void;
   /**
    * Subscribes and iterates over emitted results from the WebSocket
@@ -447,7 +433,10 @@ export interface Client extends Disposable {
    */
   iterate<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-  ): AsyncIterableIterator<ExecutionResult<Data, Extensions>>;
+  ): AsyncIterableIterator<
+    | FormattedExecutionResult<Data, Extensions>
+    | FormattedExecutionPatchResult<Data, Extensions>
+  >;
   /**
    * Terminates the WebSocket abruptly and immediately.
    *
@@ -496,7 +485,6 @@ export function createClient<
       );
     },
     shouldRetry = isLikeCloseEvent,
-    isFatalConnectionProblem,
     on,
     webSocketImpl,
     /**
@@ -718,7 +706,7 @@ export function createClient<
               socket.close(
                 CloseCode.InternalClientError,
                 limitCloseReason(
-                  err instanceof Error ? err.message : new Error(err).message,
+                  err instanceof Error ? err.message : String(err),
                   'Internal client error',
                 ),
               );
@@ -774,7 +762,7 @@ export function createClient<
               socket.close(
                 CloseCode.BadResponse,
                 limitCloseReason(
-                  err instanceof Error ? err.message : new Error(err).message,
+                  err instanceof Error ? err.message : String(err),
                   'Bad response',
                 ),
               );
@@ -856,9 +844,6 @@ export function createClient<
 
     // throw non-retryable connection problems
     if (!shouldRetry(errOrCloseEvent)) throw errOrCloseEvent;
-
-    // @deprecated throw fatal connection problems immediately
-    if (isFatalConnectionProblem?.(errOrCloseEvent)) throw errOrCloseEvent;
 
     // looks good, start retrying
     return (retrying = true);
@@ -983,7 +968,7 @@ export function createClient<
     on: emitter.on,
     subscribe,
     iterate(request) {
-      const pending: ExecutionResult<any, any>[] = [];
+      const pending: any[] = [];
       const deferred = {
         done: false,
         error: null as unknown,
@@ -993,8 +978,7 @@ export function createClient<
       };
       const dispose = subscribe(request, {
         next(val) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
-          pending.push(val as any);
+          pending.push(val);
           deferred.resolve();
         },
         error(err) {
@@ -1071,8 +1055,8 @@ export function createClient<
  * can happen on iOS Safari, see: https://github.com/enisdenjo/graphql-ws/discussions/290.
  */
 export class TerminatedCloseEvent extends Error {
-  public name = 'TerminatedCloseEvent';
-  public message = '4499: Terminated';
+  public override name = 'TerminatedCloseEvent';
+  public override message = '4499: Terminated';
   public code = 4499;
   public reason = 'Terminated';
   public wasClean = false;

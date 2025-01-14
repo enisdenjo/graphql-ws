@@ -15,7 +15,6 @@ jobs:
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
     with:
       node-version-file: .node-version
-      buildScript: build
       npmTag: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && 'rc' || 'alpha' }}
       restoreDeletedChangesets: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && true || false }}
     secrets:
@@ -27,7 +26,6 @@ jobs:
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
     with:
       node-version-file: .node-version
-      releaseScript: release
     secrets:
       githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}

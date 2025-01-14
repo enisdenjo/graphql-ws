@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "next build && next-sitemap --config next-sitemap.config.cjs",
-    "check:type": "tsc --noEmit",
+    "check:types": "tsc --noEmit",
     "start": "next"
   },
   "dependencies": {

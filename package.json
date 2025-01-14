@@ -2,6 +2,7 @@
   "name": "graphql-ws",
   "version": "5.16.2",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/enisdenjo/graphql-ws.git"
@@ -11,59 +12,58 @@
   "license": "MIT",
   "packageManager": "yarn@4.6.0",
   "engines": {
-    "node": ">=10"
+    "node": ">=20"
   },
-  "main": "lib/index.js",
-  "module": "lib/index.mjs",
+  "main": "dist/index.js",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "require": "./lib/index.js",
-      "import": "./lib/index.mjs",
-      "browser": "./umd/graphql-ws.js"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "browser": "./dist/client.js"
     },
-    "./lib/use/ws": {
-      "types": "./lib/use/ws.d.ts",
-      "require": "./lib/use/ws.js",
-      "import": "./lib/use/ws.mjs"
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "require": "./dist/client.cjs",
+      "import": "./dist/client.js",
+      "browser": "./dist/client.js"
     },
-    "./lib/use/uWebSockets": {
-      "types": "./lib/use/uWebSockets.d.ts",
-      "require": "./lib/use/uWebSockets.js",
-      "import": "./lib/use/uWebSockets.mjs"
+    "./use/ws": {
+      "types": "./dist/use/ws.d.ts",
+      "require": "./dist/use/ws.cjs",
+      "import": "./dist/use/ws.js"
     },
-    "./lib/use/@fastify/websocket": {
-      "types": "./lib/use/@fastify/websocket.d.ts",
-      "require": "./lib/use/@fastify/websocket.js",
-      "import": "./lib/use/@fastify/websocket.mjs"
+    "./use/uWebSockets": {
+      "types": "./dist/use/uWebSockets.d.ts",
+      "require": "./dist/use/uWebSockets.cjs",
+      "import": "./dist/use/uWebSockets.js"
     },
-    "./lib/use/fastify-websocket": {
-      "types": "./lib/use/fastify-websocket.d.ts",
-      "require": "./lib/use/fastify-websocket.js",
-      "import": "./lib/use/fastify-websocket.mjs"
+    "./use/@fastify/websocket": {
+      "types": "./dist/use/@fastify/websocket.d.ts",
+      "require": "./dist/use/@fastify/websocket.cjs",
+      "import": "./dist/use/@fastify/websocket.js"
     },
-    "./lib/use/bun": {
-      "bun": "./lib/use/bun.mjs",
-      "types": "./lib/use/bun.d.ts",
-      "require": "./lib/use/bun.js",
-      "import": "./lib/use/bun.mjs"
+    "./use/bun": {
+      "types": "./dist/use/bun.d.ts",
+      "require": "./dist/use/bun.cjs",
+      "import": "./dist/use/bun.js"
     },
-    "./lib/use/deno": {
-      "types": "./lib/use/deno.d.ts",
-      "require": "./lib/use/deno.js",
-      "import": "./lib/use/deno.mjs"
+    "./use/deno": {
+      "types": "./dist/use/deno.d.ts",
+      "require": "./dist/use/deno.cjs",
+      "import": "./dist/use/deno.js"
     },
     "./package.json": "./package.json"
   },
-  "browser": "umd/graphql-ws.js",
-  "types": "lib/index.d.ts",
+  "browser": "./dist/client.js",
+  "types": "./dist/index.d.ts",
   "sideEffects": [
     "umd/*"
   ],
   "files": [
     "LICENSE.md",
     "PROTOCOL.md",
-    "lib",
+    "dist",
     "umd",
     "README.md"
   ],
@@ -83,54 +83,41 @@
     "uwebsockets"
   ],
   "scripts": {
-    "build": "yarn build:esm && yarn build:cjs && yarn build:umd && yarn postbuild",
-    "build:cjs": "tsc -b tsconfig.cjs.json",
-    "build:esm": "tsc -b tsconfig.esm.json && node scripts/esm-post-process.mjs",
-    "build:umd": "rollup --bundleConfigAsCjs --config rollup.config.ts --configPlugin typescript && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "changeset": "changeset",
     "check:format": "prettier --check .",
-    "check:lint": "eslint 'src'",
-    "check:type": "tsc --noEmit",
     "format": "yarn check:format --write",
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.mjs",
-    "postbuild": "node scripts/fix-declaration-directives.mjs",
+    "check:types": "tsc --noEmit",
     "test": "vitest",
-    "release": "yarn build && yarn changeset publish"
+    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
+    "prepack": "yarn build",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.js"
   },
   "peerDependencies": {
-    "graphql": ">=0.11 <=16"
+    "graphql": "^15.10.1 || ^16.10.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.11",
-    "@fastify/websocket": "^9.0.0",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@fastify/websocket": "^11.0.2",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/eslint": "^8.56.10",
+    "@tsconfig/strictest": "^2.0.5",
     "@types/glob": "^8.1.0",
-    "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^7.7.0",
-    "@typescript-eslint/parser": "^7.7.0",
-    "bun-types": "^1.1.4",
-    "eslint": "^8.57.0",
-    "fastify": "^4.26.2",
-    "fastify-websocket": "4.2.2",
-    "glob": "^10.3.12",
-    "graphql": "^16.8.1",
-    "jsdom": "^25.0.1",
+    "@types/ws": "^8.5.13",
+    "bun-types": "^1.1.43",
+    "fastify": "^5.2.1",
+    "glob": "^11.0.1",
+    "graphql": "^16.10.0",
+    "jsdom": "^26.0.0",
+    "pkgroll": "patch:pkgroll@npm%3A2.6.1#~/.yarn/patches/pkgroll-npm-2.6.1-193e78e84e.patch",
     "prettier": "^3.4.2",
     "prettier-plugin-sh": "^0.14.0",
-    "replacestream": "^4.0.3",
-    "rollup": "^4.14.3",
-    "subscriptions-transport-ws": "^0.11.0",
-    "tslib": "^2.6.2",
-    "typedoc": "^0.25.13",
-    "typedoc-plugin-markdown": "^3.17.1",
-    "typescript": "^5.4.5",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.43.0",
+    "rollup": "^4.30.1",
+    "typedoc": "^0.27.6",
+    "typedoc-plugin-markdown": "^4.4.1",
+    "typescript": "^5.7.3",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.51.0",
     "vitest": "^2.1.8",
-    "ws": "8.12.0",
-    "ws7": "npm:ws@^7.5.9"
+    "ws": "^8.18.0"
   }
 }
