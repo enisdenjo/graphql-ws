@@ -9,6 +9,7 @@ import {
   getOperationAST,
   GraphQLError,
   execute as graphqlExecute,
+  GraphQLFormattedError,
   GraphQLSchema,
   subscribe as graphqlSubscribe,
   validate as graphqlValidate,
@@ -360,8 +361,8 @@ export interface ServerOptions<
         message: ErrorMessage,
         errors: readonly GraphQLError[],
       ) =>
-        | Promise<readonly GraphQLError[] | void>
-        | readonly GraphQLError[]
+        | Promise<readonly GraphQLFormattedError[] | void>
+        | readonly GraphQLFormattedError[]
         | void);
   /**
    * Executed after an operation has emitted a result right before
@@ -718,7 +719,7 @@ export function makeServer<
                 let errorMessage: ErrorMessage = {
                   id,
                   type: MessageType.Error,
-                  payload: errors,
+                  payload: errors.map((e) => e.toJSON()),
                 };
                 const maybeErrors = await onError?.(ctx, errorMessage, errors);
                 if (maybeErrors)

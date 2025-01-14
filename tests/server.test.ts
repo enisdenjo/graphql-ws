@@ -1077,7 +1077,10 @@ describe.concurrent('Subscribe', () => {
   }) => {
     const { url } = await startTServer({
       onError: (_ctx, _message) => {
-        return [new GraphQLError('Itsa me!'), new GraphQLError('Anda me!')];
+        return [
+          new GraphQLError('Itsa me!').toJSON(),
+          new GraphQLError('Anda me!').toJSON(),
+        ];
       },
     });
 
