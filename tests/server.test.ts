@@ -1976,6 +1976,40 @@ describe.concurrent('Subscribe', () => {
 
     expect(sendFn).toHaveBeenCalledTimes(1); // only the ack message
   });
+
+  it('should not close connection if a subscription iterable throws', async ({
+    expect,
+  }) => {
+    const server = await startTServer();
+
+    const client = await createTClient(server.url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // MessageType.ConnectionAck
+
+    client.ws.send(
+      stringifyMessage({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { throwing }',
+        },
+      }),
+    );
+    await server.waitForOperation();
+
+    await client.waitForMessage((msg) => {
+      expect(msg.data).toMatchInlineSnapshot(`"{"id":"1","type":"error","payload":[{"message":"Subscribe Kaboom!"}]}"`);
+    });
+
+    await client.waitForClose(() => {
+      throw new Error("Shouldn't have closed");
+    }, 20);
+  });
 });
 
 describe.concurrent('Disconnect/close', () => {
