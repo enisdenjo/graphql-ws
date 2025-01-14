@@ -843,9 +843,11 @@ export function makeServer<
                       err instanceof Error ? err : new Error(String(err));
                     await emit.error([
                       versionInfo.major >= 16
-                        ? new GraphQLError(originalError.message, {
-                            originalError,
-                          })
+                        ? new GraphQLError(
+                            originalError.message,
+                            // @ts-ignore graphql@15 and less dont have the second arg as object (version is ensured by versionInfo.major check above)
+                            { originalError },
+                          )
                         : // versionInfo.major <= 15
                           new GraphQLError(
                             originalError.message,
