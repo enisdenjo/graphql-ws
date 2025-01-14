@@ -6,6 +6,7 @@
 
 import {
   ExecutionArgs,
+  FormattedExecutionResult,
   getOperationAST,
   GraphQLError,
   execute as graphqlExecute,
@@ -15,7 +16,6 @@ import {
   validate as graphqlValidate,
   OperationTypeNode,
   parse,
-  SubscriptionArgs,
   versionInfo,
 } from 'graphql';
 import {
@@ -25,6 +25,7 @@ import {
   ErrorMessage,
   ExecutionPatchResult,
   ExecutionResult,
+  FormattedExecutionPatchResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
   JSONMessageReplacer,
@@ -148,7 +149,7 @@ export interface ServerOptions<
     | {
         [operation in OperationTypeNode]?: Record<
           string,
-          NonNullable<SubscriptionArgs['rootValue']>
+          NonNullable<ExecutionArgs['rootValue']>
         >;
       };
   /**
@@ -386,9 +387,11 @@ export interface ServerOptions<
         args: ExecutionArgs,
         result: ExecutionResult | ExecutionPatchResult,
       ) =>
-        | Promise<ExecutionResult | ExecutionPatchResult | void>
-        | ExecutionResult
-        | ExecutionPatchResult
+        | Promise<
+            FormattedExecutionResult | FormattedExecutionPatchResult | void
+          >
+        | FormattedExecutionResult
+        | FormattedExecutionPatchResult
         | void);
   /**
    * The complete callback is executed after the
@@ -695,10 +698,16 @@ export function makeServer<
                 result: ExecutionResult | ExecutionPatchResult,
                 args: ExecutionArgs,
               ) => {
+                const { errors, ...resultWithoutErrors } = result;
                 let nextMessage: NextMessage = {
                   id,
                   type: MessageType.Next,
-                  payload: result,
+                  payload: {
+                    ...resultWithoutErrors,
+                    ...(errors
+                      ? { errors: errors.map((e) => e.toJSON()) }
+                      : {}),
+                  },
                 };
                 const maybeResult = await onNext?.(
                   ctx,

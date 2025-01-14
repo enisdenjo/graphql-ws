@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { EventEmitter } from 'events';
-import { ExecutionResult } from 'graphql';
 import { afterAll, beforeAll, beforeEach, describe, it, vitest } from 'vitest';
 import WebSocket from 'ws';
 import {
@@ -12,6 +11,8 @@ import {
 } from '../src/client';
 import {
   CloseCode,
+  FormattedExecutionPatchResult,
+  FormattedExecutionResult,
   MessageType,
   parseMessage,
   stringifyMessage,
@@ -46,7 +47,11 @@ function noop(): void {
 
 interface TSubscribe<T> {
   waitForNext: (
-    test?: (value: ExecutionResult<T, unknown>) => void,
+    test?: (
+      value:
+        | FormattedExecutionResult<T, unknown>
+        | FormattedExecutionPatchResult<T, unknown>,
+    ) => void,
     expire?: number,
   ) => Promise<void>;
   waitForError: (
@@ -62,7 +67,10 @@ function tsubscribe<T = unknown>(
   payload: SubscribePayload,
 ): TSubscribe<T> {
   const emitter = new EventEmitter();
-  const results: ExecutionResult<T, unknown>[] = [];
+  const results: (
+    | FormattedExecutionResult<T, unknown>
+    | FormattedExecutionPatchResult<T, unknown>
+  )[] = [];
   let error: unknown,
     completed = false;
   const dispose = client.subscribe<T>(payload, {

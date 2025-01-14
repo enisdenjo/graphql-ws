@@ -159,10 +159,34 @@ export interface ExecutionPatchResult<
 }
 
 /** @category Common */
+export interface FormattedExecutionResult<
+  Data = Record<string, unknown>,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<FormattedExecutionResult> | undefined;
+  data?: Data | null | undefined;
+  hasNext?: boolean | undefined;
+  extensions?: Extensions | undefined;
+}
+
+/** @category Common */
+export interface FormattedExecutionPatchResult<
+  Data = unknown,
+  Extensions = Record<string, unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError> | undefined;
+  data?: Data | null | undefined;
+  path?: ReadonlyArray<string | number> | undefined;
+  label?: string | undefined;
+  hasNext: boolean;
+  extensions?: Extensions | undefined;
+}
+
+/** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
-  readonly payload: ExecutionResult | ExecutionPatchResult;
+  readonly payload: FormattedExecutionResult | FormattedExecutionPatchResult;
 }
 
 /** @category Common */

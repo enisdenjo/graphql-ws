@@ -4,12 +4,13 @@
  *
  */
 
-import { ExecutionResult } from 'graphql';
 import {
   CloseCode,
   ConnectionAckMessage,
   ConnectionInitMessage,
   Disposable,
+  FormattedExecutionPatchResult,
+  FormattedExecutionResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
   JSONMessageReplacer,
@@ -421,7 +422,10 @@ export interface Client extends Disposable {
    */
   subscribe<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-    sink: Sink<ExecutionResult<Data, Extensions>>,
+    sink: Sink<
+      | FormattedExecutionResult<Data, Extensions>
+      | FormattedExecutionPatchResult<Data, Extensions>
+    >,
   ): () => void;
   /**
    * Subscribes and iterates over emitted results from the WebSocket
@@ -429,7 +433,10 @@ export interface Client extends Disposable {
    */
   iterate<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-  ): AsyncIterableIterator<ExecutionResult<Data, Extensions>>;
+  ): AsyncIterableIterator<
+    | FormattedExecutionResult<Data, Extensions>
+    | FormattedExecutionPatchResult<Data, Extensions>
+  >;
   /**
    * Terminates the WebSocket abruptly and immediately.
    *
@@ -961,7 +968,7 @@ export function createClient<
     on: emitter.on,
     subscribe,
     iterate(request) {
-      const pending: ExecutionResult<any, any>[] = [];
+      const pending: any[] = [];
       const deferred = {
         done: false,
         error: null as unknown,
@@ -971,8 +978,7 @@ export function createClient<
       };
       const dispose = subscribe(request, {
         next(val) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type
-          pending.push(val as any);
+          pending.push(val);
           deferred.resolve();
         },
         error(err) {
