@@ -2487,7 +2487,7 @@ __metadata:
     vitest: "npm:^2.1.8"
     ws: "npm:^8.18.0"
   peerDependencies:
-    graphql: ^15.10.0 || ^16.10.0
+    graphql: ^15.10.1 || ^16.10.0
   languageName: unknown
   linkType: soft
 
