@@ -35,7 +35,7 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Install
-        run: yarn add graphql@${{matrix.graphql}}
+        run: yarn add --dev graphql@${{matrix.graphql}}
       - name: Info
         run: yarn info graphql
       - name: Check
