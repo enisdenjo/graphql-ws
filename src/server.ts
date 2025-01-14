@@ -20,9 +20,7 @@ import {
 } from 'graphql';
 import {
   CloseCode,
-  CompleteMessage,
   ConnectionInitMessage,
-  ErrorMessage,
   ExecutionPatchResult,
   ExecutionResult,
   FormattedExecutionPatchResult,
@@ -32,19 +30,14 @@ import {
   JSONMessageReviver,
   Message,
   MessageType,
-  NextMessage,
   parseMessage,
   PingMessage,
   PongMessage,
   stringifyMessage,
   SubscribeMessage,
+  SubscribePayload,
 } from './common';
-import {
-  areGraphQLErrors,
-  isAsyncGenerator,
-  isAsyncIterable,
-  isObject,
-} from './utils';
+import { isAsyncGenerator, isAsyncIterable, isObject } from './utils';
 
 /** @category Server */
 export type OperationResult =
@@ -308,7 +301,8 @@ export interface ServerOptions<
     | undefined
     | ((
         ctx: Context<P, E>,
-        message: SubscribeMessage,
+        id: string,
+        payload: SubscribePayload,
       ) =>
         | Promise<ExecutionArgs | readonly GraphQLError[] | void>
         | ExecutionArgs
@@ -338,7 +332,7 @@ export interface ServerOptions<
     | undefined
     | ((
         ctx: Context<P, E>,
-        message: SubscribeMessage,
+        id: string,
         args: ExecutionArgs,
         result: OperationResult,
       ) => Promise<OperationResult | void> | OperationResult | void);
@@ -359,7 +353,7 @@ export interface ServerOptions<
     | undefined
     | ((
         ctx: Context<P, E>,
-        message: ErrorMessage,
+        id: string,
         errors: readonly GraphQLError[],
       ) =>
         | Promise<readonly GraphQLFormattedError[] | void>
@@ -383,7 +377,7 @@ export interface ServerOptions<
     | undefined
     | ((
         ctx: Context<P, E>,
-        message: NextMessage,
+        id: string,
         args: ExecutionArgs,
         result: ExecutionResult | ExecutionPatchResult,
       ) =>
@@ -408,7 +402,7 @@ export interface ServerOptions<
    */
   onComplete?:
     | undefined
-    | ((ctx: Context<P, E>, message: CompleteMessage) => Promise<void> | void);
+    | ((ctx: Context<P, E>, id: string) => Promise<void> | void);
   /**
    * An optional override for the JSON.parse function used to hydrate
    * incoming messages to this server. Useful for parsing custom datatypes
@@ -699,57 +693,46 @@ export function makeServer<
                 args: ExecutionArgs,
               ) => {
                 const { errors, ...resultWithoutErrors } = result;
-                let nextMessage: NextMessage = {
-                  id,
-                  type: MessageType.Next,
-                  payload: {
-                    ...resultWithoutErrors,
-                    ...(errors
-                      ? { errors: errors.map((e) => e.toJSON()) }
-                      : {}),
-                  },
-                };
-                const maybeResult = await onNext?.(
-                  ctx,
-                  nextMessage,
-                  args,
-                  result,
-                );
-                if (maybeResult)
-                  nextMessage = {
-                    ...nextMessage,
-                    payload: maybeResult,
-                  };
+                const maybeResult = await onNext?.(ctx, id, args, result);
                 await socket.send(
-                  stringifyMessage<MessageType.Next>(nextMessage, replacer),
+                  stringifyMessage<MessageType.Next>(
+                    {
+                      id,
+                      type: MessageType.Next,
+                      payload: maybeResult || {
+                        ...resultWithoutErrors,
+                        // omit errors completely if not defined
+                        ...(errors
+                          ? { errors: errors.map((e) => e.toJSON()) }
+                          : {}),
+                      },
+                    },
+                    replacer,
+                  ),
                 );
               },
               error: async (errors: readonly GraphQLError[]) => {
-                let errorMessage: ErrorMessage = {
-                  id,
-                  type: MessageType.Error,
-                  payload: errors.map((e) => e.toJSON()),
-                };
-                const maybeErrors = await onError?.(ctx, errorMessage, errors);
-                if (maybeErrors)
-                  errorMessage = {
-                    ...errorMessage,
-                    payload: maybeErrors,
-                  };
+                const maybeErrors = await onError?.(ctx, id, errors);
                 await socket.send(
-                  stringifyMessage<MessageType.Error>(errorMessage, replacer),
+                  stringifyMessage<MessageType.Error>(
+                    {
+                      id,
+                      type: MessageType.Error,
+                      payload: maybeErrors || errors.map((e) => e.toJSON()),
+                    },
+                    replacer,
+                  ),
                 );
               },
               complete: async (notifyClient: boolean) => {
-                const completeMessage: CompleteMessage = {
-                  id,
-                  type: MessageType.Complete,
-                };
-                await onComplete?.(ctx, completeMessage);
+                await onComplete?.(ctx, id);
                 if (notifyClient)
                   await socket.send(
                     stringifyMessage<MessageType.Complete>(
-                      completeMessage,
+                      {
+                        id,
+                        type: MessageType.Complete,
+                      },
                       replacer,
                     ),
                   );
@@ -758,7 +741,11 @@ export function makeServer<
 
             try {
               let execArgs: ExecutionArgs;
-              const maybeExecArgsOrErrors = await onSubscribe?.(ctx, message);
+              const maybeExecArgsOrErrors = await onSubscribe?.(
+                ctx,
+                message.id,
+                message.payload,
+              );
               if (maybeExecArgsOrErrors) {
                 if (areGraphQLErrors(maybeExecArgsOrErrors))
                   return id in ctx.subscriptions
@@ -833,7 +820,7 @@ export function makeServer<
 
               const maybeResult = await onOperation?.(
                 ctx,
-                message,
+                message.id,
                 execArgs,
                 operationResult,
               );

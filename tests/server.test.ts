@@ -1629,13 +1629,13 @@ describe.concurrent('Subscribe', () => {
     };
 
     const { url } = await startTServer({
-      onSubscribe: (_ctx, msg) => {
+      onSubscribe: (_ctx, _id, payload) => {
         // search using `SubscriptionPayload.query` as QueryID
         // check the client example below for better understanding
-        const hit = queriesStore[msg.payload.query as string]!;
+        const hit = queriesStore[payload.query as string]!;
         return {
           ...hit,
-          variableValues: msg.payload.variables, // use the variables from the client
+          variableValues: payload.variables, // use the variables from the client
         };
       },
     });
