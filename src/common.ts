@@ -4,7 +4,7 @@
  *
  */
 
-import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import type { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { areGraphQLFormattedErrors, extendedTypeof, isObject } from './utils';
 
 /**

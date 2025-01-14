@@ -3,7 +3,7 @@
  * utils
  *
  */
-import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import type { GraphQLFormattedError } from 'graphql';
 
 /** @private */
 export function extendedTypeof(
@@ -64,17 +64,6 @@ export function areGraphQLFormattedErrors(
     obj.length > 0 &&
     // error has at least a message
     obj.every((ob) => 'message' in ob)
-  );
-}
-
-/** @private */
-export function areGraphQLErrors(obj: unknown): obj is readonly GraphQLError[] {
-  return (
-    Array.isArray(obj) &&
-    // must be at least one error
-    obj.length > 0 &&
-    // error has at least a message
-    obj.every((ob) => ob instanceof GraphQLError)
   );
 }
 

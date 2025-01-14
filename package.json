@@ -22,6 +22,12 @@
       "import": "./dist/index.js",
       "browser": "./dist/client.js"
     },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "require": "./dist/client.cjs",
+      "import": "./dist/client.js",
+      "browser": "./dist/client.js"
+    },
     "./use/ws": {
       "types": "./dist/use/ws.d.ts",
       "require": "./dist/use/ws.cjs",
