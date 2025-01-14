@@ -2002,13 +2002,15 @@ describe.concurrent('Subscribe', () => {
     );
     await server.waitForOperation();
 
-    await client.waitForMessage((msg) => {
-      expect(msg.data).toMatchInlineSnapshot(`"{"id":"1","type":"error","payload":[{"message":"Subscribe Kaboom!"}]}"`);
-    });
-
     await client.waitForClose(() => {
       throw new Error("Shouldn't have closed");
     }, 20);
+
+    await client.waitForMessage((msg) => {
+      expect(msg.data).toMatchInlineSnapshot(
+        `"{"id":"1","type":"error","payload":[{"message":"Subscribe Kaboom!"}]}"`,
+      );
+    });
   });
 });
 
