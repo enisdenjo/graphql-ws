@@ -2,7 +2,9 @@
 
 Short and concise code snippets for starting with common use-cases.
 
-## Client usage with [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+## Client
+
+### Client usage with [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 ```ts
 import { createClient, SubscribePayload } from 'graphql-ws';
@@ -26,7 +28,7 @@ const client = createClient({
 })();
 ```
 
-## Client usage with [AsyncIterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator)
+### Client usage with [AsyncIterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator)
 
 ```ts
 import { createClient, SubscribePayload } from 'graphql-ws';
@@ -49,7 +51,7 @@ const client = createClient({
 })();
 ```
 
-## Client usage with [Observable](https://github.com/tc39/proposal-observable)
+### Client usage with [Observable](https://github.com/tc39/proposal-observable)
 
 ```ts
 import { Observable } from 'relay-runtime';
@@ -88,7 +90,7 @@ const subscription = observable.subscribe({
 subscription.unsubscribe();
 ```
 
-## Client usage with [Relay](https://relay.dev)
+### Client usage with [Relay](https://relay.dev)
 
 ```ts
 import { createClient } from 'graphql-ws';
@@ -137,7 +139,7 @@ function fetchOrSubscribe(
 export const network = Network.create(fetchOrSubscribe, fetchOrSubscribe);
 ```
 
-## Client usage with [urql](https://formidable.com/open-source/urql/)
+### Client usage with [urql](https://formidable.com/open-source/urql/)
 
 ```ts
 import { createClient as createWSClient, SubscribePayload } from 'graphql-ws';
@@ -176,7 +178,7 @@ const client = createClient({
 });
 ```
 
-## Client usage with [Apollo Client Web](https://www.apollographql.com/docs/react/)
+### Client usage with [Apollo Client Web](https://www.apollographql.com/docs/react/)
 
 ```typescript
 // Apollo Client Web v3.5.10 has a GraphQLWsLink class which implements
@@ -236,7 +238,7 @@ class GraphQLWsLink extends ApolloLink {
 }
 ```
 
-## Client usage with [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
+### Client usage with [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
 
 Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Kotlin using [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
 
@@ -253,7 +255,7 @@ val apolloClient = ApolloClient.Builder()
     .build()
 ```
 
-## Client usage with [Apollo iOS](https://github.com/apollographql/apollo-ios)
+### Client usage with [Apollo iOS](https://github.com/apollographql/apollo-ios)
 
 Connect to [`graphql-transport-ws`](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) compatible server in Swift using [Apollo iOS](https://github.com/apollographql/apollo-ios)
 
@@ -289,11 +291,11 @@ let client = ApolloClient(
 )
 ```
 
-## Client usage with [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support)
+### Client usage with [Apollo Studio Explorer](https://www.apollographql.com/docs/studio/explorer/additional-features/#subscription-support)
 
 In Explorer Settings, click "Edit" for "Connection Settings" and select `graphql-ws` under "Implementation".
 
-## Client usage with [GraphiQL](https://github.com/graphql/graphiql)
+### Client usage with [GraphiQL](https://github.com/graphql/graphiql)
 
 ```typescript
 import React from 'react';
@@ -314,7 +316,7 @@ export const App = () => <GraphiQL fetcher={fetcher} />;
 ReactDOM.render(document.getElementByID('graphiql'), <App />);
 ```
 
-## Client usage with retry on any connection problem
+### Client usage with retry on any connection problem
 
 ```typescript
 import { createClient } from 'graphql-ws';
@@ -333,7 +335,7 @@ const client = createClient({
 });
 ```
 
-## Client usage with custom retry timeout strategy
+### Client usage with custom retry timeout strategy
 
 ```typescript
 import { createClient } from 'graphql-ws';
@@ -355,7 +357,7 @@ const client = createClient({
 });
 ```
 
-## Client usage with graceful restart
+### Client usage with graceful restart
 
 ```typescript
 import { Client, ClientOptions, createClient } from 'graphql-ws';
@@ -415,7 +417,7 @@ const client = createRestartableClient({
 // all subscriptions from `client.subscribe` will resubscribe after `client.restart`
 ```
 
-## Client usage with ping/pong timeout and latency metrics
+### Client usage with ping/pong timeout and latency metrics
 
 ```typescript
 import { createClient } from 'graphql-ws';
@@ -448,7 +450,7 @@ createClient({
 });
 ```
 
-## Client usage with abrupt termination on pong timeout
+### Client usage with abrupt termination on pong timeout
 
 ```typescript
 import { createClient } from 'graphql-ws';
@@ -481,7 +483,7 @@ const client = createClient({
 });
 ```
 
-## Client usage with manual pings and pongs
+### Client usage with manual pings and pongs
 
 ```typescript
 import {
@@ -537,7 +539,7 @@ function createPingerClient(options: ClientOptions): PingerClient {
 }
 ```
 
-## Client usage supported check
+### Client usage supported check
 
 ```ts
 import { createClient } from 'graphql-ws';
@@ -569,7 +571,7 @@ if (supported) {
 }
 ```
 
-## Client usage in browser
+### Client usage in browser
 
 ```html
 <!doctype html>
@@ -594,7 +596,7 @@ if (supported) {
 </html>
 ```
 
-Client usage in Node
+### Client usage in Node
 
 ```ts
 const ws = require('ws'); // yarn add ws
@@ -610,7 +612,7 @@ const client = createClient({
 // consider other recipes for usage inspiration
 ```
 
-## Client usage in Node with custom headers ([not possible in browsers](https://stackoverflow.com/a/4361358/3633671))
+### Client usage in Node with custom headers ([not possible in browsers](https://stackoverflow.com/a/4361358/3633671))
 
 ```ts
 const WebSocket = require('ws'); // yarn add ws
@@ -636,7 +638,7 @@ const client = createClient({
 // consider other recipes for usage inspiration
 ```
 
-## Client usage with reconnect listener
+### Client usage with reconnect listener
 
 ```ts
 import { Client, ClientOptions, createClient } from 'graphql-ws';
@@ -694,13 +696,13 @@ const unlisten = client.onReconnected(() => {
 });
 ```
 
-## Server usage with [ws](https://github.com/websockets/ws)
+## Server
+
+### Server usage with manual implementation of [ws](https://github.com/websockets/ws)
 
 ```ts
-// minimal version of `import { useServer } from 'graphql-ws/lib/use/ws';`
+// minimal version of `useServer` from `graphql-ws/use/ws`
 
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { CloseCode, makeServer } from 'graphql-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -750,14 +752,12 @@ wsServer.on('connection', (socket, request) => {
 });
 ```
 
-## Server usage with [ws](https://github.com/websockets/ws) and custom auth handling
+### Server usage with [ws](https://github.com/websockets/ws) and custom auth handling
 
 ```ts
-// check extended implementation at `{ useServer } from 'graphql-ws/lib/use/ws'`
+// check extended implementation at `useServer` from `graphql-ws/use/ws`
 
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { CloseCode, makeServer } from 'graphql-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -844,11 +844,9 @@ wsServer.on('connection', (socket, request) => {
 });
 ```
 
-## Server usage with [ws](https://github.com/websockets/ws) and subprotocol pings and pongs
+### Server usage with [ws](https://github.com/websockets/ws) and subprotocol pings and pongs
 
 ```ts
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import {
   CloseCode,
   makeServer,
@@ -924,15 +922,15 @@ wsServer.on('connection', (socket, request) => {
 });
 ```
 
-## Server usage with [Cloudflare Workers](https://workers.cloudflare.com/)
+### Server usage with [Cloudflare Workers](https://workers.cloudflare.com/)
 
 [Please check the `worker-graphql-ws-template` repo out.](https://github.com/enisdenjo/cloudflare-worker-graphql-ws-template)
 
-## [ws](https://github.com/websockets/ws) server usage with [GraphQL Yoga](https://www.graphql-yoga.com)
+### [ws](https://github.com/websockets/ws) server usage with [GraphQL Yoga](https://www.graphql-yoga.com)
 
 ```typescript
 import { createServer } from 'http';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { createYoga } from 'graphql-yoga';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
@@ -959,20 +957,20 @@ useServer(
   {
     execute: (args: any) => args.rootValue.execute(args),
     subscribe: (args: any) => args.rootValue.subscribe(args),
-    onSubscribe: async (ctx, msg) => {
+    onSubscribe: async (ctx, _id, payload) => {
       const { schema, execute, subscribe, contextFactory, parse, validate } =
         yoga.getEnveloped({
           ...ctx,
           req: ctx.extra.request,
           socket: ctx.extra.socket,
-          params: msg.payload,
+          params: payload,
         });
 
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
         contextValue: await contextFactory(),
         rootValue: {
           execute,
@@ -993,14 +991,12 @@ server.listen(4000, () => {
 });
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with [Express GraphQL](https://github.com/graphql/express-graphql)
+### [ws](https://github.com/websockets/ws) server usage with [Express GraphQL](https://github.com/graphql/express-graphql)
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1020,14 +1016,14 @@ const server = app.listen(4000, () => {
 });
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with [Apollo Server Express](https://www.apollographql.com/docs/apollo-server/data/subscriptions/)
+### [ws](https://github.com/websockets/ws) server usage with [Apollo Server Express](https://www.apollographql.com/docs/apollo-server/data/subscriptions/)
 
 ```typescript
 import { createServer } from 'http';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 
@@ -1070,7 +1066,7 @@ apolloServer.applyMiddleware({ app });
 httpServer.listen(4000);
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with [Apollo Server Hapi.js](https://www.apollographql.com/docs/apollo-server/v3/integrations/middleware/#apollo-server-hapi)
+### [ws](https://github.com/websockets/ws) server usage with [Apollo Server Hapi.js](https://www.apollographql.com/docs/apollo-server/v3/integrations/middleware/#apollo-server-hapi)
 
 ```typescript
 import { createServer } from 'http';
@@ -1080,7 +1076,7 @@ import {
   ApolloServer,
   ApolloServerPluginStopHapiServer,
 } from 'apollo-server-hapi';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 
@@ -1130,12 +1126,12 @@ await hapiServer.start();
 console.log('Open GraphQL editor on: %s/graphql', hapiServer.info.uri);
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with [deprecated fastify-websocket](https://www.npmjs.com/package/fastify-websocket)
+### [ws](https://github.com/websockets/ws) server usage with [deprecated fastify-websocket](https://www.npmjs.com/package/fastify-websocket)
 
 ```typescript
 import Fastify from 'fastify'; // yarn add fastify@^3
 import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket@4.2.2
-import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+import { makeHandler } from 'graphql-ws/use/fastify-websocket';
 import { schema } from './previous-step';
 
 const fastify = Fastify();
@@ -1152,15 +1148,13 @@ fastify.listen(4000, (err) => {
 });
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with [subscriptions-transport-ws](https://github.com/apollographql/subscriptions-transport-ws) backwards compatibility
+### [ws](https://github.com/websockets/ws) server usage with [subscriptions-transport-ws](https://github.com/apollographql/subscriptions-transport-ws) backwards compatibility
 
 ```ts
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { GRAPHQL_WS, SubscriptionServer } from 'subscriptions-transport-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1212,12 +1206,10 @@ server.on('upgrade', (req, socket, head) => {
 server.listen(4000);
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with console logging
+### [ws](https://github.com/websockets/ws) server usage with console logging
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1233,31 +1225,29 @@ useServer(
     onConnect: (ctx) => {
       console.log('Connect', ctx);
     },
-    onSubscribe: (ctx, msg) => {
-      console.log('Subscribe', { ctx, msg });
+    onSubscribe: (ctx, id, payload) => {
+      console.log('Subscribe', { ctx, id, payload });
     },
-    onNext: (ctx, msg, args, result) => {
-      console.debug('Next', { ctx, msg, args, result });
+    onNext: (ctx, id, subscribePayload, args, result) => {
+      console.debug('Next', { ctx, id, args, subscribePayload, result });
     },
-    onError: (ctx, msg, errors) => {
-      console.error('Error', { ctx, msg, errors });
+    onError: (ctx, id, subscribePayload, errors) => {
+      console.error('Error', { ctx, id, subscribePayload, errors });
     },
-    onComplete: (ctx, msg) => {
-      console.log('Complete', { ctx, msg });
+    onComplete: (ctx, id, subscribePayload) => {
+      console.log('Complete', { ctx, id, subscribePayload });
     },
   },
   wsServer,
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage on a multi WebSocket server
+### [ws](https://github.com/websockets/ws) server usage on a multi WebSocket server
 
 ```typescript
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import url from 'url';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1305,12 +1295,10 @@ useServer({ schema }, graphqlWS);
 server.listen(4000);
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with custom context value
+### [ws](https://github.com/websockets/ws) server usage with custom context value
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { getDynamicContext, schema } from './my-graphql';
@@ -1322,8 +1310,8 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    context: (ctx, msg, args) => {
-      return getDynamicContext(ctx, msg, args);
+    context: (ctx, id, subscribePayload, args) => {
+      return getDynamicContext(ctx, id, subscribePayload, args);
     }, // or static context by supplying the value direcly
     schema,
   },
@@ -1331,12 +1319,10 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with dynamic schema
+### [ws](https://github.com/websockets/ws) server usage with dynamic schema
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { checkIsAdmin, getDebugSchema, schema } from './my-graphql';
@@ -1348,14 +1334,20 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    schema: async (ctx, msg, executionArgsWithoutSchema) => {
+    schema: async (ctx, id, subscribePayload, executionArgsWithoutSchema) => {
       // will be called on every subscribe request
       // allowing you to dynamically supply the schema
       // using the depending on the provided arguments.
       // throwing an error here closes the socket with
       // the `Error` message in the close event reason
       const isAdmin = await checkIsAdmin(ctx.request);
-      if (isAdmin) return getDebugSchema(ctx, msg, executionArgsWithoutSchema);
+      if (isAdmin)
+        return getDebugSchema(
+          ctx,
+          id,
+          subscribePayload,
+          executionArgsWithoutSchema,
+        );
       return schema;
     },
   },
@@ -1363,13 +1355,11 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with custom validation
+### [ws](https://github.com/websockets/ws) server usage with custom validation
 
 ```typescript
 import { validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { myValidationRules, schema } from './my-graphql';
@@ -1388,13 +1378,11 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with custom execution arguments
+### [ws](https://github.com/websockets/ws) server usage with custom execution arguments
 
 ```typescript
 import { parse, validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { myValidationRules, schema } from './my-graphql';
@@ -1406,12 +1394,12 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (ctx, msg) => {
+    onSubscribe: (ctx, _id, payload) => {
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
       };
 
       // dont forget to validate when returning custom execution args!
@@ -1427,59 +1415,11 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with custom subscribe method that gracefully handles thrown errors
-
-`graphql-js` does not catch errors thrown from async iterables ([see issue](https://github.com/graphql/graphql-js/issues/4001)). This will bubble the error to the WebSocket server and abruptly exit the process because no error should be uncaught.
-
-Note that `graphql-ws` will NOT offer built-in handling of internal errors because there's no one-glove-fits-all. Errors are important and should be handled with care, exactly to the needs of the user - not the library author.
-
-Therefore, you may instead implement your own `subscribe` function that gracefully handles thrown errors.
-
-```typescript
-import { subscribe } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
-import { WebSocketServer } from 'ws'; // yarn add ws
-
-import { myValidationRules, schema } from './my-graphql';
-
-const wsServer = new WebSocketServer({
-  port: 4000,
-  path: '/graphql',
-});
-
-useServer(
-  {
-    schema,
-    async subscribe(...args) {
-      const result = await subscribe(...args);
-      if ('next' in result) {
-        // is an async iterable, augment the next method to handle thrown errors
-        const originalNext = result.next;
-        result.next = async () => {
-          try {
-            return await originalNext();
-          } catch (err) {
-            // gracefully handle the error thrown from the next method
-            return { value: { errors: [err] } };
-          }
-        };
-      }
-      return result;
-    },
-  },
-  wsServer,
-);
-```
-
-## [ws](https://github.com/websockets/ws) server usage accepting only subscription operations
+### [ws](https://github.com/websockets/ws) server usage accepting only subscription operations
 
 ```typescript
 import { getOperationAST, GraphQLError, parse, validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql';
@@ -1491,13 +1431,13 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (_ctx, msg) => {
+    onSubscribe: (_ctx, _id, payload) => {
       // construct the execution arguments
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
       };
 
       const operationAST = getOperationAST(args.document, args.operationName);
@@ -1530,15 +1470,13 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server and client usage with persisted queries
+### [ws](https://github.com/websockets/ws) server and client usage with persisted queries
 
 ```typescript
 // 🛸 server
 
 import { ExecutionArgs, parse } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1562,13 +1500,12 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (_ctx, msg) => {
-      const persistedQuery =
-        queriesStore[msg.payload.extensions?.persistedQuery];
+    onSubscribe: (_ctx, _id, payload) => {
+      const persistedQuery = queriesStore[payload.extensions?.persistedQuery];
       if (persistedQuery) {
         return {
           ...persistedQuery,
-          variableValues: msg.payload.variables, // use the variables from the client
+          variableValues: payload.variables, // use the variables from the client
         };
       }
 
@@ -1616,15 +1553,13 @@ const client = createClient({
 })();
 ```
 
-## [ws](https://github.com/websockets/ws) server and client auth usage with token expiration, validation and refresh
+### [ws](https://github.com/websockets/ws) server and client auth usage with token expiration, validation and refresh
 
 ```typescript
 // 🛸 server
 
 import { CloseCode } from 'graphql-ws';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { isTokenValid } from './my-auth';
@@ -1715,15 +1650,13 @@ const client = createClient({
 });
 ```
 
-## [ws](https://github.com/websockets/ws) server and client usage with subscription acknowledgment
+### [ws](https://github.com/websockets/ws) server and client usage with subscription acknowledgment
 
 ```ts
 // 🛸 server
 
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { MessageType, stringifyMessage } from 'graphql-ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 
@@ -1740,11 +1673,11 @@ useServer<undefined, { ackWaiters: Record<string, () => void> }>(
       // intentionally in context extra to avoid memory leaks when clients disconnect
       ctx.extra.ackWaiters = {};
     },
-    onSubscribe: (ctx, msg) => {
-      const ackId = msg.payload.extensions?.ackId;
+    onSubscribe: (ctx, id, payload) => {
+      const ackId = payload.extensions?.ackId;
       if (typeof ackId === 'string') {
         // if acknowledgment ID is present, create an acknowledger that will be executed when operation succeeds
-        ctx.extra.ackWaiters![msg.id] = () => {
+        ctx.extra.ackWaiters![id] = () => {
           ctx.extra.socket.send(
             stringifyMessage({
               type: MessageType.Ping,
@@ -1756,10 +1689,10 @@ useServer<undefined, { ackWaiters: Record<string, () => void> }>(
         };
       }
     },
-    onOperation: (ctx, msg) => {
+    onOperation: (ctx, id) => {
       // acknowledge operation success and remove waiter
-      ctx.extra.ackWaiters![msg.id]?.();
-      delete ctx.extra.ackWaiters![msg.id];
+      ctx.extra.ackWaiters![id]?.();
+      delete ctx.extra.ackWaiters![id];
     },
   },
   wsServer,

@@ -33,7 +33,7 @@ export interface Extra {
  * import {
  *   makeHandler,
  *   GRAPHQL_TRANSPORT_WS_PROTOCOL,
- * } from 'https://esm.sh/graphql-ws/lib/use/deno';
+ * } from 'https://esm.sh/graphql-ws/use/deno';
  * import { schema } from './my-schema.ts';
  *
  * const handler = makeHandler({ schema });

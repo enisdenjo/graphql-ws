@@ -35,7 +35,7 @@ export interface Extra {
  * they default [`sendPingsAutomatically` to `true`](https://github.com/oven-sh/bun/blob/6a163cf933542506354dc836bd92693bcae5939b/src/deps/uws.zig#L893).
  *
  * ```ts
- * import { makeHandler, handleProtocols } from 'graphql-ws/lib/use/lib/bun';
+ * import { makeHandler, handleProtocols } from 'graphql-ws/use/bun';
  * import { schema } from './my-schema';
  *
  * Bun.serve({
