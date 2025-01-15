@@ -10,7 +10,7 @@ In non-browser environments, you can use only the client and not even depend on 
 import { createClient } from 'graphql-ws/client';
 
 const client = createClient({
-  url: 'ws://localhost:4000/graphql'
+  url: 'ws://localhost:4000/graphql',
 });
 ```
 

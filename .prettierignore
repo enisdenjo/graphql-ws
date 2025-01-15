@@ -8,5 +8,3 @@ CHANGELOG.md
 .next
 website/src/pages/docs
 website/algolia-lockfile.json
-.changeset/*
-!.changeset/config.json
