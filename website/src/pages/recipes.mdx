@@ -697,7 +697,7 @@ const unlisten = client.onReconnected(() => {
 ## Server usage with [ws](https://github.com/websockets/ws)
 
 ```ts
-// minimal version of `import { useServer } from 'graphql-ws/lib/use/ws';`
+// minimal version of `import { useServer } from 'graphql-ws/use/ws';`
 
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
@@ -753,7 +753,7 @@ wsServer.on('connection', (socket, request) => {
 ## Server usage with [ws](https://github.com/websockets/ws) and custom auth handling
 
 ```ts
-// check extended implementation at `{ useServer } from 'graphql-ws/lib/use/ws'`
+// check extended implementation at `{ useServer } from 'graphql-ws/use/ws'`
 
 import http from 'http';
 // import ws from 'ws'; yarn add ws@7
@@ -932,7 +932,7 @@ wsServer.on('connection', (socket, request) => {
 
 ```typescript
 import { createServer } from 'http';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { createYoga } from 'graphql-yoga';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
@@ -1000,7 +1000,7 @@ server.listen(4000, () => {
 // const WebSocketServer = ws.Server;
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1027,7 +1027,7 @@ import { createServer } from 'http';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 
@@ -1080,7 +1080,7 @@ import {
   ApolloServer,
   ApolloServerPluginStopHapiServer,
 } from 'apollo-server-hapi';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 
@@ -1135,7 +1135,7 @@ console.log('Open GraphQL editor on: %s/graphql', hapiServer.info.uri);
 ```typescript
 import Fastify from 'fastify'; // yarn add fastify@^3
 import fastifyWebsocket from 'fastify-websocket'; // yarn add fastify-websocket@4.2.2
-import { makeHandler } from 'graphql-ws/lib/use/fastify-websocket';
+import { makeHandler } from 'graphql-ws/use/fastify-websocket';
 import { schema } from './previous-step';
 
 const fastify = Fastify();
@@ -1160,7 +1160,7 @@ import http from 'http';
 // const WebSocketServer = ws.Server;
 import { execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { GRAPHQL_WS, SubscriptionServer } from 'subscriptions-transport-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1217,7 +1217,7 @@ server.listen(4000);
 ```typescript
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1257,7 +1257,7 @@ import http from 'http';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import url from 'url';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1310,7 +1310,7 @@ server.listen(4000);
 ```typescript
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { getDynamicContext, schema } from './my-graphql';
@@ -1336,7 +1336,7 @@ useServer(
 ```typescript
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { checkIsAdmin, getDebugSchema, schema } from './my-graphql';
@@ -1369,7 +1369,7 @@ useServer(
 import { validate } from 'graphql';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { myValidationRules, schema } from './my-graphql';
@@ -1394,7 +1394,7 @@ useServer(
 import { parse, validate } from 'graphql';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { myValidationRules, schema } from './my-graphql';
@@ -1439,7 +1439,7 @@ Therefore, you may instead implement your own `subscribe` function that graceful
 import { subscribe } from 'graphql';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { myValidationRules, schema } from './my-graphql';
@@ -1479,7 +1479,7 @@ useServer(
 import { getOperationAST, GraphQLError, parse, validate } from 'graphql';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql';
@@ -1538,7 +1538,7 @@ useServer(
 import { ExecutionArgs, parse } from 'graphql';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './my-graphql-schema';
@@ -1624,7 +1624,7 @@ const client = createClient({
 import { CloseCode } from 'graphql-ws';
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { isTokenValid } from './my-auth';
@@ -1723,7 +1723,7 @@ const client = createClient({
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import { MessageType, stringifyMessage } from 'graphql-ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
 import { schema } from './my-graphql-schema';
 

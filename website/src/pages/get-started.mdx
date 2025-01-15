@@ -58,9 +58,7 @@ export const schema = new GraphQLSchema({
 #### With [ws](https://github.com/websockets/ws)
 
 ```ts
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
 import { schema } from './previous-step';
@@ -78,7 +76,7 @@ console.log('Listening to port 4000');
 #### With [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
 
 ```ts
-import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+import { makeBehavior } from 'graphql-ws/use/uWebSockets';
 import uWS from 'uWebSockets.js'; // yarn add uWebSockets.js@uNetworking/uWebSockets.js#<tag>
 
 import { schema } from './previous-step';
@@ -99,7 +97,7 @@ uWS
 import fastifyWebsocket from '@fastify/websocket'; // yarn add @fastify/websocket
 import Fastify from 'fastify'; // yarn add fastify
 
-import { makeHandler } from 'graphql-ws/lib/use/@fastify/websocket';
+import { makeHandler } from 'graphql-ws/use/@fastify/websocket';
 import { schema } from './previous-step';
 
 const fastify = Fastify();
@@ -121,7 +119,7 @@ fastify.listen(4000, (err) => {
 #### With [Bun](https://bun.sh)
 
 ```ts
-import { handleProtocols, makeHandler } from 'graphql-ws/lib/use/bun';
+import { handleProtocols, makeHandler } from 'graphql-ws/use/bun';
 import { schema } from './previous-step';
 
 Bun.serve({
@@ -155,7 +153,7 @@ import { serve } from 'https://deno.land/std/http/mod.ts';
 import {
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   makeHandler,
-} from 'https://esm.sh/graphql-ws/lib/use/deno';
+} from 'https://esm.sh/graphql-ws/use/deno';
 import { schema } from './previous-step.ts';
 
 const handler = makeHandler({ schema });
