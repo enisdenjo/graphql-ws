@@ -96,7 +96,8 @@ export interface ServerOptions<
     | GraphQLSchema
     | ((
         ctx: Context<P, E>,
-        message: SubscribeMessage,
+        id: string,
+        payload: SubscribePayload,
         args: Omit<ExecutionArgs, 'schema'>,
       ) => Promise<GraphQLSchema> | GraphQLSchema);
   /**
@@ -123,7 +124,8 @@ export interface ServerOptions<
     | GraphQLExecutionContextValue
     | ((
         ctx: Context<P, E>,
-        message: SubscribeMessage,
+        id: string,
+        payload: SubscribePayload,
         args: ExecutionArgs,
       ) =>
         | Promise<GraphQLExecutionContextValue>
@@ -333,6 +335,7 @@ export interface ServerOptions<
     | ((
         ctx: Context<P, E>,
         id: string,
+        payload: SubscribePayload,
         args: ExecutionArgs,
         result: OperationResult,
       ) => Promise<OperationResult | void> | OperationResult | void);
@@ -354,6 +357,7 @@ export interface ServerOptions<
     | ((
         ctx: Context<P, E>,
         id: string,
+        payload: SubscribePayload,
         errors: readonly GraphQLError[],
       ) =>
         | Promise<readonly GraphQLFormattedError[] | void>
@@ -378,6 +382,7 @@ export interface ServerOptions<
     | ((
         ctx: Context<P, E>,
         id: string,
+        payload: SubscribePayload,
         args: ExecutionArgs,
         result: ExecutionResult | ExecutionPatchResult,
       ) =>
@@ -402,7 +407,11 @@ export interface ServerOptions<
    */
   onComplete?:
     | undefined
-    | ((ctx: Context<P, E>, id: string) => Promise<void> | void);
+    | ((
+        ctx: Context<P, E>,
+        id: string,
+        payload: SubscribePayload,
+      ) => Promise<void> | void);
   /**
    * An optional override for the JSON.parse function used to hydrate
    * incoming messages to this server. Useful for parsing custom datatypes
@@ -690,10 +699,17 @@ export function makeServer<
             const emit = {
               next: async (
                 result: ExecutionResult | ExecutionPatchResult,
+                { id, payload }: SubscribeMessage,
                 args: ExecutionArgs,
               ) => {
                 const { errors, ...resultWithoutErrors } = result;
-                const maybeResult = await onNext?.(ctx, id, args, result);
+                const maybeResult = await onNext?.(
+                  ctx,
+                  id,
+                  payload,
+                  args,
+                  result,
+                );
                 await socket.send(
                   stringifyMessage<MessageType.Next>(
                     {
@@ -711,8 +727,11 @@ export function makeServer<
                   ),
                 );
               },
-              error: async (errors: readonly GraphQLError[]) => {
-                const maybeErrors = await onError?.(ctx, id, errors);
+              error: async (
+                errors: readonly GraphQLError[],
+                { id, payload }: SubscribeMessage,
+              ) => {
+                const maybeErrors = await onError?.(ctx, id, payload, errors);
                 await socket.send(
                   stringifyMessage<MessageType.Error>(
                     {
@@ -724,8 +743,11 @@ export function makeServer<
                   ),
                 );
               },
-              complete: async (notifyClient: boolean) => {
-                await onComplete?.(ctx, id);
+              complete: async (
+                notifyClient: boolean,
+                { id, payload }: SubscribeMessage,
+              ) => {
+                await onComplete?.(ctx, id, payload);
                 if (notifyClient)
                   await socket.send(
                     stringifyMessage<MessageType.Complete>(
@@ -749,7 +771,7 @@ export function makeServer<
               if (maybeExecArgsOrErrors) {
                 if (areGraphQLErrors(maybeExecArgsOrErrors))
                   return id in ctx.subscriptions
-                    ? await emit.error(maybeExecArgsOrErrors)
+                    ? await emit.error(maybeExecArgsOrErrors, message)
                     : void 0;
                 else if (Array.isArray(maybeExecArgsOrErrors))
                   throw new Error(
@@ -772,7 +794,7 @@ export function makeServer<
                   ...args,
                   schema:
                     typeof schema === 'function'
-                      ? await schema(ctx, message, args)
+                      ? await schema(ctx, id, payload, args)
                       : schema,
                 };
                 const validationErrors = (validate ?? graphqlValidate)(
@@ -781,7 +803,7 @@ export function makeServer<
                 );
                 if (validationErrors.length > 0)
                   return id in ctx.subscriptions
-                    ? await emit.error(validationErrors)
+                    ? await emit.error(validationErrors, message)
                     : void 0;
               }
 
@@ -791,9 +813,10 @@ export function makeServer<
               );
               if (!operationAST)
                 return id in ctx.subscriptions
-                  ? await emit.error([
-                      new GraphQLError('Unable to identify operation'),
-                    ])
+                  ? await emit.error(
+                      [new GraphQLError('Unable to identify operation')],
+                      message,
+                    )
                   : void 0;
 
               // if `onSubscribe` didn't specify a rootValue, inject one
@@ -804,7 +827,7 @@ export function makeServer<
               if (!('contextValue' in execArgs))
                 execArgs.contextValue =
                   typeof context === 'function'
-                    ? await context(ctx, message, execArgs)
+                    ? await context(ctx, id, payload, execArgs)
                     : context;
 
               // the execution arguments have been prepared
@@ -820,7 +843,8 @@ export function makeServer<
 
               const maybeResult = await onOperation?.(
                 ctx,
-                message.id,
+                id,
+                payload,
                 execArgs,
                 operationResult,
               );
@@ -836,28 +860,31 @@ export function makeServer<
                   ctx.subscriptions[id] = operationResult;
                   try {
                     for await (const result of operationResult) {
-                      await emit.next(result, execArgs);
+                      await emit.next(result, message, execArgs);
                     }
                   } catch (err) {
                     const originalError =
                       err instanceof Error ? err : new Error(String(err));
-                    await emit.error([
-                      versionInfo.major >= 16
-                        ? new GraphQLError(
-                            originalError.message,
-                            // @ts-ignore graphql@15 and less dont have the second arg as object (version is ensured by versionInfo.major check above)
-                            { originalError },
-                          )
-                        : // versionInfo.major <= 15
-                          new GraphQLError(
-                            originalError.message,
-                            null,
-                            null,
-                            null,
-                            null,
-                            originalError,
-                          ),
-                    ]);
+                    await emit.error(
+                      [
+                        versionInfo.major >= 16
+                          ? new GraphQLError(
+                              originalError.message,
+                              // @ts-ignore graphql@15 and less dont have the second arg as object (version is ensured by versionInfo.major check above)
+                              { originalError },
+                            )
+                          : // versionInfo.major <= 15
+                            new GraphQLError(
+                              originalError.message,
+                              null,
+                              null,
+                              null,
+                              null,
+                              originalError,
+                            ),
+                      ],
+                      message,
+                    );
                   }
                 }
               } else {
@@ -865,12 +892,12 @@ export function makeServer<
                 // if the client completed the subscription before the single result
                 // became available, he effectively canceled it and no data should be sent
                 if (id in ctx.subscriptions)
-                  await emit.next(operationResult, execArgs);
+                  await emit.next(operationResult, message, execArgs);
               }
 
               // lack of subscription at this point indicates that the client
               // completed the subscription, he doesn't need to be reminded
-              await emit.complete(id in ctx.subscriptions);
+              await emit.complete(id in ctx.subscriptions, message);
             } finally {
               // whatever happens to the subscription, we finally want to get rid of the reservation
               delete ctx.subscriptions[id];

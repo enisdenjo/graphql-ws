@@ -165,10 +165,11 @@ export async function startWSTServer(
         emitter.emit('conn');
         return permitted;
       },
-      onOperation: async (ctx, msg, args, result) => {
+      onOperation: async (ctx, id, msg, args, result) => {
         pendingOperations++;
         const maybeResult = await options?.onOperation?.(
           ctx,
+          id,
           msg,
           args,
           result,
@@ -376,10 +377,11 @@ export async function startUWSTServer(
                 emitter.emit('conn');
                 return permitted;
               },
-              onOperation: async (ctx, msg, args, result) => {
+              onOperation: async (ctx, id, msg, args, result) => {
                 pendingOperations++;
                 const maybeResult = await options?.onOperation?.(
                   ctx,
+                  id,
                   msg,
                   args,
                   result,
@@ -551,10 +553,11 @@ export async function startFastifyWSTServer(
             emitter.emit('conn');
             return permitted;
           },
-          onOperation: async (ctx, msg, args, result) => {
+          onOperation: async (ctx, id, msg, args, result) => {
             pendingOperations++;
             const maybeResult = await options?.onOperation?.(
               ctx,
+              id,
               msg,
               args,
               result,

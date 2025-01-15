@@ -45,8 +45,8 @@ it('should use the schema resolved from a promise on subscribe', async ({
   const schema = new GraphQLSchema(schemaConfig);
 
   const { url } = await startTServer({
-    schema: (_, msg) => {
-      expect(msg.id).toBe('1');
+    schema: (_, id) => {
+      expect(id).toBe('1');
       return Promise.resolve(schema);
     },
     execute: (args) => {
@@ -2138,7 +2138,7 @@ describe.concurrent('Disconnect/close', () => {
       waitForComplete,
       waitForClientClose,
     } = await startTServer({
-      onOperation(_ctx, _msg, _args, result) {
+      onOperation(_ctx, _id, _msg, _args, result) {
         const origReturn = (result as AsyncGenerator).return;
         (result as AsyncGenerator).return = async (...args) => {
           if (++i === 1) {

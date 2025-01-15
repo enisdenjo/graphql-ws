@@ -2,13 +2,49 @@
 'graphql-ws': major
 ---
 
-`onSubscribe`, `onOperation`, `onError`, `onNext` and `onComplete` hooks don't have the full accompanying message anymore, only the ID and the relevant part from the message
+`schema`, `context`, `onSubscribe`, `onOperation`, `onError`, `onNext` and `onComplete` hooks don't have the full accompanying message anymore, only the ID and the relevant part from the message
 
 There is really no need to pass the full `SubscribeMessage` to the `onSubscribe` hook. The only relevant parts from the message are the `id` and the `payload`, the `type` is useless since the hook inherently has it (`onNext` is `next` type, `onError` is `error` type, etc).
 
 The actual techincal reason for not having the full message is to avoid serialising results and errors twice. Both `onNext` and `onError` allow the user to augment the result and return it to be used instead. `onNext` originally had the `NextMessage` argument which already has the `FormattedExecutionResult`, and `onError` originally had the `ErrorMessage` argument which already has the `GraphQLFormattedError`, and they both also returned `FormattedExecutionResult` and `GraphQLFormattedError` respectivelly - meaning, if the user serialised the results - the serialisation would happen **twice**.
 
+Additionally, the `onOperation`, `onError`, `onNext` and `onComplete` now have the `payload` which is the `SubscribeMessage.payload` (`SubscribePayload`) for easier access to the original query as well as execution params extensions.
+
 ### Migrating from v5 to v6
+
+#### `schema`
+
+```diff
+import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+const opts: ServerOptions = {
+- schema(ctx, message) {
+-   const messageId = message.id;
+-   const messagePayload: SubscribePayload = message.payload;
+- },
++ schema(ctx, id, payload) {
++   const messageId = id;
++   const messagePayload: SubscribePayload = payload;
++ },
+};
+```
+
+#### `context`
+
+```diff
+import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+const opts: ServerOptions = {
+- context(ctx, message) {
+-   const messageId = message.id;
+-   const messagePayload: SubscribePayload = message.payload;
+- },
++ context(ctx, id, payload) {
++   const messageId = id;
++   const messagePayload: SubscribePayload = payload;
++ },
+};
+```
 
 #### `onSubscribe`
 
@@ -40,9 +76,9 @@ const opts: ServerOptions = {
 -   const messageId = message.id;
 -   const messagePayload: SubscribePayload = message.payload;
 - },
-+ onOperation(ctx, id, args) {
++ onOperation(ctx, id, payload) {
 +   const messageId = id;
-+   const executionArgs: ExecutionArgs = args;
++   const messagePayload: SubscribePayload = payload;
 + },
 };
 ```
@@ -53,18 +89,19 @@ The `ErrorMessage.payload` (`GraphQLFormattedError[]`) is not useful here at all
 
 ```diff
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { ServerOptions } from 'graphql-ws';
+import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
 - onError(ctx, message, errors) {
 -   const messageId = message.id;
 -   const graphqlErrors: readonly GraphQLError[] = errors;
--   const messagePayload: readonly GraphQLFormattedError[] = message.payload;
+-   const errorMessagePayload: readonly GraphQLFormattedError[] = message.payload;
 - },
-+ onError(ctx, id, errors) {
++ onError(ctx, id, payload, errors) {
 +   const messageId = id;
 +   const graphqlErrors: readonly GraphQLError[] = errors;
-+   const messagePayload: readonly GraphQLFormattedError[] = errors.map((e) => e.toJSON());
++   const subscribeMessagePayload: SubscribePayload = payload;
++   const errorMessagePayload: readonly GraphQLFormattedError[] = errors.map((e) => e.toJSON());
 + },
 };
 ```
@@ -75,18 +112,19 @@ The `NextMessage.payload` (`FormattedExecutionResult`) is not useful here at all
 
 ```diff
 import { ExecutionResult, FormattedExecutionResult } from 'graphql';
-import { ServerOptions } from 'graphql-ws';
+import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
-- onNext(ctx, message, result) {
+- onNext(ctx, message, _args, result) {
 -   const messageId = message.id;
 -   const graphqlResult: ExecutionResult = result;
--   const messagePayload: FormattedExecutionResult = message.payload;
+-   const nextMessagePayload: FormattedExecutionResult = message.payload;
 - },
-+ onNext(ctx, id, result) {
++ onNext(ctx, id, payload, _args, result) {
 +   const messageId = id;
 +   const graphqlResult: ExecutionResult = result;
-+   const messagePayload: FormattedExecutionResult = { ...result, errors: result.errors?.map((e) => e.toJSON()) };
++   const subscribeMessagePayload: SubscribePayload = payload;
++   const nextMessagePayload: FormattedExecutionResult = { ...result, errors: result.errors?.map((e) => e.toJSON()) };
 + },
 };
 ```
@@ -94,14 +132,15 @@ const opts: ServerOptions = {
 #### `onComplete`
 
 ```diff
-import { ServerOptions } from 'graphql-ws';
+import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
 - onComplete(ctx, message) {
 -   const messageId = message.id;
 - },
-+ onComplete(ctx, id) {
++ onComplete(ctx, id, payload) {
 +   const messageId = id;
++   const subscribeMessagePayload: SubscribePayload = payload;
 + },
 };
 ```
