@@ -90,7 +90,21 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "graphql": "^15.10.1 || ^16.10.0"
+    "@fastify/websocket": "^10 || ^11",
+    "graphql": "^15.10.1 || ^16",
+    "uWebSockets.js": "^20",
+    "ws": "^8"
+  },
+  "peerDependenciesMeta": {
+    "@fastify/websocket": {
+      "optional": true
+    },
+    "uWebSockets.js": {
+      "optional": true
+    },
+    "ws": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
@@ -114,7 +128,7 @@
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "^4.4.1",
     "typescript": "^5.7.3",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.51.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#semver:^20.51.0",
     "vitest": "^2.1.8",
     "ws": "^8.18.0"
   },
