@@ -594,7 +594,7 @@ if (supported) {
 </html>
 ```
 
-Client usage in Node
+## Client usage in Node
 
 ```ts
 const ws = require('ws'); // yarn add ws
@@ -694,13 +694,11 @@ const unlisten = client.onReconnected(() => {
 });
 ```
 
-## Server usage with [ws](https://github.com/websockets/ws)
+## Server usage with manual implementation of [ws](https://github.com/websockets/ws)
 
 ```ts
-// minimal version of `import { useServer } from 'graphql-ws/use/ws';`
+// minimal version of `useServer` from `graphql-ws/use/ws`
 
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { CloseCode, makeServer } from 'graphql-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -753,11 +751,9 @@ wsServer.on('connection', (socket, request) => {
 ## Server usage with [ws](https://github.com/websockets/ws) and custom auth handling
 
 ```ts
-// check extended implementation at `{ useServer } from 'graphql-ws/use/ws'`
+// check extended implementation at `useServer` from `graphql-ws/use/ws`
 
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { CloseCode, makeServer } from 'graphql-ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -847,8 +843,6 @@ wsServer.on('connection', (socket, request) => {
 ## Server usage with [ws](https://github.com/websockets/ws) and subprotocol pings and pongs
 
 ```ts
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import {
   CloseCode,
   makeServer,
@@ -959,20 +953,20 @@ useServer(
   {
     execute: (args: any) => args.rootValue.execute(args),
     subscribe: (args: any) => args.rootValue.subscribe(args),
-    onSubscribe: async (ctx, msg) => {
+    onSubscribe: async (ctx, _id, payload) => {
       const { schema, execute, subscribe, contextFactory, parse, validate } =
         yoga.getEnveloped({
           ...ctx,
           req: ctx.extra.request,
           socket: ctx.extra.socket,
-          params: msg.payload,
+          params: payload,
         });
 
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
         contextValue: await contextFactory(),
         rootValue: {
           execute,
@@ -996,8 +990,6 @@ server.listen(4000, () => {
 ## [ws](https://github.com/websockets/ws) server usage with [Express GraphQL](https://github.com/graphql/express-graphql)
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import { useServer } from 'graphql-ws/use/ws';
@@ -1156,8 +1148,6 @@ fastify.listen(4000, (err) => {
 
 ```ts
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { execute, subscribe } from 'graphql';
 import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from 'graphql-ws';
 import { useServer } from 'graphql-ws/use/ws';
@@ -1215,8 +1205,6 @@ server.listen(4000);
 ## [ws](https://github.com/websockets/ws) server usage with console logging
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1233,17 +1221,17 @@ useServer(
     onConnect: (ctx) => {
       console.log('Connect', ctx);
     },
-    onSubscribe: (ctx, msg) => {
-      console.log('Subscribe', { ctx, msg });
+    onSubscribe: (ctx, id, payload) => {
+      console.log('Subscribe', { ctx, id, payload });
     },
-    onNext: (ctx, msg, args, result) => {
-      console.debug('Next', { ctx, msg, args, result });
+    onNext: (ctx, id, args, result) => {
+      console.debug('Next', { ctx, id, args, result });
     },
-    onError: (ctx, msg, errors) => {
-      console.error('Error', { ctx, msg, errors });
+    onError: (ctx, id, errors) => {
+      console.error('Error', { ctx, id, errors });
     },
-    onComplete: (ctx, msg) => {
-      console.log('Complete', { ctx, msg });
+    onComplete: (ctx, id) => {
+      console.log('Complete', { ctx, id });
     },
   },
   wsServer,
@@ -1254,8 +1242,6 @@ useServer(
 
 ```typescript
 import http from 'http';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import url from 'url';
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
@@ -1308,8 +1294,6 @@ server.listen(4000);
 ## [ws](https://github.com/websockets/ws) server usage with custom context value
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1322,8 +1306,8 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    context: (ctx, msg, args) => {
-      return getDynamicContext(ctx, msg, args);
+    context: (ctx, id, args) => {
+      return getDynamicContext(ctx, id, args);
     }, // or static context by supplying the value direcly
     schema,
   },
@@ -1334,8 +1318,6 @@ useServer(
 ## [ws](https://github.com/websockets/ws) server usage with dynamic schema
 
 ```typescript
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1348,14 +1330,14 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    schema: async (ctx, msg, executionArgsWithoutSchema) => {
+    schema: async (ctx, id, executionArgsWithoutSchema) => {
       // will be called on every subscribe request
       // allowing you to dynamically supply the schema
       // using the depending on the provided arguments.
       // throwing an error here closes the socket with
       // the `Error` message in the close event reason
       const isAdmin = await checkIsAdmin(ctx.request);
-      if (isAdmin) return getDebugSchema(ctx, msg, executionArgsWithoutSchema);
+      if (isAdmin) return getDebugSchema(ctx, id, executionArgsWithoutSchema);
       return schema;
     },
   },
@@ -1367,8 +1349,6 @@ useServer(
 
 ```typescript
 import { validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1392,8 +1372,6 @@ useServer(
 
 ```typescript
 import { parse, validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1406,12 +1384,12 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (ctx, msg) => {
+    onSubscribe: (ctx, _id, payload) => {
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
       };
 
       // dont forget to validate when returning custom execution args!
@@ -1427,58 +1405,10 @@ useServer(
 );
 ```
 
-## [ws](https://github.com/websockets/ws) server usage with custom subscribe method that gracefully handles thrown errors
-
-`graphql-js` does not catch errors thrown from async iterables ([see issue](https://github.com/graphql/graphql-js/issues/4001)). This will bubble the error to the WebSocket server and abruptly exit the process because no error should be uncaught.
-
-Note that `graphql-ws` will NOT offer built-in handling of internal errors because there's no one-glove-fits-all. Errors are important and should be handled with care, exactly to the needs of the user - not the library author.
-
-Therefore, you may instead implement your own `subscribe` function that gracefully handles thrown errors.
-
-```typescript
-import { subscribe } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
-import { useServer } from 'graphql-ws/use/ws';
-import { WebSocketServer } from 'ws'; // yarn add ws
-
-import { myValidationRules, schema } from './my-graphql';
-
-const wsServer = new WebSocketServer({
-  port: 4000,
-  path: '/graphql',
-});
-
-useServer(
-  {
-    schema,
-    async subscribe(...args) {
-      const result = await subscribe(...args);
-      if ('next' in result) {
-        // is an async iterable, augment the next method to handle thrown errors
-        const originalNext = result.next;
-        result.next = async () => {
-          try {
-            return await originalNext();
-          } catch (err) {
-            // gracefully handle the error thrown from the next method
-            return { value: { errors: [err] } };
-          }
-        };
-      }
-      return result;
-    },
-  },
-  wsServer,
-);
-```
-
 ## [ws](https://github.com/websockets/ws) server usage accepting only subscription operations
 
 ```typescript
 import { getOperationAST, GraphQLError, parse, validate } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1491,13 +1421,13 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (_ctx, msg) => {
+    onSubscribe: (_ctx, _id, payload) => {
       // construct the execution arguments
       const args = {
         schema,
-        operationName: msg.payload.operationName,
-        document: parse(msg.payload.query),
-        variableValues: msg.payload.variables,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
       };
 
       const operationAST = getOperationAST(args.document, args.operationName);
@@ -1536,8 +1466,6 @@ useServer(
 // 🛸 server
 
 import { ExecutionArgs, parse } from 'graphql';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1562,13 +1490,12 @@ const wsServer = new WebSocketServer({
 
 useServer(
   {
-    onSubscribe: (_ctx, msg) => {
-      const persistedQuery =
-        queriesStore[msg.payload.extensions?.persistedQuery];
+    onSubscribe: (_ctx, _id, payload) => {
+      const persistedQuery = queriesStore[payload.extensions?.persistedQuery];
       if (persistedQuery) {
         return {
           ...persistedQuery,
-          variableValues: msg.payload.variables, // use the variables from the client
+          variableValues: payload.variables, // use the variables from the client
         };
       }
 
@@ -1622,8 +1549,6 @@ const client = createClient({
 // 🛸 server
 
 import { CloseCode } from 'graphql-ws';
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws'; // yarn add ws
 
@@ -1720,8 +1645,6 @@ const client = createClient({
 ```ts
 // 🛸 server
 
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { MessageType, stringifyMessage } from 'graphql-ws';
 import { useServer } from 'graphql-ws/use/ws';
 import { WebSocketServer } from 'ws';
@@ -1740,11 +1663,11 @@ useServer<undefined, { ackWaiters: Record<string, () => void> }>(
       // intentionally in context extra to avoid memory leaks when clients disconnect
       ctx.extra.ackWaiters = {};
     },
-    onSubscribe: (ctx, msg) => {
-      const ackId = msg.payload.extensions?.ackId;
+    onSubscribe: (ctx, id, payload) => {
+      const ackId = payload.extensions?.ackId;
       if (typeof ackId === 'string') {
         // if acknowledgment ID is present, create an acknowledger that will be executed when operation succeeds
-        ctx.extra.ackWaiters![msg.id] = () => {
+        ctx.extra.ackWaiters![id] = () => {
           ctx.extra.socket.send(
             stringifyMessage({
               type: MessageType.Ping,
@@ -1756,10 +1679,10 @@ useServer<undefined, { ackWaiters: Record<string, () => void> }>(
         };
       }
     },
-    onOperation: (ctx, msg) => {
+    onOperation: (ctx, id) => {
       // acknowledge operation success and remove waiter
-      ctx.extra.ackWaiters![msg.id]?.();
-      delete ctx.extra.ackWaiters![msg.id];
+      ctx.extra.ackWaiters![id]?.();
+      delete ctx.extra.ackWaiters![id];
     },
   },
   wsServer,
