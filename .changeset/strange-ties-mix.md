@@ -15,10 +15,11 @@ Additionally, the `onOperation`, `onError`, `onNext` and `onComplete` now have t
 #### `schema`
 
 ```diff
+import { ExecutionArgs } from 'graphql';
 import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
-- schema(ctx, message) {
+- schema(ctx, message, argsWithoutSchema: Omit<ExecutionArgs, 'schema'>) {
 -   const messageId = message.id;
 -   const messagePayload: SubscribePayload = message.payload;
 - },
@@ -32,14 +33,15 @@ const opts: ServerOptions = {
 #### `context`
 
 ```diff
+import { ExecutionArgs } from 'graphql';
 import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
-- context(ctx, message) {
+- context(ctx, message, args: ExecutionArgs) {
 -   const messageId = message.id;
 -   const messagePayload: SubscribePayload = message.payload;
 - },
-+ context(ctx, id, payload) {
++ context(ctx, id, payload, args: ExecutionArgs) {
 +   const messageId = id;
 +   const messagePayload: SubscribePayload = payload;
 + },
@@ -69,14 +71,14 @@ The `SubscribeMessage.payload` is not useful here at all, the `payload` has been
 
 ```diff
 import { ExecutionArgs } from 'graphql';
-import { ServerOptions, SubscribePayload } from 'graphql-ws';
+import { ServerOptions, SubscribePayload, OperationResult } from 'graphql-ws';
 
 const opts: ServerOptions = {
-- onOperation(ctx, message) {
+- onOperation(ctx, message, args: ExecutionArgs, result: OperationResult) {
 -   const messageId = message.id;
 -   const messagePayload: SubscribePayload = message.payload;
 - },
-+ onOperation(ctx, id, payload) {
++ onOperation(ctx, id, payload, args: ExecutionArgs, result: OperationResult) {
 +   const messageId = id;
 +   const messagePayload: SubscribePayload = payload;
 + },
@@ -111,18 +113,16 @@ const opts: ServerOptions = {
 The `NextMessage.payload` (`FormattedExecutionResult`) is not useful here at all, the user has access to `ExecutionResult` that contains actual object references to error instances. The user can always convert and return `FormattedExecutionResult` by serialising the errors with `GraphQLError.toJSON()` method.
 
 ```diff
-import { ExecutionResult, FormattedExecutionResult } from 'graphql';
+import { ExecutionArgs, ExecutionResult, FormattedExecutionResult } from 'graphql';
 import { ServerOptions, SubscribePayload } from 'graphql-ws';
 
 const opts: ServerOptions = {
-- onNext(ctx, message, _args, result) {
+- onNext(ctx, message, args: ExecutionArgs, result: ExecutionResult) {
 -   const messageId = message.id;
--   const graphqlResult: ExecutionResult = result;
 -   const nextMessagePayload: FormattedExecutionResult = message.payload;
 - },
-+ onNext(ctx, id, payload, _args, result) {
++ onNext(ctx, id, payload, args: ExecutionArgs, result: ExecutionResult) {
 +   const messageId = id;
-+   const graphqlResult: ExecutionResult = result;
 +   const subscribeMessagePayload: SubscribePayload = payload;
 +   const nextMessagePayload: FormattedExecutionResult = { ...result, errors: result.errors?.map((e) => e.toJSON()) };
 + },
