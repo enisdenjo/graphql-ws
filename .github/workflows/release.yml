@@ -26,6 +26,8 @@ jobs:
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
     with:
       node-version-file: .node-version
+      releaseScript: changeset publish
+      versionScript: changeset version
     secrets:
       githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}
