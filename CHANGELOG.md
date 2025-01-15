@@ -1,5 +1,369 @@
 # graphql-ws
 
+## 6.0.0
+
+### Major Changes
+
+- [`b668b30`](https://github.com/enisdenjo/graphql-ws/commit/b668b304a8a49833c33470ae2ecaaec0e1fea466) Thanks [@enisdenjo](https://github.com/enisdenjo)! - @fastify/websocket WebSocket in the context extra has been renamed from `connection` to `socket`
+
+  ### Migrating from v5 to v6
+
+  ```diff
+  import { makeHandler } from 'graphql-ws/use/@fastify/websocket';
+
+  makeHandler({
+    schema(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    context(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onConnect(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onDisconnect(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onClose(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onSubscribe(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onOperation(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onError(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onNext(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+    onComplete(ctx) {
+  -   const websocket = ctx.connection;
+  +   const websocket = ctx.socket;
+    },
+  });
+  ```
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Drop support for `ws` v7
+
+  `ws` v7 has been deprecated. Please upgrade and use v8.
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Drop support for deprecated `fastify-websocket`
+
+  [`fastify-websocket` has been deprecated since v4.3.0.](https://www.npmjs.com/package/fastify-websocket). Please upgrade and use [`@fastify/websocket`](https://github.com/fastify/fastify-websocket).
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - The `/lib/` part from imports has been removed, for example `graphql-ws/lib/use/ws` becomes `graphql-ws/use/ws`
+
+  ### Migrating from v5 to v6
+
+  Simply remove the `/lib/` part from your graphql-ws imports that use a handler.
+
+  #### ws
+
+  ```diff
+  - import { useServer } from 'graphql-ws/lib/use/ws';
+  + import { useServer } from 'graphql-ws/use/ws';
+  ```
+
+  #### uWebSockets.js
+
+  ```diff
+  - import { makeBehavior } from 'graphql-ws/lib/use/uWebSockets';
+  + import { makeBehavior } from 'graphql-ws/use/uWebSockets';
+  ```
+
+  #### @fastify/websocket
+
+  ```diff
+  - import { makeHandler } from 'graphql-ws/lib/use/@fastify/websocket';
+  + import { makeHandler } from 'graphql-ws/use/@fastify/websocket';
+  ```
+
+  #### Bun
+
+  ```diff
+  - import { handleProtocols, makeHandler } from 'graphql-ws/lib/use/bun';
+  + import { handleProtocols, makeHandler } from 'graphql-ws/use/bun';
+  ```
+
+  #### Deno
+
+  ```diff
+  - import { makeHandler } from 'https://esm.sh/graphql-ws/lib/use/deno';
+  + import { makeHandler } from 'https://esm.sh/graphql-ws/use/deno';
+  ```
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - `ErrorMessage` uses and `onError` returns `GraphQLFormattedError` (instead of `GraphQLError`)
+
+  Thanks @benjie for working on this in #599
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Least supported Node version is v20
+
+  Node v10 has been deprecated for years now. There is no reason to support it. Bumping the engine to the current LTS (v20) also allows the code to be leaner and use less polyfills.
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Least supported `graphql` peer dependency is ^15.10.1 and ^16
+
+  Users are advised to use the latest of `graphql` because of various improvements in performance and security.
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - `NextMessage` uses and `onNext` returns `FormattedExecutionResult` (instead of `ExecutionResult`)
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - `schema`, `context`, `onSubscribe`, `onOperation`, `onError`, `onNext` and `onComplete` hooks don't have the full accompanying message anymore, only the ID and the relevant part from the message
+
+  There is really no need to pass the full `SubscribeMessage` to the `onSubscribe` hook. The only relevant parts from the message are the `id` and the `payload`, the `type` is useless since the hook inherently has it (`onNext` is `next` type, `onError` is `error` type, etc).
+
+  The actual techincal reason for not having the full message is to avoid serialising results and errors twice. Both `onNext` and `onError` allow the user to augment the result and return it to be used instead. `onNext` originally had the `NextMessage` argument which already has the `FormattedExecutionResult`, and `onError` originally had the `ErrorMessage` argument which already has the `GraphQLFormattedError`, and they both also returned `FormattedExecutionResult` and `GraphQLFormattedError` respectivelly - meaning, if the user serialised the results - the serialisation would happen **twice**.
+
+  Additionally, the `onOperation`, `onError`, `onNext` and `onComplete` now have the `payload` which is the `SubscribeMessage.payload` (`SubscribePayload`) for easier access to the original query as well as execution params extensions.
+
+  ### Migrating from v5 to v6
+
+  #### `schema`
+
+  ```diff
+  import { ExecutionArgs } from 'graphql';
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - schema(ctx, message, argsWithoutSchema: Omit<ExecutionArgs, 'schema'>) {
+  -   const messageId = message.id;
+  -   const messagePayload: SubscribePayload = message.payload;
+  - },
+  + schema(ctx, id, payload) {
+  +   const messageId = id;
+  +   const messagePayload: SubscribePayload = payload;
+  + },
+  };
+  ```
+
+  #### `context`
+
+  ```diff
+  import { ExecutionArgs } from 'graphql';
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - context(ctx, message, args: ExecutionArgs) {
+  -   const messageId = message.id;
+  -   const messagePayload: SubscribePayload = message.payload;
+  - },
+  + context(ctx, id, payload, args: ExecutionArgs) {
+  +   const messageId = id;
+  +   const messagePayload: SubscribePayload = payload;
+  + },
+  };
+  ```
+
+  #### `onSubscribe`
+
+  ```diff
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - onSubscribe(ctx, message) {
+  -   const messageId = message.id;
+  -   const messagePayload: SubscribePayload = message.payload;
+  - },
+  + onSubscribe(ctx, id, payload) {
+  +   const messageId = id;
+  +   const messagePayload: SubscribePayload = payload;
+  + },
+  };
+  ```
+
+  #### `onOperation`
+
+  The `SubscribeMessage.payload` is not useful here at all, the `payload` has been parsed to ready-to-use graphql execution args and should be used instead.
+
+  ```diff
+  import { ExecutionArgs } from 'graphql';
+  import { ServerOptions, SubscribePayload, OperationResult } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - onOperation(ctx, message, args: ExecutionArgs, result: OperationResult) {
+  -   const messageId = message.id;
+  -   const messagePayload: SubscribePayload = message.payload;
+  - },
+  + onOperation(ctx, id, payload, args: ExecutionArgs, result: OperationResult) {
+  +   const messageId = id;
+  +   const messagePayload: SubscribePayload = payload;
+  + },
+  };
+  ```
+
+  #### `onError`
+
+  The `ErrorMessage.payload` (`GraphQLFormattedError[]`) is not useful here at all, the user has access to `GraphQLError[]` that are true instances of the error containing object references to `originalError`s and other properties. The user can always convert and return `GraphQLFormattedError[]` by using the `.toJSON()` method.
+
+  ```diff
+  import { GraphQLError, GraphQLFormattedError } from 'graphql';
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - onError(ctx, message, errors) {
+  -   const messageId = message.id;
+  -   const graphqlErrors: readonly GraphQLError[] = errors;
+  -   const errorMessagePayload: readonly GraphQLFormattedError[] = message.payload;
+  - },
+  + onError(ctx, id, payload, errors) {
+  +   const messageId = id;
+  +   const graphqlErrors: readonly GraphQLError[] = errors;
+  +   const subscribeMessagePayload: SubscribePayload = payload;
+  +   const errorMessagePayload: readonly GraphQLFormattedError[] = errors.map((e) => e.toJSON());
+  + },
+  };
+  ```
+
+  #### `onNext`
+
+  The `NextMessage.payload` (`FormattedExecutionResult`) is not useful here at all, the user has access to `ExecutionResult` that contains actual object references to error instances. The user can always convert and return `FormattedExecutionResult` by serialising the errors with `GraphQLError.toJSON()` method.
+
+  ```diff
+  import { ExecutionArgs, ExecutionResult, FormattedExecutionResult } from 'graphql';
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - onNext(ctx, message, args: ExecutionArgs, result: ExecutionResult) {
+  -   const messageId = message.id;
+  -   const nextMessagePayload: FormattedExecutionResult = message.payload;
+  - },
+  + onNext(ctx, id, payload, args: ExecutionArgs, result: ExecutionResult) {
+  +   const messageId = id;
+  +   const subscribeMessagePayload: SubscribePayload = payload;
+  +   const nextMessagePayload: FormattedExecutionResult = { ...result, errors: result.errors?.map((e) => e.toJSON()) };
+  + },
+  };
+  ```
+
+  #### `onComplete`
+
+  ```diff
+  import { ServerOptions, SubscribePayload } from 'graphql-ws';
+
+  const opts: ServerOptions = {
+  - onComplete(ctx, message) {
+  -   const messageId = message.id;
+  - },
+  + onComplete(ctx, id, payload) {
+  +   const messageId = id;
+  +   const subscribeMessagePayload: SubscribePayload = payload;
+  + },
+  };
+  ```
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Errors thrown from subscription iterables will be caught and reported through the `ErrorMessage`
+
+  Compared to the behaviour before, which terminated the whole WebSocket connection - those errors are now gracefully reported and terminate only the specific subscription that threw the error.
+
+  There's been [an editorial change in the GraphQL Spec suggesting this being the correct approach](https://github.com/graphql/graphql-spec/pull/1099).
+
+  Also, if you'd like to get involved and ideally drop your opinion about whether iterable errors should be reported as errors or `ExecutionResult`s with `errors` field set, [please read more here](https://github.com/graphql/graphql-spec/pull/1127).
+
+  ### Migrating from v5 to v6
+
+  If you had used the suggested "ws server usage with custom subscribe method that gracefully handles thrown errors" recipe, you can simply remove it since this behaviour is now baked in.
+
+  ```diff
+  import { subscribe } from 'graphql';
+  import { useServer } from 'graphql-ws/use/ws';
+  import { WebSocketServer } from 'ws'; // yarn add ws
+
+  const wsServer = new WebSocketServer({
+    port: 4000,
+    path: '/graphql',
+  });
+
+  useServer(
+    {
+      schema,
+  -   async subscribe(...args) {
+  -     const result = await subscribe(...args);
+  -     if ('next' in result) {
+  -       // is an async iterable, augment the next method to handle thrown errors
+  -       const originalNext = result.next;
+  -       result.next = async () => {
+  -         try {
+  -           return await originalNext();
+  -         } catch (err) {
+  -           // gracefully handle the error thrown from the next method
+  -           return { value: { errors: [err] } };
+  -         }
+  -       };
+  -     }
+  -     return result;
+  -   },
+    },
+    wsServer,
+  );
+  ```
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Remove deprecated `isMessage`, use `validateMessage` instead
+
+  ### Migrating from v5 to v6
+
+  Replace all ocurrances of `isMessage` with `validateMessage`. Note that `validateMessage` throws if the message is not valid, compared with `isMessage` that simply returned true/false.
+
+  ```diff
+  - import { isMessage } from 'graphql-ws';
+  + import { validateMessage } from 'graphql-ws';
+
+  function isGraphQLWSMessage(val) {
+  - return isMessage(val);
+  + try {
+  +   validateMessage(val);
+  +   return true;
+  + } catch {
+  +   return false;
+  + }
+  }
+  ```
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Removed deprecated `isFatalConnectionProblem`, use `shouldRetry` instead
+
+  ### Migrating from v5 to v6
+
+  Replace all ocurrances of `isFatalConnectionProblem` with `shouldRetry`. Note that the result is inverted, where you returned `false` in `isFatalConnectionProblem` you should return `true` in `shouldRetry`.
+
+  ```diff
+  import { createClient } from 'graphql-ws';
+
+  const client = createClient({
+    url: 'ws://localhost:4000/graphql',
+  - isFatalConnectionProblem: () => false,
+  + shouldRetry: () => true,
+  });
+  ```
+
+### Minor Changes
+
+- [#613](https://github.com/enisdenjo/graphql-ws/pull/613) [`3f11aba`](https://github.com/enisdenjo/graphql-ws/commit/3f11aba49582e18e6c0608d75fd4b784fde11422) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Client is truly zero-dependency, not even a peer dependency on `graphql`
+
+  In non-browser environments, you can use only the client and not even depend on `graphql` by importing from `graphql-ws/client`.
+
+  ```ts
+  import { createClient } from 'graphql-ws/client';
+
+  const client = createClient({
+    url: 'ws://localhost:4000/graphql',
+  });
+  ```
+
+  Note that, in browser envirments (and of course having your bundler use the [`browser` package.json field](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#browser)), you don't have to import from `graphql-ws/client` - simply importing from `graphql-ws` will only have the `createClient` available.
+
+- [#615](https://github.com/enisdenjo/graphql-ws/pull/615) [`29dd26a`](https://github.com/enisdenjo/graphql-ws/commit/29dd26a5099be26ef6e851c2a047b0c85dd5bfe6) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Define optional peer dependencies and least supported versions
+
+  Using the [`peerDependencies`](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#peerdependencies) in combination with [`peerDependenciesMeta`](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#peerdependenciesmeta) configuration in `package.json`.
+
 ## 5.16.2
 
 ### Patch Changes
