@@ -1,6 +1,7 @@
 singleQuote: true
 plugins:
   - '@ianvs/prettier-plugin-sort-imports'
+  - prettier-plugin-pkg
   - prettier-plugin-sh
 importOrderParserPlugins:
   - typescript

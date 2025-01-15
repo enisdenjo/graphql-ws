@@ -1,8 +1,8 @@
 {
   "name": "graphql-ws",
   "version": "5.16.2",
-  "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "type": "module",
+  "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/enisdenjo/graphql-ws.git"
@@ -57,9 +57,6 @@
   },
   "browser": "./dist/client.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": [
-    "umd/*"
-  ],
   "files": [
     "LICENSE.md",
     "PROTOCOL.md",
@@ -83,14 +80,14 @@
     "uwebsockets"
   ],
   "scripts": {
+    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
     "changeset": "changeset",
     "check:format": "prettier --check .",
-    "format": "yarn check:format --write",
     "check:types": "tsc --noEmit",
-    "test": "vitest",
-    "build": "pkgroll --clean-dist && rollup -c rollup.config.js && gzip umd/graphql-ws.min.js -c > umd/graphql-ws.min.js.gz",
+    "format": "yarn check:format --write",
+    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.js",
     "prepack": "yarn build",
-    "gendocs": "typedoc --options typedoc.js src/ && node scripts/post-gendocs.js"
+    "test": "vitest"
   },
   "peerDependencies": {
     "graphql": "^15.10.1 || ^16.10.0"
@@ -111,6 +108,7 @@
     "jsdom": "^26.0.0",
     "pkgroll": "patch:pkgroll@npm%3A2.6.1#~/.yarn/patches/pkgroll-npm-2.6.1-193e78e84e.patch",
     "prettier": "^3.4.2",
+    "prettier-plugin-pkg": "^0.18.1",
     "prettier-plugin-sh": "^0.14.0",
     "rollup": "^4.30.1",
     "typedoc": "^0.27.6",
@@ -119,5 +117,8 @@
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.51.0",
     "vitest": "^2.1.8",
     "ws": "^8.18.0"
-  }
+  },
+  "sideEffects": [
+    "umd/*"
+  ]
 }
