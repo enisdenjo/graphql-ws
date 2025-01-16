@@ -17,41 +17,72 @@
   "main": "dist/index.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js",
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
       "browser": "./dist/client.js"
     },
     "./client": {
-      "types": "./dist/client.d.ts",
-      "require": "./dist/client.cjs",
-      "import": "./dist/client.js",
+      "require": {
+        "types": "./dist/client.d.cts",
+        "default": "./dist/client.cjs"
+      },
+      "import": {
+        "types": "./dist/client.d.ts",
+        "default": "./dist/client.js"
+      },
       "browser": "./dist/client.js"
     },
     "./use/ws": {
-      "types": "./dist/use/ws.d.ts",
-      "require": "./dist/use/ws.cjs",
-      "import": "./dist/use/ws.js"
+      "require": {
+        "types": "./dist/use/ws.d.cts",
+        "default": "./dist/use/ws.cjs"
+      },
+      "import": {
+        "types": "./dist/use/ws.d.ts",
+        "default": "./dist/use/ws.js"
+      }
     },
     "./use/uWebSockets": {
-      "types": "./dist/use/uWebSockets.d.ts",
-      "require": "./dist/use/uWebSockets.cjs",
-      "import": "./dist/use/uWebSockets.js"
+      "require": {
+        "types": "./dist/use/uWebSockets.d.cts",
+        "default": "./dist/use/uWebSockets.cjs"
+      },
+      "import": {
+        "types": "./dist/use/uWebSockets.d.ts",
+        "default": "./dist/use/uWebSockets.js"
+      }
     },
     "./use/@fastify/websocket": {
-      "types": "./dist/use/@fastify/websocket.d.ts",
-      "require": "./dist/use/@fastify/websocket.cjs",
-      "import": "./dist/use/@fastify/websocket.js"
+      "require": {
+        "types": "./dist/use/@fastify/websocket.d.cts",
+        "default": "./dist/use/@fastify/websocket.cjs"
+      },
+      "import": {
+        "types": "./dist/use/@fastify/websocket.d.ts",
+        "default": "./dist/use/@fastify/websocket.js"
+      }
     },
     "./use/bun": {
-      "types": "./dist/use/bun.d.ts",
-      "require": "./dist/use/bun.cjs",
-      "import": "./dist/use/bun.js"
+      "require": {
+        "types": "./dist/use/bun.d.cts",
+        "default": "./dist/use/bun.cjs"
+      },
+      "import": {
+        "types": "./dist/use/bun.d.ts",
+        "default": "./dist/use/bun.js"
+      }
     },
     "./use/deno": {
-      "types": "./dist/use/deno.d.ts",
-      "require": "./dist/use/deno.cjs",
-      "import": "./dist/use/deno.js"
+      "import": {
+        "types": "./dist/use/deno.d.ts",
+        "default": "./dist/use/deno.js"
+      }
     },
     "./package.json": "./package.json"
   },
