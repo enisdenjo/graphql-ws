@@ -1,5 +1,15 @@
 # graphql-ws
 
+## 6.0.1
+
+### Patch Changes
+
+- [#618](https://github.com/enisdenjo/graphql-ws/pull/618) [`6be34c7`](https://github.com/enisdenjo/graphql-ws/commit/6be34c7969d1dbf262f589c8812ff31bd8571c8f) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Remove exports for CommonJS for Deno exports in package.json
+
+  [Deno supports ECMAScript modules exclusively.](https://docs.deno.com/runtime/fundamentals/modules/)
+
+- [#618](https://github.com/enisdenjo/graphql-ws/pull/618) [`6be34c7`](https://github.com/enisdenjo/graphql-ws/commit/6be34c7969d1dbf262f589c8812ff31bd8571c8f) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Define exports for CommonJS TypeScript definitions in package.json
+
 ## 6.0.0
 
 ### Major Changes
