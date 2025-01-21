@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.0.2
+
+### Patch Changes
+
+- [#621](https://github.com/enisdenjo/graphql-ws/pull/621) [`6b180e8`](https://github.com/enisdenjo/graphql-ws/commit/6b180e8fc291aaada4df8906ba90ed333709513a) Thanks [@pleunv](https://github.com/pleunv)! - FormattedExecutionResult errors field returns GraphQLFormattedError
+
 ## 6.0.1
 
 ### Patch Changes
