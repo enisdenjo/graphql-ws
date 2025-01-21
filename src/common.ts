@@ -163,7 +163,7 @@ export interface FormattedExecutionResult<
   Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
 > {
-  errors?: ReadonlyArray<FormattedExecutionResult> | undefined;
+  errors?: ReadonlyArray<GraphQLFormattedError> | undefined;
   data?: Data | null | undefined;
   hasNext?: boolean | undefined;
   extensions?: Extensions | undefined;
