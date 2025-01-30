@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 6.0.3
+
+### Patch Changes
+
+- [`747c01c`](https://github.com/enisdenjo/graphql-ws/commit/747c01c73e9ca547edcbd17c8df2df3a98e8dbea) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Drop `ExecutionPatchResult` and `FormattedExecutionPatchResult` types
+
+  Neither of the types are officially supported (yet) and the future versions of graphql-js adding support for stream/defer will a different signature for the incremental execution result.
+
 ## 6.0.2
 
 ### Patch Changes
