@@ -21,9 +21,7 @@ import {
 import {
   CloseCode,
   ConnectionInitMessage,
-  ExecutionPatchResult,
   ExecutionResult,
-  FormattedExecutionPatchResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
   JSONMessageReplacer,
@@ -42,12 +40,12 @@ import { isAsyncGenerator, isAsyncIterable, isObject } from './utils';
 /** @category Server */
 export type OperationResult =
   | Promise<
-      | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
-      | AsyncIterable<ExecutionResult | ExecutionPatchResult>
+      | AsyncGenerator<ExecutionResult>
+      | AsyncIterable<ExecutionResult>
       | ExecutionResult
     >
-  | AsyncGenerator<ExecutionResult | ExecutionPatchResult>
-  | AsyncIterable<ExecutionResult | ExecutionPatchResult>
+  | AsyncGenerator<ExecutionResult>
+  | AsyncIterable<ExecutionResult>
   | ExecutionResult;
 
 /**
@@ -384,13 +382,10 @@ export interface ServerOptions<
         id: string,
         payload: SubscribePayload,
         args: ExecutionArgs,
-        result: ExecutionResult | ExecutionPatchResult,
+        result: ExecutionResult,
       ) =>
-        | Promise<
-            FormattedExecutionResult | FormattedExecutionPatchResult | void
-          >
+        | Promise<FormattedExecutionResult | void>
         | FormattedExecutionResult
-        | FormattedExecutionPatchResult
         | void);
   /**
    * The complete callback is executed after the
@@ -698,7 +693,7 @@ export function makeServer<
 
             const emit = {
               next: async (
-                result: ExecutionResult | ExecutionPatchResult,
+                result: ExecutionResult,
                 { id, payload }: SubscribeMessage,
                 args: ExecutionArgs,
               ) => {

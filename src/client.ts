@@ -9,7 +9,6 @@ import {
   ConnectionAckMessage,
   ConnectionInitMessage,
   Disposable,
-  FormattedExecutionPatchResult,
   FormattedExecutionResult,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   ID,
@@ -422,10 +421,7 @@ export interface Client extends Disposable {
    */
   subscribe<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-    sink: Sink<
-      | FormattedExecutionResult<Data, Extensions>
-      | FormattedExecutionPatchResult<Data, Extensions>
-    >,
+    sink: Sink<FormattedExecutionResult<Data, Extensions>>,
   ): () => void;
   /**
    * Subscribes and iterates over emitted results from the WebSocket
@@ -433,10 +429,7 @@ export interface Client extends Disposable {
    */
   iterate<Data = Record<string, unknown>, Extensions = unknown>(
     payload: SubscribePayload,
-  ): AsyncIterableIterator<
-    | FormattedExecutionResult<Data, Extensions>
-    | FormattedExecutionPatchResult<Data, Extensions>
-  >;
+  ): AsyncIterableIterator<FormattedExecutionResult<Data, Extensions>>;
   /**
    * Terminates the WebSocket abruptly and immediately.
    *

@@ -146,19 +146,6 @@ export interface ExecutionResult<
 }
 
 /** @category Common */
-export interface ExecutionPatchResult<
-  Data = unknown,
-  Extensions = Record<string, unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError> | undefined;
-  data?: Data | null | undefined;
-  path?: ReadonlyArray<string | number> | undefined;
-  label?: string | undefined;
-  hasNext: boolean;
-  extensions?: Extensions | undefined;
-}
-
-/** @category Common */
 export interface FormattedExecutionResult<
   Data = Record<string, unknown>,
   Extensions = Record<string, unknown>,
@@ -170,23 +157,10 @@ export interface FormattedExecutionResult<
 }
 
 /** @category Common */
-export interface FormattedExecutionPatchResult<
-  Data = unknown,
-  Extensions = Record<string, unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError> | undefined;
-  data?: Data | null | undefined;
-  path?: ReadonlyArray<string | number> | undefined;
-  label?: string | undefined;
-  hasNext: boolean;
-  extensions?: Extensions | undefined;
-}
-
-/** @category Common */
 export interface NextMessage {
   readonly id: ID;
   readonly type: MessageType.Next;
-  readonly payload: FormattedExecutionResult | FormattedExecutionPatchResult;
+  readonly payload: FormattedExecutionResult;
 }
 
 /** @category Common */
