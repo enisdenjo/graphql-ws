@@ -464,14 +464,11 @@ export function createClient<
     connectionAckWaitTimeout = 0,
     retryAttempts = 5,
     retryWait = async function randomisedExponentialBackoff(retries) {
-      let retryDelay = 1000; // start with 1s delay
-      for (let i = 0; i < retries; i++) {
-        retryDelay *= 2;
-      }
+      const retryDelaySeconds = Math.pow(2, retries);
       await new Promise((resolve) =>
         setTimeout(
           resolve,
-          retryDelay +
+          retryDelaySeconds * 1000 +
             // add random timeout from 300ms to 3s
             Math.floor(Math.random() * (3000 - 300) + 300),
         ),
