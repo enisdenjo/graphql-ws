@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.0.4
+
+### Patch Changes
+
+- [#625](https://github.com/enisdenjo/graphql-ws/pull/625) [`b4a656d`](https://github.com/enisdenjo/graphql-ws/commit/b4a656d585827f4e6888eadac1e824c7dcb4ffd0) Thanks [@HermanBilous](https://github.com/HermanBilous)! - Use Math.pow for retry delay calculation
+
 ## 6.0.3
 
 ### Patch Changes
