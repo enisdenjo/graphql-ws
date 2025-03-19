@@ -1,0 +1,112 @@
+import { defineHooks, type Peer } from 'crossws';
+import { CloseCode, type ConnectionInitMessage } from '../common';
+import { handleProtocols, makeServer, type ServerOptions } from '../server';
+import { limitCloseReason } from '../utils';
+import type { Extra } from './bun';
+
+export function makeHooks<
+  P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
+  E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
+>(options: ServerOptions<P, Extra & Partial<E>> & { isProd?: boolean }) {
+  const isProd =
+    typeof options.isProd === 'boolean'
+      ? options.isProd
+      : process.env.NODE_ENV === 'production';
+  const server = makeServer(options);
+
+  interface Client {
+    handleMessage: (data: string) => Promise<void>;
+    closed: (code: number, reason: string) => Promise<void>;
+  }
+
+  // type Peer = Parameters<
+  //   NonNullable<Parameters<typeof defineHooks>[0]['open']>
+  // >[0];
+  const clients = new WeakMap<any, Client>();
+
+  return defineHooks({
+    upgrade(req) {
+      req.context['sec-websocket-protocol'] = req.headers.get(
+        'sec-websocket-protocol',
+      );
+    },
+    open(peer) {
+      const client: Client = {
+        handleMessage: () => {
+          throw new Error('Message received before handler was registered');
+        },
+        closed: () => {
+          throw new Error('Closed before handler was registered');
+        },
+      };
+
+      client.closed = server.opened(
+        {
+          protocol:
+            handleProtocols(
+              (peer.context['sec-websocket-protocol'] as string | null) || '',
+            ) || '',
+          send: async (message) => {
+            // ws might have been destroyed in the meantime, send only if exists
+            if (clients.has(peer)) {
+              peer.send(message);
+            }
+          },
+          close: (code, reason) => {
+            if (clients.has(peer)) {
+              peer.close(code, reason);
+            }
+          },
+          onMessage: (cb) => {
+            client.handleMessage = cb;
+            return cb;
+          },
+        },
+        { socket: peer.websocket } as Extra & Partial<E>,
+      );
+
+      clients.set(peer, client);
+    },
+    async message(peer, message) {
+      const client = clients.get(peer);
+      if (!client) throw new Error('Message received for a missing client');
+
+      try {
+        await client.handleMessage(message.text());
+      } catch (err) {
+        console.error(
+          'Internal error occurred during message handling. ' +
+            'Please check your implementation.',
+          err,
+        );
+        peer.close(
+          CloseCode.InternalServerError,
+          isProd
+            ? 'Internal server error'
+            : limitCloseReason(
+                err instanceof Error ? err.message : String(err),
+                'Internal server error',
+              ),
+        );
+      }
+    },
+    close(peer, details) {
+      const client = clients.get(peer);
+      if (!client) throw new Error('Closing a missing client');
+
+      client.closed(
+        details?.code ?? 1000,
+        details.reason || 'Connection closed',
+      );
+      clients.delete(peer);
+    },
+    error(peer, error) {
+      console.error(
+        'Internal error emitted on the WebSocket socket. ' +
+          'Please check your implementation.',
+        error,
+      );
+      peer.close(CloseCode.InternalServerError, 'Internal server error');
+    },
+  });
+}
