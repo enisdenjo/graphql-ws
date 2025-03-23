@@ -15,6 +15,8 @@ import {
   Extra as UWSExtra,
 } from '../../src/use/uWebSockets';
 import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
+import { makeHooks as makeCrossWSHooks, Extra as CrossWSExtra } from '../../src/use/crossws';
+import crossws from "crossws/adapters/node";
 import { isObject } from '../../src/utils';
 import { pong, schema } from '../fixtures/simple';
 
@@ -716,6 +718,217 @@ export async function startFastifyWSTServer(
   };
 }
 
+export async function startCrosswsServer(
+  options: Partial<ServerOptions> = {},
+): Promise<TServer> {
+  const path = '/simple';
+  const emitter = new EventEmitter();
+  const port = await getAvailablePort();
+  const wsServer = new WebSocketServer({ port, path });
+
+  // sockets to kick off on teardown
+  const sockets = new Set<ws>();
+  wsServer.on('connection', (socket) => {
+    sockets.add(socket);
+    socket.once('close', () => sockets.delete(socket));
+  });
+
+  const pendingConnections: Context<any, CrossWSExtra>[] = [];
+  let pendingOperations = 0;
+  let pendingCompletes = 0;
+
+  const hooks = makeCrossWSHooks({
+    schema,
+    ...options,
+    onConnect: async (...args) => {
+      pendingConnections.push(args[0]);
+      const permitted = await options?.onConnect?.(...args);
+      emitter.emit('conn');
+      return permitted;
+    },
+    onOperation: async (ctx, id, msg, args, result) => {
+      pendingOperations++;
+      const maybeResult = await options?.onOperation?.(
+        ctx,
+        id,
+        msg,
+        args,
+        result,
+      );
+      emitter.emit('operation');
+      return maybeResult;
+    },
+    onComplete: async (...args) => {
+      pendingCompletes++;
+      await options?.onComplete?.(...args);
+      emitter.emit('compl');
+    },
+  });
+
+  const server = crossws({
+    hooks,
+  });
+
+  let disposed = false;
+  const dispose: Dispose = (beNice) => {
+    return new Promise((resolve, reject) => {
+      if (disposed) return resolve();
+      disposed = true;
+      if (!beNice)
+        for (const socket of sockets) {
+          socket.terminate();
+          sockets.delete(socket);
+        }
+      const disposing = server.dispose() as Promise<void>;
+      disposing.catch(reject).then(() => {
+        wsServer.close(() => {
+          resolve();
+        });
+      });
+    });
+  };
+  leftovers.push(dispose);
+
+  // pending websocket clients
+  let pendingCloses = 0;
+  const pendingClients: TServerClient[] = [];
+  wsServer.on('connection', (client) => {
+    pendingClients.push(toClient(client));
+    client.once('close', () => {
+      pendingCloses++;
+      emitter.emit('close');
+    });
+  });
+
+  function toClient(socket: ws): TServerClient {
+    return {
+      socket,
+      send: (data) => socket.send(data),
+      onMessage: (cb) => {
+        const listener = (data: unknown) => cb(String(data));
+        socket.on('message', listener);
+        return () => socket.off('message', listener);
+      },
+      close: (...args) => socket.close(...args),
+    };
+  }
+
+  return {
+    url: `ws://localhost:${port}${path}`,
+    server: wsServer,
+    getClients() {
+      return Array.from(wsServer.clients, toClient);
+    },
+    waitForClient(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const client = pendingClients.shift()!;
+          try {
+            test?.(client);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingClients.length > 0) return done();
+        wsServer.once('connection', done);
+        if (expire)
+          setTimeout(() => {
+            wsServer.off('connection', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForClientClose(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          pendingCloses--;
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingCloses > 0) return done();
+
+        emitter.once('close', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('close', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    pong,
+    waitForConnect(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const ctx = pendingConnections.shift()!;
+          try {
+            test?.(ctx);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingConnections.length > 0) return done();
+        emitter.once('conn', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('conn', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForOperation(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          pendingOperations--;
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingOperations > 0) return done();
+        emitter.once('operation', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForComplete(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          pendingCompletes--;
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingCompletes > 0) return done();
+        emitter.once('compl', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('compl', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    dispose,
+  };
+}
+
 export const tServers = [
   {
     tServer: 'ws' as const,
@@ -747,4 +960,18 @@ export const tServers = [
     itForUWS: it.skip,
     itForFastify: it,
   },
+  {
+    tServer: 'crossws' as const,
+    startTServer: startCrosswsServer,
+    // ???
+    skipWS: it,
+    skipUWS: it,
+    skipFastify: it,
+    skipCrossws: it.skip,
+    itForWS: it,
+    itForUWS: it,
+    itForFastify: it,
+    itForCrossws: it,
+  },
 ];
+

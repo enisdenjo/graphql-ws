@@ -2,7 +2,18 @@ import { defineHooks, type Peer } from 'crossws';
 import { CloseCode, type ConnectionInitMessage } from '../common';
 import { handleProtocols, makeServer, type ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
-import type { Extra } from './bun';
+
+/**
+ * The extra that will be put in the `Context`.
+ *
+ * @category Server/bun
+ */
+export interface Extra {
+  /**
+   * The actual socket connection between the server and the client.
+   */
+  readonly socket: Peer['websocket'];
+}
 
 export function makeHooks<
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
@@ -19,10 +30,7 @@ export function makeHooks<
     closed: (code: number, reason: string) => Promise<void>;
   }
 
-  // type Peer = Parameters<
-  //   NonNullable<Parameters<typeof defineHooks>[0]['open']>
-  // >[0];
-  const clients = new WeakMap<any, Client>();
+  const clients = new WeakMap<Peer, Client>();
 
   return defineHooks({
     upgrade(req) {
