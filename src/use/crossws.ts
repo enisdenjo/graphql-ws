@@ -85,7 +85,6 @@ export function makeHooks<
 
   return defineHooks<Partial<Hooks>>({
     open(peer) {
-      console.log('opening');
       const client: Client = {
         handleIncomingMessage: () => {
           throw new Error('Message received before handler was registered');
@@ -102,15 +101,9 @@ export function makeHooks<
             ) || '',
 
           send: async (message) => {
-            console.log(clients);
-
             // ws might have been destroyed in the meantime, send only if exists
             if (clients.has(peer)) {
-              console.log('has client');
-
               peer.send(message);
-            } else {
-              console.log('doesnt have client');
             }
           },
           close: (code, reason) => {
@@ -118,8 +111,8 @@ export function makeHooks<
               peer.close(code, reason);
             }
           },
-          onMessage: (handleIncoming) => {
-            client.handleIncomingMessage = handleIncoming;
+          onMessage: (cb) => {
+            client.handleIncomingMessage = cb;
           },
         },
         { socket: peer.websocket } as Extra & Partial<E>,
@@ -128,8 +121,6 @@ export function makeHooks<
       clients.set(peer, client);
     },
     async message(peer, message) {
-      console.log('got message');
-
       const client = clients.get(peer);
       if (!client) throw new Error('Message received for a missing client');
 
