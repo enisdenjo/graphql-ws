@@ -1,4 +1,4 @@
-import { defineHooks, type Peer } from 'crossws';
+import { defineHooks, type Message, type WSError, type Peer } from 'crossws';
 import { CloseCode, type ConnectionInitMessage } from '../common';
 import { handleProtocols, makeServer, type ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
@@ -13,6 +13,36 @@ export interface Extra {
    * The actual socket connection between the server and the client.
    */
   readonly socket: Peer['websocket'];
+}
+
+// TODO: Wait for https://github.com/unjs/crossws/pull/149 to merge
+type UpgradeRequest = Request | {
+  url: string;
+  headers: Headers;
+};
+type MaybePromise<T> = T | Promise<T>;
+
+interface Hooks {
+    /** Upgrading */
+    /**
+     *
+     * @param request
+     * @throws {Response}
+     */
+    upgrade: (request: UpgradeRequest & {
+        context: Peer["context"];
+    }) => MaybePromise<Response | ResponseInit | void>;
+    /** A message is received */
+    message: (peer: Peer, message: Message) => MaybePromise<void>;
+    /** A socket is opened */
+    open: (peer: Peer) => MaybePromise<void>;
+    /** A socket is closed */
+    close: (peer: Peer, details: {
+        code?: number;
+        reason?: string;
+    }) => MaybePromise<void>;
+    /** An error occurs */
+    error: (peer: Peer, error: WSError) => MaybePromise<void>;
 }
 
 export function makeHooks<
@@ -32,12 +62,7 @@ export function makeHooks<
 
   const clients = new WeakMap<Peer, Client>();
 
-  return defineHooks({
-    upgrade(req) {
-      req.context['sec-websocket-protocol'] = req.headers.get(
-        'sec-websocket-protocol',
-      );
-    },
+  return defineHooks<Partial<Hooks>>({
     open(peer) {
       const client: Client = {
         handleMessage: () => {
@@ -52,7 +77,7 @@ export function makeHooks<
         {
           protocol:
             handleProtocols(
-              (peer.context['sec-websocket-protocol'] as string | null) || '',
+              peer.request.headers.get('sec-websocket-protocol') ?? '',
             ) || '',
           send: async (message) => {
             // ws might have been destroyed in the meantime, send only if exists
