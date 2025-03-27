@@ -12,7 +12,7 @@ import {
   makeHandler as makeFastifyHandler,
   type Extra as FastifyExtra,
 } from '../../src/use/@fastify/websocket';
-import { makeHooks } from '../../src/use/crossws';
+import { makeHooks, type Extra as CrossWsExtra } from '../../src/use/crossws';
 import {
   makeBehavior as makeUWSBehavior,
   type Extra as UWSExtra,
@@ -51,7 +51,7 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<any, WSExtra | UWSExtra | FastifyExtra>) => void,
+    test?: (ctx: Context<any, WSExtra | UWSExtra | FastifyExtra | CrossWsExtra>) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;

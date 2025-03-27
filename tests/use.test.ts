@@ -1,22 +1,23 @@
-import http from 'http';
-import { setTimeout } from 'timers/promises';
+import http from 'node:http';
+import { setTimeout } from 'node:timers/promises';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import ws from 'ws';
+import type { Extra as CrossWsExtra } from '../src/use/crossws';
 import {
   CloseCode,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
   MessageType,
   parseMessage,
   stringifyMessage,
-  SubscribePayload,
+  type SubscribePayload,
 } from '../src/common';
 import {
   createTClient,
-  FastifyExtra,
-  TClient,
   tServers,
-  UWSExtra,
-  WSExtra,
+  type FastifyExtra,
+  type TClient,
+  type UWSExtra,
+  type WSExtra,
 } from './utils';
 import { createDeferred } from './utils/deferred';
 
@@ -148,6 +149,8 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
             expect((ctx.extra as FastifyExtra).request.constructor.name).toBe(
               '_Request',
             );
+          } else if (tServer === 'crossws') {
+            expect((ctx.extra as CrossWsExtra).socket).toBeDefined();
           } else {
             throw new Error('Missing test case for ' + tServer);
           }
