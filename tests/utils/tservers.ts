@@ -51,7 +51,9 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<any, WSExtra | UWSExtra | FastifyExtra | CrossWsExtra>) => void,
+    test?: (
+      ctx: Context<any, WSExtra | UWSExtra | FastifyExtra | CrossWsExtra>,
+    ) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;

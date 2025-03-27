@@ -2,7 +2,6 @@ import http from 'node:http';
 import { setTimeout } from 'node:timers/promises';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import ws from 'ws';
-import type { Extra as CrossWsExtra } from '../src/use/crossws';
 import {
   CloseCode,
   GRAPHQL_TRANSPORT_WS_PROTOCOL,
@@ -11,6 +10,7 @@ import {
   stringifyMessage,
   type SubscribePayload,
 } from '../src/common';
+import type { Extra as CrossWsExtra } from '../src/use/crossws';
 import {
   createTClient,
   tServers,
