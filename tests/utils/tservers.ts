@@ -726,7 +726,7 @@ export async function startFastifyWSTServer(
 
 export async function startCrosswsTServer(
   options: Partial<ServerOptions> = {},
-  keepAlive?: number, // for ws tests sake
+  // keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
@@ -735,9 +735,9 @@ export async function startCrosswsTServer(
   // sockets to kick off on teardown
   const sockets = new Set<uWS.WebSocket<unknown>>();
 
-  const pendingConnections: Context<any, UWSExtra>[] = [];
-  let pendingOperations = 0,
-    pendingCompletes = 0;
+  const pendingConnections: Context<any, CrossWsExtra>[] = [];
+  let pendingOperations = 0;
+  let pendingCompletes = 0;
   const listenSocket = await new Promise<uWS.us_listen_socket>(
     (resolve, reject) => {
       const hooks = makeHooks({
