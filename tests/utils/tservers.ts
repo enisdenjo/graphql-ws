@@ -1,22 +1,26 @@
-import { EventEmitter } from 'events';
-import http from 'http';
+import { EventEmitter } from 'node:events';
+import http from 'node:http';
 import fastifyWebsocket from '@fastify/websocket';
+import crossws from 'crossws/adapters/uws';
 import Fastify from 'fastify';
 import uWS from 'uWebSockets.js';
 import { afterAll, it } from 'vitest';
-import ws, { WebSocketServer } from 'ws';
-import { Context, ServerOptions } from '../../src/server';
+import type ws from 'ws';
+import { WebSocketServer } from 'ws';
+import type { Context, ServerOptions } from '../../src/server';
 import {
-  Extra as FastifyExtra,
   makeHandler as makeFastifyHandler,
+  type Extra as FastifyExtra,
 } from '../../src/use/@fastify/websocket';
+import { makeHooks } from '../../src/use/crossws';
 import {
   makeBehavior as makeUWSBehavior,
-  Extra as UWSExtra,
+  type Extra as UWSExtra,
 } from '../../src/use/uWebSockets';
-import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
-import { makeHooks as makeCrossWSHooks, Extra as CrossWSExtra } from '../../src/use/crossws';
-import crossws from "crossws/adapters/node";
+import {
+  useServer as useWSServer,
+  type Extra as WSExtra,
+} from '../../src/use/ws';
 import { isObject } from '../../src/utils';
 import { pong, schema } from '../fixtures/simple';
 
@@ -718,150 +722,97 @@ export async function startFastifyWSTServer(
   };
 }
 
-export async function startCrosswsServer(
+export async function startCrosswsTServer(
   options: Partial<ServerOptions> = {},
+  keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
   const port = await getAvailablePort();
-  const wsServer = new WebSocketServer({ port, path });
 
   // sockets to kick off on teardown
-  const sockets = new Set<ws>();
-  wsServer.on('connection', (socket) => {
-    sockets.add(socket);
-    socket.once('close', () => sockets.delete(socket));
-  });
+  const sockets = new Set<uWS.WebSocket<unknown>>();
 
-  const pendingConnections: Context<any, CrossWSExtra>[] = [];
-  let pendingOperations = 0;
-  let pendingCompletes = 0;
+  const pendingConnections: Context<any, UWSExtra>[] = [];
+  let pendingOperations = 0,
+    pendingCompletes = 0;
+  const listenSocket = await new Promise<uWS.us_listen_socket>(
+    (resolve, reject) => {
+      const hooks = makeHooks({
+        schema,
+        ...options,
+        onConnect: async (...args) => {
+          pendingConnections.push(args[0]);
+          const permitted = await options?.onConnect?.(...args);
+          emitter.emit('conn');
+          return permitted;
+        },
+        onOperation: async (ctx, id, msg, args, result) => {
+          pendingOperations++;
+          const maybeResult = await options?.onOperation?.(
+            ctx,
+            id,
+            msg,
+            args,
+            result,
+          );
+          emitter.emit('operation');
+          return maybeResult;
+        },
+        onComplete: async (...args) => {
+          pendingCompletes++;
+          await options?.onComplete?.(...args);
+          emitter.emit('compl');
+        },
+      });
 
-  const hooks = makeCrossWSHooks({
-    schema,
-    ...options,
-    onConnect: async (...args) => {
-      pendingConnections.push(args[0]);
-      const permitted = await options?.onConnect?.(...args);
-      emitter.emit('conn');
-      return permitted;
-    },
-    onOperation: async (ctx, id, msg, args, result) => {
-      pendingOperations++;
-      const maybeResult = await options?.onOperation?.(
-        ctx,
-        id,
-        msg,
-        args,
-        result,
-      );
-      emitter.emit('operation');
-      return maybeResult;
-    },
-    onComplete: async (...args) => {
-      pendingCompletes++;
-      await options?.onComplete?.(...args);
-      emitter.emit('compl');
-    },
-  });
+      const ws = crossws({
+        hooks,
+      });
 
-  const server = crossws({
-    hooks,
-  });
+      // TODO: Use keepAlive somehow
+
+      uWS
+        .App()
+        .ws(path, {
+          ...ws.websocket,
+          open: (socket) => {
+            sockets.add(socket);
+            return ws.websocket.open?.(socket);
+          },
+          close: (socket, code, message) => {
+            sockets.delete(socket);
+            return ws.websocket.close?.(socket, code, message);
+          },
+        })
+        .listen(port, (listenSocket: uWS.us_listen_socket) => {
+          if (listenSocket) resolve(listenSocket);
+          else reject('There is no UWS socket');
+        });
+    },
+  );
 
   let disposed = false;
-  const dispose: Dispose = (beNice) => {
-    return new Promise((resolve, reject) => {
-      if (disposed) return resolve();
-      disposed = true;
-      if (!beNice)
-        for (const socket of sockets) {
-          socket.terminate();
-          sockets.delete(socket);
-        }
-      const disposing = server.dispose() as Promise<void>;
-      disposing.catch(reject).then(() => {
-        wsServer.close(() => {
-          resolve();
-        });
-      });
-    });
+  const dispose: Dispose = async (beNice) => {
+    if (disposed) return;
+    disposed = true;
+    for (const socket of sockets) {
+      if (beNice) socket.end(1001, 'Going away');
+      else socket.close();
+    }
+    uWS.us_listen_socket_close(listenSocket);
   };
   leftovers.push(dispose);
 
-  // pending websocket clients
-  let pendingCloses = 0;
-  const pendingClients: TServerClient[] = [];
-  wsServer.on('connection', (client) => {
-    pendingClients.push(toClient(client));
-    client.once('close', () => {
-      pendingCloses++;
-      emitter.emit('close');
-    });
-  });
-
-  function toClient(socket: ws): TServerClient {
-    return {
-      socket,
-      send: (data) => socket.send(data),
-      onMessage: (cb) => {
-        const listener = (data: unknown) => cb(String(data));
-        socket.on('message', listener);
-        return () => socket.off('message', listener);
-      },
-      close: (...args) => socket.close(...args),
-    };
-  }
-
   return {
     url: `ws://localhost:${port}${path}`,
-    server: wsServer,
-    getClients() {
-      return Array.from(wsServer.clients, toClient);
-    },
-    waitForClient(test, expire) {
-      return new Promise((resolve, reject) => {
-        function done() {
-          // the on connect listener below will be called before our listener, populating the queue
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const client = pendingClients.shift()!;
-          try {
-            test?.(client);
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        }
-        if (pendingClients.length > 0) return done();
-        wsServer.once('connection', done);
-        if (expire)
-          setTimeout(() => {
-            wsServer.off('connection', done); // expired
-            resolve();
-          }, expire);
-      });
-    },
-    waitForClientClose(test, expire) {
-      return new Promise((resolve, reject) => {
-        function done() {
-          pendingCloses--;
-          try {
-            test?.();
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        }
-        if (pendingCloses > 0) return done();
-
-        emitter.once('close', done);
-        if (expire)
-          setTimeout(() => {
-            emitter.off('close', done); // expired
-            resolve();
-          }, expire);
-      });
-    },
+    server: null,
+    // @ts-expect-error TODO-db-210410
+    getClients: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClient: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClientClose: null,
     pong,
     waitForConnect(test, expire) {
       return new Promise((resolve, reject) => {
@@ -962,16 +913,12 @@ export const tServers = [
   },
   {
     tServer: 'crossws' as const,
-    startTServer: startCrosswsServer,
-    // ???
+    startTServer: startCrosswsTServer,
     skipWS: it,
-    skipUWS: it,
+    skipUWS: it.skip,
     skipFastify: it,
-    skipCrossws: it.skip,
-    itForWS: it,
+    itForWS: it.skip,
     itForUWS: it,
-    itForFastify: it,
-    itForCrossws: it,
+    itForFastify: it.skip,
   },
 ];
-
