@@ -16,15 +16,15 @@ export interface Extra {
 }
 
 // TODO: Wait for https://github.com/unjs/crossws/pull/149 to merge
-type UpgradeRequest =
-  | Request
+type UpgradeRequest<ActualRequest> =
+  | ActualRequest
   | {
       url: string;
       headers: Headers;
     };
 type MaybePromise<T> = T | Promise<T>;
 
-interface Hooks {
+interface Hooks<ActualRequest> {
   /** Upgrading */
   /**
    *
@@ -32,7 +32,7 @@ interface Hooks {
    * @throws {Response}
    */
   upgrade: (
-    request: UpgradeRequest & {
+    request: UpgradeRequest<ActualRequest> & {
       context: Peer['context'];
     },
   ) => MaybePromise<Response | ResponseInit | void>;
@@ -64,6 +64,7 @@ interface Client {
 }
 
 export function makeHooks<
+  ActualRequest = Request,
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
@@ -83,7 +84,7 @@ export function makeHooks<
 
   const clients = new WeakMap<Peer, Client>();
 
-  return defineHooks<Partial<Hooks>>({
+  return defineHooks<Partial<Hooks<ActualRequest>>>({
     open(peer) {
       const client: Client = {
         handleIncomingMessage: () => {
