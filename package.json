@@ -132,7 +132,7 @@
   },
   "peerDependencies": {
     "@fastify/websocket": "^10 || ^11",
-    "crossws": "^0.3",
+    "crossws": "~0.3",
     "graphql": "^15.10.1 || ^16",
     "uWebSockets.js": "^20",
     "ws": "^8"
