@@ -541,20 +541,23 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
     });
 
     describe.concurrent('Keep-Alive', () => {
-      skipCrossws('should dispatch pings after the timeout has passed', async () => {
-        const { url } = await startTServer(undefined, 50);
+      skipCrossws(
+        'should dispatch pings after the timeout has passed',
+        async () => {
+          const { url } = await startTServer(undefined, 50);
 
-        const client = await createTClient(url);
-        client.ws.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-          }),
-        );
+          const client = await createTClient(url);
+          client.ws.send(
+            stringifyMessage<MessageType.ConnectionInit>({
+              type: MessageType.ConnectionInit,
+            }),
+          );
 
-        const { resolve: pinged, promise: waitForPing } = createDeferred();
-        client.ws.once('ping', () => pinged());
-        await waitForPing;
-      });
+          const { resolve: pinged, promise: waitForPing } = createDeferred();
+          client.ws.once('ping', () => pinged());
+          await waitForPing;
+        },
+      );
 
       it('should not dispatch pings if disabled with nullish timeout', async () => {
         const { url } = await startTServer(undefined, 0);
@@ -574,32 +577,33 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
         await setTimeout(50);
       });
 
-      skipCrossws('should terminate the socket if no pong is sent in response to a ping', async ({
-        expect,
-      }) => {
-        const { url } = await startTServer(undefined, 50);
+      skipCrossws(
+        'should terminate the socket if no pong is sent in response to a ping',
+        async ({ expect }) => {
+          const { url } = await startTServer(undefined, 50);
 
-        const client = await createTClient(url);
-        client.ws.send(
-          stringifyMessage<MessageType.ConnectionInit>({
-            type: MessageType.ConnectionInit,
-          }),
-        );
+          const client = await createTClient(url);
+          client.ws.send(
+            stringifyMessage<MessageType.ConnectionInit>({
+              type: MessageType.ConnectionInit,
+            }),
+          );
 
-        // disable pong
-        client.ws.pong = () => {
-          /**/
-        };
+          // disable pong
+          client.ws.pong = () => {
+            /**/
+          };
 
-        // ping is received
-        await new Promise((resolve) => client.ws.once('ping', resolve));
+          // ping is received
+          await new Promise((resolve) => client.ws.once('ping', resolve));
 
-        // termination is not graceful or clean
-        await client.waitForClose((event) => {
-          expect(event.code).toBe(1006);
-          expect(event.wasClean).toBeFalsy();
-        });
-      });
+          // termination is not graceful or clean
+          await client.waitForClose((event) => {
+            expect(event.code).toBe(1006);
+            expect(event.wasClean).toBeFalsy();
+          });
+        },
+      );
     });
   });
 }
