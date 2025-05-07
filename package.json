@@ -161,7 +161,7 @@
     "@types/glob": "^8.1.0",
     "@types/ws": "^8.5.13",
     "bun-types": "^1.1.43",
-    "crossws": "^0.3.4",
+    "crossws": "^0.3.5",
     "fastify": "^5.2.1",
     "glob": "^11.0.1",
     "graphql": "^16.10.0",

@@ -1,8 +1,7 @@
-import { defineHooks, type Message, type Peer, type WSError } from 'crossws';
+import { defineHooks, type Peer } from 'crossws';
 import { CloseCode, type ConnectionInitMessage } from '../common';
 import { handleProtocols, makeServer, type ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
-
 /**
  * The extra that will be put in the `Context`.
  *
@@ -13,43 +12,6 @@ export interface Extra {
    * The actual socket connection between the server and the client.
    */
   readonly socket: Peer['websocket'];
-}
-
-// TODO: Wait for https://github.com/unjs/crossws/pull/149 to merge
-type UpgradeRequest<ActualRequest> =
-  | ActualRequest
-  | {
-      url: string;
-      headers: Headers;
-    };
-type MaybePromise<T> = T | Promise<T>;
-
-interface Hooks<ActualRequest> {
-  /** Upgrading */
-  /**
-   *
-   * @param request
-   * @throws {Response}
-   */
-  upgrade: (
-    request: UpgradeRequest<ActualRequest> & {
-      context: Peer['context'];
-    },
-  ) => MaybePromise<Response | ResponseInit | void>;
-  /** A message is received */
-  message: (peer: Peer, message: Message) => MaybePromise<void>;
-  /** A socket is opened */
-  open: (peer: Peer) => MaybePromise<void>;
-  /** A socket is closed */
-  close: (
-    peer: Peer,
-    details: {
-      code?: number;
-      reason?: string;
-    },
-  ) => MaybePromise<void>;
-  /** An error occurs */
-  error: (peer: Peer, error: WSError) => MaybePromise<void>;
 }
 
 interface Client {
@@ -64,7 +26,6 @@ interface Client {
 }
 
 export function makeHooks<
-  ActualRequest = Request,
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
@@ -84,7 +45,7 @@ export function makeHooks<
 
   const clients = new WeakMap<Peer, Client>();
 
-  return defineHooks<Partial<Hooks<ActualRequest>>>({
+  return defineHooks({
     open(peer) {
       const client: Client = {
         handleIncomingMessage: () => {
