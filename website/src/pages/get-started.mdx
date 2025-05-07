@@ -181,8 +181,8 @@ serve(
 #### With [crossws](https://crossws.h3.dev/)
 
 ```ts
-import { schema } from './previous-step.ts';
 import { makeHandler } from 'graphql-ws/use/crossws';
+import { schema } from './previous-step.ts';
 
 const hooks = makeHooks({ schema });
 
