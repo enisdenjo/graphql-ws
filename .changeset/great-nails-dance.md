@@ -2,4 +2,4 @@
 'graphql-ws': patch
 ---
 
-adds a crossws adapter for compatibility with all environments supported by crossws
+[crossws](https://crossws.h3.dev/) adapter for compatibility with all supported environments
