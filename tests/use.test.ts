@@ -32,7 +32,7 @@ afterAll(() => {
   console.error = consoleError;
 });
 
-for (const { tServer, skipUWS, startTServer } of tServers) {
+for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
   describe.concurrent(tServer, () => {
     it("should omit the subprotocol from the response if there's no valid one offered by the client", async ({
       expect,
@@ -541,7 +541,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
     });
 
     describe.concurrent('Keep-Alive', () => {
-      it('should dispatch pings after the timeout has passed', async () => {
+      skipCrossws('should dispatch pings after the timeout has passed', async () => {
         const { url } = await startTServer(undefined, 50);
 
         const client = await createTClient(url);
@@ -574,7 +574,7 @@ for (const { tServer, skipUWS, startTServer } of tServers) {
         await setTimeout(50);
       });
 
-      it('should terminate the socket if no pong is sent in response to a ping', async ({
+      skipCrossws('should terminate the socket if no pong is sent in response to a ping', async ({
         expect,
       }) => {
         const { url } = await startTServer(undefined, 50);
