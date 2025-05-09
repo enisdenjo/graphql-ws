@@ -1806,6 +1806,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"crossws@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "crossws@npm:0.3.5"
+  dependencies:
+    uncrypto: "npm:^0.1.3"
+  checksum: 10c0/9e873546f0806606c4f775219f6811768fc3b3b0765ca8230722e849058ad098318af006e1faa39a8008c03009c37c519f6bccad41b0d78586237585c75fb38b
+  languageName: node
+  linkType: hard
+
 "cssstyle@npm:^4.2.1":
   version: 4.2.1
   resolution: "cssstyle@npm:4.2.1"
@@ -2522,6 +2531,7 @@ __metadata:
     "@types/glob": "npm:^8.1.0"
     "@types/ws": "npm:^8.5.13"
     bun-types: "npm:^1.1.43"
+    crossws: "npm:^0.3.5"
     fastify: "npm:^5.2.1"
     glob: "npm:^11.0.1"
     graphql: "npm:^16.10.0"
@@ -2539,11 +2549,14 @@ __metadata:
     ws: "npm:^8.18.0"
   peerDependencies:
     "@fastify/websocket": ^10 || ^11
+    crossws: ~0.3
     graphql: ^15.10.1 || ^16
     uWebSockets.js: ^20
     ws: ^8
   peerDependenciesMeta:
     "@fastify/websocket":
+      optional: true
+    crossws:
       optional: true
     uWebSockets.js:
       optional: true
@@ -4341,6 +4354,13 @@ __metadata:
   version: 2.1.0
   resolution: "uc.micro@npm:2.1.0"
   checksum: 10c0/8862eddb412dda76f15db8ad1c640ccc2f47cdf8252a4a30be908d535602c8d33f9855dfcccb8b8837855c1ce1eaa563f7fa7ebe3c98fd0794351aab9b9c55fa
+  languageName: node
+  linkType: hard
+
+"uncrypto@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "uncrypto@npm:0.1.3"
+  checksum: 10c0/74a29afefd76d5b77bedc983559ceb33f5bbc8dada84ff33755d1e3355da55a4e03a10e7ce717918c436b4dfafde1782e799ebaf2aadd775612b49f7b5b2998e
   languageName: node
   linkType: hard
 

@@ -1,20 +1,26 @@
-import { EventEmitter } from 'events';
-import http from 'http';
+import { EventEmitter } from 'node:events';
+import http from 'node:http';
 import fastifyWebsocket from '@fastify/websocket';
+import crossws from 'crossws/adapters/uws';
 import Fastify from 'fastify';
 import uWS from 'uWebSockets.js';
 import { afterAll, it } from 'vitest';
-import ws, { WebSocketServer } from 'ws';
-import { Context, ServerOptions } from '../../src/server';
+import type ws from 'ws';
+import { WebSocketServer } from 'ws';
+import type { Context, ServerOptions } from '../../src/server';
 import {
-  Extra as FastifyExtra,
   makeHandler as makeFastifyHandler,
+  type Extra as FastifyExtra,
 } from '../../src/use/@fastify/websocket';
+import { makeHooks, type Extra as CrossWsExtra } from '../../src/use/crossws';
 import {
   makeBehavior as makeUWSBehavior,
-  Extra as UWSExtra,
+  type Extra as UWSExtra,
 } from '../../src/use/uWebSockets';
-import { useServer as useWSServer, Extra as WSExtra } from '../../src/use/ws';
+import {
+  useServer as useWSServer,
+  type Extra as WSExtra,
+} from '../../src/use/ws';
 import { isObject } from '../../src/utils';
 import { pong, schema } from '../fixtures/simple';
 
@@ -45,7 +51,9 @@ export interface TServer {
     expire?: number,
   ) => Promise<void>;
   waitForConnect: (
-    test?: (ctx: Context<any, WSExtra | UWSExtra | FastifyExtra>) => void,
+    test?: (
+      ctx: Context<any, WSExtra | UWSExtra | FastifyExtra | CrossWsExtra>,
+    ) => void,
     expire?: number,
   ) => Promise<void>;
   waitForOperation: (test?: () => void, expire?: number) => Promise<void>;
@@ -716,12 +724,171 @@ export async function startFastifyWSTServer(
   };
 }
 
+export async function startCrosswsTServer(
+  options: Partial<ServerOptions> = {},
+  // keepAlive?: number, // for ws tests sake
+): Promise<TServer> {
+  const path = '/simple';
+  const emitter = new EventEmitter();
+  const port = await getAvailablePort();
+
+  // sockets to kick off on teardown
+  const sockets = new Set<uWS.WebSocket<unknown>>();
+
+  const pendingConnections: Context<any, CrossWsExtra>[] = [];
+  let pendingOperations = 0;
+  let pendingCompletes = 0;
+  const listenSocket = await new Promise<uWS.us_listen_socket>(
+    (resolve, reject) => {
+      const hooks = makeHooks({
+        schema,
+        ...options,
+        onConnect: async (...args) => {
+          pendingConnections.push(args[0]);
+          const permitted = await options?.onConnect?.(...args);
+          emitter.emit('conn');
+          return permitted;
+        },
+        onOperation: async (ctx, id, msg, args, result) => {
+          pendingOperations++;
+          const maybeResult = await options?.onOperation?.(
+            ctx,
+            id,
+            msg,
+            args,
+            result,
+          );
+          emitter.emit('operation');
+          return maybeResult;
+        },
+        onComplete: async (...args) => {
+          pendingCompletes++;
+          await options?.onComplete?.(...args);
+          emitter.emit('compl');
+        },
+      });
+
+      const ws = crossws({
+        hooks,
+      });
+
+      // TODO: Use keepAlive somehow
+
+      uWS
+        .App()
+        .ws(path, {
+          ...ws.websocket,
+          open: (socket) => {
+            sockets.add(socket);
+            return ws.websocket.open?.(socket);
+          },
+          close: (socket, code, message) => {
+            sockets.delete(socket);
+            return ws.websocket.close?.(socket, code, message);
+          },
+        })
+        .listen(port, (listenSocket: uWS.us_listen_socket) => {
+          if (listenSocket) resolve(listenSocket);
+          else reject('There is no UWS socket');
+        });
+    },
+  );
+
+  let disposed = false;
+  const dispose: Dispose = async (beNice) => {
+    if (disposed) return;
+    disposed = true;
+    for (const socket of sockets) {
+      if (beNice) socket.end(1001, 'Going away');
+      else socket.close();
+    }
+    uWS.us_listen_socket_close(listenSocket);
+  };
+  leftovers.push(dispose);
+
+  return {
+    url: `ws://localhost:${port}${path}`,
+    server: null,
+    // @ts-expect-error TODO-db-210410
+    getClients: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClient: null,
+    // @ts-expect-error TODO-db-210410
+    waitForClientClose: null,
+    pong,
+    waitForConnect(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          // the on connect listener below will be called before our listener, populating the queue
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const ctx = pendingConnections.shift()!;
+          try {
+            test?.(ctx);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingConnections.length > 0) return done();
+        emitter.once('conn', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('conn', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForOperation(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          pendingOperations--;
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingOperations > 0) return done();
+        emitter.once('operation', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('operation', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    waitForComplete(test, expire) {
+      return new Promise((resolve, reject) => {
+        function done() {
+          pendingCompletes--;
+          try {
+            test?.();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }
+        if (pendingCompletes > 0) return done();
+        emitter.once('compl', done);
+        if (expire)
+          setTimeout(() => {
+            emitter.off('compl', done); // expired
+            resolve();
+          }, expire);
+      });
+    },
+    dispose,
+  };
+}
+
 export const tServers = [
   {
     tServer: 'ws' as const,
     startTServer: startWSTServer,
     skipWS: it.skip,
     skipUWS: it,
+    skipCrossws: it,
     skipFastify: it,
     itForWS: it,
     itForUWS: it.skip,
@@ -732,6 +899,7 @@ export const tServers = [
     startTServer: startUWSTServer,
     skipWS: it,
     skipUWS: it.skip,
+    skipCrossws: it,
     skipFastify: it,
     itForWS: it.skip,
     itForUWS: it,
@@ -742,9 +910,21 @@ export const tServers = [
     startTServer: startFastifyWSTServer,
     skipWS: it,
     skipUWS: it,
+    skipCrossws: it,
     skipFastify: it.skip,
     itForWS: it.skip,
     itForUWS: it.skip,
     itForFastify: it,
+  },
+  {
+    tServer: 'crossws' as const,
+    startTServer: startCrosswsTServer,
+    skipWS: it,
+    skipUWS: it.skip,
+    skipCrossws: it.skip,
+    skipFastify: it,
+    itForWS: it.skip,
+    itForUWS: it,
+    itForFastify: it.skip,
   },
 ];

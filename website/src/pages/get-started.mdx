@@ -178,6 +178,18 @@ serve(
 );
 ```
 
+#### With [crossws](https://crossws.h3.dev/)
+
+```ts
+import { makeHandler } from 'graphql-ws/use/crossws';
+import { schema } from './previous-step.ts';
+
+const hooks = makeHooks({ schema });
+
+// now you can pass the hooks on to a crossws adapter
+// or another tool that accepts crossws hooks
+```
+
 ### Use the client
 
 ```ts
