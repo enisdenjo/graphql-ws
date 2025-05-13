@@ -8,6 +8,11 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
 jobs:
   snapshot:
     if: github.event_name == 'pull_request'
