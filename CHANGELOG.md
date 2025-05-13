@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.0.5
+
+### Patch Changes
+
+- [#630](https://github.com/enisdenjo/graphql-ws/pull/630) [`fce94fa`](https://github.com/enisdenjo/graphql-ws/commit/fce94fa849015fb9da3f46a120f45f2732387639) Thanks [@m1212e](https://github.com/m1212e)! - [crossws](https://crossws.h3.dev/) adapter for compatibility with all supported environments
+
 ## 6.0.4
 
 ### Patch Changes
