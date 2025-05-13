@@ -8,15 +8,14 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-permissions:
-  contents: read
-  id-token: write
-  pull-requests: write
-
 jobs:
   snapshot:
     if: github.event_name == 'pull_request'
     name: Snapshot
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
     with:
       node-version-file: .node-version
@@ -28,6 +27,10 @@ jobs:
   stable:
     if: github.ref == 'refs/heads/master'
     name: Stable
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
     with:
       node-version-file: .node-version
