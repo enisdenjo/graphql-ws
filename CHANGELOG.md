@@ -49,44 +49,44 @@
 
   makeHandler({
     schema(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     context(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onConnect(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onDisconnect(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onClose(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onSubscribe(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onOperation(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onError(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onNext(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
     onComplete(ctx) {
-  -   const websocket = ctx.connection;
-  +   const websocket = ctx.socket;
+  -   const websocket = ctx.extra.connection;
+  +   const websocket = ctx.extra.socket;
     },
   });
   ```
