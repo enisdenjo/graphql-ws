@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.0.6
+
+### Patch Changes
+
+- [#648](https://github.com/enisdenjo/graphql-ws/pull/648) [`1f53bb4`](https://github.com/enisdenjo/graphql-ws/commit/1f53bb48b141440518cfc4716561e1f4b936268c) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Fix building issues causing CJS type definitions referencing ESM modules
+
 ## 6.0.5
 
 ### Patch Changes
