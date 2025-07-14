@@ -166,7 +166,7 @@
     "glob": "^11.0.1",
     "graphql": "^16.10.0",
     "jsdom": "^26.0.0",
-    "pkgroll": "patch:pkgroll@npm%3A2.6.1#~/.yarn/patches/pkgroll-npm-2.6.1-193e78e84e.patch",
+    "pkgroll": "patch:pkgroll@npm%3A2.14.3#~/.yarn/patches/pkgroll-npm-2.14.3-b35ee21036.patch",
     "prettier": "^3.4.2",
     "prettier-plugin-pkg": "^0.18.1",
     "prettier-plugin-sh": "^0.14.0",
