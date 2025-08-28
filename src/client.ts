@@ -226,6 +226,18 @@ export interface ClientOptions<
    */
   connectionParams?: P | (() => Promise<P> | P);
   /**
+   * Optional protocols, passed through to the WebSocket constructor that will be part of 
+   * the `Sec-WebSocket-Protocol` header sent to the server. As browser WebSocket connections
+   * do not allow setting arbitary headings this can be used by server implementations to send
+   * arbitary data for example Authentication headers, especially when it's desired to happen 
+   * prior to a WebSocket conncetion being answer
+   * 
+   * If the option is a function, it will be called on every WebSocket connection attempt.
+   * Returning a promise is supported too and the connecting phase will stall until it
+   * resolves with the URL.
+   */
+  additionalProtocols?: string[] | (() => Promise<string[]> | string[]);
+  /**
    * Controls when should the connection be established.
    *
    * - `false`: Establish a connection immediately. Use `onNonLazyError` to handle errors.
@@ -456,6 +468,7 @@ export function createClient<
   const {
     url,
     connectionParams,
+    additionalProtocols,
     lazy = true,
     onNonLazyError = console.error,
     lazyCloseTimeout: lazyCloseTimeoutMs = 0,
@@ -619,7 +632,12 @@ export function createClient<
           emitter.emit('connecting', retrying);
           const socket = new WebSocketImpl(
             typeof url === 'function' ? await url() : url,
-            GRAPHQL_TRANSPORT_WS_PROTOCOL,
+            [GRAPHQL_TRANSPORT_WS_PROTOCOL, ...(
+              additionalProtocols ? 
+                typeof additionalProtocols === 'function' 
+                  ? await additionalProtocols() 
+                  : additionalProtocols :
+                  [])],
           );
 
           let connectionAckTimeout: ReturnType<typeof setTimeout>,
