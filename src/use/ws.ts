@@ -10,7 +10,6 @@ import {
 import { handleProtocols, makeServer, ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
 
-
 // for nicer documentation
 export type { WebSocket, WebSocketServer };
 
