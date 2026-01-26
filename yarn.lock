@@ -2700,14 +2700,11 @@ __metadata:
     "@fastify/websocket": ^10 || ^11
     crossws: ~0.3
     graphql: ^15.10.1 || ^16
-    uWebSockets.js: ^20
     ws: ^8
   peerDependenciesMeta:
     "@fastify/websocket":
       optional: true
     crossws:
-      optional: true
-    uWebSockets.js:
       optional: true
     ws:
       optional: true
