@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup and install
-        uses: the-guild-org/shared-config/setup@f46b872d8427e68bec27c3e7eb2dd25f29cc91f0
+        uses: the-guild-org/shared-config/setup@v1
         with:
           node-version-file: .node-version
           working-directory: website
