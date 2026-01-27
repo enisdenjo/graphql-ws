@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 6.0.7
+
+### Patch Changes
+
+- [#665](https://github.com/enisdenjo/graphql-ws/pull/665) [`5536292`](https://github.com/enisdenjo/graphql-ws/commit/5536292ab26638b63b83a8e5472f12d8d4f19e02) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Remove uWebSockets.js from peer dependencies in package.json
+
+  It does not exist on NPM anymore and could lead to weird behavior when installing dependencies with `npm`. Nothing else changes, using `graphql-ws` with uWebSockets.js still works.
+
 ## 6.0.6
 
 ### Patch Changes
