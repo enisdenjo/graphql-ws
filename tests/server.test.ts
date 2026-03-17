@@ -2049,9 +2049,7 @@ describe.concurrent('Subscribe', () => {
 
     // per the protocol spec, no complete message should follow an error
     await client.waitForMessage((msg) => {
-      throw new Error(
-        `Unexpected message after error: ${msg.data}`,
-      );
+      throw new Error(`Unexpected message after error: ${msg.data}`);
     }, 30);
   });
 });
