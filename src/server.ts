@@ -880,6 +880,9 @@ export function makeServer<
                       ],
                       message,
                     );
+                    // error terminates the operation per spec — prevent
+                    // emit.complete from notifying the client
+                    delete ctx.subscriptions[id];
                   }
                 }
               } else {
