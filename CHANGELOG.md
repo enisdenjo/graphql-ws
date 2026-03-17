@@ -1,5 +1,32 @@
 # graphql-ws
 
+## 6.0.8
+
+### Patch Changes
+
+- [#667](https://github.com/enisdenjo/graphql-ws/pull/667) [`fc03004`](https://github.com/enisdenjo/graphql-ws/commit/fc0300468644ea117142bc94adbda5d79181828b) Thanks [@endigma](https://github.com/endigma)! - Fix the server sending a `Complete` message after an `Error` message for subscriptions.
+
+  Previously, when a subscription's async iterable threw an error, the server would send:
+
+  ```
+  {"id":"1","type":"error","payload":[{"message":"..."}]}
+  {"id":"1","type":"complete"}
+  ```
+
+  Per the protocol spec:
+
+  > **Error:** This message terminates the operation and no further messages will be sent.
+
+  > **Complete (Server → Client):** If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
+
+  The server now correctly sends only the `Error` message:
+
+  ```
+  {"id":"1","type":"error","payload":[{"message":"..."}]}
+  ```
+
+  Clients that correctly follow the spec should be unaffected, as they are expected to ignore messages for operations they consider already completed.
+
 ## 6.0.7
 
 ### Patch Changes
