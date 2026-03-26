@@ -16,7 +16,8 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-    uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
+    # head of v1 broke releases see https://github.com/enisdenjo/graphql-ws/pull/668
+    uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@14e013cbeb50250128606c04dee21235c09af7a2
     with:
       node-version-file: .node-version
       npmTag: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && 'rc' || 'alpha' }}
@@ -31,7 +32,8 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-    uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
+    # head of v1 broke releases see https://github.com/enisdenjo/graphql-ws/pull/668
+    uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@14e013cbeb50250128606c04dee21235c09af7a2
     with:
       node-version-file: .node-version
       releaseScript: changeset publish
