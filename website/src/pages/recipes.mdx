@@ -651,7 +651,7 @@ interface ClientWithOnReconnected extends Client {
 function createClientWithOnReconnected(
   options: ClientOptions,
 ): ClientWithOnReconnected {
-  let abruptlyClosed = false;
+  let closed = false;
   const reconnectedCbs: (() => void)[] = [];
 
   const client = createClient({
@@ -660,16 +660,13 @@ function createClientWithOnReconnected(
       ...options.on,
       closed: (event) => {
         options.on?.closed?.(event);
-        // non-1000 close codes are abrupt closes
-        if ((event as CloseEvent).code !== 1000) {
-          abruptlyClosed = true;
-        }
+        closed = true
       },
       connected: (...args) => {
         options.on?.connected?.(...args);
-        // if the client abruptly closed, this is then a reconnect
-        if (abruptlyClosed) {
-          abruptlyClosed = false;
+        // if the client was closed, this is then a reconnect
+        if (closed) {
+          closed = false;
           reconnectedCbs.forEach((cb) => cb());
         }
       },
