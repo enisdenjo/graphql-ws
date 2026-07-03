@@ -862,21 +862,29 @@ export function makeServer<
                       err instanceof Error ? err : new Error(String(err));
                     await emit.error(
                       [
-                        versionInfo.major >= 16
+                        versionInfo.major >= 17
                           ? new GraphQLError(
                               originalError.message,
-                              // @ts-ignore graphql@15 and less dont have the second arg as object (version is ensured by versionInfo.major check above)
-                              { originalError },
+                              // graphql@17 deprecated originalError in favor of cause
+                              // @ts-ignore graphql@15 and less don't have the second arg as object (version is ensured by versionInfo.major check above)
+                              { cause: originalError },
                             )
-                          : // versionInfo.major <= 15
-                            new GraphQLError(
-                              originalError.message,
-                              null,
-                              null,
-                              null,
-                              null,
-                              originalError,
-                            ),
+                          : versionInfo.major >= 16
+                            ? new GraphQLError(
+                                originalError.message,
+                                // @ts-ignore graphql@15 and less don't have the second arg as object
+                                { originalError },
+                              )
+                            : // versionInfo.major <= 15
+                              new GraphQLError(
+                                originalError.message,
+                                null,
+                                // @ts-ignore graphql@17 removed the positional-args constructor
+                                null,
+                                null,
+                                null,
+                                originalError,
+                              ),
                       ],
                       message,
                     );
