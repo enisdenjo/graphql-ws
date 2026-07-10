@@ -8,34 +8,28 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  id-token: write # required for OIDC
+  pull-requests: write
+
 jobs:
   snapshot:
     if: github.event_name == 'pull_request'
     name: Snapshot
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
     with:
       node-version-file: .node-version
       npmTag: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && 'rc' || 'alpha' }}
       restoreDeletedChangesets: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && true || false }}
     secrets:
-      githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
-      npmToken: ${{ secrets.NPM_TOKEN }}
+      githubToken: ${{ secrets.GITHUB_TOKEN }}
   stable:
     if: github.ref == 'refs/heads/master'
     name: Stable
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
     with:
       node-version-file: .node-version
       releaseScript: changeset publish
       versionScript: changeset version
     secrets:
-      githubToken: ${{ secrets.BOT_GITHUB_TOKEN }}
-      npmToken: ${{ secrets.NPM_TOKEN }}
+      githubToken: ${{ secrets.GITHUB_TOKEN }}
