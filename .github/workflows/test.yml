@@ -24,6 +24,9 @@ jobs:
           node-version: ${{matrix.node}}
       - name: Install
         run: yarn add --dev graphql@${{matrix.graphql}}
+      - name: Downgrade uWebSockets.js
+        if: matrix.node == 20
+        run: yarn add --dev uWebSockets.js@github:uNetworking/uWebSockets.js#v20.51.0
       - name: Info
         run: yarn info graphql
       - name: Test
