@@ -1,5 +1,6 @@
 import type * as http from 'http';
 import type WebSocket from 'ws';
+import type { WebSocketServer } from 'ws';
 import {
   CloseCode,
   ConnectionInitMessage,
@@ -9,10 +10,8 @@ import {
 import { handleProtocols, makeServer, ServerOptions } from '../server';
 import { limitCloseReason } from '../utils';
 
-export type WebSocketServer = WebSocket.Server;
-
 // for nicer documentation
-export type { WebSocket };
+export type { WebSocket, WebSocketServer };
 
 /**
  * The extra that will be put in the `Context`.
