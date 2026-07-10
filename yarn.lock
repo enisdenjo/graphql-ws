@@ -2693,7 +2693,7 @@ __metadata:
     typedoc: "npm:^0.27.6"
     typedoc-plugin-markdown: "npm:^4.4.1"
     typescript: "npm:^5.7.3"
-    uWebSockets.js: "uNetworking/uWebSockets.js#semver:^20.51.0"
+    uWebSockets.js: "uNetworking/uWebSockets.js#semver:^20.68.0"
     vitest: "npm:^2.1.8"
     ws: "npm:^8.18.0"
   peerDependencies:
@@ -4573,10 +4573,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uWebSockets.js@uNetworking/uWebSockets.js#semver:^20.51.0":
-  version: 20.51.0
-  resolution: "uWebSockets.js@https://github.com/uNetworking/uWebSockets.js.git#commit=6609a88ffa9a16ac5158046761356ce03250a0df"
-  checksum: 10c0/25bd18780ee0582981bf40f40a56dd1d38d528c0d22806c4295d6ab165aae10e90438ca910952ca32d86e264d851325104051b3339e46c8df8633661192d7131
+"uWebSockets.js@uNetworking/uWebSockets.js#semver:^20.68.0":
+  version: 20.68.0
+  resolution: "uWebSockets.js@https://github.com/uNetworking/uWebSockets.js.git#commit=624987739d4da0acb628aaf2a10fc43e7ce27c5c"
+  checksum: 10c0/b9d6ae0922d554044ad2c389c16c46476575b71a645f53c37d2dc1993e4ee798d2e95f2ed6214f33d99b6c638e57cd4b086f84e08cae61d1cf23c45f2a6efa00
   languageName: node
   linkType: hard
 
