@@ -8,11 +8,10 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-# permissions:
-#   id-token: write # required for OIDC
-#   pull-requests: write
-#   contents: write
-permissions: write-all
+permissions:
+  id-token: write # required for OIDC
+  pull-requests: write
+  contents: write
 
 jobs:
   snapshot:
