@@ -8,15 +8,16 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  id-token: write # required for OIDC
+  pull-requests: write
+  contents: write
+
 jobs:
   snapshot:
     if: github.event_name == 'pull_request'
     name: Snapshot
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@v1
-    permissions:
-      id-token: write # required for OIDC
-      pull-requests: write
-      contents: read
     with:
       node-version-file: .node-version
       npmTag: ${{ github.event.pull_request.title == 'Upcoming Release Changes' && 'rc' || 'alpha' }}
@@ -27,10 +28,6 @@ jobs:
     if: github.ref == 'refs/heads/master'
     name: Stable
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@v1
-    permissions:
-      id-token: write # required for OIDC
-      pull-requests: write
-      contents: read
     with:
       node-version-file: .node-version
       releaseScript: changeset publish
