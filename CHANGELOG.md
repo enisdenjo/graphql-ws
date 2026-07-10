@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.1.0
+
+### Minor Changes
+
+- [#672](https://github.com/enisdenjo/graphql-ws/pull/672) [`afb7a8a`](https://github.com/enisdenjo/graphql-ws/commit/afb7a8a4d1c2c6dc7e16d1889575912bb414db8f) Thanks [@andreisergiu98](https://github.com/andreisergiu98)! - Add support for `graphql@17`
+
 ## 6.0.8
 
 ### Patch Changes
