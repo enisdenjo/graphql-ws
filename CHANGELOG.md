@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 6.1.1
+
+### Patch Changes
+
+- [#680](https://github.com/enisdenjo/graphql-ws/pull/680) [`3fdd82f`](https://github.com/enisdenjo/graphql-ws/commit/3fdd82fbe064e94ff87eabd3ef8c56ff4901d2f1) Thanks [@kkhys](https://github.com/kkhys)! - Disposing of a client event listener twice no longer removes an unrelated listener
+
+  The unsubscribe function returned by `client.on` spliced at `indexOf(listener)` without checking for `-1`, so removing an already-removed listener would `splice(-1, 1)` and silently drop the most recently registered listener of the same event. This happens in practice without any double-dispose by the user: emits iterate over a copy of the listeners, so a one-shot internal listener that already unlistened itself during a nested emit (e.g. when `client.terminate()` is called from within a `closed`/`error` listener) is re-invoked from the copy and unlistens again, knocking out registered `closed`/`error` listeners.
+
 ## 6.1.0
 
 ### Minor Changes
