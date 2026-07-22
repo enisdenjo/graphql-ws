@@ -2450,6 +2450,95 @@ describe.concurrent('events', () => {
     // opened and connected should be called 6 times (3 times connected, 2 times disconnected)
     expect(expected).toHaveBeenCalledTimes(6);
   });
+
+  it('should not remove other listeners when disposing of the same listener twice', async ({
+    expect,
+  }) => {
+    const { url, waitForConnect, getClients } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const disposedListener = vitest.fn();
+    const dispose = client.on('closed', disposedListener);
+    const survivingListener = vitest.fn();
+    client.on('closed', survivingListener);
+
+    // disposing of the same listener twice must not affect other listeners
+    dispose();
+    dispose();
+
+    await waitForConnect();
+
+    const { resolve: closed, promise: waitForClosed } = createDeferred();
+    client.on('closed', () => closed());
+    for (const client of getClients()) {
+      client.close(4321);
+    }
+    await waitForClosed;
+
+    expect(disposedListener).not.toBeCalled();
+    expect(survivingListener).toBeCalled();
+
+    await client.dispose();
+  });
+
+  it('should not lose listeners when a closed listener terminates the client', async ({
+    expect,
+  }) => {
+    const { url, waitForConnect, getClients } = await startTServer();
+
+    const client = createClient({
+      // a url function suspends the connect routine, deferring the internal
+      // listener registration behind the user listeners registered right
+      // after `createClient` (like clients resolving the url asynchronously)
+      url: () => url,
+      lazy: false,
+      retryAttempts: 5,
+      retryWait: async () => {
+        // retry immediately
+      },
+      onNonLazyError: noop,
+    });
+
+    client.on('closed', (event) => {
+      // terminating from within a listener nests another `closed` emit
+      // inside the running one (guarding against the artificial
+      // TerminatedCloseEvent to avoid recursing forever)
+      if (!(event instanceof TerminatedCloseEvent)) {
+        client.terminate();
+      }
+    });
+    const observer = vitest.fn();
+    client.on('closed', observer);
+
+    await waitForConnect();
+    for (const client of getClients()) {
+      client.close(4321);
+    }
+
+    // the terminated client reconnects (4499 is retryable)
+    await waitForConnect();
+    const callsAfterFirstClose = observer.mock.calls.length;
+    expect(callsAfterFirstClose).toBeGreaterThan(0);
+
+    const { resolve: closedAgain, promise: waitForClosedAgain } =
+      createDeferred();
+    client.on('closed', () => closedAgain());
+    for (const client of getClients()) {
+      client.close(4321);
+    }
+    await waitForClosedAgain;
+
+    // the observer must still be registered and receive the second round of closed events
+    expect(observer.mock.calls.length).toBeGreaterThan(callsAfterFirstClose);
+
+    await client.dispose();
+  });
 });
 
 describe.concurrent('iterate', () => {

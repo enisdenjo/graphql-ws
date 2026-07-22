@@ -553,7 +553,15 @@ export function createClient<
         const l = listeners[event] as EventListener<E>[];
         l.push(listener);
         return () => {
-          l.splice(l.indexOf(listener), 1);
+          // the listener might have already been removed. removing it again
+          // would `splice(-1, 1)` and drop the last, unrelated, listener. this
+          // can happen because emits iterate over a copy of the listeners:
+          // a one-shot listener that already unlistened itself during a nested
+          // emit can be re-invoked (and unlisten again) from the copy
+          const i = l.indexOf(listener);
+          if (i > -1) {
+            l.splice(i, 1);
+          }
         };
       },
       emit<E extends Event>(event: E, ...args: Parameters<EventListener<E>>) {
