@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.2.0
+
+### Minor Changes
+
+- [#682](https://github.com/enisdenjo/graphql-ws/pull/682) [`1e70c1a`](https://github.com/enisdenjo/graphql-ws/commit/1e70c1a986265ecc446cfd6c0e590000525080d7) Thanks [@jwatzman](https://github.com/jwatzman)! - Add `parse` option for custom GraphQL parsing
+
 ## 6.1.1
 
 ### Patch Changes
