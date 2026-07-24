@@ -1,6 +1,6 @@
 {
   "name": "graphql-ws",
-  "version": "6.1.1",
+  "version": "6.2.0",
   "type": "module",
   "description": "Coherent, zero-dependency, lazy, simple, GraphQL over WebSocket Protocol compliant server and client",
   "repository": {
