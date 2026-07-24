@@ -11,11 +11,11 @@ import {
   GraphQLError,
   execute as graphqlExecute,
   GraphQLFormattedError,
+  parse as graphqlParse,
   GraphQLSchema,
   subscribe as graphqlSubscribe,
   validate as graphqlValidate,
   OperationTypeNode,
-  parse,
   versionInfo,
 } from 'graphql';
 import {
@@ -145,6 +145,16 @@ export interface ServerOptions<
           NonNullable<ExecutionArgs['rootValue']>
         >;
       };
+  /**
+   * A custom GraphQL parse function allowing you to apply your own
+   * parsing logic.
+   *
+   * Will not be used when implementing a custom `onSubscribe`.
+   *
+   * Throwing an error from within this function will close the socket
+   * with the `Error` message in the close event reason.
+   */
+  parse?: undefined | typeof graphqlParse;
   /**
    * A custom GraphQL validate function allowing you to apply your
    * own validation rules.
@@ -561,6 +571,7 @@ export function makeServer<
     schema,
     context,
     roots,
+    parse,
     validate,
     execute,
     subscribe,
@@ -782,7 +793,7 @@ export function makeServer<
 
                 const args = {
                   operationName: payload.operationName,
-                  document: parse(payload.query),
+                  document: (parse ?? graphqlParse)(payload.query),
                   variableValues: payload.variables,
                 };
                 execArgs = {

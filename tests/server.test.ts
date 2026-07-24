@@ -76,6 +76,42 @@ it('should use the schema resolved from a promise on subscribe', async ({
   await waitForComplete;
 });
 
+it('should use the provided parse function', async ({ expect }) => {
+  let didCallParse = false;
+  const { url } = await startTServer({
+    schema,
+    parse: (...args) => {
+      didCallParse = true;
+      return parse(...args);
+    },
+  });
+  const client = await createTClient(url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
+  client.ws.send(
+    stringifyMessage<MessageType.ConnectionInit>({
+      type: MessageType.ConnectionInit,
+    }),
+  );
+  await client.waitForMessage(); // ack
+
+  client.ws.send(
+    stringifyMessage<MessageType.Subscribe>({
+      id: '1',
+      type: MessageType.Subscribe,
+      payload: {
+        query: '{ getValue }',
+      },
+    }),
+  );
+  await client.waitForMessage(({ data }) => {
+    expect(parseMessage(data)).toEqual({
+      id: '1',
+      type: MessageType.Next,
+      payload: { data: { getValue: 'value' } },
+    });
+  });
+  expect(didCallParse).toBeTruthy();
+});
+
 it('should use the provided validate function', async ({ expect }) => {
   const { url } = await startTServer({
     schema,
