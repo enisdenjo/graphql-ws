@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.2.1
+
+### Patch Changes
+
+- [#660](https://github.com/enisdenjo/graphql-ws/pull/660) [`61731f0`](https://github.com/enisdenjo/graphql-ws/commit/61731f0ebe3eea7ffe878c3f57f6281bda5f4e09) Thanks [@fkaempfer](https://github.com/fkaempfer)! - Fix typings for WebSocketServer
+
 ## 6.2.0
 
 ### Minor Changes
