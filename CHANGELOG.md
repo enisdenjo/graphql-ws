@@ -1,5 +1,60 @@
 # graphql-ws
 
+## 6.2.0
+
+### Minor Changes
+
+- [#682](https://github.com/enisdenjo/graphql-ws/pull/682) [`1e70c1a`](https://github.com/enisdenjo/graphql-ws/commit/1e70c1a986265ecc446cfd6c0e590000525080d7) Thanks [@jwatzman](https://github.com/jwatzman)! - Add `parse` option for custom GraphQL parsing
+
+## 6.1.1
+
+### Patch Changes
+
+- [#680](https://github.com/enisdenjo/graphql-ws/pull/680) [`3fdd82f`](https://github.com/enisdenjo/graphql-ws/commit/3fdd82fbe064e94ff87eabd3ef8c56ff4901d2f1) Thanks [@kkhys](https://github.com/kkhys)! - Disposing of a client event listener twice no longer removes an unrelated listener
+
+  The unsubscribe function returned by `client.on` spliced at `indexOf(listener)` without checking for `-1`, so removing an already-removed listener would `splice(-1, 1)` and silently drop the most recently registered listener of the same event. This happens in practice without any double-dispose by the user: emits iterate over a copy of the listeners, so a one-shot internal listener that already unlistened itself during a nested emit (e.g. when `client.terminate()` is called from within a `closed`/`error` listener) is re-invoked from the copy and unlistens again, knocking out registered `closed`/`error` listeners.
+
+## 6.1.0
+
+### Minor Changes
+
+- [#672](https://github.com/enisdenjo/graphql-ws/pull/672) [`afb7a8a`](https://github.com/enisdenjo/graphql-ws/commit/afb7a8a4d1c2c6dc7e16d1889575912bb414db8f) Thanks [@andreisergiu98](https://github.com/andreisergiu98)! - Add support for `graphql@17`
+
+## 6.0.8
+
+### Patch Changes
+
+- [#667](https://github.com/enisdenjo/graphql-ws/pull/667) [`fc03004`](https://github.com/enisdenjo/graphql-ws/commit/fc0300468644ea117142bc94adbda5d79181828b) Thanks [@endigma](https://github.com/endigma)! - Fix the server sending a `Complete` message after an `Error` message for subscriptions.
+
+  Previously, when a subscription's async iterable threw an error, the server would send:
+
+  ```
+  {"id":"1","type":"error","payload":[{"message":"..."}]}
+  {"id":"1","type":"complete"}
+  ```
+
+  Per the protocol spec:
+
+  > **Error:** This message terminates the operation and no further messages will be sent.
+
+  > **Complete (Server → Client):** If the server dispatched the `Error` message relative to the original `Subscribe` message, no `Complete` message will be emitted.
+
+  The server now correctly sends only the `Error` message:
+
+  ```
+  {"id":"1","type":"error","payload":[{"message":"..."}]}
+  ```
+
+  Clients that correctly follow the spec should be unaffected, as they are expected to ignore messages for operations they consider already completed.
+
+## 6.0.7
+
+### Patch Changes
+
+- [#665](https://github.com/enisdenjo/graphql-ws/pull/665) [`5536292`](https://github.com/enisdenjo/graphql-ws/commit/5536292ab26638b63b83a8e5472f12d8d4f19e02) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Remove uWebSockets.js from peer dependencies in package.json
+
+  It does not exist on NPM anymore and could lead to weird behavior when installing dependencies with `npm`. Nothing else changes, using `graphql-ws` with uWebSockets.js still works.
+
 ## 6.0.6
 
 ### Patch Changes

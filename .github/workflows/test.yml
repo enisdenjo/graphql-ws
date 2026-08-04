@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 23]
-        graphql: [15, 16]
+        node: [20, 22, 24]
+        graphql: [15, 16, 17]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,6 +24,9 @@ jobs:
           node-version: ${{matrix.node}}
       - name: Install
         run: yarn add --dev graphql@${{matrix.graphql}}
+      - name: Downgrade uWebSockets.js
+        if: matrix.node == 20
+        run: yarn add --dev uWebSockets.js@github:uNetworking/uWebSockets.js#v20.51.0
       - name: Info
         run: yarn info graphql
       - name: Test
