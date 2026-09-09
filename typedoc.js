@@ -3,7 +3,12 @@
  */
 const opts = {
   entryPointStrategy: 'expand',
-  out: './website/src/pages/docs',
+  // The API reference is committed and served by the-guild-org/website (see
+  // website/README.md); .github/workflows/docs-regenerate.yaml keeps it current.
+  out: './website/content/docs',
+  // "Defined in" links point at master rather than the commit typedoc ran on,
+  // so regenerating without source changes yields no diff.
+  gitRevision: 'master',
   readme: 'none',
   plugin: ['typedoc-plugin-markdown'],
   excludeExternals: true,

@@ -1,0 +1,10 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "index",
+    "client",
+    "common",
+    "server",
+    "use"
+  ]
+}

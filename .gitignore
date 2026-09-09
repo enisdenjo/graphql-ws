@@ -5,13 +5,8 @@ dist/
 out/
 .vscode/
 .yarn/*
-website/.yarn/*
 !.yarn/releases
 !.yarn/plugins
 !.yarn/patches
-.next/
-website/src/pages/docs
-website/algolia-lockfile.json
-website/public/sitemap.xml
 .idea/
 tsconfig.tsbuildinfo
