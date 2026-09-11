@@ -660,7 +660,7 @@ function createClientWithOnReconnected(
       ...options.on,
       closed: (event) => {
         options.on?.closed?.(event);
-        closed = true
+        closed = true;
       },
       connected: (...args) => {
         options.on?.connected?.(...args);
