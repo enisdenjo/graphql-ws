@@ -6,5 +6,4 @@ dist
 out
 CHANGELOG.md
 .next
-website/src/pages/docs
-website/algolia-lockfile.json
+website/content/docs

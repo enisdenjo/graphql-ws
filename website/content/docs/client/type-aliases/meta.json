@@ -1,0 +1,23 @@
+{
+  "title": "Type Aliases",
+  "pages": [
+    "Event",
+    "EventClosed",
+    "EventClosedListener",
+    "EventConnected",
+    "EventConnectedListener",
+    "EventConnecting",
+    "EventConnectingListener",
+    "EventError",
+    "EventErrorListener",
+    "EventListener",
+    "EventMessage",
+    "EventMessageListener",
+    "EventOpened",
+    "EventOpenedListener",
+    "EventPing",
+    "EventPingListener",
+    "EventPong",
+    "EventPongListener"
+  ]
+}

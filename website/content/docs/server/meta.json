@@ -1,0 +1,8 @@
+{
+  "title": "server",
+  "pages": [
+    "functions",
+    "interfaces",
+    "type-aliases"
+  ]
+}

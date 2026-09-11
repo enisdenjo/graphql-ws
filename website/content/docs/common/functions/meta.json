@@ -1,0 +1,8 @@
+{
+  "title": "Functions",
+  "pages": [
+    "parseMessage",
+    "stringifyMessage",
+    "validateMessage"
+  ]
+}

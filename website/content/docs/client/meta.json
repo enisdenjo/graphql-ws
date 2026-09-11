@@ -1,0 +1,9 @@
+{
+  "title": "client",
+  "pages": [
+    "classes",
+    "functions",
+    "interfaces",
+    "type-aliases"
+  ]
+}

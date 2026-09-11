@@ -1,0 +1,63 @@
+name: docs-regenerate
+
+# The API reference at the-guild.dev/graphql/ws/docs is generated from src/
+# by `yarn gendocs` into website/content/docs, which is committed so that
+# the-guild-org/website can fetch it like the hand-written pages. Regenerate
+# it on every push to master that touches the source, commit the result, and
+# ask the website to redeploy: a push made with the workflow token starts no
+# other workflow, so notify-website does not see this commit.
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - src/**
+      - typedoc.js
+      - scripts/post-gendocs.js
+
+permissions:
+  contents: write
+
+# One regeneration at a time; a later push waits instead of racing the commit.
+concurrency:
+  group: docs-regenerate
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: the-guild-org/shared-config/setup@v1
+        with:
+          node-version-file: .node-version
+      - name: Generate the API reference
+        run: yarn gendocs
+      - name: Commit the API reference
+        id: commit
+        run: |
+          git add website/content/docs
+          if git diff --cached --quiet; then
+            echo "The API reference is up to date"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: regenerate the API reference [skip ci]'
+          git pull --rebase origin master
+          git push origin HEAD:master
+          echo 'pushed=true' >> "$GITHUB_OUTPUT"
+      - name: Trigger website rebuild
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          # Fine-grained PAT for the-guild-org/website with contents:write
+          # (repository_dispatch permission), same as in notify-website.yaml.
+          TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+        run: |
+          curl --fail-with-body -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/the-guild-org/website/dispatches \
+            -d '{"event_type":"product-content-update","client_payload":{"product":"ws"}}'
