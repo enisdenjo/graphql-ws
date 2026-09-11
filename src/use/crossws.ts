@@ -70,9 +70,13 @@ export function makeHooks<
             }
           },
           close: (code, reason) => {
-            if (clients.has(peer)) {
-              peer.close(code, reason);
-            }
+            // close socket in next tick making sure the client is registered
+            setImmediate(() => {
+              // the socket might have been destroyed before issuing a close
+              if (clients.has(peer)) {
+                peer.close(code, reason);
+              }
+            });
           },
           onMessage: (cb) => {
             client.handleIncomingMessage = cb;
