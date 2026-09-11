@@ -15,8 +15,8 @@ npm i graphql-ws
 ### Create a GraphQL schema
 
 ```ts
+import { Repeater } from '@repeaterjs/repeater'; // yarn add @repeaterjs/repeater
 import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
-import { Repeater } from "@repeaterjs/repeater";
 
 /**
  * Construct a GraphQL schema and define the necessary resolvers.
@@ -46,7 +46,10 @@ export const schema = new GraphQLSchema({
         subscribe: async function* () {
           const greetings = ['Hi', 'Bonjour', 'Hola', 'Ciao', 'Zdravo'];
           return new Repeater(async (push, stop) => {
-            const interval = setInterval(() => greetings.length > 0 ? push(greetings.shift()) : null, 1000);
+            const interval = setInterval(
+              () => (greetings.length > 0 ? push(greetings.shift()) : null),
+              1000,
+            );
             await stop;
             clearInterval(interval);
           });

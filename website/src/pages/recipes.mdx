@@ -924,14 +924,13 @@ wsServer.on('connection', (socket, request) => {
 
 ### Server usage with a custom event emitter
 
-You may have a customer event production system that you need to tie into that requires you to write your own event emitter. When using graphql-ws, your `subscribe()` function *can* return an [`AsyncGenerator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator) implementation to do this. Javascript has language-level support for `AsyncGenerator`s through the `async function*()`/`yield` syntax, and it easy easy to work with. However, it is not recommended that you use it in real-world applications. This is due to a constraint of `AsyncGenerators` in general and understanding why will take a little explanation.
+You may have a customer event production system that you need to tie into that requires you to write your own event emitter. When using graphql-ws, your `subscribe()` function _can_ return an [`AsyncGenerator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator) implementation to do this. Javascript has language-level support for `AsyncGenerator`s through the `async function*()`/`yield` syntax, and it easy easy to work with. However, it is not recommended that you use it in real-world applications. This is due to a constraint of `AsyncGenerators` in general and understanding why will take a little explanation.
 
-The consumer of an `AsyncGenerator` (in this case, `graphql-ws`) awaits the [`next()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/next) function, which will return the value `yield`ed in your function. If the generator function is *also* `await`ing a promise before `yield`ing it, nothing else can change the state of the `AsyncGenerator` until the promise returns.
+The consumer of an `AsyncGenerator` (in this case, `graphql-ws`) awaits the [`next()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/next) function, which will return the value `yield`ed in your function. If the generator function is _also_ `await`ing a promise before `yield`ing it, nothing else can change the state of the `AsyncGenerator` until the promise returns.
 
 The reason this is an issue is that `graphql-ws` will react to client "unsubscribe" requests by calling [`return()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/return). This method will cause the `AsyncGenerator` to return a value immediately from the the `yield` statement, but if your function is currently `await`ing a promise, the call to `return()` will be blocked until that promise resolves. Until then, your event emitter will not be able to run any cleanup operations and none of its allocated objects will be garbage collected.
 
 Below is a toy implementation that can be used as a template for rolling your own emitter (you may also use a library that does this for you, like [Repeater.js](https://repeater.js.org/)).
-
 
 ```ts
 import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
@@ -970,7 +969,7 @@ export const schema = new GraphQLSchema({
 });
 
 /**
- * A toy event provider implementation. Will return a series of greetings with a small 
+ * A toy event provider implementation. Will return a series of greetings with a small
  * delay in between each one.
  */
 class EventProvider {
