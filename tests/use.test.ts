@@ -96,6 +96,19 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
       console.warn = warn;
     });
 
+    it('should close the socket if the client does not offer an acceptable subprotocol', async ({
+      expect,
+    }) => {
+      const { url } = await startTServer();
+
+      const client = await createTClient(url, []);
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.SubprotocolNotAcceptable);
+        expect(event.reason).toBe('Subprotocol not acceptable');
+        expect(event.wasClean).toBeTruthy();
+      });
+    });
+
     it('should gracefully go away when disposing', async ({ expect }) => {
       const server = await startTServer();
 
