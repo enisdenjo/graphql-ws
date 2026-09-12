@@ -47,6 +47,19 @@ export function makeHooks<
   const clients = new WeakMap<Peer, Client>();
 
   return defineHooks({
+    upgrade(request: Pick<Request, 'url' | 'headers'>) {
+      // NOTE-hk-260912 crossws 0.3 Node/uWS adapters use partial requests and
+      // negotiate the protocol themselves; adding a header would duplicate it.
+      if (!('clone' in request)) return undefined;
+
+      const protocol = handleProtocols(
+        request.headers.get('sec-websocket-protocol') ?? '',
+      );
+      if (protocol) {
+        return { headers: { 'Sec-WebSocket-Protocol': protocol } };
+      }
+      return undefined;
+    },
     open(peer) {
       const client: Client = {
         handleIncomingMessage: () => {
