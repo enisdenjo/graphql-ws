@@ -908,6 +908,91 @@ describe.concurrent('Ping/Pong', () => {
 
     await waitForPong;
   });
+
+  it('should invoke the server callback on ping and still reply automatically', async ({
+    expect,
+  }) => {
+    const { resolve: pinged, promise: waitForPing } = createDeferred();
+
+    const { url } = await startTServer({
+      onPing: (ctx, payload) => {
+        expect(ctx).toBeTruthy();
+        expect(payload).toEqual({ some: 'payload' });
+        pinged();
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Ping,
+        payload: { some: 'payload' },
+      }),
+    );
+
+    await waitForPing;
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.Pong,
+        payload: { some: 'payload' },
+      });
+    });
+  });
+
+  it('should invoke the server callback on pong', async ({ expect }) => {
+    const { resolve: ponged, promise: waitForPong } = createDeferred();
+
+    const { url } = await startTServer({
+      onPong: (ctx, payload) => {
+        expect(ctx).toBeTruthy();
+        expect(payload).toEqual({ some: 'payload' });
+        ponged();
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Pong,
+        payload: { some: 'payload' },
+      }),
+    );
+
+    await waitForPong;
+  });
+
+  it('should invoke the server callbacks on ping/pong before the connection is acknowledged', async ({
+    expect,
+  }) => {
+    const { resolve: pinged, promise: waitForPing } = createDeferred();
+
+    const { url } = await startTServer({
+      onPing: (ctx) => {
+        // the context exists but the connection is not acknowledged yet
+        expect(ctx.acknowledged).toBeFalsy();
+        pinged();
+      },
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Ping,
+      }),
+    );
+
+    await waitForPing;
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.Pong,
+      });
+    });
+  });
 });
 
 describe.concurrent('Subscribe', () => {
