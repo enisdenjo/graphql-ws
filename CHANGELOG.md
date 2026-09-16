@@ -1,5 +1,15 @@
 # graphql-ws
 
+## 6.2.2
+
+### Patch Changes
+
+- [#690](https://github.com/enisdenjo/graphql-ws/pull/690) [`1029314`](https://github.com/enisdenjo/graphql-ws/commit/10293141727978d03f24e6b97844df47ce8376c4) Thanks [@Haasini-kudala](https://github.com/Haasini-kudala)! - Support crossws 0.4 by selecting the GraphQL WebSocket subprotocol during the upgrade handshake. Preserve automatic protocol negotiation in the legacy crossws 0.3 Node and uWebSockets adapters.
+
+- [#686](https://github.com/enisdenjo/graphql-ws/pull/686) [`536960e`](https://github.com/enisdenjo/graphql-ws/commit/536960e68c1c042db27d0f26e35f621dabf2f85f) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Fix the CrossWS adapter ignoring socket closes issued from `server.opened`
+
+  `makeHooks` only registered the peer in the clients map after `server.opened` returned, while `send`/`close` no-op'd unless the peer was already in that map. A protocol-mismatch close (and any other close from inside `opened`) was therefore dropped, the WebSocket stayed open, and no `ConnectionAck` was ever sent because the message handler was never installed.
+
 ## 6.2.1
 
 ### Patch Changes
