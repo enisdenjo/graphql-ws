@@ -575,7 +575,8 @@ export function createClient<
   })();
 
   // invokes the callback either when an error or closed event is emitted,
-  // first one that gets called prevails, other emissions are ignored
+  // first one that gets called prevails, other emissions are ignored.
+  // the returned function stops listening without invoking the callback
   function errorOrClosed(cb: (errOrEvent: unknown) => void) {
     const listening = [
       // errors are fatal and more critical than close events, throw them first
@@ -589,6 +590,8 @@ export function createClient<
         cb(event);
       }),
     ];
+
+    return () => listening.forEach((unlisten) => unlisten());
   }
 
   type Connected = [socket: WebSocket, throwOnClose: Promise<void>];
@@ -750,10 +753,14 @@ export function createClient<
               emitter.emit('connected', socket, message.payload, retrying); // connected = socket opened + acknowledged
               retrying = false; // future lazy connects are not retries
               retries = 0; // reset the retries on connect
-              connected([
-                socket,
-                new Promise<void>((_, reject) => errorOrClosed(reject)),
-              ]);
+              const throwOnClose = new Promise<void>((_, reject) =>
+                errorOrClosed(reject),
+              );
+              // not everyone waits for the throw, dont cause unhandled rejections
+              throwOnClose.catch(() => {
+                // noop
+              });
+              connected([socket, throwOnClose]);
             } catch (err) {
               socket.onmessage = null; // stop reading messages as soon as reading breaks once
               emitter.emit('error', err);
@@ -780,9 +787,16 @@ export function createClient<
     return [
       socket,
       release,
-      Promise.race([
-        // wait for
+      // resolves on release or rejects on error/close, whichever comes first.
+      // not racing with throwOnClose on purpose, it lives as long as the socket
+      // and every race would leak memory per operation
+      new Promise<void>((resolve, reject) => {
+        const unlisten = errorOrClosed(reject);
+        // the socket might have errored or closed already, the listener above missed it
+        if (socket.readyState !== WebSocketImpl.OPEN)
+          throwOnClose.catch(reject);
         released.then(() => {
+          unlisten();
           if (!locks) {
             // and if no more locks are present, complete the connection
             const complete = () => socket.close(1000, 'Normal Closure');
@@ -797,10 +811,9 @@ export function createClient<
               complete();
             }
           }
-        }),
-        // or
-        throwOnClose,
-      ]),
+          resolve();
+        });
+      }),
     ];
   }
 
