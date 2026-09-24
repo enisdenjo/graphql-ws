@@ -630,7 +630,7 @@ export function makeServer<
       const ctx: Context<P, E> = {
         connectionInitReceived: false,
         acknowledged: false,
-        subscriptions: {},
+        subscriptions: Object.create(null),
         extra,
       };
 
@@ -982,7 +982,7 @@ export function makeServer<
 
         const subs = { ...ctx.subscriptions };
         // @ts-expect-error: I can write
-        ctx.subscriptions = {}; // deleting the subscription means no further activity should take place
+        ctx.subscriptions = Object.create(null); // deleting the subscription means no further activity should take place
 
         // we return all iterable subscriptions immediatelly, independant of the order
         await Promise.all(
