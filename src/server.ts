@@ -258,6 +258,41 @@ export interface ServerOptions<
         reason?: string,
       ) => Promise<void> | void);
   /**
+   * Called when the client sends a {@link MessageType.Ping} message, at any
+   * point after the connection is opened - before or after the connection
+   * initialisation phase.
+   *
+   * If the client sent the ping with a payload, it will be passed through the
+   * second argument. The first argument provides the {@link Context} of the
+   * connection.
+   *
+   * If this callback is implemented, the server will still automatically reply
+   * to the ping with a pong, right after the callback resolves. Use the
+   * low-level `onPing` listener on the websocket itself for full control over
+   * the response - implementing that listener disables the automatic pong.
+   */
+  onPing?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        payload: PingMessage['payload'],
+      ) => Promise<void> | void);
+  /**
+   * Called when the client sends a {@link MessageType.Pong} message, at any
+   * point after the connection is opened - before or after the connection
+   * initialisation phase.
+   *
+   * If the client sent the pong with a payload, it will be passed through the
+   * second argument. The first argument provides the {@link Context} of the
+   * connection.
+   */
+  onPong?:
+    | undefined
+    | ((
+        ctx: Context<P, E>,
+        payload: PongMessage['payload'],
+      ) => Promise<void> | void);
+  /**
    * Called when the socket closes for whatever reason, at any
    * point in time. Provides the close event too. Beware
    * that this callback happens AFTER all subscriptions have
@@ -578,6 +613,8 @@ export function makeServer<
     connectionInitWaitTimeout = 3_000, // 3 seconds
     onConnect,
     onDisconnect,
+    onPing,
+    onPong,
     onClose,
     onSubscribe,
     onOperation,
@@ -669,9 +706,12 @@ export function makeServer<
             return;
           }
           case MessageType.Ping: {
-            if (socket.onPing)
+            await onPing?.(ctx, message.payload);
+
+            if (socket.onPing) {
               // if the onPing listener is registered, automatic pong is disabled
               return await socket.onPing(message.payload);
+            }
 
             await socket.send(
               stringifyMessage(
@@ -686,6 +726,7 @@ export function makeServer<
             return;
           }
           case MessageType.Pong:
+            await onPong?.(ctx, message.payload);
             return await socket.onPong?.(message.payload);
           case MessageType.Subscribe: {
             if (!ctx.acknowledged)
