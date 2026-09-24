@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { EventEmitter } from 'events';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { afterAll, beforeAll, beforeEach, describe, it, vitest } from 'vitest';
 import WebSocket from 'ws';
 import {
@@ -2404,6 +2405,7 @@ describe.concurrent('events', () => {
       url,
       lazy: false,
       retryAttempts: 1,
+      retryWait: () => Promise.resolve(),
       onNonLazyError: noop,
       on: {
         opened: (socket) => {
@@ -2836,4 +2838,53 @@ describe.concurrent('iterate', () => {
 
     await server.waitForClientClose();
   });
+});
+
+describe('memory', () => {
+  const gc = (globalThis as { gc?: () => void }).gc;
+
+  it.skipIf(!gc)(
+    'should not retain the async context of completed subscriptions',
+    async ({ expect }) => {
+      const { url } = await startTServer();
+
+      const client = createClient({
+        url,
+        retryAttempts: 0,
+        onNonLazyError: noop,
+        lazy: false,
+      });
+
+      // subscribe from within an async context holding a marker
+      const als = new AsyncLocalStorage<object>();
+      const markers: WeakRef<object>[] = [];
+
+      for (let i = 0; i < 100; i++) {
+        const marker = { payload: new Array(1024).fill(i) };
+        markers.push(new WeakRef(marker));
+
+        await als.run(
+          marker,
+          () =>
+            new Promise<void>((resolve, reject) =>
+              client.subscribe(
+                { query: '{ getValue }' },
+                { next: noop, error: reject, complete: resolve },
+              ),
+            ),
+        );
+      }
+
+      // markers must be collectable once the subscriptions completed
+      for (let i = 0; i < 3; i++) {
+        gc!();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+
+      const retained = markers.filter((ref) => ref.deref() !== undefined);
+      expect(retained.length).toBeLessThan(10);
+
+      client.dispose();
+    },
+  );
 });
