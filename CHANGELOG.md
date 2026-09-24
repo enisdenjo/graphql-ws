@@ -1,5 +1,17 @@
 # graphql-ws
 
+## 6.3.0
+
+### Minor Changes
+
+- [#691](https://github.com/enisdenjo/graphql-ws/pull/691) [`b5f53cd`](https://github.com/enisdenjo/graphql-ws/commit/b5f53cd4c051130b43fdb8df936d0cfdb489f084) Thanks [@niukanen1](https://github.com/niukanen1)! - Add `onPing` and `onPong` server callbacks to `ServerOptions`, similar to `onConnect` and `onDisconnect`. The callbacks receive the connection `Context` as the first argument and the ping/pong `payload` as the second, allowing apps to log or react to subprotocol-level pings with access to connection state. The automatic pong reply is preserved when using the server-level `onPing` callback; the low-level websocket `onPing` listener still disables the automatic reply for full manual control.
+
+### Patch Changes
+
+- [#693](https://github.com/enisdenjo/graphql-ws/pull/693) [`c41433e`](https://github.com/enisdenjo/graphql-ws/commit/c41433e8ae07cdab30978d9cfce4e5f86f9b7dc5) Thanks [@smnbbrv](https://github.com/smnbbrv)! - fix the client leaking memory per operation on long-living connections
+
+- [#695](https://github.com/enisdenjo/graphql-ws/pull/695) [`93c8ebf`](https://github.com/enisdenjo/graphql-ws/commit/93c8ebf2096e31b5b6b06037d288732c00aa69a6) Thanks [@zerolxy612](https://github.com/zerolxy612)! - Allow operation IDs that match properties inherited from `Object.prototype`.
+
 ## 6.2.2
 
 ### Patch Changes
