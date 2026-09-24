@@ -1656,6 +1656,48 @@ describe.concurrent('Subscribe', () => {
     });
   });
 
+  it('should support operation IDs matching Object prototype properties', async ({
+    expect,
+  }) => {
+    const { url } = await startTServer();
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    for (const id of ['__proto__', 'constructor', 'toString']) {
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id,
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'query { getValue }',
+          },
+        }),
+      );
+
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data)).toEqual({
+          id,
+          type: MessageType.Next,
+          payload: { data: { getValue: 'value' } },
+        });
+      });
+      await client.waitForMessage(({ data }) => {
+        expect(parseMessage(data)).toEqual({
+          id,
+          type: MessageType.Complete,
+        });
+      });
+    }
+  });
+
   it('should support persisted queries', async ({ expect }) => {
     const queriesStore: Record<string, ExecutionArgs> = {
       iWantTheValue: {
