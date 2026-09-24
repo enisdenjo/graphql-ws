@@ -706,13 +706,12 @@ export function makeServer<
             return;
           }
           case MessageType.Ping: {
+            await onPing?.(ctx, message.payload);
+
             if (socket.onPing) {
               // if the onPing listener is registered, automatic pong is disabled
-              await onPing?.(ctx, message.payload);
               return await socket.onPing(message.payload);
             }
-
-            await onPing?.(ctx, message.payload);
 
             await socket.send(
               stringifyMessage(
