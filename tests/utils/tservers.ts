@@ -145,7 +145,7 @@ export async function startRawServer(): Promise<{
 }
 
 export async function startWSTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions> & { isProd?: boolean } = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
@@ -356,7 +356,7 @@ export async function startWSTServer(
 }
 
 export async function startUWSTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions> & { isProd?: boolean } = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
@@ -510,7 +510,7 @@ export async function startUWSTServer(
 }
 
 export async function startFastifyWSTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions> & { isProd?: boolean } = {},
   keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
@@ -725,7 +725,7 @@ export async function startFastifyWSTServer(
 }
 
 export async function startCrosswsTServer(
-  options: Partial<ServerOptions> = {},
+  options: Partial<ServerOptions> & { isProd?: boolean } = {},
   // keepAlive?: number, // for ws tests sake
 ): Promise<TServer> {
   const path = '/simple';
