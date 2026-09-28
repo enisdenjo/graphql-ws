@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.4.0
+
+### Minor Changes
+
+- [#696](https://github.com/enisdenjo/graphql-ws/pull/696) [`83be052`](https://github.com/enisdenjo/graphql-ws/commit/83be0521d510e3d53ee61288fda0f57dcfee78af) Thanks [@niukanen1](https://github.com/niukanen1)! - Add an `isProd` option to the `ws`, `uWebSockets.js` and `@fastify/websocket` use-server helpers, matching the existing `crossws` option. It controls whether internal error messages are masked with `Internal server error` before reaching the client, defaulting to the `NODE_ENV === 'production'` check as before. This lets apps running in production keep reporting `onConnect` error messages to the client by opting out, or mask eagerly in non-production environments.
+
 ## 6.3.0
 
 ### Minor Changes
