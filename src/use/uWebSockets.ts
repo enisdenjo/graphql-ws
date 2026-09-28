@@ -78,7 +78,18 @@ export function makeBehavior<
      */
     isProd?: boolean;
   },
-  behavior: uWS.WebSocketBehavior<unknown> = {},
+  behavior: Omit<uWS.WebSocketBehavior<unknown>, 'upgrade'> & {
+    /**
+     * Intercept the initial HTTP upgrade request. Anything returned is merged
+     * into the upgrade data, and is available on the socket and in the context
+     * extra (the `E` generic) once the connection is established.
+     */
+    upgrade?: (
+      res: uWS.HttpResponse,
+      req: uWS.HttpRequest,
+      context: uWS.us_socket_context_t,
+    ) => Partial<E> | Promise<void> | void;
+  } = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets)
    * to check that the link between the clients and the server is operating and to prevent the link
@@ -115,7 +126,7 @@ export function makeBehavior<
       }
     },
     upgrade(...args) {
-      behavior.upgrade?.(...args);
+      const upgradeData = behavior.upgrade?.(...args) ?? {};
       const [res, req, context] = args;
 
       const headers: http.IncomingHttpHeaders = {};
@@ -123,15 +134,16 @@ export function makeBehavior<
         headers[key] = value;
       });
 
-      res.upgrade<UpgradeData>(
+      res.upgrade<UpgradeData & Partial<E>>(
         {
+          ...upgradeData,
           persistedRequest: {
             method: req.getMethod(),
             url: req.getUrl(),
             query: req.getQuery(),
             headers,
           },
-        },
+        } as UpgradeData & Partial<E>,
         req.getHeader('sec-websocket-key'),
         handleProtocols(req.getHeader('sec-websocket-protocol')) ||
           new Uint8Array(),
@@ -142,7 +154,8 @@ export function makeBehavior<
     open(...args) {
       behavior.open?.(...args);
       const socket = args[0] as uWS.WebSocket<unknown> & UpgradeData;
-      const persistedRequest = socket.persistedRequest;
+      const upgradeData = socket.getUserData() as UpgradeData & Partial<E>;
+      const persistedRequest = upgradeData.persistedRequest;
 
       // prepare client object
       const client: Client = {
@@ -178,7 +191,7 @@ export function makeBehavior<
           },
           onMessage: (cb) => (client.handleMessage = cb),
         },
-        { socket, persistedRequest } as Extra & Partial<E>,
+        { ...upgradeData, socket } as Extra & Partial<E>,
       );
 
       if (keepAlive > 0 && isFinite(keepAlive)) {
