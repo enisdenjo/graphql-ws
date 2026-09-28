@@ -71,7 +71,13 @@ export function makeBehavior<
   P extends ConnectionInitMessage['payload'] = ConnectionInitMessage['payload'],
   E extends Record<PropertyKey, unknown> = Record<PropertyKey, never>,
 >(
-  options: ServerOptions<P, Extra & Partial<E>>,
+  options: ServerOptions<P, Extra & Partial<E>> & {
+    /**
+     * If the server is running in production. Defaults to read from `process.env.NODE_ENV`.
+     * In production the server will not send error messages which might contain sensitive info to the client.
+     */
+    isProd?: boolean;
+  },
   behavior: uWS.WebSocketBehavior<unknown> = {},
   /**
    * The timout between dispatched keep-alive messages. Internally uses the [ws Ping and Pongs](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets)
@@ -82,7 +88,10 @@ export function makeBehavior<
    */
   keepAlive = 12_000,
 ): uWS.WebSocketBehavior<unknown> {
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd =
+    typeof options.isProd === 'boolean'
+      ? options.isProd
+      : process.env.NODE_ENV === 'production';
   const server = makeServer(options);
   const clients = new Map<uWS.WebSocket<unknown>, Client>();
 

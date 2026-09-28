@@ -505,6 +505,54 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
       },
     );
 
+    it('should mask internal server errors when `isProd` is set even outside production', async ({
+      expect,
+    }) => {
+      const { url } = await startTServer({
+        isProd: true,
+        onConnect: () => {
+          throw new Error("I'm a teapot");
+        },
+      });
+
+      const client = await createTClient(url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe('Internal server error');
+        expect(event.wasClean).toBeTruthy();
+      });
+    });
+
+    it('should report error messages when `isProd` is set to false', async ({
+      expect,
+    }) => {
+      const { url } = await startTServer({
+        isProd: false,
+        onConnect: () => {
+          throw new Error("I'm a teapot");
+        },
+      });
+
+      const client = await createTClient(url);
+      client.ws.send(
+        stringifyMessage<MessageType.ConnectionInit>({
+          type: MessageType.ConnectionInit,
+        }),
+      );
+
+      await client.waitForClose((event) => {
+        expect(event.code).toBe(CloseCode.InternalServerError);
+        expect(event.reason).toBe("I'm a teapot");
+        expect(event.wasClean).toBeTruthy();
+      });
+    });
+
     it('should limit the internal server error message size', async ({
       expect,
     }) => {
