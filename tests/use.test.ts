@@ -13,6 +13,7 @@ import {
 import type { Extra as CrossWsExtra } from '../src/use/crossws';
 import {
   createTClient,
+  startUWSTServer,
   tServers,
   type FastifyExtra,
   type TClient,
@@ -181,6 +182,51 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
 
       await waitForConnect;
     });
+
+    if (tServer === 'uWebSockets.js') {
+      it('should merge the upgrade callback return value into the context extra', async ({
+        expect,
+      }) => {
+        const { resolve: connected, promise: waitForConnect } =
+          createDeferred();
+        let seenOnSocket: unknown;
+
+        const server = await startUWSTServer(
+          {
+            onConnect: (ctx) => {
+              const extra = ctx.extra as UWSExtra & { ip: string };
+              expect(extra.ip).toBe('127.0.0.1');
+              // the socket and the persisted request cannot be clobbered
+              expect(extra.socket.constructor.name).toBe('uWS.WebSocket');
+              expect(extra.persistedRequest.method).toBe('get');
+              connected();
+              return false; // reject client for sake of test
+            },
+          },
+          undefined, // keepAlive
+          {
+            open: (socket) => {
+              seenOnSocket = (socket as unknown as { ip: string }).ip;
+            },
+            upgrade: () => ({
+              ip: '127.0.0.1',
+              persistedRequest: 'clobbered',
+              socket: 'clobbered',
+            }),
+          },
+        );
+
+        const client = await createTClient(server.url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
+
+        await waitForConnect;
+        expect(seenOnSocket).toBe('127.0.0.1');
+      });
+    }
 
     it('should close the socket with errors thrown from any callback', async ({
       expect,
