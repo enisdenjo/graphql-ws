@@ -802,9 +802,12 @@ export function createClient<
             const complete = () => socket.close(1000, 'Normal Closure');
             if (isFinite(lazyCloseTimeoutMs) && lazyCloseTimeoutMs > 0) {
               // if the keepalive is set, allow for the specified calmdown time and
-              // then complete if the socket is still open.
+              // then complete if the socket is still open and unused.
+              // many releases can happen at once, keep only one timeout
+              clearTimeout(lazyCloseTimeout);
               lazyCloseTimeout = setTimeout(() => {
-                if (socket.readyState === WebSocketImpl.OPEN) complete();
+                if (!locks && socket.readyState === WebSocketImpl.OPEN)
+                  complete();
               }, lazyCloseTimeoutMs);
             } else {
               // otherwise complete immediately

@@ -1543,6 +1543,46 @@ describe.concurrent('lazy', () => {
     }, 5);
   });
 
+  it('should not close by lazyCloseTimeout when many subscriptions complete at once and a new one subscribes', async ({
+    task,
+  }) => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      lazy: true, // default
+      lazyCloseTimeout: 10,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const sub1 = tsubscribe(client, {
+      query: `subscription { ping(key: "${task.id}-1") }`,
+    });
+    await server.waitForOperation();
+    const sub2 = tsubscribe(client, {
+      query: `subscription { ping(key: "${task.id}-2") }`,
+    });
+    await server.waitForOperation();
+
+    // everyone unsubscribes at the same time
+    sub1.dispose();
+    sub2.dispose();
+    await sub1.waitForComplete();
+    await sub2.waitForComplete();
+
+    // a new subscription comes in before the lazyCloseTimeout passes
+    tsubscribe(client, {
+      query: `subscription { ping(key: "${task.id}-3") }`,
+    });
+    await server.waitForOperation();
+
+    // the socket is still in use, no leftover timeout should close it
+    await server.waitForClientClose(() => {
+      throw new Error("Client shouldn't have closed");
+    }, 20);
+  });
+
   it('should report errors to the `onNonLazyError` callback', async ({
     expect,
   }) => {
