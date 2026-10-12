@@ -899,7 +899,14 @@ export function createClient<
             await connect();
 
           // if done while waiting for connect, release the connection lock right away
-          if (done) return release();
+          if (done) {
+            // the socket may have already closed (e.g. on client dispose), and this
+            // subscription no longer awaits the outcome, so avoid an unhandled rejection
+            waitForReleaseOrThrowOnClose.catch(() => {
+              // noop
+            });
+            return release();
+          }
 
           const unlisten = emitter.onMessage(id, (message) => {
             switch (message.type) {
