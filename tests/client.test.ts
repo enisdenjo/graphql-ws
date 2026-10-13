@@ -439,6 +439,83 @@ it('should not send the complete message if the socket is not open', async ({
   await sub.waitForComplete();
 });
 
+it('should not reject unhandled when a subscription is disposed before connecting and the client is disposed', async ({
+  expect,
+}) => {
+  // acknowledges the connection and delivers the close event on a microtask,
+  // like some WebSocket implementations (e.g. @mswjs/interceptors) do
+  class MicrotaskCloseWebSocket extends EventTarget {
+    public static CONNECTING = 0;
+    public static OPEN = 1;
+    public static CLOSING = 2;
+    public static CLOSED = 3;
+    public readyState = MicrotaskCloseWebSocket.CONNECTING;
+    public protocol = 'graphql-transport-ws';
+    public onopen: ((event: Event) => void) | null = null;
+    public onmessage: ((event: MessageEvent) => void) | null = null;
+    public onclose: ((event: CloseEvent) => void) | null = null;
+    public onerror: ((event: Event) => void) | null = null;
+
+    constructor() {
+      super();
+      setTimeout(() => {
+        this.readyState = MicrotaskCloseWebSocket.OPEN;
+        this.onopen?.(new Event('open'));
+      });
+    }
+
+    public send(data: string) {
+      if (parseMessage(data).type === MessageType.ConnectionInit) {
+        setTimeout(() =>
+          this.onmessage?.(
+            new MessageEvent('message', {
+              data: stringifyMessage({ type: MessageType.ConnectionAck }),
+            }),
+          ),
+        );
+      }
+    }
+
+    public close(code = 1000, reason = '') {
+      if (this.readyState >= MicrotaskCloseWebSocket.CLOSING) return;
+      this.readyState = MicrotaskCloseWebSocket.CLOSING;
+      queueMicrotask(() => {
+        this.readyState = MicrotaskCloseWebSocket.CLOSED;
+        this.onclose?.(
+          new CloseEvent('close', { code, reason, wasClean: true }),
+        );
+      });
+    }
+  }
+
+  const unhandledRejections: unknown[] = [];
+  const onUnhandledRejection = (reason: unknown) => {
+    unhandledRejections.push(reason);
+  };
+  process.on('unhandledRejection', onUnhandledRejection);
+
+  try {
+    const client = createClient({
+      url: 'ws://localhost',
+      webSocketImpl: MicrotaskCloseWebSocket,
+    });
+
+    const dispose = client.subscribe(
+      { query: '{ getValue }' },
+      { next: noop, error: noop, complete: noop },
+    );
+    dispose();
+    await client.dispose();
+
+    // let the close event and any rejections settle
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(unhandledRejections).toEqual([]);
+  } finally {
+    process.off('unhandledRejection', onUnhandledRejection);
+  }
+});
+
 it('should not call complete after subscription error', async () => {
   const { url } = await startTServer();
 
