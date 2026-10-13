@@ -1,5 +1,19 @@
 # graphql-ws
 
+## 6.4.0
+
+### Minor Changes
+
+- [#696](https://github.com/enisdenjo/graphql-ws/pull/696) [`83be052`](https://github.com/enisdenjo/graphql-ws/commit/83be0521d510e3d53ee61288fda0f57dcfee78af) Thanks [@niukanen1](https://github.com/niukanen1)! - Add an `isProd` option to the `ws`, `uWebSockets.js` and `@fastify/websocket` use-server helpers, matching the existing `crossws` option. It controls whether internal error messages are masked with `Internal server error` before reaching the client, defaulting to the `NODE_ENV === 'production'` check as before. This lets apps running in production keep reporting `onConnect` error messages to the client by opting out, or mask eagerly in non-production environments.
+
+### Patch Changes
+
+- [#700](https://github.com/enisdenjo/graphql-ws/pull/700) [`d8aeda6`](https://github.com/enisdenjo/graphql-ws/commit/d8aeda6504268e8b6a74e49c128393b9617a0ed5) Thanks [@kratam](https://github.com/kratam)! - Fix the client closing an in-use socket when many subscriptions complete at once and a new one subscribes within the `lazyCloseTimeout`
+
+  Every completing subscription scheduled its own lazy close timeout, but only the last one got cleared on the next connect. The client now keeps a single lazy close timeout and checks for active subscriptions before closing.
+
+- [#702](https://github.com/enisdenjo/graphql-ws/pull/702) [`1e05c8c`](https://github.com/enisdenjo/graphql-ws/commit/1e05c8c2e6701d006b0e09c849dfadc234a79f4c) Thanks [@Meemaw](https://github.com/Meemaw)! - Avoid an unhandled rejection when a subscription is disposed before the connection is acknowledged and the socket closes before the subscription releases its connection lock (for example, when the client is disposed while connecting and the WebSocket implementation delivers the close event on a microtask).
+
 ## 6.3.0
 
 ### Minor Changes
