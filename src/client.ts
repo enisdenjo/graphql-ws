@@ -736,6 +736,7 @@ export function createClient<
                             type: MessageType.Pong,
                             // payload is completely absent if not provided
                           },
+                      replacer,
                     ),
                   );
                   emitter.emit('pong', false, message.payload);

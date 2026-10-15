@@ -721,6 +721,7 @@ export function makeServer<
                       type: MessageType.Pong,
                       // payload is completely absent if not provided
                     },
+                replacer,
               ),
             );
             return;

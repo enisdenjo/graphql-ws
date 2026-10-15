@@ -1036,6 +1036,47 @@ describe.concurrent('ping/pong', () => {
     }, 20);
   });
 
+  it('should use the custom JSON message replacer for the pong', async ({
+    expect,
+  }) => {
+    expect.assertions(1);
+
+    const { url, waitForConnect, waitForClient, waitForClientClose } =
+      await startTServer();
+
+    createClient({
+      url,
+      lazy: false,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+      jsonMessageReplacer: (_key, value) =>
+        typeof value === 'bigint' ? value.toString() : value,
+      jsonMessageReviver: (key, value) =>
+        key === 'big' ? BigInt(value) : value,
+    });
+
+    await waitForConnect();
+
+    await waitForClient((client) => {
+      client.send(
+        stringifyMessage({
+          type: MessageType.Ping,
+          payload: { big: '9007199254740993' },
+        }),
+      );
+      client.onMessage((data) => {
+        expect(parseMessage(data)).toEqual({
+          type: MessageType.Pong,
+          payload: { big: '9007199254740993' },
+        });
+      });
+    });
+
+    await waitForClientClose(() => {
+      throw new Error("Shouldn't have closed");
+    }, 20);
+  });
+
   it('should not respond with a pong to a ping when disabled', async () => {
     const { url, waitForConnect, waitForClient, waitForClientClose } =
       await startTServer();
