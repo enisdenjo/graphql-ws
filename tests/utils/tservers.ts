@@ -4,6 +4,7 @@ import fastifyWebsocket from '@fastify/websocket';
 import crossws from 'crossws/adapters/uws';
 import Fastify from 'fastify';
 import uWS from 'uWebSockets.js';
+import type * as uWSTypes from 'uWebSockets.js';
 import { afterAll, it } from 'vitest';
 import type ws from 'ws';
 import { WebSocketServer } from 'ws';
@@ -355,9 +356,19 @@ export async function startWSTServer(
   };
 }
 
+/** The uWS behaviour, whose `upgrade` may return the extra data merged into the upgrade data. */
+type UWSBehavior = Omit<uWSTypes.WebSocketBehavior<unknown>, 'upgrade'> & {
+  upgrade?: (
+    res: uWSTypes.HttpResponse,
+    req: uWSTypes.HttpRequest,
+    context: uWSTypes.us_socket_context_t,
+  ) => Record<PropertyKey, unknown> | Promise<void> | void;
+};
+
 export async function startUWSTServer(
   options: Partial<ServerOptions> & { isProd?: boolean } = {},
   keepAlive?: number, // for ws tests sake
+  behavior: UWSBehavior = {},
 ): Promise<TServer> {
   const path = '/simple';
   const emitter = new EventEmitter();
@@ -404,11 +415,14 @@ export async function startUWSTServer(
               },
             },
             {
+              ...behavior,
               open: (socket) => {
                 sockets.add(socket);
+                behavior.open?.(socket);
               },
-              close: (socket) => {
+              close: (socket, code, message) => {
                 sockets.delete(socket);
+                behavior.close?.(socket, code, message);
               },
             },
             keepAlive,
