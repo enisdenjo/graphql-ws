@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.4.1
+
+### Patch Changes
+
+- [#703](https://github.com/enisdenjo/graphql-ws/pull/703) [`707c38c`](https://github.com/enisdenjo/graphql-ws/commit/707c38cbf7bad4fefd21d276cbabcce079606522) Thanks [@lprnmns](https://github.com/lprnmns)! - Use the `jsonMessageReplacer` when automatically responding to a ping with a pong, on both the client and the server
+
 ## 6.4.0
 
 ### Minor Changes
