@@ -821,6 +821,33 @@ describe.concurrent('Ping/Pong', () => {
     });
   });
 
+  it('should use the custom JSON message replacer for the pong', async ({
+    expect,
+  }) => {
+    const { url } = await startTServer({
+      jsonMessageReplacer: (_key, value) =>
+        typeof value === 'bigint' ? value.toString() : value,
+      jsonMessageReviver: (key, value) =>
+        key === 'big' ? BigInt(value) : value,
+    });
+
+    const client = await createTClient(url);
+
+    client.ws.send(
+      stringifyMessage({
+        type: MessageType.Ping,
+        payload: { big: '9007199254740993' },
+      }),
+    );
+
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        type: MessageType.Pong,
+        payload: { big: '9007199254740993' },
+      });
+    });
+  });
+
   it('should not react to a pong', async () => {
     const { url } = await startTServer();
 
