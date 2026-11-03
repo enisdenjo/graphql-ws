@@ -404,6 +404,8 @@ export async function startUWSTServer(
               },
             },
             {
+              // uWS drops a message sent while more than this is queued, and the backpressure tests queue more than the 64KiB default
+              maxBackpressure: 1024 * 1024,
               open: (socket) => {
                 sockets.add(socket);
               },

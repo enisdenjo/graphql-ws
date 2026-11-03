@@ -57,6 +57,8 @@ export interface PersistedRequest {
 interface Client {
   pingInterval: ReturnType<typeof setInterval> | null;
   pongWaitTimeout: ReturnType<typeof setTimeout> | null;
+  /** Sends waiting for this socket's backpressure to drain. */
+  drainWaiters: (() => void)[];
   handleMessage: (data: string) => Promise<void>;
   closed: (code: number, reason: string) => Promise<void>;
 }
@@ -94,10 +96,6 @@ export function makeBehavior<
       : process.env.NODE_ENV === 'production';
   const server = makeServer(options);
   const clients = new Map<uWS.WebSocket<unknown>, Client>();
-
-  let onDrain = () => {
-    // gets called when backpressure drains
-  };
 
   return {
     ...behavior,
@@ -148,6 +146,7 @@ export function makeBehavior<
       const client: Client = {
         pingInterval: null,
         pongWaitTimeout: null,
+        drainWaiters: [],
         handleMessage: () => {
           throw new Error('Message received before handler was registered');
         },
@@ -166,8 +165,10 @@ export function makeBehavior<
             // the socket might have been destroyed in the meantime
             if (!clients.has(socket)) return;
             if (!socket.send(message))
-              // if backpressure is built up wait for drain
-              await new Promise<void>((resolve) => (onDrain = resolve));
+              // if backpressure is built up wait for this socket to drain
+              await new Promise<void>((resolve) =>
+                client.drainWaiters.push(resolve),
+              );
           },
           close: (code, reason) => {
             // end socket in next tick making sure the client is registered
@@ -193,7 +194,12 @@ export function makeBehavior<
     },
     drain(...args) {
       behavior.drain?.(...args);
-      onDrain();
+      const [socket] = args;
+      const drainWaiters = clients.get(socket)?.drainWaiters.splice(0);
+      if (drainWaiters?.length)
+        // resume sending once uWS has left the drain callback. a large send that only partly writes from inside
+        // the callback leaves uWS no longer polling the socket for writability, so it would never drain again
+        setImmediate(() => drainWaiters.forEach((resolve) => resolve()));
     },
     async message(...args) {
       behavior.message?.(...args);
@@ -232,6 +238,8 @@ export function makeBehavior<
       if (client.pingInterval) clearTimeout(client.pingInterval);
       client.closed(code, Buffer.from(message).toString());
       clients.delete(socket);
+      // a closed socket never drains, release the waiting sends so that their operations can complete
+      client.drainWaiters.splice(0).forEach((resolve) => resolve());
     },
   };
 }
