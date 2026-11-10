@@ -1,5 +1,11 @@
 import http from 'node:http';
 import { setTimeout } from 'node:timers/promises';
+import {
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import ws from 'ws';
 import {
@@ -11,6 +17,7 @@ import {
   type SubscribePayload,
 } from '../src/common';
 import type { Extra as CrossWsExtra } from '../src/use/crossws';
+import { schemaConfig } from './fixtures/simple';
 import {
   createTClient,
   tServers,
@@ -598,6 +605,83 @@ for (const { tServer, skipUWS, startTServer, skipCrossws } of tServers) {
         expect(event.code).toBe(CloseCode.InternalServerError);
         expect(event.reason).toBe('Internal server error');
         expect(event.wasClean).toBeTruthy(); // because the server reported the error
+      });
+    });
+
+    describe.concurrent('Backpressure', () => {
+      // far more than the socket buffers of a client that stopped reading can hold
+      const chunk = 'x'.repeat(256 * 1024);
+      const schema = new GraphQLSchema({
+        ...schemaConfig,
+        subscription: new GraphQLObjectType({
+          name: 'Subscription',
+          fields: {
+            chunks: {
+              type: new GraphQLNonNull(GraphQLString),
+              subscribe: async function* () {
+                for (let i = 0; i < 100; i++) yield { chunks: chunk };
+              },
+            },
+          },
+        }),
+      });
+
+      async function subscribeWithoutReading(url: string) {
+        const client = await createTClient(url);
+        client.ws.send(
+          stringifyMessage<MessageType.ConnectionInit>({
+            type: MessageType.ConnectionInit,
+          }),
+        );
+        await client.waitForMessage(); // ack
+        client.ws.pause();
+        client.ws.send(
+          stringifyMessage<MessageType.Subscribe>({
+            id: '1',
+            type: MessageType.Subscribe,
+            payload: { query: 'subscription { chunks }' },
+          }),
+        );
+        return client;
+      }
+
+      async function readUntilComplete(client: TClient) {
+        client.ws.resume();
+        let complete = false;
+        while (!complete) {
+          await client.waitForMessage(({ data }) => {
+            complete = parseMessage(data).type === MessageType.Complete;
+          });
+        }
+      }
+
+      // crossws does not wait for backpressure to drain
+      skipCrossws(
+        'should resume sending to each client when its own backpressure drains',
+        async () => {
+          const server = await startTServer({ schema });
+
+          const client1 = await subscribeWithoutReading(server.url);
+          const client2 = await subscribeWithoutReading(server.url);
+          await server.waitForOperation();
+          await server.waitForOperation();
+
+          await Promise.all([
+            readUntilComplete(client1),
+            readUntilComplete(client2),
+          ]);
+        },
+      );
+
+      it('should complete the operation of a client that leaves while backpressured', async () => {
+        const server = await startTServer({ schema });
+
+        const client = await subscribeWithoutReading(server.url);
+        await server.waitForOperation();
+
+        client.ws.terminate();
+
+        await server.waitForComplete();
       });
     });
 
