@@ -1,5 +1,11 @@
 # graphql-ws
 
+## 6.4.2
+
+### Patch Changes
+
+- [#705](https://github.com/enisdenjo/graphql-ws/pull/705) [`f86ce7e`](https://github.com/enisdenjo/graphql-ws/commit/f86ce7e64edd0de3bc0fb81121c2ab687d467a69) Thanks [@mattkrick](https://github.com/mattkrick)! - Wait for each uWebSockets.js socket's own backpressure to drain, and complete the operations of a socket that closes while backpressured. Sockets used to share one drain callback, so an operation on a backpressured socket could stall until that socket closed
+
 ## 6.4.1
 
 ### Patch Changes
