@@ -199,7 +199,7 @@ export function makeBehavior<
       if (drainWaiters?.length)
         // resume sending once uWS has left the drain callback. a large send that only partly writes from inside
         // the callback leaves uWS no longer polling the socket for writability, so it would never drain again
-        setImmediate(() => drainWaiters.forEach((resolve) => resolve()));
+        setTimeout(() => drainWaiters.forEach((resolve) => resolve()), 0);
     },
     async message(...args) {
       behavior.message?.(...args);
