@@ -1,5 +1,13 @@
 # graphql-ws
 
+## 6.4.3
+
+### Patch Changes
+
+- [`957121b`](https://github.com/enisdenjo/graphql-ws/commit/957121b7e137750c9b8ff1f797ddcc59decae258) Thanks [@enisdenjo](https://github.com/enisdenjo)! - Clear the pending `lazyCloseTimeout` when disposing the client
+
+  Disposing the client closes the socket but kept the lazy close timeout scheduled, holding on to the disposed client until the timeout fired.
+
 ## 6.4.2
 
 ### Patch Changes
