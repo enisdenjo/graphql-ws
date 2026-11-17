@@ -1052,6 +1052,8 @@ export function createClient<
     },
     async dispose() {
       disposed = true;
+      // a pending lazy close would keep the disposed client alive until it fires
+      clearTimeout(lazyCloseTimeout);
       if (connecting) {
         // if there is a connection, close it
         const [socket] = await connecting;

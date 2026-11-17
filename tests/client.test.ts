@@ -1701,6 +1701,47 @@ describe.concurrent('lazy', () => {
     }, 20);
   });
 
+  it('should clear the pending lazyCloseTimeout on dispose', async ({
+    task,
+    expect,
+  }) => {
+    const { url, ...server } = await startTServer();
+
+    // unique delay so we can pick out the lazy close timer
+    const lazyCloseTimeout = 1234;
+    const setTimeoutSpy = vitest.spyOn(globalThis, 'setTimeout');
+    const clearTimeoutSpy = vitest.spyOn(globalThis, 'clearTimeout');
+    try {
+      const client = createClient({
+        url,
+        lazy: true, // default
+        lazyCloseTimeout,
+        retryAttempts: 0,
+        onNonLazyError: noop,
+      });
+
+      const sub = tsubscribe(client, {
+        query: `subscription { ping(key: "${task.id}") }`,
+      });
+      await server.waitForOperation();
+
+      // last unsubscribe schedules the lazy close
+      sub.dispose();
+      await sub.waitForComplete();
+      const lazyCloseTimer = setTimeoutSpy.mock.results.find(
+        (_, i) => setTimeoutSpy.mock.calls[i]![1] === lazyCloseTimeout,
+      )?.value;
+      expect(lazyCloseTimer).toBeDefined();
+
+      await client.dispose();
+
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(lazyCloseTimer);
+    } finally {
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
+    }
+  });
+
   it('should report errors to the `onNonLazyError` callback', async ({
     expect,
   }) => {
