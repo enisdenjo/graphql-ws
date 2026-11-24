@@ -1041,6 +1041,8 @@ export function createClient<
           deferred.error = err;
           deferred.resolve();
         }
+        // as with return, complete the subscription and release the connection
+        dispose();
         return { done: true, value: undefined };
       };
       iterator.return = async () => {

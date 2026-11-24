@@ -3037,6 +3037,45 @@ describe.concurrent('iterate', () => {
 
     await server.waitForClientClose();
   });
+
+  it('should complete subscription when calling throw directly on iterator', async ({
+    task,
+    expect,
+  }) => {
+    const { url, ...server } = await startTServer();
+
+    const client = createClient({
+      url,
+      retryAttempts: 0,
+      onNonLazyError: noop,
+    });
+
+    const iterator = client.iterate({
+      query: `subscription { ping(key: "${task.id}") }`,
+    });
+
+    pong(task.id);
+
+    await expect(iterator.next()).resolves.toMatchInlineSnapshot(`
+      {
+        "done": false,
+        "value": {
+          "data": {
+            "ping": "pong",
+          },
+        },
+      }
+    `);
+
+    await expect(iterator.throw?.(new Error(':)'))).resolves.toEqual({
+      done: true,
+      value: undefined,
+    });
+
+    // the subscription must complete and release the lazy connection, as with return
+    await server.waitForComplete();
+    await server.waitForClientClose();
+  });
 });
 
 describe('memory', () => {
