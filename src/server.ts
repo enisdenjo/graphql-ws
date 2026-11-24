@@ -634,6 +634,10 @@ export function makeServer<
         extra,
       };
 
+      // a token for each reserved id: a client can re-use the id of a completed operation,
+      // so an operation that ends late must not act on the reservation of a newer one
+      const reservations = new Map<string, object>();
+
       if (socket.protocol !== GRAPHQL_TRANSPORT_WS_PROTOCOL) {
         socket.close(
           CloseCode.SubprotocolNotAcceptable,
@@ -743,6 +747,11 @@ export function makeServer<
             // if this turns out to be a streaming operation, the subscription value
             // will change to an `AsyncIterable`, otherwise it will stay as is
             ctx.subscriptions[id] = null;
+            const reservation = {};
+            reservations.set(id, reservation);
+            /** Whether the client did not complete this operation yet. */
+            const reserved = () =>
+              id in ctx.subscriptions && reservations.get(id) === reservation;
 
             const emit = {
               next: async (
@@ -818,7 +827,7 @@ export function makeServer<
               );
               if (maybeExecArgsOrErrors) {
                 if (areGraphQLErrors(maybeExecArgsOrErrors))
-                  return id in ctx.subscriptions
+                  return reserved()
                     ? await emit.error(maybeExecArgsOrErrors, message)
                     : void 0;
                 else if (Array.isArray(maybeExecArgsOrErrors))
@@ -850,7 +859,7 @@ export function makeServer<
                   execArgs.document,
                 );
                 if (validationErrors.length > 0)
-                  return id in ctx.subscriptions
+                  return reserved()
                     ? await emit.error(validationErrors, message)
                     : void 0;
               }
@@ -860,7 +869,7 @@ export function makeServer<
                 execArgs.operationName,
               );
               if (!operationAST)
-                return id in ctx.subscriptions
+                return reserved()
                   ? await emit.error(
                       [new GraphQLError('Unable to identify operation')],
                       message,
@@ -900,7 +909,7 @@ export function makeServer<
 
               if (isAsyncIterable(operationResult)) {
                 /** multiple emitted results */
-                if (!(id in ctx.subscriptions)) {
+                if (!reserved()) {
                   // subscription was completed/canceled before the operation settled
                   if (isAsyncGenerator(operationResult))
                     operationResult.return(undefined);
@@ -943,29 +952,34 @@ export function makeServer<
                     );
                     // error terminates the operation per spec — prevent
                     // emit.complete from notifying the client
-                    delete ctx.subscriptions[id];
+                    if (reserved()) delete ctx.subscriptions[id];
                   }
                 }
               } else {
                 /** single emitted result */
                 // if the client completed the subscription before the single result
                 // became available, he effectively canceled it and no data should be sent
-                if (id in ctx.subscriptions)
+                if (reserved())
                   await emit.next(operationResult, message, execArgs);
               }
 
               // lack of subscription at this point indicates that the client
               // completed the subscription, he doesn't need to be reminded
-              await emit.complete(id in ctx.subscriptions, message);
+              await emit.complete(reserved(), message);
             } finally {
-              // whatever happens to the subscription, we finally want to get rid of the reservation
-              delete ctx.subscriptions[id];
+              // whatever happens to the subscription, we finally want to get rid of the reservation,
+              // but only of our own: the client may have re-used the id for a new operation
+              if (reservations.get(id) === reservation) {
+                delete ctx.subscriptions[id];
+                reservations.delete(id);
+              }
             }
             return;
           }
           case MessageType.Complete: {
             const subscription = ctx.subscriptions[message.id];
             delete ctx.subscriptions[message.id]; // deleting the subscription means no further activity should take place
+            reservations.delete(message.id);
             if (isAsyncGenerator(subscription))
               await subscription.return(undefined);
             return;
