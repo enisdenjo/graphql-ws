@@ -1512,6 +1512,86 @@ describe.concurrent('Subscribe', () => {
     }, 30);
   });
 
+  it('should not let a completed operation act on a new operation re-using its id', async ({
+    expect,
+  }) => {
+    const results: ((result: ExecutionResult) => void)[] = [];
+    let executed = () => {
+      /* noop for calming typescript */
+    };
+    const { url } = await startTServer({
+      schema,
+      execute: () =>
+        new Promise<ExecutionResult>((resolve) => {
+          results.push(resolve);
+          executed();
+        }),
+    });
+    const waitForExecutions = (count: number) =>
+      new Promise<void>((resolve) => {
+        executed = () => results.length >= count && resolve();
+        executed();
+      });
+
+    const client = await createTClient(url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data).type).toBe(MessageType.ConnectionAck);
+    });
+
+    const subscribe = () =>
+      client.ws.send(
+        stringifyMessage<MessageType.Subscribe>({
+          id: '1',
+          type: MessageType.Subscribe,
+          payload: {
+            query: 'query { getValue }',
+          },
+        }),
+      );
+
+    subscribe();
+    await waitForExecutions(1);
+
+    // complete before the result is available
+    client.ws.send(
+      stringifyMessage<MessageType.Complete>({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+
+    // the client is free to re-use the id of a completed operation
+    subscribe();
+    await waitForExecutions(2);
+
+    // the completed operation gets its result, nothing must be sent for it
+    results[0]!({ data: { getValue: 'first' } });
+    await client.waitForMessage(() => {
+      throw new Error('No activity expected for the completed operation');
+    }, 30);
+
+    // the new operation still gets its result and completes
+    results[1]!({ data: { getValue: 'second' } });
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Next,
+        payload: { data: { getValue: 'second' } },
+      });
+    });
+    await client.waitForMessage(({ data }) => {
+      expect(parseMessage(data)).toEqual({
+        id: '1',
+        type: MessageType.Complete,
+      });
+    });
+  });
+
   it('should execute the query and "error" out because of validation errors', async ({
     expect,
   }) => {
