@@ -2021,6 +2021,70 @@ describe.concurrent('Subscribe', () => {
     await server.waitForComplete();
   });
 
+  it('should not emit the value that a waiting source yields after the client completes', async () => {
+    const { resolve: started, promise: waitForStart } = createDeferred();
+    const { resolve: release, promise: released } = createDeferred();
+    const server = await startTServer({
+      schema: buildSchema(
+        'type Query { ok: Boolean } type Subscription { ticks: Int }',
+      ),
+      roots: {
+        subscription: {
+          // a source that waits for its next event, as a timer or a poll does
+          ticks: async function* () {
+            started();
+            await released;
+            yield { ticks: 1 };
+          },
+        },
+      },
+    });
+
+    const client = await createTClient(server.url);
+    client.ws.send(
+      stringifyMessage<MessageType.ConnectionInit>({
+        type: MessageType.ConnectionInit,
+      }),
+    );
+    await client.waitForMessage(); // ack
+
+    client.ws.send(
+      stringifyMessage<MessageType.Subscribe>({
+        id: '1',
+        type: MessageType.Subscribe,
+        payload: {
+          query: 'subscription { ticks }',
+        },
+      }),
+    );
+    await waitForStart;
+
+    // complete while the source waits
+    client.ws.send(
+      stringifyMessage<MessageType.Complete>({
+        id: '1',
+        type: MessageType.Complete,
+      }),
+    );
+    for (const client of server.getClients()) {
+      await new Promise<void>((resolve) => {
+        const off = client.onMessage(() => {
+          off();
+          resolve();
+        });
+      });
+    }
+
+    // the source yields once more before it handles the return
+    release();
+
+    await client.waitForMessage(() => {
+      throw new Error("Shouldn't have received a message");
+    }, 30);
+
+    await server.waitForComplete();
+  });
+
   it('should clean up subscription reservations on abrupt errors without relying on close', async ({
     expect,
   }) => {
