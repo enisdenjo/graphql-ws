@@ -908,7 +908,10 @@ export function makeServer<
                   ctx.subscriptions[id] = operationResult;
                   try {
                     for await (const result of operationResult) {
-                      await emit.next(result, message, execArgs);
+                      // a source that waits when the client completes yields once more
+                      // before it handles the return, so emit only while it holds the id
+                      if (ctx.subscriptions[id] === operationResult)
+                        await emit.next(result, message, execArgs);
                     }
                   } catch (err) {
                     const originalError =
