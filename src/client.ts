@@ -913,6 +913,9 @@ export function createClient<
           }
 
           const unlisten = emitter.onMessage(id, (message) => {
+            // unlisten runs only after the release settles, so frames of the same
+            // read can still arrive here after the operation is done
+            if (done) return;
             switch (message.type) {
               case MessageType.Next: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload will fit type

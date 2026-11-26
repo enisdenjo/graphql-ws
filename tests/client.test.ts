@@ -539,6 +539,74 @@ it('should not call complete after subscription error', async () => {
   }, 20);
 });
 
+it('should not call next after the server completes in the same read', async ({
+  expect,
+}) => {
+  const { url, server } = await startRawServer();
+
+  // an unmasked text frame of the server with a payload of less than 126 bytes
+  const frame = (text: string) =>
+    Buffer.concat([
+      Buffer.from([0x81, Buffer.byteLength(text)]),
+      Buffer.from(text),
+    ]);
+
+  server.on('connection', (socket) => {
+    socket.on('message', (data) => {
+      const msg = parseMessage(String(data));
+
+      if (msg.type === MessageType.ConnectionInit)
+        socket.send(stringifyMessage({ type: MessageType.ConnectionAck }));
+
+      // next, complete and a next after the complete, in one write so that the client reads them together
+      if (msg.type === MessageType.Subscribe) {
+        const next = (value: string) =>
+          stringifyMessage({
+            id: msg.id,
+            type: MessageType.Next,
+            payload: { data: { value } },
+          });
+        (
+          socket as unknown as { _socket: { write(data: Buffer): void } }
+        )._socket.write(
+          Buffer.concat([
+            frame(next('first')),
+            frame(stringifyMessage({ id: msg.id, type: MessageType.Complete })),
+            frame(next('late')),
+          ]),
+        );
+      }
+    });
+  });
+
+  const client = createClient({
+    url,
+    lazy: true,
+    retryAttempts: 0,
+  });
+
+  const events: string[] = [];
+  const { resolve: completed, promise: waitForComplete } = createDeferred();
+  client.subscribe<{ value: string }>(
+    { query: 'subscription { value }' },
+    {
+      next: (result) => events.push(`next ${result.data?.value}`),
+      error: () => events.push('error'),
+      complete: () => {
+        events.push('complete');
+        completed();
+      },
+    },
+  );
+
+  await waitForComplete;
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  expect(events).toEqual(['next first', 'complete']);
+
+  await client.dispose();
+});
+
 it('should not call complete after connection error', async () => {
   const { url, waitForClient } = await startTServer();
 
